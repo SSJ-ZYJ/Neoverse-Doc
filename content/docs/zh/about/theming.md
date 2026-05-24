@@ -1,9 +1,7 @@
 ---
-title: 液态玻璃主题
+title: 玻璃感主题
 description: 通过 CSS 变量与 Tailwind v4 实现液态玻璃质感
 ---
-
-# 液态玻璃主题
 
 主题样式集中在 [src/app/globals.css](../../../src/app/globals.css)，遵循「变量层 / 工具类 / 组件覆写」三段式。
 

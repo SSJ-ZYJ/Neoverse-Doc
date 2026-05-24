@@ -10,7 +10,7 @@ export const zh = {
   enterDocs: '进入文档',
   guestbookTitle: '留言板',
   guestbookDesc: '在这里留下你对 Neoverse-Doc 的足迹与反馈',
-  communityTitle: '社区探讨',
+  communityTitle: '讨论区',
   communityDesc: '欢迎分享你的想法与反馈',
   backToDocs: '返回文档',
 } as const;

@@ -3,8 +3,6 @@ title: 搜索与索引
 description: 接入 fumadocs-core 内建搜索，构建静态化检索能力
 ---
 
-# 搜索与索引
-
 fumadocs-core 自带轻量级静态搜索方案，无需第三方服务。
 
 ## 启用步骤

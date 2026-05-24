@@ -3,53 +3,83 @@ title: Markdown 语法示例
 description: 支持丰富的 GFM 与 Mermaid 图表语法
 ---
 
-# Markdown 语法示例
-
 本文档展示了基础 Markdown、GitHub Flavored Markdown (GFM) 和 Mermaid 绘图的语法。
 
 ## 1. 基础 Markdown 语法
 
 ### 标题 (Headers)
+
+# 一级标题
+
+## 二级标题
+
+### 三级标题
+
+#### 四级标题
+
+```md
 # 一级标题
 ## 二级标题
 ### 三级标题
 #### 四级标题
+```
 
 ### 文本强调 (Emphasis)
-*斜体文字* 或 _斜体文字_
-**粗体文字** 或 __粗体文字__
-***粗斜体文字*** 或 ___粗斜体文字___
+
+*斜体文字*  
+**粗体文字**  
+***粗斜体文字***
+
+```md
+*斜体文字*
+**粗体文字**
+***粗斜体文字*** 
+```
 
 ### 列表 (Lists)
+
 **无序列表:**
+
 * 项目 A
 * 项目 B
   * 子项目 B.1
   * 子项目 B.2
 
 **有序列表:**
+
 1. 第一项
 2. 第二项
 3. 第三项
 
 ### 链接与图片 (Links & Images)
+
 [SSJ的博客](https://blog.shenshijun.space/)
-![](https://q2.qlogo.cn/headimg_dl?dst_uin=1764341276&spec=0 "这是SSJ的头像标题")
+
+![SSJ的头像](https://q2.qlogo.cn/headimg_dl?dst_uin=1764341276&spec=0 "这是SSJ的头像标题")
 
 ### 行内代码 (Inline Code)
+
 文本中可以穿插一小段代码，比如 `console.log('Hello World')`。
 
 ### 分隔线 (Horizontal Rules)
+
 ---
+
+```md
+---
+```
 
 ## 2. GitHub Flavored Markdown (GFM) 语法
 
 ### 任务列表 (Task Lists)
-- [x] 完成需求分析
-- [x] 编写示例文档
-- [ ] 提交代码并在生产环境部署
+
+* [x] 完成需求分析
+* [x] 编写示例文档
+* [ ] 提交代码并在生产环境部署
 3
+
 ### 表格 (Tables)
+
 | 特性 | 支持度 | 备注 |
 | :--- | :---: | ---: |
 | 表格支持 | 完美 | 居中居右对齐 |
@@ -57,36 +87,49 @@ description: 支持丰富的 GFM 与 Mermaid 图表语法
 | 删除线 | 完美 | `~~文字~~` |
 
 ### 删除线 (Strikethrough)
+
 这是一段~~被划掉的文本~~。
 
 ### 自动链接 (Autolinks)
-你可以直接访问我的博客: https://blog.shenshijun.space/
+
+你可以直接访问我的博客: <https://blog.shenshijun.space/>
 
 ### 引用强调 (Blockquotes)
+
 > 这是一个一级引用文本。
 > > 这是一个嵌套的二级引用。
-> > 
+> >
 > > **注意:** 引用中也可以使用其他 Markdown 语法。
 
 ### 警告与提示 (Alerts)
+
 GitHub 支持特殊的 Blockquote 语法来渲染带有颜色和图标的提示块：
 
 > [!NOTE]
 > 这是一个注记 (Note)，提供有用的补充信息。
 
+---
+
 > [!TIP]
 > 这是一个提示 (Tip)，提供建议或简便方法。
+
+---
 
 > [!IMPORTANT]
 > 这是一个重要信息 (Important)，突出关键上下文。
 
+---
+
 > [!WARNING]
 > 这是一个警告 (Warning)，提醒需要小心操作以避免意外。
+
+---
 
 > [!CAUTION]
 > 这是一个危险警告 (Caution)，告知可能会导致破坏性后果的操作。
 
 ### 语法高亮代码块 (Code Blocks)
+
 ```python
 def fibonacci(n):
     if n <= 0:
@@ -104,6 +147,7 @@ print(fibonacci(10))
 ## 2. Mermaid 图表语法
 
 ### 流程图 (Flowchart)
+
 ```mermaid
 graph TD;
     A[开始] --> B{条件判断};
@@ -114,6 +158,7 @@ graph TD;
 ```
 
 ### 时序图 (Sequence Diagram)
+
 ```mermaid
 sequenceDiagram
     participant 客户端 as Client
@@ -131,6 +176,7 @@ sequenceDiagram
 ```
 
 ### 状态图 (State Diagram)
+
 ```mermaid
 stateDiagram-v2
     [*] --> 闲置

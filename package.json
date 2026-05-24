@@ -18,10 +18,10 @@
     "fumadocs-core": "^16.9.1",
     "fumadocs-mdx": "^15.0.8",
     "fumadocs-ui": "^16.9.1",
+    "iconify": "^1.4.0",
     "lucide-react": "^1.16.0",
     "mermaid": "^11.15.0",
     "next": "16.2.6",
-    "next-themes": "^0.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "remark-github-blockquote-alert": "^2.1.0"

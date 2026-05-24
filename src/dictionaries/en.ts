@@ -10,7 +10,7 @@ export const en = {
   enterDocs: 'Enter',
   guestbookTitle: 'Guestbook',
   guestbookDesc: 'Leave your footprints and feedback for Neoverse-Doc here',
-  communityTitle: 'Community',
+  communityTitle: 'Discussion',
   communityDesc: 'Welcome to share your thoughts and feedback',
   backToDocs: 'Back to Docs',
 } as const;
