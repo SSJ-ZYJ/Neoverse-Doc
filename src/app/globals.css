@@ -7,7 +7,9 @@
   --color-foreground: var(--foreground);
   --font-orbitron: var(--font-orbitron);
   --font-noto-sans: var(--font-noto-sans);
-  --font-mono: "Maple Mono NF CN", "JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  --font-mono:
+    "Maple Mono NF CN", "JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono",
+    "Ubuntu Mono", monospace;
 }
 
 .font-orbitron {
@@ -191,6 +193,26 @@ blockquote {
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   background-color: color-mix(in oklab, var(--color-fd-background) 90%, transparent);
+}
+
+/* ── TOC Right Sidebar Constraints ─────────────────── */
+/* xl 以上：右侧 TOC 严格在自身 grid-area 内，避免越界或撑开父布局 */
+#nd-toc {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: var(--fd-toc-width);
+  overflow: hidden;
+}
+#nd-toc a {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+/* 不足 xl 时强制隐藏右侧 TOC（与官方默认 max-xl:hidden 一致，作为兜底防御） */
+@media (max-width: 1279.98px) {
+  #nd-toc {
+    display: none !important;
+  }
 }
 
 /* ── Inline Code Enhancement ─────────────────────────── */

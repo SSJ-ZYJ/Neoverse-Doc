@@ -2,6 +2,17 @@
 
 基于 **Next.js 16** + **React 19** + **fumadocs** 构建的静态文档站点
 
+## 目录
+
+- [功能亮点](#功能亮点)
+- [技术栈](#技术栈)
+- [快速开始](#快速开始)
+- [项目结构](#项目结构)
+- [核心架构](#核心架构)
+- [可用命令](#可用命令)
+- [贡献指南](#贡献指南)
+- [License](#license)
+
 ## 功能亮点
 
 - **纯静态生成 (SSG)** — `next build` 直接生成完整 HTML，无需 Node 运行时，可部署至 Vercel、Cloudflare Pages、GitHub Pages 等任意静态托管平台
@@ -26,6 +37,56 @@
 | 图标 | lucide-react |
 | Markdown | remark-github-blockquote-alert (GitHub Alert) |
 | 图表 | Mermaid 11 + fumadocs remarkMdxMermaid 插件 |
+
+## 快速开始
+
+### 前置要求
+
+- **Node.js** >= 20
+- **Bun** >= 1.0
+
+### 安装与运行
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/SSJ-ZYJ/Neoverse-Doc.git
+cd Neoverse-Doc
+
+# 2. 安装依赖（自动执行 fumadocs-mdx 编译）
+bun install
+
+# 3. 启动开发服务器
+bun dev
+```
+
+浏览器打开 `http://localhost:3000` 即可预览。
+
+### 构建部署
+
+```bash
+# 生产构建
+bun run build
+
+# 启动生产服务器
+bun run start
+
+# 产物位于 out/ 目录，可直接部署到任意静态托管平台
+```
+
+### 编辑文档
+
+1. 在 `content/docs/` 下新建 `.md` 或 `.mdx` 文件
+2. 文件头部添加 frontmatter：
+
+   ```md
+   ---
+   title: 你的标题
+   description: 页面描述
+   ---
+   ```
+
+3. 在对应目录的 `meta.json` 中注册新页面
+4. 保存后开发服务器自动热更新
 
 ## 项目结构
 
@@ -141,56 +202,6 @@ next.config.ts (createMDX)
           → src/app/[lang]/docs/[...slug]/page.tsx (DocsPage + MDX + Guestbook)
 ```
 
-## 快速开始
-
-### 前置要求
-
-- **Node.js** >= 20
-- **Bun** >= 1.0
-
-### 安装与运行
-
-```bash
-# 1. 克隆项目
-git clone https://github.com/SSJ-ZYJ/Neoverse-Doc.git
-cd Neoverse-Doc
-
-# 2. 安装依赖（自动执行 fumadocs-mdx 编译）
-bun install
-
-# 3. 启动开发服务器
-bun dev
-```
-
-浏览器打开 `http://localhost:3000` 即可预览。
-
-### 构建部署
-
-```bash
-# 生产构建
-bun run build
-
-# 启动生产服务器
-bun run start
-
-# 产物位于 out/ 目录，可直接部署到任意静态托管平台
-```
-
-### 编辑文档
-
-1. 在 `content/docs/` 下新建 `.md` 或 `.mdx` 文件
-2. 文件头部添加 frontmatter：
-
-   ```md
-   ---
-   title: 你的标题
-   description: 页面描述
-   ---
-   ```
-
-3. 在对应目录的 `meta.json` 中注册新页面
-4. 保存后开发服务器自动热更新
-
 ## 可用命令
 
 | 命令 | 说明 |
@@ -202,6 +213,30 @@ bun run start
 | `bun run lint` | Biome Lint |
 | `bun run format` | Biome 格式化 |
 | `bun run check` | Biome 格式化 + Lint + 自动修复 |
+
+## 贡献指南
+
+欢迎为项目做出贡献！详细的贡献指南请参阅 [CONTRIBUTING.MD](./CONTRIBUTING.MD)。
+
+### 快速贡献
+
+```bash
+# 1. Fork 并克隆项目
+git clone https://github.com/<your-username>/Neoverse-Doc.git
+
+# 2. 安装依赖
+bun install
+
+# 3. 创建功能分支
+git checkout -b feat/your-feature
+
+# 4. 开发完成后提交
+bun run check && bun run typecheck
+git commit -m "feat(scope): 功能描述"
+
+# 5. 推送并创建 Pull Request
+git push origin feat/your-feature
+```
 
 ## License
 
