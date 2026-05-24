@@ -1,3 +1,8 @@
+---
+title: Markdown 语法示例
+description: 支持丰富的 GFM 与 Mermaid 图表语法
+---
+
 # Markdown 语法示例
 
 本文档展示了基础 Markdown、GitHub Flavored Markdown (GFM) 和 Mermaid 绘图的语法。
@@ -29,7 +34,7 @@
 
 ### 链接与图片 (Links & Images)
 [SSJ的博客](https://blog.shenshijun.space/)
-![SSJ头像](https://q2.qlogo.cn/headimg_dl?dst_uin=1764341276&spec=0 "这是SSJ的头像标题")
+![](https://q2.qlogo.cn/headimg_dl?dst_uin=1764341276&spec=0 "这是SSJ的头像标题")
 
 ### 行内代码 (Inline Code)
 文本中可以穿插一小段代码，比如 `console.log('Hello World')`。

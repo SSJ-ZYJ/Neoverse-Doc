@@ -1,0 +1,432 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-orbitron: var(--font-orbitron);
+  --font-noto-sans: var(--font-noto-sans);
+  --font-mono:
+    "Maple Mono NF CN", "JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono",
+    "Ubuntu Mono", monospace;
+}
+
+.font-orbitron {
+  font-family: var(--font-orbitron), sans-serif;
+}
+
+:root,
+[data-theme="light"],
+.light {
+  --background: #ffffff;
+  --foreground: #0f172a;
+
+  /* Liquid Glass Effects for Light Mode */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.4);
+
+  /* Liquid Glass Design System — Light */
+  --glass-tint: rgba(255, 255, 255, 0.55);
+  --glass-tint-strong: rgba(255, 255, 255, 0.72);
+  --glass-tint-soft: rgba(255, 255, 255, 0.4);
+  --glass-border-hairline: rgba(255, 255, 255, 0.55);
+  --glass-highlight: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px -8px rgba(15, 23, 42, 0.18);
+  --glass-ambient-a: rgba(56, 189, 248, 0.18);
+  --glass-ambient-b: rgba(74, 222, 128, 0.14);
+  /* Theme-agnostic glass scalars */
+  --glass-blur: 20px;
+  --glass-blur-strong: 28px;
+  --glass-blur-soft: 12px;
+  --glass-saturate: 180%;
+
+  /* Brand Gradients (Light Green to Light Blue) */
+  --color-brand-start: #38bdf8; /* Light Blue */
+  --color-brand-end: #4ade80; /* Light Green */
+
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-card: var(--background);
+  --color-fd-card-foreground: var(--foreground);
+  --color-fd-secondary: var(--background);
+  --color-fd-secondary-foreground: var(--foreground);
+  --color-fd-muted: rgba(0, 0, 0, 0.04);
+  --color-fd-muted-foreground: rgba(0, 0, 0, 0.5);
+  --color-fd-popover: var(--background);
+  --color-fd-popover-foreground: var(--foreground);
+  --color-fd-accent: rgba(0, 0, 0, 0.04);
+  --color-fd-accent-foreground: var(--foreground);
+  --color-fd-border: rgba(0, 0, 0, 0.08);
+  --color-fd-ring: rgba(14, 165, 233, 0.4);
+  --color-fd-overlay: rgba(0, 0, 0, 0.2);
+  --fd-primary: #0ea5e9;
+  --fd-primary-foreground: #ffffff;
+}
+
+[data-theme="dark"],
+.dark {
+  --background: #060913;
+  --foreground: #f8fafc;
+
+  /* Liquid Glass Effects for Dark Mode */
+  --glass-bg: rgba(15, 23, 42, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
+  /* Liquid Glass Design System — Dark */
+  --glass-tint: rgba(15, 23, 42, 0.42);
+  --glass-tint-strong: rgba(15, 23, 42, 0.55);
+  --glass-tint-soft: rgba(15, 23, 42, 0.28);
+  --glass-border-hairline: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.55);
+  --glass-ambient-a: rgba(56, 189, 248, 0.16);
+  --glass-ambient-b: rgba(168, 85, 247, 0.12);
+
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-card: var(--background);
+  --color-fd-card-foreground: var(--foreground);
+  --color-fd-secondary: var(--background);
+  --color-fd-secondary-foreground: var(--foreground);
+  --color-fd-muted: var(--background);
+  --color-fd-muted-foreground: rgba(255, 255, 255, 0.6);
+  --color-fd-popover: var(--background);
+  --color-fd-popover-foreground: var(--foreground);
+  --color-fd-accent: rgba(255, 255, 255, 0.06);
+  --color-fd-accent-foreground: var(--foreground);
+  --color-fd-border: rgba(255, 255, 255, 0.08);
+  --color-fd-ring: rgba(56, 189, 248, 0.4);
+  --color-fd-overlay: rgba(0, 0, 0, 0.5);
+  --fd-primary: #38bdf8;
+  --fd-primary-foreground: #ffffff;
+}
+
+/* ── Liquid Glass Design System ───────────────────────── */
+/* 通用 base：tint + blur + saturate + hairline border。子类各自微调强度。 */
+
+.glass-panel,
+.glass-card,
+.glass-chip,
+.liquid-glass {
+  border: 1px solid var(--glass-border-hairline);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  background-color: var(--glass-tint);
+}
+
+/* 大面板：导航 / 侧栏 / subnav。内顶 1px 高光 + 软外阴影。 */
+.glass-panel {
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+/* 弹窗 / 抽屉 / 搜索框：更强 blur + 更浓 tint，圆角更大。 */
+.glass-card {
+  background-color: var(--glass-tint-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border-radius: 1rem;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+/* 小元件：icon chip / 按钮。轻 blur + 软 tint，不带外阴影。 */
+.glass-chip {
+  background-color: var(--glass-tint-soft);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+}
+
+/* 描边 + 内高光修饰，不带 blur，用于已有背景的元素。 */
+.glass-edge {
+  border: 1px solid var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* 旧别名：保持首页 CTA 视觉对齐。等价 glass-card 但 blur 略弱。 */
+.liquid-glass {
+  background-color: var(--glass-tint-strong);
+  -webkit-backdrop-filter: blur(16px) saturate(var(--glass-saturate));
+  backdrop-filter: blur(16px) saturate(var(--glass-saturate));
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-noto-sans), "Noto Sans SC", "Noto Sans", sans-serif;
+  position: relative;
+  isolation: isolate;
+}
+
+/* 全局环境光：给玻璃表面提供折射色源。 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(60vmax 60vmax at 15% 20%, var(--glass-ambient-a), transparent 60%),
+    radial-gradient(60vmax 60vmax at 85% 80%, var(--glass-ambient-b), transparent 60%);
+  filter: blur(80px) saturate(140%);
+}
+
+/* ── Code Blocks & Inline Code ─────────────────────────── */
+
+pre,
+code,
+pre code {
+  font-family: var(--font-mono);
+}
+
+/* ── Blockquote & Alerts ─────────────────────────────── */
+
+blockquote {
+  border-left: 3px solid var(--color-fd-border);
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  color: var(--color-fd-muted-foreground);
+}
+
+.markdown-alert {
+  border-left: 3px solid;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.markdown-alert-title .octicon {
+  flex-shrink: 0;
+}
+
+.markdown-alert-note {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+}
+.markdown-alert-note .octicon {
+  fill: #3b82f6;
+}
+
+.markdown-alert-tip {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+}
+.markdown-alert-tip .octicon {
+  fill: #22c55e;
+}
+
+.markdown-alert-important {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.08);
+}
+.markdown-alert-important .octicon {
+  fill: #a855f7;
+}
+
+.markdown-alert-warning {
+  border-color: #eab308;
+  background: rgba(234, 179, 8, 0.08);
+}
+.markdown-alert-warning .octicon {
+  fill: #eab308;
+}
+
+.markdown-alert-caution {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+.markdown-alert-caution .octicon {
+  fill: #ef4444;
+}
+
+[data-theme="dark"] .markdown-alert-note,
+.dark .markdown-alert-note {
+  background: rgba(59, 130, 246, 0.12);
+}
+[data-theme="dark"] .markdown-alert-tip,
+.dark .markdown-alert-tip {
+  background: rgba(34, 197, 94, 0.12);
+}
+[data-theme="dark"] .markdown-alert-important,
+.dark .markdown-alert-important {
+  background: rgba(168, 85, 247, 0.12);
+}
+[data-theme="dark"] .markdown-alert-warning,
+.dark .markdown-alert-warning {
+  background: rgba(234, 179, 8, 0.12);
+}
+[data-theme="dark"] .markdown-alert-caution,
+.dark .markdown-alert-caution {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* ── TOC Popover Header Enhancement ─────────────────── */
+[data-toc-popover-content] > div > div > header.border-b.backdrop-blur-sm.bg-fd-background\/80 {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background-color: color-mix(in oklab, var(--color-fd-background) 90%, transparent);
+}
+
+/* ── TOC Right Sidebar Constraints ─────────────────── */
+/* xl 以上：右侧 TOC 严格在自身 grid-area 内，避免越界或撑开父布局 */
+#nd-toc {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: var(--fd-toc-width);
+  overflow: hidden;
+}
+#nd-toc a {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+/* 不足 xl 时强制隐藏右侧 TOC（与官方默认 max-xl:hidden 一致，作为兜底防御） */
+@media (max-width: 1279.98px) {
+  #nd-toc {
+    display: none !important;
+  }
+}
+
+/* ── Fumadocs Surface Glassification ─────────────────── */
+/* :where() 包裹保持最低优先级，不与上方 #nd-toc 约束块冲突，
+   也不会阻止 fumadocs 默认的 hover / 折叠态 utility 覆盖。 */
+
+/* 顶部导航：内层 div 是 fumadocs 给的 backdrop-blur 容器，直接强化。 */
+:where(#nd-nav) > div {
+  background-color: var(--glass-tint) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-bottom-color: var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  transform: translateZ(0);
+}
+
+/* 移动端 docs 二级头部 */
+:where(#nd-subnav) {
+  background-color: var(--glass-tint);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-bottom-color: var(--glass-border-hairline);
+  transform: translateZ(0);
+}
+
+/* 文档左侧栏：展开态完整玻璃化；折叠态外框只走 glass-edge 修饰，避免双重 blur。 */
+:where(#nd-sidebar):not([data-collapsed="true"]) {
+  background-color: var(--glass-tint);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-inline-end-color: var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+:where(#nd-sidebar)[data-collapsed="true"] {
+  background-color: var(--glass-tint-soft);
+  border-color: var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* 右侧 TOC：仅追加极淡背景，不覆盖上方约束块的 box-sizing/max-width/overflow。 */
+:where(#nd-toc) {
+  background-color: transparent;
+}
+
+/* TOC popover 内容：整体卡片化 */
+:where([data-toc-popover-content]) > div {
+  background-color: var(--glass-tint-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+/* 搜索弹窗 / Radix Dialog 内容：通过 role=dialog 上的 content 容器接管 */
+:where([role="dialog"][data-state="open"]) > :first-child {
+  background-color: var(--glass-tint-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border-color: var(--glass-border-hairline);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+/* ── Liquid Glass Compatibility & A11y ───────────────── */
+/* 用户偏好减少透明度：所有玻璃表面退化为不透明背景，去除 blur 与环境光。 */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel,
+  .glass-card,
+  .glass-chip,
+  .liquid-glass,
+  :where(#nd-nav) > div,
+  :where(#nd-subnav),
+  :where(#nd-sidebar),
+  :where([data-toc-popover-content]) > div,
+  :where([role="dialog"][data-state="open"]) > :first-child {
+    background-color: var(--background) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+  body::before {
+    display: none;
+  }
+}
+
+/* 浏览器不支持 backdrop-filter：同样退化为不透明背景。 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-panel,
+  .glass-card,
+  .glass-chip,
+  .liquid-glass,
+  :where(#nd-nav) > div,
+  :where(#nd-subnav),
+  :where(#nd-sidebar),
+  :where([data-toc-popover-content]) > div,
+  :where([role="dialog"][data-state="open"]) > :first-child {
+    background-color: var(--background);
+  }
+  body::before {
+    display: none;
+  }
+}
+
+/* ── Inline Code Enhancement ─────────────────────────── */
+
+:root,
+[data-theme="light"],
+.light {
+  --inline-code-bg: rgba(0, 0, 0, 0.06);
+  --inline-code-border: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"],
+.dark {
+  --inline-code-bg: rgba(56, 189, 248, 0.15);
+  --inline-code-border: rgba(56, 189, 248, 0.25);
+}
+
+:not(pre) > code {
+  background-color: var(--inline-code-bg);
+  border: 1px solid var(--inline-code-border);
+  border-radius: 0.375rem;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.875em;
+  line-height: 1.5;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}

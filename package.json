@@ -1,0 +1,48 @@
+{
+  "name": "neoverse-doc",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "serve out",
+    "postinstall": "fumadocs-mdx",
+    "typecheck": "next typegen && fumadocs-mdx && tsc --noEmit",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write ."
+  },
+  "dependencies": {
+    "@giscus/react": "^3.1.0",
+    "framer-motion": "^12.40.0",
+    "fumadocs-core": "^16.9.1",
+    "fumadocs-mdx": "^15.0.8",
+    "fumadocs-ui": "^16.9.1",
+    "lucide-react": "^1.16.0",
+    "mermaid": "^11.15.0",
+    "next": "16.2.6",
+    "next-themes": "^0.4.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "remark-github-blockquote-alert": "^2.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "serve": "^14.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "ignoreScripts": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver",
+    "@biomejs/biome"
+  ]
+}
