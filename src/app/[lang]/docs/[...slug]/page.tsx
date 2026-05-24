@@ -27,7 +27,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       </DocsBody>
       <div className="mt-16 border-t border-fd-border pt-10">
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-fd-accent text-fd-accent-foreground">
+          <div className="flex size-9 items-center justify-center rounded-lg glass-chip text-fd-accent-foreground">
             <MessageSquareText size={18} />
           </div>
           <div>

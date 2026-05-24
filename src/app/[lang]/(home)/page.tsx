@@ -6,6 +6,10 @@ import Link from 'next/link';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/lib/i18n';
 
+export function generateStaticParams() {
+  return i18n.languages.map((lang) => ({ lang }));
+}
+
 export default async function HomePage({ params }: PageProps<'/[lang]'>) {
   const { lang } = await params;
   const locale = (lang as Locale) ?? i18n.defaultLanguage;

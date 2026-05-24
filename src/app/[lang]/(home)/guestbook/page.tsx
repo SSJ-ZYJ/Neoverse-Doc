@@ -8,6 +8,10 @@ import { Guestbook } from '@/components/guestbook';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/lib/i18n';
 
+export function generateStaticParams() {
+  return i18n.languages.map((lang) => ({ lang }));
+}
+
 export default async function GuestbookPage({ params }: PageProps<'/[lang]/guestbook'>) {
   const { lang } = await params;
   const locale = (lang as Locale) ?? i18n.defaultLanguage;
@@ -23,7 +27,7 @@ export default async function GuestbookPage({ params }: PageProps<'/[lang]/guest
           <ArrowLeft size={16} />
           {dict.backToDocs}
         </Link>
-        <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-fd-accent text-fd-accent-foreground">
+        <div className="mb-4 flex size-12 items-center justify-center rounded-xl glass-chip text-fd-accent-foreground">
           <MessageSquareText size={24} />
         </div>
         <h1 className="text-3xl font-bold text-fd-foreground mb-2">{dict.guestbookTitle}</h1>
