@@ -1,0 +1,270 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/ocean.css";
+@import "fumadocs-ui/css/preset.css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-orbitron: var(--font-orbitron);
+  --font-noto-sans: var(--font-noto-sans);
+  --font-mono:
+    "Maple Mono NF CN", "JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono",
+    "Ubuntu Mono", monospace;
+}
+
+.font-orbitron {
+  font-family: var(--font-orbitron), sans-serif;
+}
+
+:root,
+[data-theme="light"],
+.light {
+  --background: #ffffff;
+  --foreground: #0f172a;
+
+  /* Liquid Glass Effects for Light Mode */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.4);
+
+  /* Brand Gradients (Light Green to Light Blue) */
+  --color-brand-start: #38bdf8; /* Light Blue */
+  --color-brand-end: #4ade80; /* Light Green */
+
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-card: var(--background);
+  --color-fd-card-foreground: var(--foreground);
+  --color-fd-secondary: var(--background);
+  --color-fd-secondary-foreground: var(--foreground);
+  --color-fd-muted: rgba(0, 0, 0, 0.04);
+  --color-fd-muted-foreground: rgba(0, 0, 0, 0.5);
+  --color-fd-popover: var(--background);
+  --color-fd-popover-foreground: var(--foreground);
+  --color-fd-accent: rgba(0, 0, 0, 0.04);
+  --color-fd-accent-foreground: var(--foreground);
+  --color-fd-border: rgba(0, 0, 0, 0.08);
+  --color-fd-ring: rgba(14, 165, 233, 0.4);
+  --color-fd-overlay: rgba(0, 0, 0, 0.2);
+  --fd-primary: #0ea5e9;
+  --fd-primary-foreground: #ffffff;
+}
+
+[data-theme="dark"],
+.dark {
+  --background: #060913;
+  --foreground: #f8fafc;
+
+  /* Liquid Glass Effects for Dark Mode */
+  --glass-bg: rgba(15, 23, 42, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-card: var(--background);
+  --color-fd-card-foreground: var(--foreground);
+  --color-fd-secondary: var(--background);
+  --color-fd-secondary-foreground: var(--foreground);
+  --color-fd-muted: var(--background);
+  --color-fd-muted-foreground: rgba(255, 255, 255, 0.6);
+  --color-fd-popover: var(--background);
+  --color-fd-popover-foreground: var(--foreground);
+  --color-fd-accent: rgba(255, 255, 255, 0.06);
+  --color-fd-accent-foreground: var(--foreground);
+  --color-fd-border: rgba(255, 255, 255, 0.08);
+  --color-fd-ring: rgba(56, 189, 248, 0.4);
+  --color-fd-overlay: rgba(0, 0, 0, 0.5);
+  --fd-primary: #38bdf8;
+  --fd-primary-foreground: #ffffff;
+}
+
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-noto-sans), "Noto Sans SC", "Noto Sans", sans-serif;
+}
+
+/* ── Code Blocks & Inline Code ─────────────────────────── */
+
+pre,
+code,
+pre code {
+  font-family: var(--font-mono);
+}
+
+/* ── Blockquote & Alerts ─────────────────────────────── */
+
+blockquote {
+  border-left: 3px solid var(--color-fd-border);
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  color: var(--color-fd-muted-foreground);
+}
+
+.markdown-alert {
+  border-left: 3px solid;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.markdown-alert-title .octicon {
+  flex-shrink: 0;
+}
+
+.markdown-alert-note {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+}
+.markdown-alert-note .octicon {
+  fill: #3b82f6;
+}
+
+.markdown-alert-tip {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+}
+.markdown-alert-tip .octicon {
+  fill: #22c55e;
+}
+
+.markdown-alert-important {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.08);
+}
+.markdown-alert-important .octicon {
+  fill: #a855f7;
+}
+
+.markdown-alert-warning {
+  border-color: #eab308;
+  background: rgba(234, 179, 8, 0.08);
+}
+.markdown-alert-warning .octicon {
+  fill: #eab308;
+}
+
+.markdown-alert-caution {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+.markdown-alert-caution .octicon {
+  fill: #ef4444;
+}
+
+[data-theme="dark"] .markdown-alert-note,
+.dark .markdown-alert-note {
+  background: rgba(59, 130, 246, 0.12);
+}
+[data-theme="dark"] .markdown-alert-tip,
+.dark .markdown-alert-tip {
+  background: rgba(34, 197, 94, 0.12);
+}
+[data-theme="dark"] .markdown-alert-important,
+.dark .markdown-alert-important {
+  background: rgba(168, 85, 247, 0.12);
+}
+[data-theme="dark"] .markdown-alert-warning,
+.dark .markdown-alert-warning {
+  background: rgba(234, 179, 8, 0.12);
+}
+[data-theme="dark"] .markdown-alert-caution,
+.dark .markdown-alert-caution {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* ── TOC Popover Header Enhancement ─────────────────── */
+[data-toc-popover-content] > div > div > header.border-b.backdrop-blur-sm.bg-fd-background\/80 {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background-color: color-mix(in oklab, var(--color-fd-background) 90%, transparent);
+}
+
+/* ── Docs Layout: TOC visible at lg breakpoint ─────── */
+/*
+ * Fix TOC position: show on right side instead of below article
+ * fumadocs uses: max-xl:hidden (media query display:none below 1280px), [--fd-toc-width:0px]
+ * Solution: Override in same media query range and set --fd-toc-width on grid container
+ */
+#nd-docs-layout {
+  --fd-layout-width: 97rem;
+}
+
+/* Override fumadocs TOC visibility at lg+ (1024px to 1280px range) */
+/* fumadocs max-xl:hidden applies display:none below 1280px, we override it at lg+ */
+@media (min-width: 1024px) {
+  #nd-docs-layout {
+    /* Set TOC width at lg breakpoint */
+    --fd-toc-width: 220px !important;
+  }
+  #nd-toc {
+    /* Override max-xl:hidden which sets display:none below 1280px */
+    display: flex !important;
+  }
+  /* Hide TOC popover trigger at lg+ (since TOC is visible) */
+  [data-toc-popover-trigger] {
+    display: none !important;
+  }
+}
+
+/* Hide TOC below lg breakpoint, show TOC Popover instead */
+@media (max-width: 1023px) {
+  #nd-docs-layout {
+    /* Reset TOC width to 0 below lg */
+    --fd-toc-width: 0px !important;
+  }
+  #nd-toc {
+    display: none !important;
+  }
+}
+
+/* ── Sidebar: prevent text truncation ────── */
+[data-sidebar] a,
+[data-sidebar] button,
+[data-sidebar] span {
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: normal !important;
+}
+
+/* ── Inline Code Enhancement ─────────────────────────── */
+
+:root,
+[data-theme="light"],
+.light {
+  --inline-code-bg: rgba(0, 0, 0, 0.06);
+  --inline-code-border: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"],
+.dark {
+  --inline-code-bg: rgba(56, 189, 248, 0.15);
+  --inline-code-border: rgba(56, 189, 248, 0.25);
+}
+
+:not(pre) > code {
+  background-color: var(--inline-code-bg);
+  border: 1px solid var(--inline-code-border);
+  border-radius: 0.375rem;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.875em;
+  line-height: 1.5;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}

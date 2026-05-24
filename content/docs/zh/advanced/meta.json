@@ -1,0 +1,5 @@
+{
+  "title": "进阶机制",
+  "pages": ["index", "i18n", "theming", "search"],
+  "root": true
+}
