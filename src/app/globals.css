@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "fumadocs-ui/css/ocean.css";
+@import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 
 @theme inline {
@@ -7,9 +7,7 @@
   --color-foreground: var(--foreground);
   --font-orbitron: var(--font-orbitron);
   --font-noto-sans: var(--font-noto-sans);
-  --font-mono:
-    "Maple Mono NF CN", "JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono",
-    "Ubuntu Mono", monospace;
+  --font-mono: "Maple Mono NF CN", "JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
 }
 
 .font-orbitron {
@@ -193,53 +191,6 @@ blockquote {
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   background-color: color-mix(in oklab, var(--color-fd-background) 90%, transparent);
-}
-
-/* ── Docs Layout: TOC visible at lg breakpoint ─────── */
-/*
- * Fix TOC position: show on right side instead of below article
- * fumadocs uses: max-xl:hidden (media query display:none below 1280px), [--fd-toc-width:0px]
- * Solution: Override in same media query range and set --fd-toc-width on grid container
- */
-#nd-docs-layout {
-  --fd-layout-width: 97rem;
-}
-
-/* Override fumadocs TOC visibility at lg+ (1024px to 1280px range) */
-/* fumadocs max-xl:hidden applies display:none below 1280px, we override it at lg+ */
-@media (min-width: 1024px) {
-  #nd-docs-layout {
-    /* Set TOC width at lg breakpoint */
-    --fd-toc-width: 220px !important;
-  }
-  #nd-toc {
-    /* Override max-xl:hidden which sets display:none below 1280px */
-    display: flex !important;
-  }
-  /* Hide TOC popover trigger at lg+ (since TOC is visible) */
-  [data-toc-popover-trigger] {
-    display: none !important;
-  }
-}
-
-/* Hide TOC below lg breakpoint, show TOC Popover instead */
-@media (max-width: 1023px) {
-  #nd-docs-layout {
-    /* Reset TOC width to 0 below lg */
-    --fd-toc-width: 0px !important;
-  }
-  #nd-toc {
-    display: none !important;
-  }
-}
-
-/* ── Sidebar: prevent text truncation ────── */
-[data-sidebar] a,
-[data-sidebar] button,
-[data-sidebar] span {
-  overflow: visible !important;
-  text-overflow: unset !important;
-  white-space: normal !important;
 }
 
 /* ── Inline Code Enhancement ─────────────────────────── */

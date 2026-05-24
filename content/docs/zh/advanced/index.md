@@ -10,8 +10,8 @@ index: false
 
 ## 章节地图
 
-- [i18n 国际化](/docs/advanced/i18n)：源结构、`pagesIndex` 与语言路由策略
-- [液态玻璃主题](/docs/advanced/theming)：CSS 变量层、`@theme inline` 与暗色模式接入
-- [搜索与索引](/docs/advanced/search)：fumadocs-core 内建搜索的接入点
+- [i18n 国际化](zh/docs/advanced/i18n)：源结构、`pagesIndex` 与语言路由策略
+- [液态玻璃主题](zh/docs/advanced/theming)：CSS 变量层、`@theme inline` 与暗色模式接入
+- [搜索与索引](zh/docs/advanced/search)：fumadocs-core 内建搜索的接入点
 
 > 本节内容为占位草稿，会随项目演进持续补完。
