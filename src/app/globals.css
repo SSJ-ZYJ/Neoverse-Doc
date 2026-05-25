@@ -153,9 +153,7 @@
   background-color: var(--glass-tint-strong);
   -webkit-backdrop-filter: blur(16px) saturate(var(--glass-saturate));
   backdrop-filter: blur(16px) saturate(var(--glass-saturate));
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
 body {
