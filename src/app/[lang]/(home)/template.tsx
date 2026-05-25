@@ -1,7 +1,6 @@
-'use client';
-
 // Per-locale page transition wrapper powered by framer-motion.
 // 按语言生效的页面过渡动效封装（基于 framer-motion）。
+'use client';
 
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';

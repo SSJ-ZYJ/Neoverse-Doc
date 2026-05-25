@@ -1,3 +1,9 @@
+// CTA button that triggers a mask-reveal page transition from the homepage
+// to the docs area. On click, it snapshots the current <main> DOM into
+// sessionStorage so MaskReveal can animate the clip-path reveal.
+// 触发遮罩揭示页面过渡的 CTA 按钮，从首页跳转至文档区。
+// 点击时将当前 <main> DOM 快照存入 sessionStorage，供 MaskReveal 执行裁剪揭示动画。
+
 'use client';
 
 import Link from 'next/link';
@@ -30,12 +36,13 @@ export default function EnterDocsButton({
       y = rect.top + rect.height / 2;
     }
 
-    // 立刻给予定格反馈
+    // Provide immediate tactile feedback / 立刻给予定格反馈
     setIsClicked(true);
 
-    // 【极限黑魔法】放弃所有昂贵阻塞的图片截图分析。
-    // 在这 1 毫秒内，直接把当前屏幕里的原生态 DOM 节点外壳克隆下来，作为字符串存入缓存！
-    // 这样不用消耗任何电脑 CPU，新页面挂载时通过 dangerouslySetInnerHTML 直接还原 100% 同款主页。
+    // Clone the current native DOM shell as a string and cache it;
+    // the new page restores it via dangerouslySetInnerHTML on mount.
+    // 把当前屏幕里的原生态 DOM 节点外壳克隆下来，作为字符串存入缓存
+    // 新页面挂载时通过 dangerouslySetInnerHTML 直接还原
     const mainNode = document.querySelector('main');
 
     if (mainNode) {
@@ -49,7 +56,7 @@ export default function EnterDocsButton({
       sessionStorage.setItem('nd-docs-transition', JSON.stringify(data));
     }
 
-    // 路由交给后台处理
+    // Hand off routing to the background / 路由交给后台处理
     startTransition(() => {
       router.push(href);
     });
@@ -57,7 +64,7 @@ export default function EnterDocsButton({
 
   return (
     <Link href={href} className={className} onClick={handleClick}>
-      {/* 给予极致干脆的触觉物理反馈 */}
+      {/* Crisp tactile physical feedback / 给予极致干脆的触觉物理反馈 */}
       <span
         className="inline-block transition-all duration-300 ease-out"
         style={{

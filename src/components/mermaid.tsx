@@ -1,3 +1,7 @@
+// Mermaid diagram renderer. Initializes mermaid on mount and re-renders
+// whenever the chart source or theme changes. Falls back to raw text on error.
+// Mermaid 图表渲染器。挂载时初始化 mermaid，当图表源码或主题变化时重新渲染。出错时回退为原始文本。
+
 'use client';
 
 import mermaid from 'mermaid';

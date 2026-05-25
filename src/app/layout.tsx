@@ -1,4 +1,13 @@
 // Root layout: hosts <html>/<body>, global fonts, and the theme provider.
+// next-themes ThemeProvider is placed here so it does NOT re-mount when
+// switching [lang] segments, avoiding React 19 script warnings caused by
+// client-side double-rendering of the theme script.
+// Real i18n translation injection is handled by src/app/[lang]/layout.tsx.
+// Font strategy:
+//   - Orbitron: Logo only (via --font-orbitron CSS variable)
+//   - Noto Sans SC: Default body font
+//   - Maple Mono NF CN: Code block font (local font)
+// 根布局：承载 <html>/<body>、全局字体和主题提供器。
 // next-themes 的 ThemeProvider 放在这里，确保切换 [lang] 段时它不会重新挂载，
 // 从而避免主题脚本被客户端二次渲染触发 React 19 的 script 警告。
 // 真正的多语言翻译注入由 src/app/[lang]/layout.tsx 完成。

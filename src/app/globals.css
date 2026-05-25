@@ -1,3 +1,9 @@
+/* Global styles: Tailwind base, fumadocs presets, Liquid Glass design system
+   (CSS custom properties + glass utility classes), theme variables, ambient
+   lighting, code/blockquote styling, and fumadocs surface glassification overrides.
+   全局样式：Tailwind 基础、fumadocs 预设、液态玻璃设计系统（CSS 自定义属性 + 玻璃工具类）、
+   主题变量、环境光、代码/引用样式，以及 fumadocs 表面玻璃化覆盖。 */
+
 @import "tailwindcss";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
@@ -22,11 +28,11 @@
   --background: #ffffff;
   --foreground: #0f172a;
 
-  /* Liquid Glass Effects for Light Mode */
+  /* Liquid Glass Effects for Light Mode / 亮色模式液态玻璃效果 */
   --glass-bg: rgba(255, 255, 255, 0.6);
   --glass-border: rgba(15, 23, 42, 0.1);
 
-  /* Liquid Glass Design System — Light */
+  /* Liquid Glass Design System — Light / 液态玻璃设计系统 — 亮色 */
   --glass-tint: rgba(248, 250, 252, 0.6);
   --glass-tint-strong: rgba(255, 255, 255, 0.85);
   --glass-tint-soft: rgba(255, 255, 255, 0.4);
@@ -36,15 +42,15 @@
   --glass-shadow-hover: 0 12px 32px -8px rgba(15, 23, 42, 0.25);
   --glass-ambient-a: rgba(56, 189, 248, 0.18);
   --glass-ambient-b: rgba(74, 222, 128, 0.14);
-  /* Theme-agnostic glass scalars */
+  /* Theme-agnostic glass scalars / 主题无关的玻璃标量 */
   --glass-blur: 20px;
   --glass-blur-strong: 28px;
   --glass-blur-soft: 12px;
   --glass-saturate: 180%;
 
-  /* Brand Gradients (Light Green to Light Blue) */
-  --color-brand-start: #38bdf8; /* Light Blue */
-  --color-brand-end: #4ade80; /* Light Green */
+  /* Brand Gradients (Light Green to Light Blue) / 品牌渐变（浅绿到浅蓝） */
+  --color-brand-start: #38bdf8; /* Light Blue / 浅蓝 */
+  --color-brand-end: #4ade80; /* Light Green / 浅绿 */
 
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);
@@ -70,11 +76,11 @@
   --background: #060913;
   --foreground: #f8fafc;
 
-  /* Liquid Glass Effects for Dark Mode */
+  /* Liquid Glass Effects for Dark Mode / 深色模式液态玻璃效果 */
   --glass-bg: rgba(15, 23, 42, 0.4);
   --glass-border: rgba(255, 255, 255, 0.1);
 
-  /* Liquid Glass Design System — Dark */
+  /* Liquid Glass Design System — Dark / 液态玻璃设计系统 — 深色 */
   --glass-tint: rgba(15, 23, 42, 0.42);
   --glass-tint-strong: rgba(15, 23, 42, 0.55);
   --glass-tint-soft: rgba(15, 23, 42, 0.28);
@@ -105,7 +111,8 @@
 }
 
 /* ── Liquid Glass Design System ───────────────────────── */
-/* 通用 base：tint + blur + saturate + hairline border。子类各自微调强度。 */
+/* Common base: tint + blur + saturate + hairline border. Sub-classes fine-tune intensity.
+   通用 base：tint + blur + saturate + hairline border。子类各自微调强度。 */
 
 .glass-panel,
 .glass-card,
@@ -117,14 +124,16 @@
   background-color: var(--glass-tint);
 }
 
-/* 大面板：导航 / 侧栏 / subnav。内顶 1px 高光 + 软外阴影。 */
+/* Large panels: nav / sidebar / subnav. Inner top 1px highlight + soft outer shadow.
+   大面板：导航 / 侧栏 / subnav。内顶 1px 高光 + 软外阴影。 */
 .glass-panel {
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
 }
 
-/* 弹窗 / 抽屉 / 搜索框：更强 blur + 更浓 tint，圆角更大。 */
+/* Modals / drawers / search: stronger blur + denser tint, larger border-radius.
+   弹窗 / 抽屉 / 搜索框：更强 blur + 更浓 tint，圆角更大。 */
 .glass-card {
   background-color: var(--glass-tint-strong);
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
@@ -135,20 +144,23 @@
     var(--glass-shadow);
 }
 
-/* 小元件：icon chip / 按钮。轻 blur + 软 tint，不带外阴影。 */
+/* Small elements: icon chip / buttons. Light blur + soft tint, no outer shadow.
+   小元件：icon chip / 按钮。轻 blur + 软 tint，不带外阴影。 */
 .glass-chip {
   background-color: var(--glass-tint-soft);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
 }
 
-/* 描边 + 内高光修饰，不带 blur，用于已有背景的元素。 */
+/* Border + inner highlight decoration, no blur — for elements that already have a background.
+   描边 + 内高光修饰，不带 blur，用于已有背景的元素。 */
 .glass-edge {
   border: 1px solid var(--glass-border-hairline);
   box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
-/* 首页 CTA：保留独立 blur 与阴影强度。 */
+/* Homepage CTA: keeps independent blur and shadow intensity.
+   首页 CTA：保留独立 blur 与阴影强度。 */
 .glass-cta {
   background-color: var(--glass-tint-strong);
   -webkit-backdrop-filter: blur(16px) saturate(var(--glass-saturate));
@@ -164,7 +176,8 @@ body {
   isolation: isolate;
 }
 
-/* 全局环境光：给玻璃表面提供折射色源。 */
+/* Global ambient light: provides refraction color sources for glass surfaces.
+   全局环境光：给玻璃表面提供折射色源。 */
 body::before {
   content: "";
   position: fixed;
@@ -177,7 +190,7 @@ body::before {
   filter: blur(80px) saturate(140%);
 }
 
-/* ── Code Blocks & Inline Code ─────────────────────────── */
+/* ── Code Blocks & Inline Code / 代码块与行内代码 ─────────────────────────── */
 
 pre,
 code,
@@ -185,7 +198,7 @@ pre code {
   font-family: var(--font-mono);
 }
 
-/* ── Blockquote & Alerts ─────────────────────────────── */
+/* ── Blockquote & Alerts / 引用块与提示框 ─────────────────────────────── */
 
 blockquote {
   border-left: 3px solid var(--color-fd-border);
@@ -274,15 +287,16 @@ blockquote {
   background: rgba(239, 68, 68, 0.12);
 }
 
-/* ── TOC Popover Header Enhancement ─────────────────── */
+/* ── TOC Popover Header Enhancement / TOC 弹出层头部增强 ─────────────────── */
 [data-toc-popover-content] > div > div > header.border-b.backdrop-blur-sm.bg-fd-background\/80 {
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   background-color: color-mix(in oklab, var(--color-fd-background) 90%, transparent);
 }
 
-/* ── TOC Right Sidebar Constraints ─────────────────── */
-/* xl 以上：右侧 TOC 严格在自身 grid-area 内，避免越界或撑开父布局 */
+/* ── TOC Right Sidebar Constraints / TOC 右侧栏约束 ─────────────────── */
+/* xl+: right TOC stays strictly within its own grid-area to avoid overflow or stretching the parent layout.
+   xl 以上：右侧 TOC 严格在自身 grid-area 内，避免越界或撑开父布局 */
 #nd-toc {
   box-sizing: border-box;
   min-width: 0;
@@ -294,18 +308,22 @@ blockquote {
   overflow-wrap: anywhere;
   hyphens: auto;
 }
-/* 不足 xl 时强制隐藏右侧 TOC（与官方默认 max-xl:hidden 一致，作为兜底防御） */
+/* Below xl: force-hide right TOC (consistent with official max-xl:hidden, as a fallback defense).
+   不足 xl 时强制隐藏右侧 TOC（与官方默认 max-xl:hidden 一致，作为兜底防御） */
 @media (max-width: 1279.98px) {
   #nd-toc {
     display: none !important;
   }
 }
 
-/* ── Fumadocs Surface Glassification ─────────────────── */
-/* :where() 包裹保持最低优先级，不与上方 #nd-toc 约束块冲突，
+/* ── Fumadocs Surface Glassification / Fumadocs 表面玻璃化 ─────────────────── */
+/* :where() wrapper keeps lowest specificity, avoiding conflicts with the #nd-toc constraint block above
+   and not blocking fumadocs default hover / collapse utility overrides.
+   :where() 包裹保持最低优先级，不与上方 #nd-toc 约束块冲突，
    也不会阻止 fumadocs 默认的 hover / 折叠态 utility 覆盖。 */
 
-/* 顶部导航：内层 div 是 fumadocs 给的 backdrop-blur 容器，直接强化。 */
+/* Top nav: inner div is the fumadocs backdrop-blur container, strengthen it directly.
+   顶部导航：内层 div 是 fumadocs 给的 backdrop-blur 容器，直接强化。 */
 :where(#nd-nav) > div {
   background-color: var(--glass-tint) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -315,7 +333,7 @@ blockquote {
   transform: translateZ(0);
 }
 
-/* 移动端 docs 二级头部 */
+/* Mobile docs secondary header / 移动端 docs 二级头部 */
 :where(#nd-subnav) {
   background-color: var(--glass-tint);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -324,7 +342,8 @@ blockquote {
   transform: translateZ(0);
 }
 
-/* 文档左侧栏：展开态完整玻璃化；折叠态外框只走 glass-edge 修饰，避免双重 blur。 */
+/* Docs left sidebar: expanded state gets full glassification; collapsed state uses glass-edge only to avoid double blur.
+   文档左侧栏：展开态完整玻璃化；折叠态外框只走 glass-edge 修饰，避免双重 blur。 */
 :where(#nd-sidebar):not([data-collapsed="true"]) {
   background-color: var(--glass-tint);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -338,8 +357,9 @@ blockquote {
   box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
-/* ── Sidebar Buttons Glassification ────────────────────── */
-/* 统一覆盖侧边栏内的功能级按钮与面板（关于、搜索、主题、语言等）为液态玻璃 */
+/* ── Sidebar Buttons Glassification / 侧栏按钮玻璃化 ────────────────────── */
+/* Unified glass styling for sidebar functional buttons and panels (about, search, theme, language, etc.)
+   统一覆盖侧边栏内的功能级按钮与面板（关于、搜索、主题、语言等）为液态玻璃 */
 #nd-sidebar .bg-fd-secondary\/50 {
   background-color: var(--glass-tint) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
@@ -349,7 +369,8 @@ blockquote {
   transition: all 0.2s ease !important;
 }
 
-/* 悬停状态：背景变得进一步透明（更符合玻璃光影反馈），并保持玻璃高亮阴影不丢失 */
+/* Hover state: background becomes more transparent (better glass light feedback), keeping glass highlight shadow intact.
+   悬停状态：背景变得进一步透明（更符合玻璃光影反馈），并保持玻璃高亮阴影不丢失 */
 #nd-sidebar .bg-fd-secondary\/50:hover,
 #nd-sidebar .bg-fd-secondary\/50:has(button:hover) {
   background-color: var(--glass-tint-soft) !important;
@@ -360,7 +381,8 @@ blockquote {
     var(--glass-shadow-hover) !important;
 }
 
-/* 深色模式专用：增强悬停发光，使其在深色背景上更明显 */
+/* Dark mode only: enhance hover glow for better visibility on dark backgrounds.
+   深色模式专用：增强悬停发光，使其在深色背景上更明显 */
 [data-theme="dark"] #nd-sidebar .bg-fd-secondary\/50:hover,
 .dark #nd-sidebar .bg-fd-secondary\/50:hover,
 [data-theme="dark"] #nd-sidebar .bg-fd-secondary\/50:has(button:hover),
@@ -372,7 +394,8 @@ blockquote {
   transform: translateZ(0);
 }
 
-/* 补充“语言切换”等旧组件的物理尺寸规整，并强制使用大圆角 */
+/* Fix physical sizing for legacy components like language switcher, force large border-radius.
+   补充“语言切换”等旧组件的物理尺寸规整，并强制使用大圆角 */
 :where(#nd-sidebar) button:has(svg.lucide-languages) {
   border-radius: var(--radius-lg) !important;
   padding: calc(var(--spacing) * 2) !important;
@@ -400,7 +423,10 @@ blockquote {
     var(--glass-shadow);
 }
 
-/* 搜索弹窗 / Radix Dialog 内容：通过 role=dialog 上的 content 容器接管（排除 a/button/p/span 等文本内联签，避免误杀标题与列表） */
+/* Search dialog / Radix Dialog content: take over via the content container on role=dialog
+   (exclude inline text tags like a/button/p/span to avoid killing headings and lists).
+   搜索弹窗 / Radix Dialog 内容：通过 role=dialog 上的 content 容器接管
+   （排除 a/button/p/span 等文本内联签，避免误杀标题与列表） */
 :where([role="dialog"][data-state="open"])
   > :first-child:not(a, button, p, span, h1, h2, h3, h4, h5, h6) {
   background-color: var(--glass-tint-strong);
@@ -413,8 +439,9 @@ blockquote {
     var(--glass-shadow);
 }
 
-/* ── Liquid Glass Compatibility & A11y ───────────────── */
-/* 用户偏好减少透明度：所有玻璃表面退化为不透明背景，去除 blur 与环境光。 */
+/* ── Liquid Glass Compatibility & A11y / 液态玻璃兼容性与无障碍 ───────────────── */
+/* prefers-reduced-transparency: all glass surfaces degrade to opaque backgrounds, removing blur and ambient light.
+   用户偏好减少透明度：所有玻璃表面退化为不透明背景，去除 blur 与环境光。 */
 @media (prefers-reduced-transparency: reduce) {
   .glass-panel,
   .glass-card,
@@ -437,7 +464,8 @@ blockquote {
   }
 }
 
-/* 浏览器不支持 backdrop-filter：同样退化为不透明背景。 */
+/* Browser does not support backdrop-filter: also degrade to opaque backgrounds.
+   浏览器不支持 backdrop-filter：同样退化为不透明背景。 */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass-panel,
   .glass-card,
@@ -457,7 +485,7 @@ blockquote {
   }
 }
 
-/* ────────────── Inline Code Enhancement ────────────── */
+/* ────────────── Inline Code Enhancement / 行内代码增强 ────────────── */
 
 :root,
 [data-theme="light"],

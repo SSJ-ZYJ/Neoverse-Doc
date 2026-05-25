@@ -1,3 +1,9 @@
+// Dynamic doc page: renders MDX content from the fumadocs source tree with
+// Mermaid support and a Giscus discussion section at the bottom.
+// Metadata (title / description) is generated from page frontmatter.
+// 动态文档页：从 fumadocs source 树渲染 MDX 内容，支持 Mermaid 图表，
+// 底部附带 Giscus 讨论区。元信息（标题/描述）从页面 frontmatter 生成。
+
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import { MessageSquareText } from 'lucide-react';

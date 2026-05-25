@@ -17,7 +17,7 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
 
   return (
     <main className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden">
-      {/* 首页动态渐变背景，仅作用于当前页面。 */}
+      {/* Animated gradient background for the homepage only. / 首页动态渐变背景，仅作用于当前页面。 */}
       <div aria-hidden="true" className="home-gradient-bg pointer-events-none absolute inset-0">
         <div className="home-gradient-bg__orb home-gradient-bg__orb--one" />
         <div className="home-gradient-bg__orb home-gradient-bg__orb--two" />

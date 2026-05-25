@@ -1,3 +1,11 @@
+// The docs area does NOT wrap an extra motion.div here.
+// Reason: fumadocs DocsLayout uses CSS Grid; DocsPage renders three sibling
+// nodes ([grid-area:toc-popover], [grid-area:main], [grid-area:toc]) that
+// must be direct children of #nd-docs-layout for grid-area to take effect.
+// Wrapping them in motion.div breaks the grid relationship, causing TOC to
+// collapse below the main content. If page transition animation is needed,
+// add a client-side animation wrapper around DocsBody inside page.tsx
+// instead of wrapping the entire page at the template level.
 // 文档区域不再额外包裹 motion.div。
 // 原因：fumadocs DocsLayout 是 CSS Grid，DocsPage 渲染出的
 //   - [grid-area:toc-popover]

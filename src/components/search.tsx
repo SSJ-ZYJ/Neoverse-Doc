@@ -1,7 +1,6 @@
-'use client';
-
 // Static search dialog for SSG. Uses Orama static client with i18n locale support.
 // 静态搜索对话框（用于 SSG）。使用 Orama 静态客户端，支持 i18n 语言切换。
+'use client';
 
 import { create } from '@orama/orama';
 import { useDocsSearch } from 'fumadocs-core/search/client';
