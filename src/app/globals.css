@@ -110,7 +110,7 @@
 .glass-panel,
 .glass-card,
 .glass-chip,
-.liquid-glass {
+.glass-cta {
   border: 1px solid var(--glass-border-hairline);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -148,8 +148,8 @@
   box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
-/* 旧别名：保持首页 CTA 视觉对齐。等价 glass-card 但 blur 略弱。 */
-.liquid-glass {
+/* 首页 CTA：保留独立 blur 与阴影强度。 */
+.glass-cta {
   background-color: var(--glass-tint-strong);
   -webkit-backdrop-filter: blur(16px) saturate(var(--glass-saturate));
   backdrop-filter: blur(16px) saturate(var(--glass-saturate));
@@ -419,7 +419,7 @@ blockquote {
   .glass-panel,
   .glass-card,
   .glass-chip,
-  .liquid-glass,
+  .glass-cta,
   :where(#nd-nav) > div,
   :where(#nd-subnav),
   :where(#nd-sidebar),
@@ -442,7 +442,7 @@ blockquote {
   .glass-panel,
   .glass-card,
   .glass-chip,
-  .liquid-glass,
+  .glass-cta,
   :where(#nd-nav) > div,
   :where(#nd-subnav),
   :where(#nd-sidebar),
