@@ -9,6 +9,10 @@ import { i18n, type Locale } from '@/lib/i18n';
 import { baseOptions } from '@/lib/layout.shared';
 import { source } from '@/lib/source';
 
+export function generateStaticParams() {
+  return i18n.languages.map((lang) => ({ lang }));
+}
+
 export default async function Layout({ params, children }: LayoutProps<'/[lang]/docs'>) {
   const { lang } = await params;
   const locale = (lang as Locale) ?? i18n.defaultLanguage;
