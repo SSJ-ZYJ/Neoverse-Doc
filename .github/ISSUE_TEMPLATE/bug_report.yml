@@ -1,0 +1,43 @@
+name: Bug Report | Bug 反馈
+description: Create a bug report | 创建一个 bug 反馈
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening a new issue:
+
+        - do a search of existing issues.
+
+        ---
+
+        在提交新的 issue 之前：
+
+        - 请先搜索现有的 issue。
+
+  - type: textarea
+    attributes:
+      label: To Reproduce | 重现步骤
+      description: A step-by-step description of how to reproduce the issue. | 请提供重现该问题的详细步骤。
+      placeholder: |
+        1. Page URL: https://example.com | 页面链接： https://example.com
+        2. Click the "awa" button | 点击 "awa" 按钮
+        3. Observe the "qwq" error | 观察到 "qwq" 错误或发生了 "pwp" Bug
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Current vs. Expected behavior | 当前行为 vs. 预期行为
+      description: A clear and concise description of what the bug is, and what you expected to happen. | 请清晰简洁地描述这个 bug 是什么，以及你预期的结果是什么。
+      placeholder: 'Following the steps from the previous section, I expected A to happen, but I observed B instead | 按照上面步骤操作后，我预期会发生 A，但实际上发生了 B'
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional context | 补充信息
+      description: |
+        Any extra information that might help us investigate. | 任何可能帮助我们调查的额外信息。
+      placeholder: |
+        I suspect this issue might be caused by X, because Y has a similar issue, or doing Z prevents the issue from happening. | 我推测这个问题可能是由于 X 引起的，因为 Y 也有类似的问题，或进行 Z 操作该问题就不会发生。
+    validations:
+      required: false
