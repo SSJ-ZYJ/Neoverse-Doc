@@ -24,15 +24,16 @@
 
   /* Liquid Glass Effects for Light Mode */
   --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(15, 23, 42, 0.1);
 
   /* Liquid Glass Design System — Light */
-  --glass-tint: rgba(255, 255, 255, 0.55);
-  --glass-tint-strong: rgba(255, 255, 255, 0.72);
+  --glass-tint: rgba(248, 250, 252, 0.6);
+  --glass-tint-strong: rgba(255, 255, 255, 0.85);
   --glass-tint-soft: rgba(255, 255, 255, 0.4);
-  --glass-border-hairline: rgba(255, 255, 255, 0.55);
-  --glass-highlight: rgba(255, 255, 255, 0.8);
+  --glass-border-hairline: rgba(15, 23, 42, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 1);
   --glass-shadow: 0 8px 32px -8px rgba(15, 23, 42, 0.18);
+  --glass-shadow-hover: 0 12px 32px -8px rgba(15, 23, 42, 0.25);
   --glass-ambient-a: rgba(56, 189, 248, 0.18);
   --glass-ambient-b: rgba(74, 222, 128, 0.14);
   /* Theme-agnostic glass scalars */
@@ -78,8 +79,9 @@
   --glass-tint-strong: rgba(15, 23, 42, 0.55);
   --glass-tint-soft: rgba(15, 23, 42, 0.28);
   --glass-border-hairline: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.55);
+  --glass-highlight: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 12px 40px -8px rgba(255, 255, 255, 0.3);
+  --glass-shadow-hover: 0 12px 44px -10px rgba(255, 255, 255, 0.22);
   --glass-ambient-a: rgba(56, 189, 248, 0.16);
   --glass-ambient-b: rgba(168, 85, 247, 0.12);
 
@@ -338,6 +340,53 @@ blockquote {
   box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
+/* ── Sidebar Buttons Glassification ────────────────────── */
+/* 统一覆盖侧边栏内的功能级按钮与面板（关于、搜索、主题、语言等）为液态玻璃 */
+#nd-sidebar .bg-fd-secondary\/50 {
+  background-color: var(--glass-tint) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  border-color: var(--glass-border-hairline) !important;
+  box-shadow: inset 0 1px 0 var(--glass-highlight) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* 悬停状态：背景变得进一步透明（更符合玻璃光影反馈），并保持玻璃高亮阴影不丢失 */
+#nd-sidebar .bg-fd-secondary\/50:hover,
+#nd-sidebar .bg-fd-secondary\/50:has(button:hover) {
+  background-color: var(--glass-tint-soft) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow-hover) !important;
+}
+
+/* 深色模式专用：增强悬停发光，使其在深色背景上更明显 */
+[data-theme="dark"] #nd-sidebar .bg-fd-secondary\/50:hover,
+.dark #nd-sidebar .bg-fd-secondary\/50:hover,
+[data-theme="dark"] #nd-sidebar .bg-fd-secondary\/50:has(button:hover),
+.dark #nd-sidebar .bg-fd-secondary\/50:has(button:hover) {
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow-hover) !important;
+  border-color: var(--glass-border-hairline) !important;
+  transform: translateZ(0);
+}
+
+/* 补充“语言切换”等旧组件的物理尺寸规整，并强制使用大圆角 */
+:where(#nd-sidebar) button:has(svg.lucide-languages) {
+  border-radius: var(--radius-lg) !important;
+  padding: calc(var(--spacing) * 2) !important;
+  gap: calc(var(--spacing) * 2) !important;
+  color: var(--color-fd-secondary-foreground) !important;
+  display: flex !important;
+}
+
+:where(#nd-sidebar) div:has(> button[data-theme-toggle]) {
+  border-radius: var(--radius-lg) !important;
+}
+
 /* 右侧 TOC：仅追加极淡背景，不覆盖上方约束块的 box-sizing/max-width/overflow。 */
 :where(#nd-toc) {
   background-color: transparent;
@@ -353,14 +402,16 @@ blockquote {
     var(--glass-shadow);
 }
 
-/* 搜索弹窗 / Radix Dialog 内容：通过 role=dialog 上的 content 容器接管 */
-:where([role="dialog"][data-state="open"]) > :first-child {
+/* 搜索弹窗 / Radix Dialog 内容：通过 role=dialog 上的 content 容器接管（排除 a/button/p/span 等文本内联签，避免误杀标题与列表） */
+:where([role="dialog"][data-state="open"])
+  > :first-child:not(a, button, p, span, h1, h2, h3, h4, h5, h6) {
   background-color: var(--glass-tint-strong);
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
-  border-color: var(--glass-border-hairline);
+  border: 1px var(--glass-border-hairline);
+  /* border-radius: inherit; */
   box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
+    inset 0 0 0 1px var(--glass-highlight),
     var(--glass-shadow);
 }
 
@@ -374,8 +425,10 @@ blockquote {
   :where(#nd-nav) > div,
   :where(#nd-subnav),
   :where(#nd-sidebar),
+  #nd-sidebar .bg-fd-secondary\/50,
   :where([data-toc-popover-content]) > div,
-  :where([role="dialog"][data-state="open"]) > :first-child {
+  :where([role="dialog"][data-state="open"])
+    > :first-child:not(a, button, p, span, h1, h2, h3, h4, h5, h6) {
     background-color: var(--background) !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
@@ -395,8 +448,10 @@ blockquote {
   :where(#nd-nav) > div,
   :where(#nd-subnav),
   :where(#nd-sidebar),
+  #nd-sidebar .bg-fd-secondary\/50,
   :where([data-toc-popover-content]) > div,
-  :where([role="dialog"][data-state="open"]) > :first-child {
+  :where([role="dialog"][data-state="open"])
+    > :first-child:not(a, button, p, span, h1, h2, h3, h4, h5, h6) {
     background-color: var(--background);
   }
   body::before {
@@ -404,7 +459,7 @@ blockquote {
   }
 }
 
-/* ── Inline Code Enhancement ─────────────────────────── */
+/* ────────────── Inline Code Enhancement ────────────── */
 
 :root,
 [data-theme="light"],
