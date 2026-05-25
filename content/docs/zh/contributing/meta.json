@@ -2,12 +2,6 @@
   "title": "参与贡献",
   "description": "与我们一起共建 Neoverse-Doc！",
   "icon": "",
-  "pages": [
-    "---贡献指南---",
-    "index", 
-    "guide", 
-    "---其他---",
-    "syntax-example"
-  ],
+  "pages": ["---贡献指南---", "index", "guide", "---其他---", "syntax-example"],
   "root": true
 }

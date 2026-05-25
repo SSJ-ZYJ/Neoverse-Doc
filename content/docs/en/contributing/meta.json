@@ -1,0 +1,7 @@
+{
+  "title": "Contributing",
+  "description": "Join us in building Neoverse-Doc!",
+  "icon": "",
+  "pages": ["---Contribution Guide---", "index", "guide", "---Other---", "syntax-example"],
+  "root": true
+}

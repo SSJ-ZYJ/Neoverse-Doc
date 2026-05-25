@@ -1,0 +1,6 @@
+{
+  "title": "About",
+  "description": "Learn about the structure, goals, and vision of the Neoverse-Doc project.",
+  "pages": ["---About---", "index", "---Deep Dive---", "i18n", "theming", "search"],
+  "root": true
+}
