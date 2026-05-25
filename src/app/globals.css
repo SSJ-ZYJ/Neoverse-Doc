@@ -468,8 +468,8 @@ blockquote {
 
 [data-theme="dark"],
 .dark {
-  --inline-code-bg: rgba(56, 189, 248, 0.15);
-  --inline-code-border: rgba(56, 189, 248, 0.25);
+  --inline-code-bg: rgba(255, 255, 255, 0.15);
+  --inline-code-border: rgba(255, 255, 255, 0.30);
 }
 
 :not(pre) > code {
