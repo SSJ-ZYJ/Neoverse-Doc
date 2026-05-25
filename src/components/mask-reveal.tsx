@@ -11,24 +11,32 @@ import { animate, motion, useMotionTemplate, useMotionValue } from 'framer-motio
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export default function MaskReveal() {
-  const [revealData, setRevealData] = useState<{ x: number; y: number; domHTML: string } | null>(
-    () => {
-      // Initialize synchronously on client navigation to avoid flicker
-      // 客户端跳转时同步初始化，避免闪烁
-      if (typeof window !== 'undefined') {
-        const raw = sessionStorage.getItem('nd-docs-transition');
-        if (raw) {
-          try {
-            const data = JSON.parse(raw);
-            if (data.isTransitioning && Date.now() - data.ts < 3000) {
-              return { x: data.x, y: data.y, domHTML: data.domHTML };
-            }
-          } catch {}
-        }
+  const [revealData, setRevealData] = useState<{
+    x: number;
+    y: number;
+    domHTML: string;
+    scrollY: number;
+  } | null>(() => {
+    // Initialize synchronously on client navigation to avoid flicker
+    // 客户端跳转时同步初始化，避免闪烁
+    if (typeof window !== 'undefined') {
+      const raw = sessionStorage.getItem('nd-docs-transition');
+      if (raw) {
+        try {
+          const data = JSON.parse(raw);
+          if (data.isTransitioning && Date.now() - data.ts < 3000) {
+            return {
+              x: data.x,
+              y: data.y,
+              domHTML: data.domHTML,
+              scrollY: data.scrollY ?? 0,
+            };
+          }
+        } catch {}
       }
-      return null;
-    },
-  );
+    }
+    return null;
+  });
 
   const radius = useMotionValue(0);
   const maskRef = useRef<HTMLDivElement>(null);
@@ -68,11 +76,29 @@ export default function MaskReveal() {
   // black 部分（外部）会让所在 div【不透明】，展示出该 div 的主版快照背景！
   const maskImage = useMotionTemplate`radial-gradient(circle at ${revealData?.x ?? 0}px ${revealData?.y ?? 0}px, transparent ${radius}px, black ${radius}px)`;
 
-  // Set innerHTML via ref to avoid using dangerouslySetInnerHTML
-  // 通过 ref 设置 innerHTML，避免使用 dangerouslySetInnerHTML
-  useEffect(() => {
+  // Set innerHTML via ref to avoid using dangerouslySetInnerHTML.
+  // Must run in useLayoutEffect (synchronous before paint) — if deferred to
+  // useEffect, the first frame would render an empty mask, briefly exposing
+  // the underlying docs page at scrollTop=0 before the snapshot covers it,
+  // which looks like "the page jumps to the top before the animation plays".
+  // When the user had scrolled the homepage at click time, wrap the snapshot
+  // in a translateY(-scrollY) shell so it renders at the exact viewport offset
+  // they were looking at — otherwise the snapshot lays out at scrollY=0 inside
+  // the fixed mask and the content below the sticky navbar visibly snaps back
+  // toward the top of the page the instant the mask appears.
+  // 通过 ref 设置 innerHTML，避免使用 dangerouslySetInnerHTML。
+  // 必须放在 useLayoutEffect（绘制前同步执行）— 若放在 useEffect，首帧会渲染出
+  // 空的遮罩，让下方已滚动到顶部的文档页面短暂裸露，再被快照覆盖、动画启动，
+  // 视觉上就是"页面立即回到顶部再触发动画"。
+  // 若点击时用户已经滚动了首页，用 translateY(-scrollY) 外壳包裹快照，使其按
+  // 用户当时实际看到的视口偏移渲染 — 否则快照会以 scrollY=0 排版到固定遮罩里，
+  // sticky 导航栏下方的内容就会在遮罩出现的瞬间明显地"向页顶弹回"。
+  useLayoutEffect(() => {
     if (maskRef.current && revealData) {
-      maskRef.current.innerHTML = revealData.domHTML;
+      maskRef.current.innerHTML =
+        revealData.scrollY > 0
+          ? `<div style="transform:translateY(${-revealData.scrollY}px);will-change:transform;">${revealData.domHTML}</div>`
+          : revealData.domHTML;
     }
   }, [revealData]);
 
