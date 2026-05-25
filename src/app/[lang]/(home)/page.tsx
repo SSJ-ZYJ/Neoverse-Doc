@@ -43,25 +43,25 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
       <style>{`
         .home-gradient-bg {
           background:
-            radial-gradient(circle at 18% 18%, rgba(56, 189, 248, 0.2), transparent 32%),
-            radial-gradient(circle at 82% 22%, rgba(74, 222, 128, 0.18), transparent 30%),
-            radial-gradient(circle at 50% 82%, rgba(14, 165, 233, 0.12), transparent 36%),
+            radial-gradient(circle at 18% 18%, rgba(56, 189, 248, 0.35), transparent 38%),
+            radial-gradient(circle at 82% 22%, rgba(74, 222, 128, 0.32), transparent 36%),
+            radial-gradient(circle at 50% 82%, rgba(14, 165, 233, 0.25), transparent 42%),
             linear-gradient(120deg, rgba(243, 249, 255, 0.98), rgba(236, 253, 245, 0.95));
           background-size: 180% 180%, 180% 180%, 160% 160%, 100% 100%;
-          animation: home-gradient-drift 10s ease-in-out infinite alternate;
+          animation: home-gradient-drift 8s cubic-bezier(0.25, 0.1, 0.25, 1) infinite alternate;
         }
 
         .home-gradient-bg__orb {
           position: absolute;
           border-radius: 9999px;
           filter: blur(120px);
-          opacity: 0.55;
+          opacity: 0.65;
           mix-blend-mode: screen;
           transform: translate3d(0, 0, 0);
           will-change: transform, opacity;
           animation:
-            home-orb-float 9s ease-in-out infinite,
-            home-orb-pulse 7s ease-in-out infinite;
+            home-orb-float 5s cubic-bezier(0.25, 0.1, 0.25, 1) infinite,
+            home-orb-pulse 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
         }
 
         .home-gradient-bg__orb--one {
@@ -69,7 +69,7 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
           left: -8%;
           width: 26rem;
           height: 26rem;
-          background: radial-gradient(circle, rgba(56, 189, 248, 0.55), transparent 70%);
+          background: radial-gradient(circle, rgba(56, 189, 248, 0.7), transparent 70%);
           animation-delay: 0s, -2s;
         }
 
@@ -78,7 +78,7 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
           right: -10%;
           width: 30rem;
           height: 30rem;
-          background: radial-gradient(circle, rgba(74, 222, 128, 0.48), transparent 68%);
+          background: radial-gradient(circle, rgba(74, 222, 128, 0.62), transparent 68%);
           animation-delay: -6s, -4s;
         }
 
@@ -87,34 +87,34 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
           left: 28%;
           width: 28rem;
           height: 28rem;
-          background: radial-gradient(circle, rgba(14, 165, 233, 0.42), transparent 72%);
+          background: radial-gradient(circle, rgba(14, 165, 233, 0.58), transparent 72%);
           animation-delay: -10s, -6s;
         }
 
         [data-theme='dark'] .home-gradient-bg,
         .dark .home-gradient-bg {
           background:
-            radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.24), transparent 34%),
-            radial-gradient(circle at 80% 20%, rgba(74, 222, 128, 0.2), transparent 30%),
-            radial-gradient(circle at 50% 85%, rgba(14, 165, 233, 0.16), transparent 38%),
+            radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.38), transparent 40%),
+            radial-gradient(circle at 80% 20%, rgba(74, 222, 128, 0.34), transparent 36%),
+            radial-gradient(circle at 50% 85%, rgba(14, 165, 233, 0.28), transparent 44%),
             linear-gradient(120deg, rgba(8, 15, 32, 0.94), rgba(5, 9, 19, 0.98));
           background-size: 180% 180%, 180% 180%, 160% 160%, 100% 100%;
-          animation: home-gradient-drift 10s ease-in-out infinite alternate;
+          animation: home-gradient-drift 8s cubic-bezier(0.25, 0.1, 0.25, 1) infinite alternate;
         }
 
         [data-theme='dark'] .home-gradient-bg__orb--one,
         .dark .home-gradient-bg__orb--one {
-          background: radial-gradient(circle, rgba(56, 189, 248, 0.85), transparent 70%);
+          background: radial-gradient(circle, rgba(56, 189, 248, 0.92), transparent 70%);
         }
 
         [data-theme='dark'] .home-gradient-bg__orb--two,
         .dark .home-gradient-bg__orb--two {
-          background: radial-gradient(circle, rgba(74, 222, 128, 0.75), transparent 68%);
+          background: radial-gradient(circle, rgba(74, 222, 128, 0.85), transparent 68%);
         }
 
         [data-theme='dark'] .home-gradient-bg__orb--three,
         .dark .home-gradient-bg__orb--three {
-          background: radial-gradient(circle, rgba(14, 165, 233, 0.7), transparent 72%);
+          background: radial-gradient(circle, rgba(14, 165, 233, 0.82), transparent 72%);
         }
 
         @keyframes home-gradient-drift {
@@ -150,7 +150,7 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
           }
 
           50% {
-            transform: translate3d(0, 1rem, 0) scale(1.06);
+            transform: translate3d(0, 0.75rem, 0) scale(1.04);
           }
         }
 
