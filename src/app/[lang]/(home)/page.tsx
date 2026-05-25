@@ -16,11 +16,15 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
   const dict = getPageDictionary(locale);
 
   return (
-    <main className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-sky-400 opacity-20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-green-400 opacity-20 blur-[120px] rounded-full pointer-events-none" />
+    <main className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden">
+      {/* 首页动态渐变背景，仅作用于当前页面。 */}
+      <div aria-hidden="true" className="home-gradient-bg pointer-events-none absolute inset-0">
+        <div className="home-gradient-bg__orb home-gradient-bg__orb--one" />
+        <div className="home-gradient-bg__orb home-gradient-bg__orb--two" />
+        <div className="home-gradient-bg__orb home-gradient-bg__orb--three" />
+      </div>
 
-      <div className="z-10 text-center space-y-6">
+      <div className="relative z-10 space-y-6 text-center">
         <h1 className="text-6xl md:text-8xl font-black font-orbitron tracking-widest">
           Neoverse-Doc
         </h1>
@@ -35,6 +39,130 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
       >
         {dict.enterDocs} →
       </Link>
+
+      <style>{`
+        .home-gradient-bg {
+          background:
+            radial-gradient(circle at 18% 18%, rgba(56, 189, 248, 0.2), transparent 32%),
+            radial-gradient(circle at 82% 22%, rgba(74, 222, 128, 0.18), transparent 30%),
+            radial-gradient(circle at 50% 82%, rgba(14, 165, 233, 0.12), transparent 36%),
+            linear-gradient(120deg, rgba(243, 249, 255, 0.98), rgba(236, 253, 245, 0.95));
+          background-size: 180% 180%, 180% 180%, 160% 160%, 100% 100%;
+          animation: home-gradient-drift 10s ease-in-out infinite alternate;
+        }
+
+        .home-gradient-bg__orb {
+          position: absolute;
+          border-radius: 9999px;
+          filter: blur(120px);
+          opacity: 0.55;
+          mix-blend-mode: screen;
+          transform: translate3d(0, 0, 0);
+          will-change: transform, opacity;
+          animation:
+            home-orb-float 9s ease-in-out infinite,
+            home-orb-pulse 7s ease-in-out infinite;
+        }
+
+        .home-gradient-bg__orb--one {
+          top: -12%;
+          left: -8%;
+          width: 26rem;
+          height: 26rem;
+          background: radial-gradient(circle, rgba(56, 189, 248, 0.55), transparent 70%);
+          animation-delay: 0s, -2s;
+        }
+
+        .home-gradient-bg__orb--two {
+          top: 8%;
+          right: -10%;
+          width: 30rem;
+          height: 30rem;
+          background: radial-gradient(circle, rgba(74, 222, 128, 0.48), transparent 68%);
+          animation-delay: -6s, -4s;
+        }
+
+        .home-gradient-bg__orb--three {
+          bottom: -16%;
+          left: 28%;
+          width: 28rem;
+          height: 28rem;
+          background: radial-gradient(circle, rgba(14, 165, 233, 0.42), transparent 72%);
+          animation-delay: -10s, -6s;
+        }
+
+        [data-theme='dark'] .home-gradient-bg,
+        .dark .home-gradient-bg {
+          background:
+            radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.24), transparent 34%),
+            radial-gradient(circle at 80% 20%, rgba(74, 222, 128, 0.2), transparent 30%),
+            radial-gradient(circle at 50% 85%, rgba(14, 165, 233, 0.16), transparent 38%),
+            linear-gradient(120deg, rgba(8, 15, 32, 0.94), rgba(5, 9, 19, 0.98));
+        }
+
+        [data-theme='dark'] .home-gradient-bg__orb--one,
+        .dark .home-gradient-bg__orb--one {
+          background: radial-gradient(circle, rgba(56, 189, 248, 0.85), transparent 70%);
+        }
+
+        [data-theme='dark'] .home-gradient-bg__orb--two,
+        .dark .home-gradient-bg__orb--two {
+          background: radial-gradient(circle, rgba(74, 222, 128, 0.75), transparent 68%);
+        }
+
+        [data-theme='dark'] .home-gradient-bg__orb--three,
+        .dark .home-gradient-bg__orb--three {
+          background: radial-gradient(circle, rgba(14, 165, 233, 0.7), transparent 72%);
+        }
+
+        @keyframes home-gradient-drift {
+          0% {
+            background-position:
+              0% 50%,
+              100% 0%,
+              50% 100%,
+              0% 0%;
+          }
+
+          50% {
+            background-position:
+              100% 40%,
+              0% 60%,
+              60% 0%,
+              0% 0%;
+          }
+
+          100% {
+            background-position:
+              0% 50%,
+              100% 0%,
+              50% 100%,
+              0% 0%;
+          }
+        }
+
+        @keyframes home-orb-float {
+          0%,
+          100% {
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+
+          50% {
+            transform: translate3d(0, 1rem, 0) scale(1.06);
+          }
+        }
+
+        @keyframes home-orb-pulse {
+          0%,
+          100% {
+            opacity: 0.48;
+          }
+
+          50% {
+            opacity: 0.65;
+          }
+        }
+      `}</style>
     </main>
   );
 }
