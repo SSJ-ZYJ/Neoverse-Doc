@@ -423,20 +423,23 @@ blockquote {
     var(--glass-shadow);
 }
 
-/* Search dialog / Radix Dialog content: take over via the content container on role=dialog
-   (exclude inline text tags like a/button/p/span to avoid killing headings and lists).
-   搜索弹窗 / Radix Dialog 内容：通过 role=dialog 上的 content 容器接管
-   （排除 a/button/p/span 等文本内联签，避免误杀标题与列表） */
-:where([role="dialog"][data-state="open"])
-  > :first-child:not(a, button, p, span, h1, h2, h3, h4, h5, h6) {
-  background-color: var(--glass-tint-strong);
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
-  border: 1px var(--glass-border-hairline);
-  /* border-radius: inherit; */
+/* Search dialog / Radix Dialog content: take over the dialog surface itself
+   (not just its first child) so fumadocs' default opaque bg-fd-popover is replaced
+   by our glass tint — letting the page content show through.
+   Matched via :has(input) since fumadocs always renders a hidden <h2> DialogTitle inside
+   SearchDialogContent, which made the previous :not(:has(> h2)) guard wrongly exclude it.
+   搜索弹窗 / Radix Dialog 内容：直接接管 dialog 元素自身（而非首个子元素），
+   覆盖 fumadocs 默认不透明的 bg-fd-popover，让下层页面内容透过来。
+   通过 :has(input) 识别搜索弹窗（fumadocs 会在 SearchDialogContent 内强制渲染隐藏的 h2 DialogTitle，
+   之前用 :not(:has(> h2)) 做排除会把整个搜索 dialog 也排除掉） */
+[role="dialog"][data-state="open"]:has(input) {
+  background-color: var(--glass-tint-soft) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
+  border: 1px solid var(--glass-border-hairline) !important;
   box-shadow:
     inset 0 0 0 1px var(--glass-highlight),
-    var(--glass-shadow);
+    var(--glass-shadow) !important;
 }
 
 /* ── Liquid Glass Compatibility & A11y / 液态玻璃兼容性与无障碍 ───────────────── */
@@ -452,8 +455,7 @@ blockquote {
   :where(#nd-sidebar),
   #nd-sidebar .bg-fd-secondary\/50,
   :where([data-toc-popover-content]) > div,
-  :where([role="dialog"][data-state="open"])
-    > :first-child:not(a, button, p, span, h1, h2, h3, h4, h5, h6) {
+  [role="dialog"][data-state="open"]:has(input) {
     background-color: var(--background) !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
@@ -476,8 +478,7 @@ blockquote {
   :where(#nd-sidebar),
   #nd-sidebar .bg-fd-secondary\/50,
   :where([data-toc-popover-content]) > div,
-  :where([role="dialog"][data-state="open"])
-    > :first-child:not(a, button, p, span, h1, h2, h3, h4, h5, h6) {
+  [role="dialog"][data-state="open"]:has(input) {
     background-color: var(--background);
   }
   body::before {
