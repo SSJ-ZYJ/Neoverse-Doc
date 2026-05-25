@@ -5,6 +5,7 @@
 // baseOptions(locale) 来源于 lib/layout.shared 中的共享布局配置。
 
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+import MaskReveal from '@/components/mask-reveal';
 import { i18n, type Locale } from '@/lib/i18n';
 import { baseOptions } from '@/lib/layout.shared';
 import { source } from '@/lib/source';
@@ -18,8 +19,11 @@ export default async function Layout({ params, children }: LayoutProps<'/[lang]/
   const locale = (lang as Locale) ?? i18n.defaultLanguage;
 
   return (
-    <DocsLayout tree={source.pageTree[locale]} {...baseOptions(locale)}>
-      {children}
-    </DocsLayout>
+    <>
+      <MaskReveal />
+      <DocsLayout tree={source.pageTree[locale]} {...baseOptions(locale)}>
+        {children}
+      </DocsLayout>
+    </>
   );
 }

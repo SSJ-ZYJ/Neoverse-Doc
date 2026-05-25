@@ -469,7 +469,7 @@ blockquote {
 [data-theme="dark"],
 .dark {
   --inline-code-bg: rgba(255, 255, 255, 0.15);
-  --inline-code-border: rgba(255, 255, 255, 0.30);
+  --inline-code-border: rgba(255, 255, 255, 0.3);
 }
 
 :not(pre) > code {

@@ -2,7 +2,7 @@
 // all copy resolved from the per-locale dictionary.
 // 多语言首页：渲染品牌入口与「进入文档」按钮，文案全部从对应语言字典中取。
 
-import Link from 'next/link';
+import EnterDocsButton from '@/components/enter-docs-button';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/lib/i18n';
 
@@ -33,12 +33,12 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
         </p>
       </div>
 
-      <Link
+      <EnterDocsButton
         href={`/${locale}/docs/ch0`}
         className="z-10 mt-16 glass-cta px-12 py-4 rounded-2xl text-lg font-semibold hover:scale-105 transition-transform duration-300"
       >
         {dict.enterDocs} →
-      </Link>
+      </EnterDocsButton>
 
       <style>{`
         .home-gradient-bg {
