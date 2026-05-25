@@ -98,6 +98,8 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
             radial-gradient(circle at 80% 20%, rgba(74, 222, 128, 0.2), transparent 30%),
             radial-gradient(circle at 50% 85%, rgba(14, 165, 233, 0.16), transparent 38%),
             linear-gradient(120deg, rgba(8, 15, 32, 0.94), rgba(5, 9, 19, 0.98));
+          background-size: 180% 180%, 180% 180%, 160% 160%, 100% 100%;
+          animation: home-gradient-drift 10s ease-in-out infinite alternate;
         }
 
         [data-theme='dark'] .home-gradient-bg__orb--one,
