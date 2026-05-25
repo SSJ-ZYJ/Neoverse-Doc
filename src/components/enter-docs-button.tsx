@@ -1,14 +1,16 @@
 // CTA button that triggers a mask-reveal page transition from the homepage
 // to the docs area. On click, it snapshots the current <main> DOM into
 // sessionStorage so MaskReveal can animate the clip-path reveal.
+// Uses Link's native navigation instead of router.push to avoid RSC fetch
+// being aborted by React state-driven re-renders.
 // 触发遮罩揭示页面过渡的 CTA 按钮，从首页跳转至文档区。
 // 点击时将当前 <main> DOM 快照存入 sessionStorage，供 MaskReveal 执行裁剪揭示动画。
+// 使用 Link 原生导航而非 router.push，避免 React 状态更新导致的重渲染中止 RSC 请求。
 
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { type MouseEvent, type ReactNode, useState, useTransition } from 'react';
+import { type MouseEvent, type ReactNode, useRef } from 'react';
 
 export default function EnterDocsButton({
   href,
@@ -19,14 +21,9 @@ export default function EnterDocsButton({
   className?: string;
   children: ReactNode;
 }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
-  const [isClicked, setIsClicked] = useState(false);
+  const spanRef = useRef<HTMLSpanElement>(null);
 
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    if (isClicked) return;
-
     let x = e.clientX;
     let y = e.clientY;
 
@@ -36,8 +33,14 @@ export default function EnterDocsButton({
       y = rect.top + rect.height / 2;
     }
 
-    // Provide immediate tactile feedback / 立刻给予定格反馈
-    setIsClicked(true);
+    // Provide immediate tactile feedback via direct DOM manipulation
+    // (avoids React state update that could abort the in-flight RSC fetch).
+    // 通过直接 DOM 操作提供即时触觉反馈
+    // （避免 React 状态更新触发重渲染，从而中止进行中的 RSC 请求）。
+    if (spanRef.current) {
+      spanRef.current.style.transform = 'scale(0.92)';
+      spanRef.current.style.opacity = '0.7';
+    }
 
     // Clone the current native DOM shell as a string and cache it;
     // the new page restores it via dangerouslySetInnerHTML on mount.
@@ -56,22 +59,17 @@ export default function EnterDocsButton({
       sessionStorage.setItem('nd-docs-transition', JSON.stringify(data));
     }
 
-    // Hand off routing to the background / 路由交给后台处理
-    startTransition(() => {
-      router.push(href);
-    });
+    // Do NOT call e.preventDefault() or router.push() here.
+    // Let the <Link> handle navigation natively — calling router.push
+    // alongside a React state update causes the ?_rsc= fetch to be aborted.
+    // 不要调用 e.preventDefault() 或 router.push()。
+    // 让 <Link> 原生处理导航 — 在 React 状态更新旁调用 router.push
+    // 会导致 ?_rsc= 请求被中止。
   };
 
   return (
     <Link href={href} className={className} onClick={handleClick}>
-      {/* Crisp tactile physical feedback / 给予极致干脆的触觉物理反馈 */}
-      <span
-        className="inline-block transition-all duration-300 ease-out"
-        style={{
-          transform: isClicked ? 'scale(0.92)' : 'scale(1)',
-          opacity: isClicked ? 0.7 : 1,
-        }}
-      >
+      <span ref={spanRef} className="inline-block transition-all duration-300 ease-out">
         {children}
       </span>
     </Link>
