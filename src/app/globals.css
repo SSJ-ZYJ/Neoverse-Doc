@@ -8,6 +8,43 @@
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 
+/* ── Smooth Theme Transition / 深浅色主题切换平滑过渡 ─────────────────── */
+/* Single-source-of-truth approach: override fumadocs default 150ms
+   transition duration globally, then ensure all themed surfaces use
+   the same duration. No @property needed — avoids double-transition
+   desync between variable interpolation and element-level transitions.
+   单一来源方案：全局覆盖 fumadocs 默认 150ms 过渡时长，
+   确保所有主题相关表面使用同一速率。
+   不使用 @property——避免变量插值与元素级过渡的双重动画导致不同步。 */
+
+:root {
+  --theme-transition-duration: 0.3s;
+  --default-transition-duration: var(--theme-transition-duration);
+}
+
+/* Global catch-all: elements that inherit themed colors but have no
+   Tailwind transition class still get smooth color changes.
+   全局兜底：继承主题颜色但无 Tailwind transition 类的元素也获得平滑颜色变化。 */
+body,
+body::before,
+.glass-panel,
+.glass-card,
+.glass-chip,
+.glass-cta,
+blockquote {
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-transition-duration: 0s;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -322,6 +359,18 @@ blockquote {
    :where() 包裹保持最低优先级，不与上方 #nd-toc 约束块冲突，
    也不会阻止 fumadocs 默认的 hover / 折叠态 utility 覆盖。 */
 
+/* Synchronize color transition duration across all glassified surfaces with
+   the root CSS variable transition so theme changes feel uniform.
+   将所有玻璃化表面的颜色过渡时长与根 CSS 变量过渡同步，使主题切换体感一致。 */
+:where(#nd-nav) > div,
+:where(#nd-subnav),
+:where(#nd-sidebar):not([data-collapsed="true"]),
+:where(#nd-sidebar)[data-collapsed="true"],
+:where([data-toc-popover-content]) > div,
+[role="dialog"][data-state="open"]:has(input) {
+  transition-duration: var(--theme-transition-duration);
+}
+
 /* Top nav: inner div is the fumadocs backdrop-blur container, strengthen it directly.
    顶部导航：内层 div 是 fumadocs 给的 backdrop-blur 容器，直接强化。 */
 :where(#nd-nav) > div {
@@ -366,7 +415,7 @@ blockquote {
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
   border-color: var(--glass-border-hairline) !important;
   box-shadow: inset 0 1px 0 var(--glass-highlight) !important;
-  transition: all 0.2s ease !important;
+  transition: all var(--theme-transition-duration) ease !important;
 }
 
 /* Hover state: background becomes more transparent (better glass light feedback), keeping glass highlight shadow intact.
@@ -509,6 +558,6 @@ blockquote {
   font-size: 0.875em;
   line-height: 1.5;
   transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease;
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease;
 }
