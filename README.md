@@ -94,19 +94,24 @@ bun run start
 Neoverse-Doc/
 ├── content/docs/                  # 文档内容（MDX），按语言子目录组织
 │   ├── zh/                        # 中文文档子树
-│   │   ├── getting-started/       # 入门指南
+│   │   ├── ch0/                   # 前言
 │   │   │   ├── index.md
-│   │   │   ├── syntax-example.md  # Markdown 语法示例
-│   │   │   └── meta.json          # 章节元信息（标题、页面顺序）
-│   │   └── advanced/              # 进阶机制
+│   │   │   └── meta.json
+│   │   ├── about/                 # 项目架构
+│   │   │   ├── index.md           # 关于项目
+│   │   │   ├── i18n.md           # 国际化方案
+│   │   │   ├── theming.md         # 液态玻璃主题
+│   │   │   ├── search.md          # 搜索与索引
+│   │   │   └── meta.json
+│   │   └── contributing/          # 参与贡献
 │   │       ├── index.md
-│   │       ├── i18n.md            # 国际化方案
-│   │       ├── theming.md         # 液态玻璃主题
-│   │       ├── search.md          # 搜索与索引
+│   │       ├── guide.md           # 贡献指南
+│   │       ├── syntax-example.md  # Markdown 语法示例
 │   │       └── meta.json
 │   └── en/                        # English document subtree（结构同 zh/）
-│       ├── getting-started/
-│       └── advanced/
+│       ├── ch0/
+│       ├── about/
+│       └── contributing/
 ├── src/
 │   ├── app/                       # Next.js App Router 页面
 │   │   ├── layout.tsx             # 根布局（<html>/<body> + 全局字体 + ThemeProvider）
@@ -153,8 +158,8 @@ Neoverse-Doc/
 
 ```text
 content/docs/
-  getting-started/
-    meta.json      →  { "title": "入门指南", "pages": ["index", "syntax-example"] }
+  contributing/
+    meta.json      →  { "title": "参与贡献", "pages": ["index", "guide", "syntax-example"] }
     index.md       →  自动生成类型与元信息
 ```
 
@@ -189,7 +194,7 @@ UI 文案分为两层管理：
 
 导航栏右上角的语言切换器由 fumadocs-ui 在检测到 loader 含 i18n 配置后自动渲染，无需额外接入。静态导出（`output: 'export'`）下不支持 middleware，根路径 `/` 由 [src/app/page.tsx](./src/app/page.tsx) 通过客户端跳转引导到 `/{defaultLocale}`。
 
-新增语言的完整步骤详见进阶文档「[i18n 国际化](./content/docs/zh/advanced/i18n.md)」。
+新增语言的完整步骤详见进阶文档「[i18n 国际化](./content/docs/zh/about/i18n.md)」。
 
 ### 渲染管线
 

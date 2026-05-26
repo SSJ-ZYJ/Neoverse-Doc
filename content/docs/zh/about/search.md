@@ -1,24 +1,99 @@
 ---
 title: 搜索与索引
-description: 接入 fumadocs-core 内建搜索，构建静态化检索能力
+description: 基于 fumadocs-core 静态搜索 API 的全文检索方案
 ---
 
-fumadocs-core 自带轻量级静态搜索方案，无需第三方服务。
+Neoverse-Doc 使用 fumadocs-core 内置的静态搜索方案，基于 Orama 搜索引擎，无需第三方服务即可实现全文检索。
 
-## 启用步骤
+## 技术方案
 
-1. 在 `src/app/api/search/route.ts` 中导出 `createFromSource(source)`（需关闭 `output: 'export'` 或改用静态索引文件）。
-2. 静态导出场景下，建议改为构建期生成 `search-index.json`，前端通过 `fetch + minisearch` 实现客户端检索。
-3. 在 fumadocs-ui 的 `RootProvider` 或 `DocsLayout` 中注入 `search` 槽以触发触发器。
+### 架构概览
 
-## 静态导出策略
-
-```ts
-// 伪代码：build 期生成索引
-import { generateSearchIndex } from 'fumadocs-core/search/server';
-
-const index = await generateSearchIndex(source.getPages());
-await fs.writeFile('public/search-index.json', JSON.stringify(index));
+```text
+构建期                              运行期
+   ↓                                  ↓
+fumadocs-mdx 编译文档              用户发起搜索
+   ↓                                  ↓
+.source/ 编译产物                  /api/search GET 请求
+   ↓                                  ↓
+source.loader 加载页面树            前端渲染搜索结果
 ```
 
-> 该章节会随项目落地的实际索引生成器同步补充实例。
+### 搜索 API
+
+```typescript
+// src/app/api/search/route.ts
+import { createFromSource } from 'fumadocs-core/search/server';
+import { source } from '@/lib/source';
+
+export const dynamic = 'force-static';
+
+const { staticGET } = createFromSource(source, {
+  localeMap: {
+    zh: 'english',
+    en: 'english',
+  },
+});
+
+export const GET = staticGET;
+```
+
+### 关键配置
+
+| 配置项 | 说明 |
+| :--- | :--- |
+| `dynamic = 'force-static'` | 强制静态路由，构建期生成搜索索引 |
+| `localeMap` | 语言到分词器的映射，当前 `zh` 回退到 `english` 分词 |
+| `staticGET` | 预渲染的 GET 处理器，输出静态 JSON 索引 |
+
+### 中文分词
+
+当前使用 `english` 分词器处理所有语言（包含中文）。中文搜索支持精确匹配和前缀匹配。如需更强的中文分词效果，可引入 `@orama/tokenizers/mandarin`。
+
+## 启用搜索 UI
+
+在文档布局中启用搜索触发器：
+
+```tsx
+// src/app/[lang]/docs/layout.tsx
+import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+
+export default function DocsLayoutPage({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <DocsLayout
+      {...options}
+      full={false}
+    >
+      {children}
+    </DocsLayout>
+  );
+}
+```
+
+搜索触发器由 fumadocs-ui 自动渲染，位于导航栏右侧，按 `Cmd/Ctrl + K` 可快速唤起。
+
+## 静态导出适配
+
+由于项目使用 `output: 'export'` 静态导出，搜索 API 路由需声明 `force-static`：
+
+```typescript
+export const dynamic = 'force-static';
+```
+
+这确保搜索索引在构建期生成到 `out/` 目录，可正常部署至任意静态托管平台。
+
+## 索引结构
+
+生成的搜索索引 JSON 包含：
+
+- `documents`: 文档数组（标题、描述、路径）
+- `schema`: 索引 schema 定义
+- `index`: 压缩后的倒排索引
+
+前端通过 `fetch('/api/search')` 获取索引数据，配合 Orama 客户端实现实时搜索。
+
+> 搜索 UI 组件与高级过滤功能持续完善中。

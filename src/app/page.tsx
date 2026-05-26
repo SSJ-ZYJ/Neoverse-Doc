@@ -5,8 +5,8 @@
 
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { i18n } from '@/lib/i18n';
 
 export default function RootRedirect() {
