@@ -3,8 +3,8 @@
 // 静态搜索 API，使用 Mandarin 分词器支持中文搜索。
 // 通过 @orama/tokenizers/mandarin 实现正确的 CJK 分词。
 
-import { createFromSource } from 'fumadocs-core/search/server';
 import { createTokenizer } from '@orama/tokenizers/mandarin';
+import { createFromSource } from 'fumadocs-core/search/server';
 import { source } from '@/lib/source';
 
 export const dynamic = 'force-static';

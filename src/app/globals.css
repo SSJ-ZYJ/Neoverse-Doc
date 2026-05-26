@@ -97,7 +97,7 @@
   --color-fd-card-foreground: var(--foreground);
   --color-fd-secondary: var(--background);
   --color-fd-secondary-foreground: var(--foreground);
-  --color-fd-muted: var(--background);
+  --color-fd-muted: rgba(255, 255, 255, 0.06);
   --color-fd-muted-foreground: rgba(255, 255, 255, 0.6);
   --color-fd-popover: var(--background);
   --color-fd-popover-foreground: var(--foreground);
