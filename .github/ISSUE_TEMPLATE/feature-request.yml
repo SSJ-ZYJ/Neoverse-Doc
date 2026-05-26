@@ -1,6 +1,6 @@
 name: Feature Request | 功能请求
 description: Suggest a new feature or improvement to the project | 向项目建议一个新功能或改进
-labels: ['enhancement']
+labels: ["enhancement"]
 body:
   - type: textarea
     attributes:
