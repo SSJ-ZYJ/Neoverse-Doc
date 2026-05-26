@@ -1,3 +1,15 @@
+/**
+ * Custom code block that always renders a top header bar with:
+ * - Language icon (from Shiki transformerIcon)
+ * - File path (only when set via remark-code-title)
+ * - Copy button
+ *
+ * 自定义代码块，始终渲染顶部横条，包含：
+ * - 编程语言图标（由 Shiki transformerIcon 设置）
+ * - 文件路径（仅当通过 remark-code-title 设置时显示）
+ * - 复制按钮
+ */
+
 'use client';
 
 import { Pre } from 'fumadocs-ui/components/codeblock';
@@ -11,17 +23,6 @@ interface CodeBlockPreProps extends ComponentProps<'pre'> {
   icon?: ReactNode | string;
 }
 
-/**
- * Custom code block that always renders a top header bar with:
- * - Language icon (from Shiki transformerIcon)
- * - File path (only when set via remark-code-title)
- * - Copy button
- *
- * 自定义代码块，始终渲染顶部横条，包含：
- * - 编程语言图标（由 Shiki transformerIcon 设置）
- * - 文件路径（仅当通过 remark-code-title 设置时显示）
- * - 复制按钮
- */
 export function CustomCodeBlock(props: CodeBlockPreProps) {
   const { children, title, icon, className, ...rest } = props;
   const areaRef = useRef<HTMLDivElement>(null);

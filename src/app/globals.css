@@ -464,12 +464,43 @@ blockquote {
 
 /* TOC popover 内容：整体卡片化 */
 :where([data-toc-popover-content]) > div {
-  background-color: var(--glass-tint-strong);
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  background-color: color-mix(in oklab, var(--glass-tint-strong) 30%, transparent) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
+}
+
+/* TOC popover trigger button: glass-chip style (small element, light blur + soft tint).
+   TOC 弹出层触发按钮：glass-chip 样式（小元件，轻 blur + 软 tint）。 */
+:where([data-toc-popover-trigger]) {
+  background-color: color-mix(in oklab, var(--glass-tint-soft) 25%, transparent) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  border: 1px solid var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* TOC popover header: replace fumadocs opaque bg-fd-background/80 with glass tint
+   so the trigger button's backdrop-filter has something transparent to see through.
+   TOC 弹出层头部：将 fumadocs 不透明的 bg-fd-background/80 替换为玻璃 tint，
+   使触发按钮的 backdrop-filter 能透视到透明背景。 */
+:where([data-toc-popover]) > header {
+  background-color: color-mix(in oklab, var(--glass-tint) 30%, transparent) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  border-color: var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* TOC popover inner scrollable content: glass-edge style (border + highlight, no blur
+   to avoid double blur on top of the already-glassified outer container).
+   TOC 弹出层内部滚动内容：glass-edge 样式（描边 + 高光，不带 blur，
+   避免与已玻璃化的外层容器产生双重 blur）。 */
+:where([data-toc-popover-content]) > div > div {
+  border: 1px solid var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
 /* Search dialog / Radix Dialog content: take over the dialog surface itself
@@ -504,6 +535,8 @@ blockquote {
   :where(#nd-sidebar),
   #nd-sidebar .bg-fd-secondary\/50,
   :where([data-toc-popover-content]) > div,
+  :where([data-toc-popover-trigger]),
+  :where([data-toc-popover]) > header,
   [role="dialog"][data-state="open"]:has(input) {
     background-color: var(--background) !important;
     -webkit-backdrop-filter: none !important;
@@ -527,6 +560,8 @@ blockquote {
   :where(#nd-sidebar),
   #nd-sidebar .bg-fd-secondary\/50,
   :where([data-toc-popover-content]) > div,
+  :where([data-toc-popover-trigger]),
+  :where([data-toc-popover]) > header,
   [role="dialog"][data-state="open"]:has(input) {
     background-color: var(--background);
   }
