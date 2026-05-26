@@ -1,0 +1,105 @@
+---
+title: 代码块示例
+description: 展示增强后的代码块功能
+index: false
+---
+
+# 代码块增强功能
+
+这个页面展示了我们项目中增强后的代码块功能，包括：
+
+- 从代码顶部注释自动识别文件路径
+- 在代码块标题栏显示文件路径
+- 右上角内置复制按钮，支持一键复制
+- 保留 fumadocs 原有的所有代码高亮和行号功能
+
+## 示例 1：JavaScript 代码块
+
+```javascript
+// src/utils/helper.js
+export function greet(name) {
+  return `Hello, ${name}!`;
+}
+
+export const add = (a, b) => a + b;
+```
+
+## 示例 2：TypeScript 代码块
+
+```typescript
+// src/components/Button.tsx
+import { ButtonHTMLAttributes, ReactNode } from 'react';
+
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children: ReactNode;
+  variant?: 'primary' | 'secondary';
+}
+
+export function Button({ children, variant = 'primary', ...props }: ButtonProps) {
+  return (
+    <button className={`btn btn-${variant}`} {...props}>
+      {children}
+    </button>
+  );
+}
+```
+
+## 示例 3：HTML 代码块
+
+```html
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>我的项目</title>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>
+```
+
+## 示例 4：Shell 脚本
+
+```bash
+# scripts/deploy.sh
+#!/bin/bash
+
+echo "开始部署..."
+npm run build
+rsync -avz ./dist/ user@server:/var/www/html
+echo "部署完成！"
+```
+
+## 示例 5：Python 代码块
+
+```python
+# app/main.py
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: str | None = None):
+    return {"item_id": item_id, "q": q}
+```
+
+## 示例 6：不带文件路径的代码块
+
+普通的代码块（不带顶部注释）也能正常工作，只是不会显示文件路径标题：
+
+```css
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+}
+```

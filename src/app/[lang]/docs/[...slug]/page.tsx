@@ -9,6 +9,7 @@ import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page
 import { MessageSquareText } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { CustomCodeBlock } from '@/components/custom-codeblock';
 import { Guestbook } from '@/components/guestbook';
 import { Mermaid } from '@/components/mermaid';
 import { getPageDictionary } from '@/dictionaries';
@@ -29,7 +30,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={{ ...defaultMdxComponents, Mermaid }} />
+        <MDX components={{ ...defaultMdxComponents, Mermaid, pre: CustomCodeBlock }} />
       </DocsBody>
       <div className="order-last mt-16 border-t border-fd-border pt-10">
         <div className="mb-6 flex items-center gap-3">

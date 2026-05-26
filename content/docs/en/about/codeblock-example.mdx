@@ -1,0 +1,105 @@
+---
+title: Code Block Example
+description: Showcasing the enhanced code block features
+index: false
+---
+
+# Code Block Enhancement Features
+
+This page demonstrates our project's enhanced code block features, including:
+
+- Automatic file path detection from top comment
+- File path display in the code block title bar
+- Built-in copy button in the top-right corner for one-click copying
+- Preserving all of fumadocs' original code highlighting and line number features
+
+## Example 1: JavaScript Code Block
+
+```javascript
+// src/utils/helper.js
+export function greet(name) {
+  return `Hello, ${name}!`;
+}
+
+export const add = (a, b) => a + b;
+```
+
+## Example 2: TypeScript Code Block
+
+```typescript
+// src/components/Button.tsx
+import { ButtonHTMLAttributes, ReactNode } from 'react';
+
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children: ReactNode;
+  variant?: 'primary' | 'secondary';
+}
+
+export function Button({ children, variant = 'primary', ...props }: ButtonProps) {
+  return (
+    <button className={`btn btn-${variant}`} {...props}>
+      {children}
+    </button>
+  );
+}
+```
+
+## Example 3: HTML Code Block
+
+```html
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Project</title>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>
+```
+
+## Example 4: Shell Script
+
+```bash
+# scripts/deploy.sh
+#!/bin/bash
+
+echo "Starting deployment..."
+npm run build
+rsync -avz ./dist/ user@server:/var/www/html
+echo "Deployment complete!"
+```
+
+## Example 5: Python Code Block
+
+```python
+# app/main.py
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: str | None = None):
+    return {"item_id": item_id, "q": q}
+```
+
+## Example 6: Code Block Without File Path
+
+Regular code blocks (without top comments) still work normally, just without the file path title:
+
+```css
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+}
+```
