@@ -1,6 +1,6 @@
 name: Content Request | 内容请求
 description: Suggest a new piece of content or improvement to the project | 向该文档建议一个新内容或对已有内容的改进
-labels: ["enhancement"]
+labels: ["documentation"]
 body:
   - type: textarea
     attributes:
