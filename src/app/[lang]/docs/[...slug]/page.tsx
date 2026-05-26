@@ -10,6 +10,7 @@ import { MessageSquareText } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CustomCodeBlock } from '@/components/custom-codeblock';
+import { DocsTransition } from '@/components/docs-transition';
 import { Guestbook } from '@/components/guestbook';
 import { Mermaid } from '@/components/mermaid';
 import { getPageDictionary } from '@/dictionaries';
@@ -24,13 +25,16 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   if (!page) notFound();
 
   const MDX = page.data.body;
+  const slugKey = slug.join('/');
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full} tableOfContent={{ style: 'clerk' }}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={{ ...defaultMdxComponents, Mermaid, pre: CustomCodeBlock }} />
+        <DocsTransition slugKey={slugKey}>
+          <MDX components={{ ...defaultMdxComponents, Mermaid, pre: CustomCodeBlock }} />
+        </DocsTransition>
       </DocsBody>
       <div className="order-last mt-16 border-t border-fd-border pt-10">
         <div className="mb-6 flex items-center gap-3">
