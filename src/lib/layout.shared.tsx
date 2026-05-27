@@ -65,6 +65,7 @@ export function baseOptions(locale: Locale = i18n.defaultLanguage): BaseLayoutPr
       title: <span className="font-orbitron font-bold text-xl tracking-wider">Neoverse-Doc</span>,
       url: `/${locale}`,
     },
+    githubUrl: 'https://github.com/SSJ-ZYJ/Neoverse-Doc',
     links: [
       {
         text: dict.guestbookTitle,
