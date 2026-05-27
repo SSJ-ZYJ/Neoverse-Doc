@@ -1,6 +1,8 @@
 ---
 title: 关于项目
 description: 了解 Neoverse-Doc 项目的完整结构与设计理念
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 
 Neoverse-Doc 是一个基于 **Next.js 16** + **React 19** + **fumadocs** 构建的纯静态文档站点，旨在提供具有独特科技美学风格的全终端沉浸式阅读体验。

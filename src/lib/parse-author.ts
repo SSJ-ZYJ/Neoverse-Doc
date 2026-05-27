@@ -21,7 +21,5 @@ function parseSingleAuthor(raw: string): AuthorInfo {
 
 export function parseAuthor(raw: string | string[]): AuthorInfo[] {
   const items = Array.isArray(raw) ? raw : [raw];
-  return items
-    .map((item) => parseSingleAuthor(item))
-    .filter((author) => author.name.length > 0);
+  return items.map((item) => parseSingleAuthor(item)).filter((author) => author.name.length > 0);
 }

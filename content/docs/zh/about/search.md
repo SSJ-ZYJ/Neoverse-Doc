@@ -1,6 +1,8 @@
 ---
 title: 搜索与索引
 description: 基于 fumadocs-core 静态搜索 API 的全文检索方案
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 
 Neoverse-Doc 使用 fumadocs-core 内置的静态搜索方案，基于 Orama 搜索引擎，无需第三方服务即可实现全文检索。

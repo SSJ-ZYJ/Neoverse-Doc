@@ -53,9 +53,7 @@ export function DocsAuthor({ author }: DocsAuthorProps) {
 
           return (
             <span key={item.name} className="inline-flex items-center gap-3">
-              {index > 0 && (
-                <span className="text-fd-muted-foreground/50">|</span>
-              )}
+              {index > 0 && <span className="text-fd-muted-foreground/50">|</span>}
               <span className="inline-flex items-center gap-1.5">
                 {avatar && <AuthorAvatar name={item.name} src={avatar} />}
                 {isLink ? (

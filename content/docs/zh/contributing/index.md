@@ -1,6 +1,8 @@
 ---
 title: 如何参与贡献
 description: Neoverse-Doc 项目的贡献指南
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 
 ## 前言

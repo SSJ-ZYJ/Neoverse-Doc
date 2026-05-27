@@ -1,6 +1,8 @@
 ---
 title: 玻璃感主题
 description: 液态玻璃设计系统 — CSS 变量、Tailwind v4 与环境光效果
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 
 Neoverse-Doc 采用「液态玻璃（Liquid Glass）」设计语言，主题样式集中在 [src/app/globals.css](file:///d:/SSJ/Projects/Neoverse-Doc/src/app/globals.css)，遵循「变量层 → 工具类 → 组件覆写」三段式架构。

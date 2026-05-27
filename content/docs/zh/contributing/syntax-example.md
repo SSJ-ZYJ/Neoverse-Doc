@@ -1,6 +1,8 @@
 ---
 title: Markdown 语法示例
 description: 支持丰富的 GFM 与 Mermaid 图表语法
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 
 本文档展示了基础 Markdown、GitHub Flavored Markdown (GFM) 和 Mermaid 绘图的语法。
