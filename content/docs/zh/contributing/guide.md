@@ -1,6 +1,8 @@
 ---
 title: 贡献指南
 description: 感谢你对 Neoverse-Doc 项目的关注！本文档将帮助你了解如何为项目做出贡献。
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 
 ## 行为准则

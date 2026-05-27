@@ -596,3 +596,11 @@ blockquote {
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease;
 }
+
+/* ── Docs Layout Spacing / 文档布局间距优化 ─────────────────── */
+/* Reduce spacing between description/author and body content.
+   减小描述/作者与正文内容之间的间距。 */
+#nd-page > p.mb-8,
+#nd-page > div.mb-6 {
+  margin-bottom: 0.5rem !important;
+}

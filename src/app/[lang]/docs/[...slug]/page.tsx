@@ -10,6 +10,7 @@ import { MessageSquareText } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CustomCodeBlock } from '@/components/custom-codeblock';
+import { DocsAuthor } from '@/components/docs-author';
 import { DocsTransition } from '@/components/docs-transition';
 import { Guestbook } from '@/components/guestbook';
 import { Mermaid } from '@/components/mermaid';
@@ -31,6 +32,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
     <DocsPage toc={page.data.toc} full={page.data.full} tableOfContent={{ style: 'clerk' }}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
+      {page.data.author && <DocsAuthor author={page.data.author} />}
       <DocsBody>
         <DocsTransition slugKey={slugKey}>
           <MDX components={{ ...defaultMdxComponents, Mermaid, pre: CustomCodeBlock }} />
