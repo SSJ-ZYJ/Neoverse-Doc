@@ -13,4 +13,7 @@ export const zh = {
   communityTitle: '讨论区',
   communityDesc: '欢迎分享你的想法与反馈',
   backToDocs: '返回文档',
+  errorTitle: '页面加载失败',
+  errorDesc: '发生了意外错误，请尝试重新加载页面。',
+  errorRetry: '重试',
 } as const;

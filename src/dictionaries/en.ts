@@ -13,4 +13,7 @@ export const en = {
   communityTitle: 'Discussion',
   communityDesc: 'Welcome to share your thoughts and feedback',
   backToDocs: 'Back to Docs',
+  errorTitle: 'Page Failed to Load',
+  errorDesc: 'An unexpected error occurred. Please try reloading the page.',
+  errorRetry: 'Retry',
 } as const;

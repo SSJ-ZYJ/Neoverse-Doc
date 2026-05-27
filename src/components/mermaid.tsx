@@ -6,34 +6,56 @@
 
 import mermaid from 'mermaid';
 import { useTheme } from 'next-themes';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 let counter = 0;
 
 export function Mermaid({ chart }: { chart: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const mountedRef = useRef(true);
   const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    setMounted(true);
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const renderChart = useCallback(async () => {
     const code = chart?.trim();
-    if (!code || !ref.current) return;
+    if (!code || !ref.current || !mountedRef.current) return;
 
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: resolvedTheme === 'dark' ? 'dark' : 'default',
-    });
+    const id = `mermaid-${++counter}`;
 
     try {
-      const { svg } = await mermaid.render(`mermaid-${++counter}`, code);
-      ref.current.innerHTML = svg;
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: resolvedTheme === 'dark' ? 'dark' : 'default',
+      });
+
+      const { svg } = await mermaid.render(id, code);
+
+      if (!mountedRef.current) return;
+      if (ref.current) {
+        ref.current.innerHTML = svg;
+      }
     } catch {
-      ref.current.textContent = code;
+      if (!mountedRef.current) return;
+      if (ref.current) {
+        ref.current.textContent = code;
+      }
+      const leftover = document.getElementById(`d${id}`);
+      if (leftover) leftover.remove();
     }
   }, [chart, resolvedTheme]);
 
   useEffect(() => {
+    if (!mounted) return;
     renderChart();
-  }, [renderChart]);
+  }, [renderChart, mounted]);
 
   return <div ref={ref} className="my-4 flex justify-center [&>svg]:max-w-full" />;
 }
