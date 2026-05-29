@@ -4,13 +4,15 @@
 
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
+import { pageEnterTransition, pageEnterVariants } from '@/lib/motion';
 
 export default function Template({ children }: { children: ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.98, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+      variants={pageEnterVariants}
+      initial="initial"
+      animate="animate"
+      transition={pageEnterTransition}
       className="w-full h-full"
     >
       {children}

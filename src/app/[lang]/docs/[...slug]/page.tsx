@@ -9,11 +9,11 @@ import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page
 import { MessageSquareText } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { CustomCodeBlock } from '@/components/custom-codeblock';
-import { DocsAuthor } from '@/components/docs-author';
-import { DocsTransition } from '@/components/docs-transition';
 import { Guestbook } from '@/components/guestbook';
-import { Mermaid } from '@/components/mermaid';
+import { CustomCodeBlock } from '@/components/mdx/custom-codeblock';
+import { DocsAuthor } from '@/components/mdx/docs-author';
+import { Mermaid } from '@/components/mdx/mermaid';
+import { DocsTransition } from '@/components/transition/docs-transition';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/lib/i18n';
 import { source } from '@/lib/source';

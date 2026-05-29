@@ -94,8 +94,22 @@ Neoverse-Doc/
 ├── src/
 │   ├── app/                   # Next.js App Router 页面
 │   ├── components/            # React 组件
+│   │   ├── transition/        # 页面过渡与遮罩揭示动画组件
+│   │   ├── mdx/               # MDX 内容渲染组件
+│   │   ├── search.tsx         # 静态搜索对话框
+│   │   ├── guestbook.tsx      # Giscus 评论组件
+│   │   └── sidebar-provider.tsx # 侧栏折叠状态持久化
 │   ├── dictionaries/          # i18n 语言包
-│   └── lib/                   # 工具函数和配置
+│   ├── lib/                   # 工具函数和配置
+│   │   ├── motion.ts          # framer-motion 动画预设
+│   │   └── ...                # 其他工具
+│   └── styles/                # 模块化 CSS 样式表
+│       ├── theme.css          # 主题变量与色彩系统
+│       ├── glass.css          # 液态玻璃设计系统
+│       ├── fumadocs-glass.css # Fumadocs 表面玻璃化覆盖
+│       ├── typography.css     # 排版样式
+│       ├── home.css           # 首页渐变动画
+│       └── a11y.css           # 无障碍样式
 ├── source.config.ts           # fumadocs-mdx 配置
 ├── next.config.ts             # Next.js 配置
 ├── biome.json                 # Biome 格式化与 Lint 规则

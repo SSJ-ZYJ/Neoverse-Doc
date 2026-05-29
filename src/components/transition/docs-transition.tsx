@@ -8,6 +8,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import type { ReactNode } from 'react';
+import { docTransitionVariants } from '@/lib/motion';
 
 interface DocsTransitionProps {
   slugKey: string;
@@ -19,10 +20,10 @@ export function DocsTransition({ slugKey, children }: DocsTransitionProps) {
     <AnimatePresence mode="wait">
       <motion.div
         key={slugKey}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -6 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
+        variants={docTransitionVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
       >
         {children}
       </motion.div>

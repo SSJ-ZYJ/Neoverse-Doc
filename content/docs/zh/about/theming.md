@@ -5,7 +5,17 @@ author:
   - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 
-Neoverse-Doc 采用「液态玻璃（Liquid Glass）」设计语言，主题样式集中在 [src/app/globals.css](file:///d:/SSJ/Projects/Neoverse-Doc/src/app/globals.css)，遵循「变量层 → 工具类 → 组件覆写」三段式架构。
+Neoverse-Doc 采用「液态玻璃（Liquid Glass）」设计语言，主题样式按关注点拆分为模块化样式表，由 [src/app/globals.css](file:///d:/SSJ/Projects/Neoverse-Doc/src/app/globals.css) 作为入口统一聚合，遵循「变量层 → 工具类 → 组件覆写」三段式架构。
+
+```text
+src/styles/
+├── theme.css              # 变量层：Tailwind/fumadocs 导入、主题变量、色彩系统
+├── glass.css              # 工具类：液态玻璃设计系统（.glass-panel 等）+ 环境光
+├── fumadocs-glass.css     # 组件覆写：fumadocs 表面玻璃化覆盖、TOC、侧栏按钮
+├── typography.css         # 排版：代码块、引用块、提示框、行内代码
+├── home.css               # 首页渐变背景动画
+└── a11y.css               # 无障碍：减少动画 / 减少透明度 / 回退
+```
 
 ## 变量层
 

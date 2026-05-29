@@ -3,8 +3,8 @@
 // 独立留言墙页面（按语言）：包装 Giscus 评论，标题、返回链接、元信息均来自字典。
 
 import { MessageSquareText } from 'lucide-react';
-import { BackLink } from '@/components/back-link';
 import { Guestbook } from '@/components/guestbook';
+import { BackLink } from '@/components/transition/back-link';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/lib/i18n';
 

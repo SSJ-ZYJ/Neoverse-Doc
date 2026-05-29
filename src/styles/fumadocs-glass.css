@@ -1,0 +1,208 @@
+/* Fumadocs surface glassification overrides, TOC constraints, sidebar buttons, and layout spacing.
+   Fumadocs 表面玻璃化覆盖、TOC 约束、侧栏按钮、布局间距。 */
+
+/* ── TOC Popover Header Enhancement / TOC 弹出层头部增强 ─────────────────── */
+[data-toc-popover-content] > div > div > header.border-b.backdrop-blur-sm.bg-fd-background\/80 {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background-color: color-mix(in oklab, var(--color-fd-background) 90%, transparent);
+}
+
+/* ── TOC Right Sidebar Constraints / TOC 右侧栏约束 ─────────────────── */
+/* xl+: right TOC stays strictly within its own grid-area to avoid overflow or stretching the parent layout.
+   xl 以上：右侧 TOC 严格在自身 grid-area 内，避免越界或撑开父布局 */
+#nd-toc {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: var(--fd-toc-width);
+  overflow: hidden;
+}
+#nd-toc a {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+/* Below xl: force-hide right TOC (consistent with official max-xl:hidden, as a fallback defense).
+   不足 xl 时强制隐藏右侧 TOC（与官方默认 max-xl:hidden 一致，作为兜底防御） */
+@media (max-width: 1279.98px) {
+  #nd-toc {
+    display: none !important;
+  }
+}
+
+/* ── Fumadocs Surface Glassification / Fumadocs 表面玻璃化 ─────────────────── */
+/* :where() wrapper keeps lowest specificity, avoiding conflicts with the #nd-toc constraint block above
+   and not blocking fumadocs default hover / collapse utility overrides.
+   :where() 包裹保持最低优先级，不与上方 #nd-toc 约束块冲突，
+   也不会阻止 fumadocs 默认的 hover / 折叠态 utility 覆盖。 */
+
+/* Synchronize color transition duration across all glassified surfaces with
+   the root CSS variable transition so theme changes feel uniform.
+   将所有玻璃化表面的颜色过渡时长与根 CSS 变量过渡同步，使主题切换体感一致。 */
+:where(#nd-nav) > div,
+:where(#nd-subnav),
+:where(#nd-sidebar):not([data-collapsed="true"]),
+:where(#nd-sidebar)[data-collapsed="true"],
+:where([data-toc-popover-content]) > div,
+[role="dialog"][data-state="open"]:has(input) {
+  transition-duration: var(--theme-transition-duration);
+}
+
+/* Top nav: inner div is the fumadocs backdrop-blur container, strengthen it directly.
+   顶部导航：内层 div 是 fumadocs 给的 backdrop-blur 容器，直接强化。 */
+:where(#nd-nav) > div {
+  background-color: var(--glass-tint) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-bottom-color: var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  transform: translateZ(0);
+}
+
+/* Mobile docs secondary header / 移动端 docs 二级头部 */
+:where(#nd-subnav) {
+  background-color: var(--glass-tint);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-bottom-color: var(--glass-border-hairline);
+  transform: translateZ(0);
+}
+
+/* Docs left sidebar: expanded state gets full glassification; collapsed state uses glass-edge only to avoid double blur.
+   文档左侧栏：展开态完整玻璃化；折叠态外框只走 glass-edge 修饰，避免双重 blur。 */
+:where(#nd-sidebar):not([data-collapsed="true"]) {
+  background-color: var(--glass-tint);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-inline-end-color: var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+:where(#nd-sidebar)[data-collapsed="true"] {
+  background-color: var(--glass-tint-soft);
+  border-color: var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* ── Sidebar Buttons Glassification / 侧栏按钮玻璃化 ────────────────────── */
+/* Unified glass styling for sidebar functional buttons and panels (about, search, theme, language, etc.)
+   统一覆盖侧边栏内的功能级按钮与面板（关于、搜索、主题、语言等）为液态玻璃 */
+#nd-sidebar .bg-fd-secondary\/50 {
+  background-color: var(--glass-tint) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  border-color: var(--glass-border-hairline) !important;
+  box-shadow: inset 0 1px 0 var(--glass-highlight) !important;
+  transition: all var(--theme-transition-duration) ease !important;
+}
+
+/* Hover state: background becomes more transparent (better glass light feedback), keeping glass highlight shadow intact.
+   悬停状态：背景变得进一步透明（更符合玻璃光影反馈），并保持玻璃高亮阴影不丢失 */
+#nd-sidebar .bg-fd-secondary\/50:hover,
+#nd-sidebar .bg-fd-secondary\/50:has(button:hover) {
+  background-color: var(--glass-tint-soft) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow-hover) !important;
+}
+
+/* Dark mode only: enhance hover glow for better visibility on dark backgrounds.
+   深色模式专用：增强悬停发光，使其在深色背景上更明显 */
+[data-theme="dark"] #nd-sidebar .bg-fd-secondary\/50:hover,
+.dark #nd-sidebar .bg-fd-secondary\/50:hover,
+[data-theme="dark"] #nd-sidebar .bg-fd-secondary\/50:has(button:hover),
+.dark #nd-sidebar .bg-fd-secondary\/50:has(button:hover) {
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow-hover) !important;
+  border-color: var(--glass-border-hairline) !important;
+  transform: translateZ(0);
+}
+
+/* Fix physical sizing for legacy components like language switcher, force large border-radius.
+   补充"语言切换"等旧组件的物理尺寸规整，并强制使用大圆角 */
+:where(#nd-sidebar) button:has(svg.lucide-languages) {
+  border-radius: var(--radius-lg) !important;
+  padding: calc(var(--spacing) * 2) !important;
+  gap: calc(var(--spacing) * 2) !important;
+  color: var(--color-fd-secondary-foreground) !important;
+  display: flex !important;
+}
+
+:where(#nd-sidebar) div:has(> button[data-theme-toggle]) {
+  border-radius: var(--radius-lg) !important;
+}
+
+/* 右侧 TOC：仅追加极淡背景，不覆盖上方约束块的 box-sizing/max-width/overflow。 */
+:where(#nd-toc) {
+  background-color: transparent;
+}
+
+/* TOC popover 内容：整体卡片化 */
+:where([data-toc-popover-content]) > div {
+  background-color: color-mix(in oklab, var(--glass-tint-strong) 30%, transparent) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+/* TOC popover trigger button: glass-chip style (small element, light blur + soft tint).
+   TOC 弹出层触发按钮：glass-chip 样式（小元件，轻 blur + 软 tint）。 */
+:where([data-toc-popover-trigger]) {
+  background-color: color-mix(in oklab, var(--glass-tint-soft) 25%, transparent) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  border: 1px solid var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* TOC popover header: replace fumadocs opaque bg-fd-background/80 with glass tint
+   so the trigger button's backdrop-filter has something transparent to see through.
+   TOC 弹出层头部：将 fumadocs 不透明的 bg-fd-background/80 替换为玻璃 tint，
+   使触发按钮的 backdrop-filter 能透视到透明背景。 */
+:where([data-toc-popover]) > header {
+  background-color: color-mix(in oklab, var(--glass-tint) 30%, transparent) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  border-color: var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* TOC popover inner scrollable content: glass-edge style (border + highlight, no blur
+   to avoid double blur on top of the already-glassified outer container).
+   TOC 弹出层内部滚动内容：glass-edge 样式（描边 + 高光，不带 blur，
+   避免与已玻璃化的外层容器产生双重 blur）。 */
+:where([data-toc-popover-content]) > div > div {
+  border: 1px solid var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* Search dialog / Radix Dialog content: take over the dialog surface itself
+   (not just its first child) so fumadocs' default opaque bg-fd-popover is replaced
+   by our glass tint — letting the page content show through.
+   Matched via :has(input) since fumadocs always renders a hidden <h2> DialogTitle inside
+   SearchDialogContent, which made the previous :not(:has(> h2)) guard wrongly exclude it.
+   搜索弹窗 / Radix Dialog 内容：直接接管 dialog 元素自身（而非首个子元素），
+   覆盖 fumadocs 默认不透明的 bg-fd-popover，让下层页面内容透过来。
+   通过 :has(input) 识别搜索弹窗（fumadocs 会在 SearchDialogContent 内强制渲染隐藏的 h2 DialogTitle，
+   之前用 :not(:has(> h2)) 做排除会把整个搜索 dialog 也排除掉） */
+[role="dialog"][data-state="open"]:has(input) {
+  background-color: var(--glass-tint-soft) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
+  border: 1px solid var(--glass-border-hairline) !important;
+  box-shadow:
+    inset 0 0 0 1px var(--glass-highlight),
+    var(--glass-shadow) !important;
+}
+
+/* ── Docs Layout Spacing / 文档布局间距优化 ─────────────────── */
+/* Reduce spacing between description/author and body content.
+   减小描述/作者与正文内容之间的间距。 */
+#nd-page > p.mb-8,
+#nd-page > div.mb-6 {
+  margin-bottom: 0.5rem !important;
+}

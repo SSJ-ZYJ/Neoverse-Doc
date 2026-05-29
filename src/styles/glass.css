@@ -1,0 +1,82 @@
+/* Liquid Glass Design System: utility classes, body styles, and ambient light.
+   液态玻璃设计系统：工具类、body 样式、环境光。 */
+
+/* ── Liquid Glass Design System ───────────────────────── */
+/* Common base: tint + blur + saturate + hairline border. Sub-classes fine-tune intensity.
+   通用 base：tint + blur + saturate + hairline border。子类各自微调强度。 */
+
+.glass-panel,
+.glass-card,
+.glass-chip,
+.glass-cta {
+  border: 1px solid var(--glass-border-hairline);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  background-color: var(--glass-tint);
+}
+
+/* Large panels: nav / sidebar / subnav. Inner top 1px highlight + soft outer shadow.
+   大面板：导航 / 侧栏 / subnav。内顶 1px 高光 + 软外阴影。 */
+.glass-panel {
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+/* Modals / drawers / search: stronger blur + denser tint, larger border-radius.
+   弹窗 / 抽屉 / 搜索框：更强 blur + 更浓 tint，圆角更大。 */
+.glass-card {
+  background-color: var(--glass-tint-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border-radius: 1rem;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+/* Small elements: icon chip / buttons. Light blur + soft tint, no outer shadow.
+   小元件：icon chip / 按钮。轻 blur + 软 tint，不带外阴影。 */
+.glass-chip {
+  background-color: var(--glass-tint-soft);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+}
+
+/* Border + inner highlight decoration, no blur — for elements that already have a background.
+   描边 + 内高光修饰，不带 blur，用于已有背景的元素。 */
+.glass-edge {
+  border: 1px solid var(--glass-border-hairline);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* Homepage CTA: keeps independent blur and shadow intensity.
+   首页 CTA：保留独立 blur 与阴影强度。 */
+.glass-cta {
+  background-color: var(--glass-tint-strong);
+  -webkit-backdrop-filter: blur(16px) saturate(var(--glass-saturate));
+  backdrop-filter: blur(16px) saturate(var(--glass-saturate));
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-noto-sans), "Noto Sans SC", "Noto Sans", sans-serif;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Global ambient light: provides refraction color sources for glass surfaces.
+   全局环境光：给玻璃表面提供折射色源。 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(60vmax 60vmax at 15% 20%, var(--glass-ambient-a), transparent 60%),
+    radial-gradient(60vmax 60vmax at 85% 80%, var(--glass-ambient-b), transparent 60%);
+  filter: blur(80px) saturate(140%);
+}

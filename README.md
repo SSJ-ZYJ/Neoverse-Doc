@@ -135,7 +135,7 @@ Neoverse-Doc/
 │   ├── app/                       # Next.js App Router 页面
 │   │   ├── layout.tsx             # 根布局（<html>/<body> + 全局字体 + ThemeProvider）
 │   │   ├── page.tsx               # 根路径客户端重定向到 /{defaultLocale}
-│   │   ├── globals.css            # 主题变量层 / 液态玻璃工具类 / 表格增强 / fumadocs 预设
+│   │   ├── globals.css            # 全局样式入口（@import 模块化样式表）
 │   │   ├── api/
 │   │   │   └── search/
 │   │   │       └── route.ts       # 静态搜索 API（Orama + Mandarin 分词）
@@ -153,13 +153,18 @@ Neoverse-Doc/
 │   │       │   └── [...slug]/
 │   │       │       └── page.tsx   # 文档正文（MDX + CustomCodeBlock + Mermaid + Giscus）
 │   ├── components/
-│   │   ├── custom-codeblock.tsx   # 增强代码块组件（文件路径 + 复制按钮）
+│   │   ├── transition/            # 页面过渡与遮罩揭示动画组件
+│   │   │   ├── docs-transition.tsx   # 文档间切换淡入+上移动画
+│   │   │   ├── mask-reveal.tsx       # 遮罩揭示径向扩展动画
+│   │   │   ├── enter-docs-button.tsx # 首页进入文档按钮
+│   │   │   └── back-link.tsx         # 返回链接组件
+│   │   ├── mdx/                   # MDX 内容渲染组件
+│   │   │   ├── custom-codeblock.tsx  # 增强代码块组件（文件路径 + 复制按钮）
+│   │   │   ├── mermaid.tsx           # Mermaid 图表渲染组件
+│   │   │   └── docs-author.tsx       # 文档作者展示组件
 │   │   ├── search.tsx             # 静态搜索对话框（Orama + Mandarin 分词）
 │   │   ├── guestbook.tsx          # Giscus 评论组件（按 locale 切换语言）
-│   │   ├── mermaid.tsx            # Mermaid 图表渲染组件
-│   │   ├── enter-docs-button.tsx  # 首页进入文档按钮
-│   │   ├── back-link.tsx          # 返回链接组件
-│   │   └── mask-reveal.tsx        # 遮罩揭示动效组件
+│   │   └── sidebar-provider.tsx   # 侧栏折叠状态持久化 Provider
 │   ├── dictionaries/
 │   │   ├── index.ts               # 字典聚合 + getPageDictionary(locale)
 │   │   ├── zh.ts                  # 中文语言包
@@ -167,9 +172,18 @@ Neoverse-Doc/
 │   └── lib/
 │       ├── i18n.ts                # 集中式 i18n 配置（defineI18n）
 │       ├── layout.shared.tsx      # fumadocs UI 翻译 + i18nProvider + baseOptions
+│       ├── motion.ts              # framer-motion 动画预设（过渡时长 / 缓动曲线）
 │       ├── source.ts              # fumadocs 内容源加载器（含 i18n parser: 'dir'）
+│       ├── parse-author.ts        # 作者信息解析器（支持 GitHub URL 提取）
 │       ├── remark-code-title.ts   # Remark 插件：从代码顶部注释提取文件路径
 │       └── transformer-meta-title.ts  # Shiki transformer：将 meta.title 映射到 pre.properties
+│   └── styles/                    # 模块化 CSS 样式表
+│       ├── theme.css              # Tailwind/fumadocs 导入、主题变量、色彩系统
+│       ├── glass.css              # 液态玻璃设计系统（工具类 + 环境光）
+│       ├── fumadocs-glass.css     # Fumadocs 表面玻璃化覆盖
+│       ├── typography.css         # 代码块、引用块、提示框、行内代码
+│       ├── home.css               # 首页渐变动画
+│       └── a11y.css               # 无障碍（减少动画/减少透明度/回退）
 ├── source.config.ts               # fumadocs-mdx 配置（remark/rehype 插件注册）
 ├── next.config.ts                 # Next.js 配置（静态导出 + MDX 插件）
 ├── biome.json                     # Biome 格式化与 Lint 规则
@@ -223,7 +237,7 @@ MDX 代码块 → remarkCodeTitle（提取路径，注入 meta="title=..."）
 
 - [src/lib/remark-code-title.ts](./src/lib/remark-code-title.ts) — Remark 插件
 - [src/lib/transformer-meta-title.ts](./src/lib/transformer-meta-title.ts) — Shiki transformer
-- [src/components/custom-codeblock.tsx](./src/components/custom-codeblock.tsx) — React 组件
+- [src/components/mdx/custom-codeblock.tsx](./src/components/mdx/custom-codeblock.tsx) — React 组件
 
 ### 搜索系统
 
@@ -247,14 +261,16 @@ localeMap: {
 
 ### 主题体系
 
-[src/app/globals.css](./src/app/globals.css) 采用「变量层 → 工具类 → 组件覆写」三段式架构：
+[src/app/globals.css](./src/app/globals.css) 作为全局样式入口，通过 `@import` 聚合模块化样式表，遵循「变量层 → 工具类 → 组件覆写」三段式架构：
 
 ```text
-变量层: CSS 自定义属性（--background / --glass-bg / --color-fd-* 等）
-  ↓
-工具类: .glass-panel / .glass-card / .glass-chip（全局可复用的毛玻璃效果）
-  ↓
-组件覆写: fumadocs-ui CSS 预设 + CSS 变量映射 + 表格增强
+src/styles/
+├── theme.css              # 变量层：CSS 自定义属性（--background / --glass-bg / --color-fd-* 等）
+├── glass.css              # 工具类：.glass-panel / .glass-card / .glass-chip（全局可复用的毛玻璃效果）
+├── fumadocs-glass.css     # 组件覆写：fumadocs-ui CSS 预设 + CSS 变量映射
+├── typography.css         # 排版：代码块、引用块、提示框、行内代码
+├── home.css               # 首页：渐变背景动画
+└── a11y.css               # 无障碍：减少动画 / 减少透明度 / 回退
 ```
 
 通过 Tailwind v4 的 `@theme inline` 将 CSS 变量映射为 Tailwind token，在 JSX 中可直接使用 `bg-background`、`text-foreground` 等语义化工具类。`next-themes` 通过 `data-theme` 属性驱动 CSS 变量切换，实现浅色 / 深色模式全自动适配。

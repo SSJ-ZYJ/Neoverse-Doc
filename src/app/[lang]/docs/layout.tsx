@@ -8,8 +8,8 @@
 
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { Sidebar, SidebarTrigger, useSidebar } from 'fumadocs-ui/layouts/docs/slots/sidebar';
-import MaskReveal from '@/components/mask-reveal';
 import { SidebarProvider } from '@/components/sidebar-provider';
+import MaskReveal from '@/components/transition/mask-reveal';
 import { i18n, type Locale } from '@/lib/i18n';
 import { baseOptions } from '@/lib/layout.shared';
 import { source } from '@/lib/source';

@@ -9,6 +9,7 @@
 
 import { animate, motion, useMotionTemplate, useMotionValue } from 'framer-motion';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { maskRevealTransition } from '@/lib/motion';
 
 export default function MaskReveal() {
   const [revealData, setRevealData] = useState<{
@@ -59,8 +60,7 @@ export default function MaskReveal() {
         ) * 1.2; // Slightly enlarge to ensure corners are covered / 稍微扩大保障角落
 
       const controls = animate(radius, maxRadius, {
-        duration: 0.8,
-        ease: [0.76, 0.0, 0.24, 1.0], // Smooth expansion / 平滑扩大
+        ...maskRevealTransition,
         onComplete: () => {
           setRevealData(null);
         },

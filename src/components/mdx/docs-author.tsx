@@ -1,3 +1,6 @@
+// Document author display component with GitHub avatar support.
+// 文档作者展示组件，支持 GitHub 头像。
+
 'use client';
 
 import { User } from 'lucide-react';

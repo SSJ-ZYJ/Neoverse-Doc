@@ -3,7 +3,17 @@ title: Liquid Glass Theme
 description: Liquid Glass design system — CSS variables, Tailwind v4, and ambient lighting effects
 ---
 
-Neoverse-Doc employs a "Liquid Glass" design language. Theme styles are centralized in [src/app/globals.css](file:///d:/SSJ/Projects/Neoverse-Doc/src/app/globals.css), following a three-tier architecture of "Variable Layer → Utility Classes → Component Overrides".
+Neoverse-Doc employs a "Liquid Glass" design language. Theme styles are split into modular stylesheets by concern, aggregated by [src/app/globals.css](file:///d:/SSJ/Projects/Neoverse-Doc/src/app/globals.css) as the entry point, following a three-tier architecture of "Variable Layer → Utility Classes → Component Overrides".
+
+```text
+src/styles/
+├── theme.css              # Variable Layer: Tailwind/fumadocs imports, theme variables, color system
+├── glass.css              # Utility Classes: Liquid Glass design system (.glass-panel etc.) + ambient light
+├── fumadocs-glass.css     # Component Overrides: fumadocs surface glassification, TOC, sidebar buttons
+├── typography.css         # Typography: code blocks, blockquotes, alerts, inline code
+├── home.css               # Homepage: gradient background animations
+└── a11y.css               # Accessibility: reduced motion / reduced transparency / fallback
+```
 
 ## Variable Layer
 
