@@ -12,7 +12,7 @@
     180% 180%,
     160% 160%,
     100% 100%;
-  animation: home-gradient-drift 8s cubic-bezier(0.25, 0.1, 0.25, 1) infinite alternate;
+  animation: home-gradient-drift 10s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
 
 .home-gradient-bg__orb {
@@ -24,8 +24,8 @@
   transform: translate3d(0, 0, 0);
   will-change: transform, opacity;
   animation:
-    home-orb-float 5s cubic-bezier(0.25, 0.1, 0.25, 1) infinite,
-    home-orb-pulse 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+    home-orb-float 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate,
+    home-orb-pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
 }
 
 .home-gradient-bg__orb--one {
@@ -34,7 +34,7 @@
   width: 26rem;
   height: 26rem;
   background: radial-gradient(circle, rgba(56, 189, 248, 0.7), transparent 70%);
-  animation-delay: 0s, -2s;
+  animation-delay: 0s, -1.5s;
 }
 
 .home-gradient-bg__orb--two {
@@ -43,7 +43,7 @@
   width: 30rem;
   height: 30rem;
   background: radial-gradient(circle, rgba(74, 222, 128, 0.62), transparent 68%);
-  animation-delay: -6s, -4s;
+  animation-delay: -4s, -3s;
 }
 
 .home-gradient-bg__orb--three {
@@ -52,10 +52,10 @@
   width: 28rem;
   height: 28rem;
   background: radial-gradient(circle, rgba(14, 165, 233, 0.58), transparent 72%);
-  animation-delay: -10s, -6s;
+  animation-delay: -8s, -5s;
 }
 
-[data-theme="dark"] .home-gradient-bg,
+[data-theme='dark'] .home-gradient-bg,
 .dark .home-gradient-bg {
   background:
     radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.38), transparent 40%),
@@ -67,20 +67,20 @@
     180% 180%,
     160% 160%,
     100% 100%;
-  animation: home-gradient-drift 8s cubic-bezier(0.25, 0.1, 0.25, 1) infinite alternate;
+  animation: home-gradient-drift 10s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
 
-[data-theme="dark"] .home-gradient-bg__orb--one,
+[data-theme='dark'] .home-gradient-bg__orb--one,
 .dark .home-gradient-bg__orb--one {
   background: radial-gradient(circle, rgba(56, 189, 248, 0.92), transparent 70%);
 }
 
-[data-theme="dark"] .home-gradient-bg__orb--two,
+[data-theme='dark'] .home-gradient-bg__orb--two,
 .dark .home-gradient-bg__orb--two {
   background: radial-gradient(circle, rgba(74, 222, 128, 0.85), transparent 68%);
 }
 
-[data-theme="dark"] .home-gradient-bg__orb--three,
+[data-theme='dark'] .home-gradient-bg__orb--three,
 .dark .home-gradient-bg__orb--three {
   background: radial-gradient(circle, rgba(14, 165, 233, 0.82), transparent 72%);
 }
@@ -112,23 +112,21 @@
 }
 
 @keyframes home-orb-float {
-  0%,
-  100% {
+  0% {
     transform: translate3d(0, 0, 0) scale(1);
   }
 
-  50% {
-    transform: translate3d(0, 0.75rem, 0) scale(1.04);
+  100% {
+    transform: translate3d(0, 1rem, 0) scale(1.06);
   }
 }
 
 @keyframes home-orb-pulse {
-  0%,
-  100% {
-    opacity: 0.48;
+  0% {
+    opacity: 0.42;
   }
 
-  50% {
-    opacity: 0.65;
+  100% {
+    opacity: 0.72;
   }
 }

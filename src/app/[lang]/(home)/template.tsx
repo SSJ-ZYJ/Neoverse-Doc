@@ -14,6 +14,7 @@ export default function Template({ children }: { children: ReactNode }) {
       animate="animate"
       transition={pageEnterTransition}
       className="w-full h-full"
+      style={{ willChange: 'transform, opacity, filter' }}
     >
       {children}
     </motion.div>

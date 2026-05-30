@@ -63,24 +63,27 @@ blockquote {
   --foreground: #0f172a;
 
   /* Liquid Glass Effects for Light Mode / 亮色模式液态玻璃效果 */
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(15, 23, 42, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(15, 23, 42, 0.08);
 
   /* Liquid Glass Design System — Light / 液态玻璃设计系统 — 亮色 */
-  --glass-tint: rgba(248, 250, 252, 0.6);
-  --glass-tint-strong: rgba(255, 255, 255, 0.85);
-  --glass-tint-soft: rgba(255, 255, 255, 0.4);
-  --glass-border-hairline: rgba(15, 23, 42, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 1);
-  --glass-shadow: 0 8px 32px -8px rgba(15, 23, 42, 0.18);
-  --glass-shadow-hover: 0 12px 32px -8px rgba(15, 23, 42, 0.25);
-  --glass-ambient-a: rgba(56, 189, 248, 0.18);
-  --glass-ambient-b: rgba(74, 222, 128, 0.14);
+  --glass-tint: rgba(248, 250, 252, 0.55);
+  --glass-tint-strong: rgba(255, 255, 255, 0.78);
+  --glass-tint-soft: rgba(255, 255, 255, 0.35);
+  --glass-border-hairline: rgba(15, 23, 42, 0.07);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  --glass-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.12), 0 1px 2px rgba(15, 23, 42, 0.06);
+  --glass-shadow-hover: 0 8px 32px -4px rgba(15, 23, 42, 0.18), 0 2px 4px rgba(15, 23, 42, 0.08);
+  --glass-ambient-a: rgba(56, 189, 248, 0.16);
+  --glass-ambient-b: rgba(74, 222, 128, 0.12);
+  --glass-ambient-c: rgba(14, 165, 233, 0.08);
   /* Theme-agnostic glass scalars / 主题无关的玻璃标量 */
-  --glass-blur: 20px;
-  --glass-blur-strong: 28px;
-  --glass-blur-soft: 12px;
-  --glass-saturate: 180%;
+  --glass-blur: 24px;
+  --glass-blur-strong: 32px;
+  --glass-blur-soft: 14px;
+  --glass-saturate: 160%;
+  --glass-brightness: 105%;
+  --glass-contrast: 102%;
 
   /* Brand Gradients (Light Green to Light Blue) / 品牌渐变（浅绿到浅蓝） */
   --color-brand-start: #38bdf8; /* Light Blue / 浅蓝 */
@@ -111,19 +114,20 @@ blockquote {
   --foreground: #f8fafc;
 
   /* Liquid Glass Effects for Dark Mode / 深色模式液态玻璃效果 */
-  --glass-bg: rgba(15, 23, 42, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(15, 23, 42, 0.35);
+  --glass-border: rgba(255, 255, 255, 0.08);
 
   /* Liquid Glass Design System — Dark / 液态玻璃设计系统 — 深色 */
-  --glass-tint: rgba(15, 23, 42, 0.42);
-  --glass-tint-strong: rgba(15, 23, 42, 0.55);
-  --glass-tint-soft: rgba(15, 23, 42, 0.28);
-  --glass-border-hairline: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.18);
-  --glass-shadow: 0 12px 40px -8px rgba(255, 255, 255, 0.3);
-  --glass-shadow-hover: 0 12px 44px -10px rgba(255, 255, 255, 0.22);
-  --glass-ambient-a: rgba(56, 189, 248, 0.16);
-  --glass-ambient-b: rgba(168, 85, 247, 0.12);
+  --glass-tint: rgba(15, 23, 42, 0.38);
+  --glass-tint-strong: rgba(20, 28, 50, 0.52);
+  --glass-tint-soft: rgba(15, 23, 42, 0.24);
+  --glass-border-hairline: rgba(255, 255, 255, 0.06);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --glass-shadow-hover: 0 8px 32px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --glass-ambient-a: rgba(56, 189, 248, 0.14);
+  --glass-ambient-b: rgba(168, 85, 247, 0.1);
+  --glass-ambient-c: rgba(14, 165, 233, 0.06);
 
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);

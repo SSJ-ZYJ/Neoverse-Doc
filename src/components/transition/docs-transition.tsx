@@ -8,7 +8,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import type { ReactNode } from 'react';
-import { docTransitionVariants } from '@/lib/motion';
+import { docTransitionTransition, docTransitionVariants } from '@/lib/motion';
 
 interface DocsTransitionProps {
   slugKey: string;
@@ -24,6 +24,8 @@ export function DocsTransition({ slugKey, children }: DocsTransitionProps) {
         initial="initial"
         animate="animate"
         exit="exit"
+        transition={docTransitionTransition}
+        style={{ willChange: 'transform, opacity' }}
       >
         {children}
       </motion.div>

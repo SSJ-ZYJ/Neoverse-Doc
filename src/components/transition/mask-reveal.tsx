@@ -7,7 +7,7 @@
 
 'use client';
 
-import { animate, motion, useMotionTemplate, useMotionValue } from 'framer-motion';
+import { animate, motion, useMotionTemplate, useMotionValue, useTransform } from 'framer-motion';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { maskRevealTransition } from '@/lib/motion';
 
@@ -40,6 +40,7 @@ export default function MaskReveal() {
   });
 
   const radius = useMotionValue(0);
+  const feather = useMotionValue(40);
   const maskRef = useRef<HTMLDivElement>(null);
 
   // Clear the flag immediately after reading to prevent re-trigger on refresh or back navigation
@@ -65,16 +66,32 @@ export default function MaskReveal() {
           setRevealData(null);
         },
       });
-      return controls.stop;
+
+      // Feather animation: gradually increase feather size for softer edge reveal
+      // 羽化动画：逐渐增大羽化尺寸，使边缘揭示更柔和
+      const featherControls = animate(feather, maxRadius * 0.35, {
+        duration: maskRevealTransition.duration,
+        ease: maskRevealTransition.ease,
+      });
+
+      return () => {
+        controls.stop();
+        featherControls.stop();
+      };
     }
-  }, [revealData, radius]);
+  }, [revealData, radius, feather]);
 
   // The soul of the reverse cutout: the transparent part (inner circle) makes the div transparent,
   // revealing the actual target document page underneath. The black part (outer) makes the div opaque,
   // showing the snapshot background of the main page!
   // 反向镂空的灵魂：transparent 部分（内部圈）会让所在 div【透明】，露出该 div 下方真正的目标文档页。
   // black 部分（外部）会让所在 div【不透明】，展示出该 div 的主版快照背景！
-  const maskImage = useMotionTemplate`radial-gradient(circle at ${revealData?.x ?? 0}px ${revealData?.y ?? 0}px, transparent ${radius}px, black ${radius}px)`;
+  // Added feathering: transparent → black transition with a gradient band for soft edges.
+  // 添加羽化：transparent → black 之间增加渐变带，实现柔和边缘。
+  // Use useTransform to combine radius + feather into a reactive feathered edge value.
+  // 使用 useTransform 将 radius + feather 组合为响应式羽化边缘值。
+  const featheredEdge = useTransform([radius, feather], ([r, f]) => Number(r) + Number(f));
+  const maskImage = useMotionTemplate`radial-gradient(circle at ${revealData?.x ?? 0}px ${revealData?.y ?? 0}px, transparent ${radius}px, black ${featheredEdge}px)`;
 
   // Set innerHTML via ref to avoid using dangerouslySetInnerHTML.
   // Must run in useLayoutEffect (synchronous before paint) — if deferred to
@@ -113,6 +130,7 @@ export default function MaskReveal() {
       ref={maskRef}
       style={{
         opacity: 1, // Must be absolutely opaque / 必须绝对不透明
+        willChange: 'mask-image, -webkit-mask-image',
         WebkitMaskImage: maskImage,
         maskImage,
       }}

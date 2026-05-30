@@ -3,9 +3,9 @@
 
 /* ── TOC Popover Header Enhancement / TOC 弹出层头部增强 ─────────────────── */
 [data-toc-popover-content] > div > div > header.border-b.backdrop-blur-sm.bg-fd-background\/80 {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  background-color: color-mix(in oklab, var(--color-fd-background) 90%, transparent);
+  backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  background-color: color-mix(in oklab, var(--color-fd-background) 85%, transparent);
 }
 
 /* ── TOC Right Sidebar Constraints / TOC 右侧栏约束 ─────────────────── */
@@ -52,19 +52,40 @@
    顶部导航：内层 div 是 fumadocs 给的 backdrop-blur 容器，直接强化。 */
 :where(#nd-nav) > div {
   background-color: var(--glass-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
   border-bottom-color: var(--glass-border-hairline);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
   transform: translateZ(0);
 }
 
 /* Mobile docs secondary header / 移动端 docs 二级头部 */
 :where(#nd-subnav) {
   background-color: var(--glass-tint);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast));
+  backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast));
   border-bottom-color: var(--glass-border-hairline);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
   transform: translateZ(0);
 }
 
@@ -72,10 +93,20 @@
    文档左侧栏：展开态完整玻璃化；折叠态外框只走 glass-edge 修饰，避免双重 blur。 */
 :where(#nd-sidebar):not([data-collapsed="true"]) {
   background-color: var(--glass-tint);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast));
+  backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast));
   border-inline-end-color: var(--glass-border-hairline);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
 }
 :where(#nd-sidebar)[data-collapsed="true"] {
   background-color: var(--glass-tint-soft);
@@ -88,8 +119,16 @@
    统一覆盖侧边栏内的功能级按钮与面板（关于、搜索、主题、语言等）为液态玻璃 */
 #nd-sidebar .bg-fd-secondary\/50 {
   background-color: var(--glass-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline) !important;
   box-shadow: inset 0 1px 0 var(--glass-highlight) !important;
   transition: all var(--theme-transition-duration) ease !important;
@@ -100,8 +139,16 @@
 #nd-sidebar .bg-fd-secondary\/50:hover,
 #nd-sidebar .bg-fd-secondary\/50:has(button:hover) {
   background-color: var(--glass-tint-soft) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter:
+    blur(var(--glass-blur-soft))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  backdrop-filter:
+    blur(var(--glass-blur-soft))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow-hover) !important;
@@ -142,8 +189,16 @@
 /* TOC popover 内容：整体卡片化 */
 :where([data-toc-popover-content]) > div {
   background-color: color-mix(in oklab, var(--glass-tint-strong) 30%, transparent) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter:
+    blur(var(--glass-blur-strong))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  backdrop-filter:
+    blur(var(--glass-blur-strong))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
@@ -153,8 +208,16 @@
    TOC 弹出层触发按钮：glass-chip 样式（小元件，轻 blur + 软 tint）。 */
 :where([data-toc-popover-trigger]) {
   background-color: color-mix(in oklab, var(--glass-tint-soft) 25%, transparent) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter:
+    blur(var(--glass-blur-soft))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  backdrop-filter:
+    blur(var(--glass-blur-soft))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline);
   box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
@@ -165,8 +228,16 @@
    使触发按钮的 backdrop-filter 能透视到透明背景。 */
 :where([data-toc-popover]) > header {
   background-color: color-mix(in oklab, var(--glass-tint) 30%, transparent) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  backdrop-filter:
+    blur(var(--glass-blur))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline);
   box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
@@ -191,8 +262,16 @@
    之前用 :not(:has(> h2)) 做排除会把整个搜索 dialog 也排除掉） */
 [role="dialog"][data-state="open"]:has(input) {
   background-color: var(--glass-tint-soft) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter:
+    blur(var(--glass-blur-strong))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  backdrop-filter:
+    blur(var(--glass-blur-strong))
+    saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline) !important;
   box-shadow:
     inset 0 0 0 1px var(--glass-highlight),
