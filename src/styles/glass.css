@@ -12,16 +12,10 @@
 .glass-chip,
 .glass-cta {
   border: 1px solid var(--glass-border-hairline);
-  -webkit-backdrop-filter:
-    blur(var(--glass-blur))
-    saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast));
-  backdrop-filter:
-    blur(var(--glass-blur))
-    saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   background-color: var(--glass-tint);
 }
 
@@ -37,16 +31,10 @@
    弹窗 / 抽屉 / 搜索框：更强 blur + 更浓 tint，圆角更大。 */
 .glass-card {
   background-color: var(--glass-tint-strong);
-  -webkit-backdrop-filter:
-    blur(var(--glass-blur-strong))
-    saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast));
-  backdrop-filter:
-    blur(var(--glass-blur-strong))
-    saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   border-radius: 1rem;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -57,16 +45,10 @@
    小元件：icon chip / 按钮。轻 blur + 软 tint，不带外阴影。 */
 .glass-chip {
   background-color: var(--glass-tint-soft);
-  -webkit-backdrop-filter:
-    blur(var(--glass-blur-soft))
-    saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast));
-  backdrop-filter:
-    blur(var(--glass-blur-soft))
-    saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
 }
 
 /* Border + inner highlight decoration, no blur — for elements that already have a background.
@@ -80,15 +62,9 @@
    首页 CTA：保留独立 blur 与阴影强度。 */
 .glass-cta {
   background-color: var(--glass-tint-strong);
-  -webkit-backdrop-filter:
-    blur(20px)
-    saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast));
-  backdrop-filter:
-    blur(20px)
-    saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness))
+  -webkit-backdrop-filter: blur(20px) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(20px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
     contrast(var(--glass-contrast));
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),

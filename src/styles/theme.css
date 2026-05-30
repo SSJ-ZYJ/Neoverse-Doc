@@ -47,9 +47,7 @@ blockquote {
   --color-foreground: var(--foreground);
   --font-orbitron: var(--font-orbitron);
   --font-noto-sans: var(--font-noto-sans);
-  --font-mono:
-    "Maple Mono NF CN", "JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono",
-    "Ubuntu Mono", monospace;
+  --font-mono: "Maple Mono NF CN", "Maple Mono CN";
 }
 
 .font-orbitron {

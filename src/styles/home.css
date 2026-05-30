@@ -55,7 +55,7 @@
   animation-delay: -8s, -5s;
 }
 
-[data-theme='dark'] .home-gradient-bg,
+[data-theme="dark"] .home-gradient-bg,
 .dark .home-gradient-bg {
   background:
     radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.38), transparent 40%),
@@ -70,17 +70,17 @@
   animation: home-gradient-drift 10s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
 
-[data-theme='dark'] .home-gradient-bg__orb--one,
+[data-theme="dark"] .home-gradient-bg__orb--one,
 .dark .home-gradient-bg__orb--one {
   background: radial-gradient(circle, rgba(56, 189, 248, 0.92), transparent 70%);
 }
 
-[data-theme='dark'] .home-gradient-bg__orb--two,
+[data-theme="dark"] .home-gradient-bg__orb--two,
 .dark .home-gradient-bg__orb--two {
   background: radial-gradient(circle, rgba(74, 222, 128, 0.85), transparent 68%);
 }
 
-[data-theme='dark'] .home-gradient-bg__orb--three,
+[data-theme="dark"] .home-gradient-bg__orb--three,
 .dark .home-gradient-bg__orb--three {
   background: radial-gradient(circle, rgba(14, 165, 233, 0.82), transparent 72%);
 }
