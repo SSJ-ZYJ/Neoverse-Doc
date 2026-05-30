@@ -1,10 +1,10 @@
-// Static search API with Mandarin tokenizer for Chinese support.
-// Uses @orama/tokenizers/mandarin for proper CJK segmentation.
-// 静态搜索 API，使用 Mandarin 分词器支持中文搜索。
-// 通过 @orama/tokenizers/mandarin 实现正确的 CJK 分词。
+// Static search API with custom mixed tokenizer for Chinese/English support.
+// Uses @orama/tokenizers/mandarin for CJK segmentation + lowercase normalization for English.
+// 静态搜索 API，使用自定义混合分词器支持中英文搜索。
+// 使用 @orama/tokenizers/mandarin 进行 CJK 分词，并为英文添加小写规范化。
 
-import { createTokenizer } from '@orama/tokenizers/mandarin';
 import { createFromSource } from 'fumadocs-core/search/server';
+import { createMixedTokenizer } from '@/lib/search-tokenizer';
 import { source } from '@/lib/source';
 
 export const dynamic = 'force-static';
@@ -13,7 +13,7 @@ const { staticGET } = createFromSource(source, {
   localeMap: {
     zh: {
       components: {
-        tokenizer: createTokenizer(),
+        tokenizer: createMixedTokenizer(),
       },
       search: {
         threshold: 0,
