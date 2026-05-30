@@ -4,6 +4,7 @@
 @import "tailwindcss";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
+@plugin "tailwindcss-animate";
 
 /* ── Smooth Theme Transition / 深浅色主题切换平滑过渡 ─────────────────── */
 /* Single-source-of-truth approach: override fumadocs default 150ms

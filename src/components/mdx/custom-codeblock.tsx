@@ -84,11 +84,15 @@ function CopyButton({ containerRef }: { containerRef: React.RefObject<HTMLDivEle
     <button
       type="button"
       data-checked={checked || undefined}
-      className="inline-flex items-center justify-center rounded-md p-1 text-fd-muted-foreground hover:text-fd-accent-foreground data-checked:text-fd-accent-foreground transition-colors"
+      className="inline-flex items-center justify-center rounded-md p-1 text-fd-muted-foreground hover:text-fd-accent-foreground hover:bg-fd-accent data-checked:text-green-600 data-checked:bg-green-500/10 dark:data-checked:text-green-400 dark:data-checked:bg-green-500/15 transition-all duration-200 cursor-pointer active:scale-95"
       aria-label={checked ? t.codeBlockCopied : t.codeBlockCopy}
       onClick={onClick}
     >
-      {checked ? <Check className="size-3.5" /> : <Clipboard className="size-3.5" />}
+      {checked ? (
+        <Check className="size-3.5 animate-in zoom-in-50 duration-200" />
+      ) : (
+        <Clipboard className="size-3.5" />
+      )}
     </button>
   );
 }
