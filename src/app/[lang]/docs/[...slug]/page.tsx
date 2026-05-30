@@ -48,7 +48,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
             <p className="text-sm text-fd-muted-foreground">{dict.communityDesc}</p>
           </div>
         </div>
-        <Guestbook />
+        <Guestbook slugKey={slugKey} />
       </div>
     </DocsPage>
   );
