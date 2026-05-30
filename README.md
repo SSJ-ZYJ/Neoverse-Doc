@@ -135,12 +135,14 @@ Neoverse-Doc/
 │   ├── app/                       # Next.js App Router 页面
 │   │   ├── layout.tsx             # 根布局（<html>/<body> + 全局字体 + ThemeProvider）
 │   │   ├── page.tsx               # 根路径客户端重定向到 /{defaultLocale}
+│   │   ├── not-found.tsx          # 根级本地化 404 回退
 │   │   ├── globals.css            # 全局样式入口（@import 模块化样式表）
 │   │   ├── api/
 │   │   │   └── search/
 │   │   │       └── route.ts       # 静态搜索 API（Orama + Mandarin 分词）
 │   │   └── [lang]/                # 语言段（zh / en）
 │   │       ├── layout.tsx         # 注入 i18nProvider + 按 locale 生成 metadata
+│   │       ├── not-found.tsx      # 语言级本地化 404 回退
 │   │       ├── (home)/            # 主页路由组（独立布局）
 │   │       │   ├── layout.tsx     # HomeLayout 包裹
 │   │       │   ├── page.tsx       # 首页（品牌入口 + 进入文档按钮）
@@ -149,8 +151,10 @@ Neoverse-Doc/
 │   │       │       └── page.tsx   # 独立留言墙页面
 │   │       └── docs/              # 文档路由组
 │   │       │   ├── layout.tsx     # DocsLayout（侧栏 + 正文 + 目录）
+│   │       │   ├── not-found.tsx  # 文档区 404 回退（挂载到 main 网格区域）
 │   │       │   ├── template.tsx   # 页面过渡动效模板
 │   │       │   └── [...slug]/
+│   │       │       ├── not-found.tsx # 文档正文缺失回退
 │   │       │       └── page.tsx   # 文档正文（MDX + CustomCodeBlock + Mermaid + Giscus）
 │   ├── components/
 │   │   ├── transition/            # 页面过渡与遮罩揭示动画组件
@@ -164,6 +168,7 @@ Neoverse-Doc/
 │   │   │   └── docs-author.tsx       # 文档作者展示组件
 │   │   ├── search.tsx             # 静态搜索对话框（Orama + Mandarin 分词）
 │   │   ├── guestbook.tsx          # Giscus 评论组件（按 locale 切换语言）
+│   │   ├── localized-not-found.tsx # 本地化 404 回退组件
 │   │   └── sidebar-provider.tsx   # 侧栏折叠状态持久化 Provider
 │   ├── dictionaries/
 │   │   ├── index.ts               # 字典聚合 + getPageDictionary(locale)
@@ -285,6 +290,8 @@ UI 文案分为两层管理：
 - **页面自定义文案**：由 [src/dictionaries/](./src/dictionaries/index.ts) 管理
 
 [src/lib/i18n.ts](./src/lib/i18n.ts) 通过 `defineI18n` 集中声明语言列表与默认语言，作为 i18n 配置的唯一来源。
+
+根级、语言级和文档区的 404 回退页复用 [src/components/localized-not-found.tsx](./src/components/localized-not-found.tsx)，根据当前路由中的 `lang` 段读取 `src/dictionaries/` 文案；没有语言段时回退到默认语言。
 
 [src/app/[lang]/layout.tsx](./src/app/[lang]/layout.tsx) 通过 `RootProvider` 的 `i18n` 属性按路由注入对应翻译：
 

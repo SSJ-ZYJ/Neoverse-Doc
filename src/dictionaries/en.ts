@@ -16,4 +16,9 @@ export const en = {
   errorTitle: 'Page Failed to Load',
   errorDesc: 'An unexpected error occurred. Please try reloading the page.',
   errorRetry: 'Retry',
+  notFoundTitle: 'Page Not Found',
+  notFoundDesc:
+    'The page you are looking for might have been removed, renamed, or temporarily unavailable.',
+  notFoundBack: 'Go Back',
+  notFoundHome: 'Back to Home',
 } as const;

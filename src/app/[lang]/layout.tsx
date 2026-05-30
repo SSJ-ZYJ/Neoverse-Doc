@@ -35,6 +35,7 @@ export default async function LangLayout({ params, children }: LayoutProps<'/[la
       search={{
         SearchDialog: DefaultSearchDialog,
       }}
+      theme={{ enabled: false }}
       i18n={i18nProvider(i18nUI, locale)}
     >
       {children}

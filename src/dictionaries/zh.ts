@@ -16,4 +16,8 @@ export const zh = {
   errorTitle: '页面加载失败',
   errorDesc: '发生了意外错误，请尝试重新加载页面。',
   errorRetry: '重试',
+  notFoundTitle: '页面未找到',
+  notFoundDesc: '你访问的页面可能已被移除、重命名或暂时不可用。',
+  notFoundBack: '返回上一页',
+  notFoundHome: '返回首页',
 } as const;
