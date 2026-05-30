@@ -8,6 +8,10 @@ import { BackLink } from '@/components/transition/back-link';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/lib/i18n';
 
+// Stable Giscus term for the standalone guestbook across all locales.
+// 独立留言墙跨语言共用的稳定 Giscus 讨论标识。
+const GUESTBOOK_SLUG_KEY = 'guestbook';
+
 export function generateStaticParams() {
   return i18n.languages.map((lang) => ({ lang }));
 }
@@ -27,7 +31,7 @@ export default async function GuestbookPage({ params }: PageProps<'/[lang]/guest
         <h1 className="text-3xl font-bold text-fd-foreground mb-2">{dict.guestbookTitle}</h1>
         <p className="text-fd-muted-foreground text-base">{dict.guestbookDesc}</p>
       </div>
-      <Guestbook />
+      <Guestbook slugKey={GUESTBOOK_SLUG_KEY} />
     </main>
   );
 }
