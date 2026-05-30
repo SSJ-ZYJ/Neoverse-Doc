@@ -18,15 +18,117 @@ import { useCopyButton } from 'fumadocs-ui/utils/use-copy-button';
 import { Check, Clipboard } from 'lucide-react';
 import { type ComponentProps, type ReactNode, useRef } from 'react';
 
+// Language display name map / 语言显示名称映射
+const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
+  javascript: 'JavaScript',
+  js: 'JavaScript',
+  typescript: 'TypeScript',
+  ts: 'TypeScript',
+  tsx: 'TSX',
+  jsx: 'JSX',
+  python: 'Python',
+  py: 'Python',
+  html: 'HTML',
+  css: 'CSS',
+  scss: 'SCSS',
+  sass: 'Sass',
+  less: 'Less',
+  json: 'JSON',
+  yaml: 'YAML',
+  yml: 'YAML',
+  xml: 'XML',
+  markdown: 'Markdown',
+  md: 'Markdown',
+  mdx: 'MDX',
+  bash: 'Bash',
+  sh: 'Shell',
+  shell: 'Shell',
+  zsh: 'Zsh',
+  powershell: 'PowerShell',
+  ps1: 'PowerShell',
+  rust: 'Rust',
+  rs: 'Rust',
+  go: 'Go',
+  golang: 'Go',
+  c: 'C',
+  cpp: 'C++',
+  'c++': 'C++',
+  cxx: 'C++',
+  java: 'Java',
+  kotlin: 'Kotlin',
+  kt: 'Kotlin',
+  swift: 'Swift',
+  php: 'PHP',
+  ruby: 'Ruby',
+  rb: 'Ruby',
+  sql: 'SQL',
+  graphql: 'GraphQL',
+  dockerfile: 'Dockerfile',
+  docker: 'Dockerfile',
+  nginx: 'Nginx',
+  vim: 'Vim',
+  lua: 'Lua',
+  perl: 'Perl',
+  pl: 'Perl',
+  r: 'R',
+  scala: 'Scala',
+  dart: 'Dart',
+  elixir: 'Elixir',
+  ex: 'Elixir',
+  erlang: 'Erlang',
+  erl: 'Erlang',
+  haskell: 'Haskell',
+  hs: 'Haskell',
+  clojure: 'Clojure',
+  clj: 'Clojure',
+  groovy: 'Groovy',
+  matlab: 'MATLAB',
+  octave: 'Octave',
+  julia: 'Julia',
+  jl: 'Julia',
+  fsharp: 'F#',
+  fs: 'F#',
+  csharp: 'C#',
+  cs: 'C#',
+  vb: 'VB.NET',
+  'vb.net': 'VB.NET',
+  objectivec: 'Objective-C',
+  objc: 'Objective-C',
+  assembly: 'Assembly',
+  asm: 'Assembly',
+  toml: 'TOML',
+  ini: 'INI',
+  cfg: 'Config',
+  env: 'Env',
+  diff: 'Diff',
+  patch: 'Patch',
+  regex: 'Regex',
+  http: 'HTTP',
+  rest: 'REST',
+  svg: 'SVG',
+  math: 'Math',
+  latex: 'LaTeX',
+  tex: 'LaTeX',
+};
+
+function getLanguageDisplayName(lang: string): string {
+  const normalized = lang.toLowerCase();
+  return (
+    LANGUAGE_DISPLAY_NAMES[normalized] || normalized.charAt(0).toUpperCase() + normalized.slice(1)
+  );
+}
+
 interface CodeBlockPreProps extends ComponentProps<'pre'> {
   title?: string;
   icon?: ReactNode | string;
+  lang?: string;
 }
 
 export function CustomCodeBlock(props: CodeBlockPreProps) {
-  const { children, title, icon, className, ...rest } = props;
+  const { children, title, icon, lang, className, ...rest } = props;
   const areaRef = useRef<HTMLDivElement>(null);
   const hasTitle = typeof title === 'string' && title.length > 0;
+  const language = typeof lang === 'string' ? getLanguageDisplayName(lang) : null;
 
   return (
     <figure
@@ -44,6 +146,8 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
         ) : null}
         {hasTitle ? (
           <figcaption className="flex-1 truncate">{title}</figcaption>
+        ) : language ? (
+          <span className="flex-1 text-xs font-medium">{language}</span>
         ) : (
           <span className="flex-1" />
         )}
