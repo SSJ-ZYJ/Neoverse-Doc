@@ -35,7 +35,7 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
 
       <EnterDocsButton
         href={`/${locale}/docs/ch0`}
-        className="z-10 mt-16 glass-cta px-12 py-4 rounded-2xl text-lg font-semibold hover:scale-105 transition-transform duration-300"
+        className="z-10 mt-16 glass-cta px-12 py-4 rounded-2xl text-lg font-semibold"
       >
         {dict.enterDocs} →
       </EnterDocsButton>
