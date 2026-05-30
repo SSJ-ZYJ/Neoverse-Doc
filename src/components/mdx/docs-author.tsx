@@ -22,6 +22,7 @@ function getGithubAvatar(url: string): string | null {
 
 function AuthorAvatar({ name, src }: { name: string; src: string }) {
   const [error, setError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   if (error) {
     return (
@@ -32,14 +33,20 @@ function AuthorAvatar({ name, src }: { name: string; src: string }) {
   }
 
   return (
-    <Image
-      src={src}
-      alt={name}
-      width={20}
-      height={20}
-      className="rounded-md"
-      onError={() => setError(true)}
-    />
+    <span className="relative inline-block size-5">
+      {!loaded && (
+        <span className="absolute inset-0 rounded-md bg-fd-muted-foreground/20 animate-pulse" />
+      )}
+      <Image
+        src={src}
+        alt={name}
+        width={20}
+        height={20}
+        className={`rounded-md transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        onError={() => setError(true)}
+        onLoad={() => setLoaded(true)}
+      />
+    </span>
   );
 }
 
