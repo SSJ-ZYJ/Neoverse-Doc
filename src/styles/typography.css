@@ -9,6 +9,37 @@ pre code {
   font-family: var(--font-mono);
 }
 
+/* Glass code block surface: lets ambient page color show through while preserving syntax colors.
+   玻璃态代码块表面：保留语法高亮颜色，同时让页面环境色透出。 */
+.glass-codeblock {
+  background:
+    linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%),
+    color-mix(in oklab, var(--glass-tint-strong) 58%, transparent);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border-color: var(--glass-border-hairline);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+/* Transparent Shiki layers expose the glass wrapper instead of forcing pure black or white.
+   透明化 Shiki 内层背景，避免代码区域显示为纯黑或纯白。 */
+.glass-codeblock pre,
+.glass-codeblock pre code,
+.glass-codeblock .shiki,
+.glass-codeblock .shiki span {
+  background: transparent !important;
+}
+
+.glass-codeblock > div:first-child {
+  background-color: color-mix(in oklab, var(--glass-tint-soft) 72%, transparent);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+}
+
 /* ── Blockquote & Alerts / 引用块与提示框 ─────────────────────────────── */
 
 blockquote {

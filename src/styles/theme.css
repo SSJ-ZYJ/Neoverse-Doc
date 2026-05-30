@@ -29,6 +29,7 @@ body::before,
 .glass-card,
 .glass-chip,
 .glass-cta,
+.glass-codeblock,
 blockquote {
   transition:
     background-color var(--theme-transition-duration) ease,
@@ -77,6 +78,8 @@ blockquote {
   --glass-ambient-a: rgba(56, 189, 248, 0.16);
   --glass-ambient-b: rgba(74, 222, 128, 0.12);
   --glass-ambient-c: rgba(14, 165, 233, 0.08);
+  /* Code block glass sheen / 代码块玻璃高光 */
+  --glass-codeblock-sheen: rgba(56, 189, 248, 0.1);
   /* Theme-agnostic glass scalars / 主题无关的玻璃标量 */
   --glass-blur: 24px;
   --glass-blur-strong: 32px;
@@ -128,6 +131,8 @@ blockquote {
   --glass-ambient-a: rgba(56, 189, 248, 0.14);
   --glass-ambient-b: rgba(168, 85, 247, 0.1);
   --glass-ambient-c: rgba(14, 165, 233, 0.06);
+  /* Code block glass sheen / 代码块玻璃高光 */
+  --glass-codeblock-sheen: rgba(56, 189, 248, 0.08);
 
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);

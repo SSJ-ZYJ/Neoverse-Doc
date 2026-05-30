@@ -130,11 +130,13 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
   const hasTitle = typeof title === 'string' && title.length > 0;
   const language = typeof lang === 'string' ? getLanguageDisplayName(lang) : null;
 
+  // Glass code block wrapper keeps page ambient colors visible without changing Shiki markup.
+  // 代码块玻璃外壳在不改变 Shiki 结构的前提下，让页面环境色保持可见。
   return (
     <figure
       dir="ltr"
       tabIndex={-1}
-      className={`my-4 bg-fd-card rounded-xl shiki relative border shadow-sm not-prose overflow-hidden text-sm ${className || ''}`}
+      className={`my-4 glass-codeblock rounded-xl shiki relative border shadow-sm not-prose overflow-hidden text-sm ${className || ''}`}
       {...rest}
     >
       <div className="flex text-fd-muted-foreground items-center gap-2 h-9.5 border-b px-4">

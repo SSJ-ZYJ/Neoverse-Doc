@@ -8,6 +8,7 @@
   .glass-card,
   .glass-chip,
   .glass-cta,
+  .glass-codeblock,
   :where(#nd-nav) > div,
   :where(#nd-subnav),
   :where(#nd-sidebar),
@@ -16,7 +17,7 @@
   :where([data-toc-popover-trigger]),
   :where([data-toc-popover]) > header,
   [role="dialog"][data-state="open"]:has(input) {
-    background-color: var(--background) !important;
+    background: var(--background) !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     box-shadow: none !important;
@@ -33,6 +34,7 @@
   .glass-card,
   .glass-chip,
   .glass-cta,
+  .glass-codeblock,
   :where(#nd-nav) > div,
   :where(#nd-subnav),
   :where(#nd-sidebar),
@@ -41,7 +43,7 @@
   :where([data-toc-popover-trigger]),
   :where([data-toc-popover]) > header,
   [role="dialog"][data-state="open"]:has(input) {
-    background-color: var(--background);
+    background: var(--background);
   }
   body::before {
     display: none;
