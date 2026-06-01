@@ -101,8 +101,14 @@ bun run start
    ---
    title: 你的标题
    description: 页面描述
+   author:
+     - "主要作者(https://github.com/your-name)"
+   contributors:
+     - "贡献者(https://github.com/contributor-name)"
    ---
    ```
+
+   `author` 会在文档开头显示为主要编写者；`contributors` 会在正文末尾显示为本文档贡献者，并兼容单数写法 `contributor`。两者均支持 `Name(https://github.com/name)` 格式以自动显示 GitHub 头像。
 
 3. 在对应目录的 `meta.json` 中注册新页面
 4. 保存后开发服务器自动热更新
@@ -165,7 +171,7 @@ Neoverse-Doc/
 │   │   ├── mdx/                   # MDX 内容渲染组件
 │   │   │   ├── custom-codeblock.tsx  # 增强代码块组件（文件路径 + 复制按钮）
 │   │   │   ├── mermaid.tsx           # Mermaid 图表渲染组件
-│   │   │   └── docs-author.tsx       # 文档作者展示组件
+│   │   │   └── docs-author.tsx       # 文档作者与贡献者展示组件
 │   │   ├── search.tsx             # 静态搜索对话框（Orama + Mandarin 分词）
 │   │   ├── guestbook.tsx          # Giscus 评论组件（按 locale 切换语言）
 │   │   ├── localized-not-found.tsx # 本地化 404 回退组件
@@ -179,7 +185,7 @@ Neoverse-Doc/
 │       ├── layout.shared.tsx      # fumadocs UI 翻译 + i18nProvider + baseOptions
 │       ├── motion.ts              # framer-motion 动画预设（过渡时长 / 缓动曲线）
 │       ├── source.ts              # fumadocs 内容源加载器（含 i18n parser: 'dir'）
-│       ├── parse-author.ts        # 作者信息解析器（支持 GitHub URL 提取）
+│       ├── parse-author.ts        # 作者/贡献者信息解析器（支持 GitHub URL 提取）
 │       ├── remark-code-title.ts   # Remark 插件：从代码顶部注释提取文件路径
 │       └── transformer-meta-title.ts  # Shiki transformer：将 meta.title 映射到 pre.properties
 │   └── styles/                    # 模块化 CSS 样式表

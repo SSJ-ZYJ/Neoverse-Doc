@@ -12,6 +12,8 @@ export const zh = {
   guestbookDesc: '在这里留下你对 Neoverse-Doc 的足迹与反馈',
   communityTitle: '讨论区',
   communityDesc: '欢迎分享你的想法与反馈',
+  primaryAuthorLabel: '主要编写者：',
+  documentContributorsTitle: '本文档贡献者',
   backToDocs: '返回文档',
   errorTitle: '页面加载失败',
   errorDesc: '发生了意外错误，请尝试重新加载页面。',

@@ -6,10 +6,18 @@
 import { User } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
-import { parseAuthor } from '@/lib/parse-author';
+import { type AuthorInfo, parseAuthor } from '@/lib/parse-author';
+
+type AuthorInput = string | string[];
 
 interface DocsAuthorProps {
-  author: string | string[];
+  author: AuthorInput;
+  label: string;
+}
+
+interface DocsContributorsProps {
+  contributors: AuthorInput;
+  title: string;
 }
 
 function getGithubAvatar(url: string): string | null {
@@ -50,39 +58,74 @@ function AuthorAvatar({ name, src }: { name: string; src: string }) {
   );
 }
 
-export function DocsAuthor({ author }: DocsAuthorProps) {
+// Shared author list renderer for the page header and contributor footer.
+// 页面头部作者与页尾贡献者共用的头像 + 名称列表渲染器。
+function AuthorList({ authors }: { authors: AuthorInfo[] }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      {authors.map((item, index) => {
+        const avatar = item.url ? getGithubAvatar(item.url) : null;
+        const isLink = !!item.url;
+
+        return (
+          <span key={item.name} className="inline-flex items-center gap-3">
+            {index > 0 && <span className="text-fd-muted-foreground/50">|</span>}
+            <span className="inline-flex items-center gap-1.5">
+              {avatar && <AuthorAvatar name={item.name} src={avatar} />}
+              {isLink ? (
+                <a
+                  href={item.url ?? undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-fd-muted-foreground underline underline-offset-2 transition-colors hover:text-fd-foreground"
+                >
+                  {item.name}
+                </a>
+              ) : (
+                <span>{item.name}</span>
+              )}
+            </span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+export function DocsAuthor({ author, label }: DocsAuthorProps) {
   const authors = parseAuthor(author);
+
+  if (authors.length === 0) {
+    return null;
+  }
 
   return (
     <div className="mb-6 flex items-center gap-3 text-sm text-fd-muted-foreground">
       <User size={14} className="shrink-0" />
-      <div className="flex items-center gap-3">
-        {authors.map((item, index) => {
-          const avatar = item.url ? getGithubAvatar(item.url) : null;
-          const isLink = !!item.url;
-
-          return (
-            <span key={item.name} className="inline-flex items-center gap-3">
-              {index > 0 && <span className="text-fd-muted-foreground/50">|</span>}
-              <span className="inline-flex items-center gap-1.5">
-                {avatar && <AuthorAvatar name={item.name} src={avatar} />}
-                {isLink ? (
-                  <a
-                    href={item.url ?? undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-fd-muted-foreground hover:text-fd-foreground underline underline-offset-2 transition-colors"
-                  >
-                    {item.name}
-                  </a>
-                ) : (
-                  <span>{item.name}</span>
-                )}
-              </span>
-            </span>
-          );
-        })}
+      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2">
+        <span className="font-medium text-fd-foreground">{label}</span>
+        <AuthorList authors={authors} />
       </div>
     </div>
+  );
+}
+
+// Contributor footer section shown after MDX content when contributors are defined.
+// 当文档定义 contributors 时，在正文末尾展示贡献者区域。
+export function DocsContributors({ contributors, title }: DocsContributorsProps) {
+  const authors = parseAuthor(contributors);
+
+  if (authors.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="order-last mt-12 border-t border-fd-border pt-8">
+      <h2 className="mb-4 text-base font-semibold text-fd-foreground">{title}</h2>
+      <div className="flex items-center gap-3 text-sm text-fd-muted-foreground">
+        <User size={14} className="shrink-0" />
+        <AuthorList authors={authors} />
+      </div>
+    </section>
   );
 }

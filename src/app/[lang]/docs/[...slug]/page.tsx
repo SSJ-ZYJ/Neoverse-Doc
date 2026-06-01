@@ -11,7 +11,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Guestbook } from '@/components/guestbook';
 import { CustomCodeBlock } from '@/components/mdx/custom-codeblock';
-import { DocsAuthor } from '@/components/mdx/docs-author';
+import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { Mermaid } from '@/components/mdx/mermaid';
 import { DocsTransition } from '@/components/transition/docs-transition';
 import { getPageDictionary } from '@/dictionaries';
@@ -27,17 +27,23 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
 
   const MDX = page.data.body;
   const slugKey = slug.join('/');
+  // Contributor frontmatter supports both singular and plural keys.
+  // 贡献者 frontmatter 同时兼容单数与复数字段。
+  const contributors = page.data.contributors ?? page.data.contributor;
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full} tableOfContent={{ style: 'clerk' }}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
-      {page.data.author && <DocsAuthor author={page.data.author} />}
+      {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
       <DocsBody>
         <DocsTransition slugKey={slugKey}>
           <MDX components={{ ...defaultMdxComponents, Mermaid, pre: CustomCodeBlock }} />
         </DocsTransition>
       </DocsBody>
+      {contributors && (
+        <DocsContributors contributors={contributors} title={dict.documentContributorsTitle} />
+      )}
       <div className="order-last mt-16 border-t border-fd-border pt-10">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex size-9 items-center justify-center rounded-lg glass-chip text-fd-accent-foreground">

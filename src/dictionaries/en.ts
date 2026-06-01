@@ -12,6 +12,8 @@ export const en = {
   guestbookDesc: 'Leave your footprints and feedback for Neoverse-Doc here',
   communityTitle: 'Discussion',
   communityDesc: 'Welcome to share your thoughts and feedback',
+  primaryAuthorLabel: 'Primary author:',
+  documentContributorsTitle: 'Document contributors',
   backToDocs: 'Back to Docs',
   errorTitle: 'Page Failed to Load',
   errorDesc: 'An unexpected error occurred. Please try reloading the page.',

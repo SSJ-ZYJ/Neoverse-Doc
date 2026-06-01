@@ -3,6 +3,9 @@ title: 0.0 README | 自述文件
 description: Neoverse-Doc 的自述
 author:
   - "Shenshijun(https://github.com/SSJ-ZYJ)"
+contributors:
+  - "测Collinor试(https://github.com/Collinor)"
+  - "Collinorr(https://github.com/Collinorr)"
 ---
 
 ## 1.1 文档建立初衷

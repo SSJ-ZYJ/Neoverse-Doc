@@ -189,8 +189,14 @@ refactor(components): 重构 Mermaid 组件渲染逻辑
    ---
    title: 页面标题
    description: 页面描述
+   author:
+     - "主要作者(https://github.com/your-name)"
+   contributors:
+     - "贡献者(https://github.com/contributor-name)"
    ---
    ```
+
+   `author` 会在文档开头显示为主要编写者；`contributors` 会在正文末尾显示为本文档贡献者，并兼容单数写法 `contributor`。两者均支持 `Name(https://github.com/name)` 格式以自动显示 GitHub 头像。
 
 3. 在对应目录的 `meta.json` 中注册新页面
 4. 如需英文版本，在 `content/docs/en/` 创建对应文件

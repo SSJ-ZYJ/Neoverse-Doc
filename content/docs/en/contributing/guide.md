@@ -187,8 +187,14 @@ refactor(components): refactor Mermaid component rendering logic
    ---
    title: Page Title
    description: Page Description
+   author:
+     - "Primary Author(https://github.com/your-name)"
+   contributors:
+     - "Contributor(https://github.com/contributor-name)"
    ---
    ```
+
+   `author` is shown as the primary author at the top of the document; `contributors` is shown as document contributors at the end of the body, with singular `contributor` supported as a compatibility alias. Both support the `Name(https://github.com/name)` format for automatic GitHub avatars.
 
 3. Register the new page in the corresponding directory's `meta.json`
 4. For the English version, create the corresponding file under `content/docs/en/`
