@@ -267,6 +267,7 @@
    让"Tab / 文件路径"与"文件路径 / 代码体"两条分隔线视觉等粗，
    表头读起来像统一的三段式而不是两个堆叠容器。 */
 :where(#nd-page) div[data-orientation] > [role="tablist"] {
+  position: relative;
   background-color: color-mix(in oklab, var(--glass-tint-soft) 72%, transparent);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
@@ -286,6 +287,50 @@
   cursor: pointer;
 }
 
+/* Sliding active-tab indicator: a shared brand-color underline that
+   transitions its left/width between tabs instead of toggling per-tab
+   borders. Position and width are driven by --tab-indicator-x / --w
+   CSS variables set by [components/mdx/code-tabs.tsx]. Cubic-bezier
+   gives a fast start + smooth settle (similar to Vercel's tabs).
+   滑动激活下划线：一根共享的品牌色下划线，在 Tab 间补间 left / width
+   而不是各自切换 border-b。位置与宽度由 [components/mdx/code-tabs.tsx]
+   写入的 --tab-indicator-x / --w CSS 变量驱动；cubic-bezier 给出
+   "起手快、落点稳"的缓动（接近 Vercel Tabs 体感）。 */
+:where(#nd-page) div[data-orientation] > [role="tablist"]::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  width: var(--tab-indicator-w, 0);
+  transform: translateX(var(--tab-indicator-x, 0));
+  background: var(--fd-primary);
+  border-radius: 2px 2px 0 0;
+  box-shadow: 0 0 10px color-mix(in oklab, var(--fd-primary) 35%, transparent);
+  pointer-events: none;
+  transition:
+    transform 320ms cubic-bezier(0.45, 0, 0.15, 1),
+    width 320ms cubic-bezier(0.45, 0, 0.15, 1);
+}
+
+/* Suppress fumadocs's per-tab brand-color border-b so only the moving
+   indicator shows. Inactive tabs already have a transparent border, so
+   targeting just the active state is enough.
+   屏蔽 fumadocs 默认每个 Tab 自带的品牌色 border-b，只保留共享下划线；
+   未激活 Tab 本来就是透明 border，仅覆盖激活态即可。 */
+:where(#nd-page) div[data-orientation] > [role="tablist"] > [role="tab"][data-state="active"] {
+  border-bottom-color: transparent;
+}
+
+/* Respect user motion preference. Reduced-motion users get an instant
+   snap to the new tab instead of the 320ms slide.
+   尊重系统的"减少动效"偏好：直接瞬切到新位置，不做 320ms 滑动。 */
+@media (prefers-reduced-motion: reduce) {
+  :where(#nd-page) div[data-orientation] > [role="tablist"]::after {
+    transition: none;
+  }
+}
+
 /* TabsContent: transparent so the outer glass panel shows through.
    TabsContent：透明背景，露出外层玻璃面。 */
 :where(#nd-page) div[data-orientation] > [role="tabpanel"] {
@@ -298,9 +343,7 @@
    divider between header and code body.
    Tab 内仅包含一个玻璃代码块时：移除其自身玻璃面 / 阴影 / 边框 / 顶部圆角，
    让文件路径条无缝接住上方 Tab 条，其 border-b 成为表头与正文之间唯一分隔线。 */
-:where(#nd-page) div[data-orientation]
-  > [role="tabpanel"]
-  > figure.glass-codeblock:only-child {
+:where(#nd-page) div[data-orientation] > [role="tabpanel"] > figure.glass-codeblock:only-child {
   background: transparent !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
