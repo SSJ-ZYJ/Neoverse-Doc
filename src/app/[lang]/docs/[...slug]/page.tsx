@@ -4,6 +4,7 @@
 // 动态文档页：从 fumadocs source 树渲染 MDX 内容，支持 Mermaid 图表，
 // 底部附带 Giscus 讨论区。元信息（标题/描述）从页面 frontmatter 生成。
 
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import { MessageSquareText } from 'lucide-react';
@@ -38,7 +39,9 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
       <DocsBody>
         <DocsTransition slugKey={slugKey}>
-          <MDX components={{ ...defaultMdxComponents, Mermaid, pre: CustomCodeBlock }} />
+          <MDX
+            components={{ ...defaultMdxComponents, Mermaid, pre: CustomCodeBlock, Tabs, Tab }}
+          />
         </DocsTransition>
       </DocsBody>
       {contributors && (

@@ -224,6 +224,54 @@ refactor(components): 重构 Mermaid 组件渲染逻辑
 3. 在对应目录的 `meta.json` 中注册新页面
 4. 如需英文版本，在 `content/docs/en/` 创建对应文件
 
+### 多语言代码块（Tabs）
+
+当同一段逻辑需要以多种编程语言呈现时（例如 C++ / Python / Java 三份等价实现），使用 Fumadocs 内置的 `<Tabs>` 组件。该写法需要文件后缀为 `.mdx`（普通的 `.md` 仍可继续使用，二者并存）。
+
+最小模板：
+
+````mdx
+<Tabs groupId="language" persist items={['C++', 'Python', 'Java']}>
+
+<Tab value="C++">
+
+```cpp
+// src/algo/sort.cpp
+#include <algorithm>
+void demo() {}
+```
+
+</Tab>
+
+<Tab value="Python">
+
+```python
+# src/algo/sort.py
+def demo():
+    pass
+```
+
+</Tab>
+
+<Tab value="Java">
+
+```java
+// src/algo/Sort.java
+class Sort { static void demo() {} }
+```
+
+</Tab>
+
+</Tabs>
+````
+
+要点：
+
+- `groupId="language"` 让同页面所有同 `groupId` 的 Tabs 联动；加上 `persist` 后用户选择会被写入 `localStorage`，跨页面、跨刷新均保留。
+- `items` 数组顺序决定 Tab 顺序，`<Tab value="...">` 必须与 `items` 中的字符串完全一致。
+- 每个 `<Tab>` 内可放任意 Markdown 内容，并不限定代码块；代码块首行注释（如 `// src/foo.cpp`）仍会被自动提取为文件路径标题，复制按钮、Shiki 高亮等装饰与普通代码块完全一致。
+- 完整的运行示例见 [`content/docs/zh/about/code-tabs-demo.mdx`](content/docs/zh/about/code-tabs-demo.mdx)。
+
 ## Pull Request 流程
 
 ### 提交前检查

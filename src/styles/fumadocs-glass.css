@@ -232,3 +232,80 @@
 #nd-page > div.mb-6 {
   margin-bottom: 0.5rem !important;
 }
+
+/* ── Tabs Glassification / 多语言代码块 Tabs 玻璃化 ───────────────────── */
+/* Make the language tab strip and the code block's file-path bar read as
+   one continuous glass panel instead of two stacked containers.
+   将语言切换条与代码块文件路径条整合为同一片连续玻璃面，而不是两个堆叠容器。 */
+
+/* Outer Tabs container: replace solid bg-fd-secondary with code-block glass.
+   外层 Tabs 容器：用代码块同款玻璃面替换默认的实色 bg-fd-secondary。 */
+:where(#nd-page) div[data-orientation]:has(> [role="tablist"]) {
+  background:
+    linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%),
+    color-mix(in oklab, var(--glass-tint-strong) 58%, transparent);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border-color: var(--glass-border-hairline);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+/* TabsList: thin glass strip using the same soft tint as the file-path bar
+   below it, so the two read as one cohesive header. The bottom divider color
+   matches typography.css's figure header divider for visual symmetry between
+   "tab / file-path" and "file-path / code body".
+   TabsList：薄玻璃顶条，与下方文件路径条共用 soft tint，连成统一表头。
+   底部分隔线与 typography.css 里"文件路径 / 代码体"分隔线同色，
+   让"Tab / 文件路径"与"文件路径 / 代码体"两条分隔线视觉等粗，
+   表头读起来像统一的三段式而不是两个堆叠容器。 */
+:where(#nd-page) div[data-orientation] > [role="tablist"] {
+  background-color: color-mix(in oklab, var(--glass-tint-soft) 72%, transparent);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  padding-top: 0.25rem;
+}
+
+:where([data-theme="dark"], .dark) :where(#nd-page) div[data-orientation] > [role="tablist"] {
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Tab buttons: hand cursor on hover, matching every other interactive
+   element in the docs (copy button, sidebar items, search trigger).
+   Tab 按钮：悬停时显示手型光标，与文档内其它可交互元素
+   （复制按钮、侧栏条目、搜索触发器）保持一致。 */
+:where(#nd-page) div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]) {
+  cursor: pointer;
+}
+
+/* TabsContent: transparent so the outer glass panel shows through.
+   TabsContent：透明背景，露出外层玻璃面。 */
+:where(#nd-page) div[data-orientation] > [role="tabpanel"] {
+  background-color: transparent;
+}
+
+/* Tab content that contains only a glass code block: drop the code block's
+   own glass surface, shadow, border, and top rounding so the file-path bar
+   sits flush against the tab strip — leaving its own border-b as the single
+   divider between header and code body.
+   Tab 内仅包含一个玻璃代码块时：移除其自身玻璃面 / 阴影 / 边框 / 顶部圆角，
+   让文件路径条无缝接住上方 Tab 条，其 border-b 成为表头与正文之间唯一分隔线。 */
+:where(#nd-page) div[data-orientation]
+  > [role="tabpanel"]
+  > figure.glass-codeblock:only-child {
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
