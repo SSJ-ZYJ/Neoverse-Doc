@@ -256,6 +256,8 @@
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* TabsList: thin glass strip using the same soft tint as the file-path bar
@@ -273,6 +275,10 @@
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   border-bottom: 1px solid rgba(0, 0, 0, 0.15);
   padding-top: 0.25rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fd-border) transparent;
 }
 
 :where([data-theme="dark"], .dark) :where(#nd-page) div[data-orientation] > [role="tablist"] {
