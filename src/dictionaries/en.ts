@@ -23,4 +23,11 @@ export const en = {
     'The page you are looking for might have been removed, renamed, or temporarily unavailable.',
   notFoundBack: 'Go Back',
   notFoundHome: 'Back to Home',
+  // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
+  mermaidZoomOut: 'Zoom out',
+  mermaidZoomIn: 'Zoom in',
+  mermaidReset: 'Reset zoom',
+  mermaidFullscreen: 'Enter fullscreen',
+  mermaidExitFullscreen: 'Exit fullscreen',
+  mermaidToolbar: 'Diagram toolbar',
 } as const;

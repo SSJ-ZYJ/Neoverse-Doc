@@ -22,4 +22,11 @@ export const zh = {
   notFoundDesc: '你访问的页面可能已被移除、重命名或暂时不可用。',
   notFoundBack: '返回上一页',
   notFoundHome: '返回首页',
+  // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
+  mermaidZoomOut: '缩小图表',
+  mermaidZoomIn: '放大图表',
+  mermaidReset: '重置缩放',
+  mermaidFullscreen: '进入全屏',
+  mermaidExitFullscreen: '退出全屏',
+  mermaidToolbar: '图表工具栏',
 } as const;
