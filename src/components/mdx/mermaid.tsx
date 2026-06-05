@@ -239,16 +239,17 @@ export function Mermaid({ chart }: { chart: string }) {
   // 缩放或平移任一被改动即可重置。
   const canReset = scale !== 1 || pan.x !== 0 || pan.y !== 0;
 
-  const wrapperElement = (
-    <div
-      ref={wrapperRef}
-      className="mermaid-wrapper not-prose group/mermaid my-4"
-      data-maximized={isMaximized || undefined}
-    >
-      {/* The wrapper hosts the maximize target. The canvas inside is the
-          actual scroll / zoom / drag area; toolbar floats at the bottom-center.
-          wrapper 是放大态的目标，canvas 是滚动 / 缩放 / 拖动区域，
-          工具栏悬浮在底部居中。 */}
+  // Shared canvas + toolbar fragment. Both the in-page wrapper and the
+  // maximized portal clone render the exact same subtree so React's event
+  // delegation, state, and the SVG source all stay in sync. The two
+  // containers are just different `position` / `visibility` shells.
+  // 共用 canvas + toolbar 子树。in-page wrapper 与放大版 portal 克隆渲
+  // 染完全相同的子树，事件代理、state 与 SVG 内容天然同步；
+  // 两个外壳只差 position / visibility 之类的 CSS。
+  const canvasAndToolbar = (
+    <>
+      {/* The canvas is the actual scroll / zoom / drag area.
+          canvas 是滚动 / 缩放 / 拖动区域。 */}
       <div
         className="mermaid-canvas"
         data-dragging={isDragging || undefined}
@@ -324,21 +325,51 @@ export function Mermaid({ chart }: { chart: string }) {
           {isMaximized ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
         </button>
       </div>
+    </>
+  );
+
+  // In-page wrapper: ALWAYS rendered at the diagram's semantic position in
+  // the docs content. When maximized we hide it with `visibility: hidden`
+  // (which keeps the layout footprint — no reflow, no page jump) and render
+  // a maximized clone to <body> via portal. This way:
+  //   - The page layout never shifts when toggling maximize
+  //   - The clone escapes any `will-change: transform` containing block in
+  //     the docs content (e.g. docs-transition's framer-motion wrapper),
+  //     so `position: fixed` is bounded by the viewport
+  //   - State, event handlers, and SVG markup are shared between both
+  //     views — no duplication of logic, no sync issues
+  // 始终在文档里渲染的 wrapper：永远占住图表在文档中的位置。放大时用
+  // `visibility: hidden` 隐藏（保留布局占位 — 不重排、不抖页），
+  // 同时通过 portal 在 <body> 渲一株放大克隆。优点：
+  //   - 切换放大态时页面布局完全不变，没有上下跳变
+  //   - 克隆脱离了文档流里的 will-change: transform 包含块
+  //     （如 docs-transition 的 framer-motion wrapper），position: fixed
+  //     以视口为基准
+  //   - state、事件与 SVG 内容两边天然共享 — 不复制逻辑、无同步问题
+  const inPageWrapper = (
+    <div
+      className="mermaid-wrapper not-prose group/mermaid my-4"
+      data-page-renderer
+      data-hidden={isMaximized || undefined}
+      aria-hidden={isMaximized || undefined}
+    >
+      {canvasAndToolbar}
     </div>
   );
 
-  // When maximizing we portal to <body> so the position: fixed wrapper is
-  // bounded by the viewport, not by any will-change/transform stacking
-  // context in the docs content (e.g. docs-transition's framer-motion
-  // wrapper). On unmount or restore, React reconciles the subtree back to
-  // its original docs position; the scale / pan / drag / svg state is
-  // preserved across the portal switch.
-  // 放大时通过 portal 挂到 <body>，让 position: fixed 以视口为定位基准，
-  // 避免被文档流里的 will-change/transform 包含块（如 docs-transition 的
-  // framer-motion wrapper）限制在文档列内。卸载或还原时 React 把子树
-  // 复原回原位，scale / pan / 拖动 / svg 等 state 跨 portal 切换完整保留。
+  const maximizedWrapper = (
+    <div ref={wrapperRef} className="mermaid-wrapper not-prose group/mermaid my-4" data-maximized>
+      {canvasAndToolbar}
+    </div>
+  );
+
   if (mounted && isMaximized && typeof document !== 'undefined') {
-    return createPortal(wrapperElement, document.body);
+    return (
+      <>
+        {inPageWrapper}
+        {createPortal(maximizedWrapper, document.body)}
+      </>
+    );
   }
-  return wrapperElement;
+  return inPageWrapper;
 }

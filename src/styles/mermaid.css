@@ -197,6 +197,18 @@
   flex-shrink: 0;
 }
 
+/* In-page renderer: keep this wrapper in the docs DOM at all times so the
+   diagram always occupies its layout slot — toggling maximize then just
+   flips `visibility: hidden` here while a cloned wrapper is portaled to
+   <body>. The page never reflows, so there's no jump or scroll-position
+   shift on the way in or out of maximize.
+   文档内占位 wrapper：始终留在文档 DOM 里，保留图表的布局占位。
+   放大时只是把这里 `visibility: hidden`，同时在 <body> portal 一份克隆。
+   切换放大态不会重排，页面上下位置完全不变。 */
+.mermaid-wrapper[data-page-renderer][data-hidden] {
+  visibility: hidden;
+}
+
 /* Maximized state: pin the wrapper to the viewport (page-level maximize,
    NOT the browser Fullscreen API) so the diagram fills the visible browser
    area while still scrolling / living inside the docs page. z-index 9999
