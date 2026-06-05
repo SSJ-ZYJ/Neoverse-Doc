@@ -26,7 +26,7 @@ export const zh = {
   mermaidZoomOut: '缩小图表',
   mermaidZoomIn: '放大图表',
   mermaidReset: '重置缩放',
-  mermaidFullscreen: '进入全屏',
-  mermaidExitFullscreen: '退出全屏',
+  mermaidMaximize: '放大查看',
+  mermaidRestore: '还原',
   mermaidToolbar: '图表工具栏',
 } as const;

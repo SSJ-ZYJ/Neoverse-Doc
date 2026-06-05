@@ -1,8 +1,8 @@
-// Mermaid diagram renderer with zoom / pan / reset / fullscreen controls.
+// Mermaid diagram renderer with zoom / pan / reset / maximize controls.
 // Initializes mermaid on mount and re-renders whenever the chart source or
 // theme changes. Falls back to raw text on error.
-// Mermaid 图表渲染器（带缩放 / 拖动 / 重置 / 全屏控制）。挂载时初始化
-// mermaid，当图表源码或主题变化时重新渲染。出错时回退为原始文本。
+// Mermaid 图表渲染器（带缩放 / 拖动 / 重置 / 视口内放大控制）。挂载时
+// 初始化 mermaid，当图表源码或主题变化时重新渲染。出错时回退为原始文本。
 
 'use client';
 
@@ -18,6 +18,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { en } from '@/dictionaries/en';
 import { zh } from '@/dictionaries/zh';
 
@@ -40,19 +41,38 @@ const SCALE_STEP = 0.25;
 const ORIGIN = { x: 0, y: 0 };
 
 export function Mermaid({ chart }: { chart: string }) {
-  // `wrapperRef` wraps the diagram for the Fullscreen API; `ref` is the inner
-  // host where mermaid injects the rendered SVG.
-  // `wrapperRef` 包裹整个图表供 Fullscreen API 使用；`ref` 是 mermaid 注入
-  // 渲染后 SVG 的内层挂载点。
-  const ref = useRef<HTMLDivElement>(null);
+  // `wrapperRef` wraps the diagram; the wrapper is portaled to <body> when
+  // maximized so the position: fixed layout escapes ancestor stacking
+  // contexts (e.g. docs-transition's will-change: transform) that would
+  // otherwise pin the fixed box to the docs column.
+  // `wrapperRef` 包裹整个图表；放大时通过 portal 挂到 <body> 下，
+  // 避免被祖先的 will-change: transform 等包含块限定在文档列内。
   const wrapperRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(true);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  // `svgContent` holds the rendered SVG string. We keep it in React state
+  // (rendered via dangerouslySetInnerHTML) rather than writing it into the
+  // DOM imperatively, because the portal toggle (in-flow → body → in-flow)
+  // unmounts and remounts the wrapper subtree — any `ref.innerHTML = …`
+  // mutation would be wiped during the remount and the diagram would go
+  // blank until a re-render of renderChart.
+  // `svgContent` 保存渲染后的 SVG 字符串。放进 React state、并通过
+  // dangerouslySetInnerHTML 渲染，而不是命令式地写入 DOM：portal 切换
+  // （in-flow → body → in-flow）会卸载并重挂载 wrapper 子树，
+  // `ref.innerHTML = …` 之类的命令式写入会在重挂载时被擦掉，导致
+  // 图表显示为空。
+  const [svgContent, setSvgContent] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState(ORIGIN);
   const [isDragging, setIsDragging] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  // `isMaximized` is the page-level maximize flag (NOT the browser
+  // Fullscreen API) — it pins the diagram to the viewport inside the page
+  // and is exited via the toolbar button, the Escape key, or by re-clicking
+  // maximize after returning to flow.
+  // isMaximized 是页面级"放大铺满视口"标志（不是浏览器 Fullscreen API），
+  // 可通过工具栏按钮、Esc 键或再次点击放大按钮退出。
+  const [isMaximized, setIsMaximized] = useState(false);
   const { locale } = useI18n();
   // Pick the labels for the current fumadocs locale, falling back to the
   // default language. `locale` may be undefined during SSR.
@@ -72,7 +92,7 @@ export function Mermaid({ chart }: { chart: string }) {
 
   const renderChart = useCallback(async () => {
     const code = chart?.trim();
-    if (!code || !ref.current || !mountedRef.current) return;
+    if (!code || !mountedRef.current) return;
 
     const id = `mermaid-${++counter}`;
 
@@ -83,16 +103,11 @@ export function Mermaid({ chart }: { chart: string }) {
       });
 
       const { svg } = await mermaid.render(id, code);
-
       if (!mountedRef.current) return;
-      if (ref.current) {
-        ref.current.innerHTML = svg;
-      }
+      setSvgContent(svg);
     } catch {
       if (!mountedRef.current) return;
-      if (ref.current) {
-        ref.current.textContent = code;
-      }
+      setSvgContent(null);
       const leftover = document.getElementById(`d${id}`);
       if (leftover) leftover.remove();
     }
@@ -139,11 +154,11 @@ export function Mermaid({ chart }: { chart: string }) {
       try {
         target.setPointerCapture(e.pointerId);
       } catch {
-        // Some browsers reject capture for non-primary pointers; fall through
-        // and rely on window-level move listeners if the pointer leaves the
-        // canvas before release.
-        // 部分浏览器对非主指针拒绝 capture；指针移出画布前若未释放，
-        // 退化为靠 window 级 move 监听兜底。
+        // Some browsers reject capture for non-primary pointers; the canvas
+        // still receives move events via the pointer capture, so the drag
+        // works as long as the pointer stays inside the wrapper.
+        // 部分浏览器对非主指针拒绝 capture；指针被捕获的画布仍可收到 move
+        // 事件，所以拖动在指针未离开 wrapper 时仍可正常工作。
       }
       dragStateRef.current = {
         pointerId: e.pointerId,
@@ -181,27 +196,34 @@ export function Mermaid({ chart }: { chart: string }) {
     setIsDragging(false);
   }, []);
 
-  // ── Fullscreen controls / 全屏控制 ─────────────────────────────
-  const toggleFullscreen = useCallback(async () => {
-    if (!wrapperRef.current) return;
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else {
-        await wrapperRef.current.requestFullscreen();
-      }
-    } catch {
-      // Fullscreen may be rejected (e.g. user gesture required, insecure
-      // context); silently ignore so the toolbar keeps responding.
-      // 全屏请求可能因需要用户手势 / 非安全上下文等原因被拒绝，静默忽略即可。
-    }
+  // ── Maximize (viewport) controls / 视口内放大控制 ────────────────
+  const toggleMaximize = useCallback(() => {
+    setIsMaximized((m) => !m);
   }, []);
 
+  // Escape exits maximize for keyboard / accessibility parity with native
+  // modals.
+  // Esc 键退出放大态，贴近原生弹窗的键盘可访问性。
   useEffect(() => {
-    const onChange = () => setIsFullscreen(document.fullscreenElement === wrapperRef.current);
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
+    if (!isMaximized) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMaximized(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isMaximized]);
+
+  // Lock the body scroll while the diagram is filling the viewport, so a
+  // wheel event outside the canvas doesn't scroll the page underneath.
+  // 放大期间锁定 body 滚动，避免在 canvas 外部的滚轮事件把下方页面滚走。
+  useEffect(() => {
+    if (!isMaximized) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [isMaximized]);
 
   // CSS custom properties drive the SVG transform inside the zoom target so
   // we don't have to mutate the SVG node directly.
@@ -217,11 +239,16 @@ export function Mermaid({ chart }: { chart: string }) {
   // 缩放或平移任一被改动即可重置。
   const canReset = scale !== 1 || pan.x !== 0 || pan.y !== 0;
 
-  return (
-    <div ref={wrapperRef} className="mermaid-wrapper not-prose group/mermaid relative my-4">
-      {/* The wrapper hosts the fullscreen target. The canvas inside is the
+  const wrapperElement = (
+    <div
+      ref={wrapperRef}
+      className="mermaid-wrapper not-prose group/mermaid my-4"
+      data-maximized={isMaximized || undefined}
+    >
+      {/* The wrapper hosts the maximize target. The canvas inside is the
           actual scroll / zoom / drag area; toolbar floats at the bottom-center.
-          wrapper 是全屏目标，canvas 是滚动 / 缩放 / 拖动区域，工具栏悬浮在底部居中。 */}
+          wrapper 是放大态的目标，canvas 是滚动 / 缩放 / 拖动区域，
+          工具栏悬浮在底部居中。 */}
       <div
         className="mermaid-canvas"
         data-dragging={isDragging || undefined}
@@ -230,7 +257,30 @@ export function Mermaid({ chart }: { chart: string }) {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
       >
-        <div ref={ref} className="mermaid-zoom-target" style={zoomStyle} />
+        {/* Zoom target: holds the SVG (via React-owned dangerouslySetInnerHTML)
+            and applies translate + scale via CSS variables. Using state for the
+            SVG string means portal mount/unmount cycles re-inject the markup
+            from the current state instead of leaving an empty box behind. The
+            SVG and the error-fallback are rendered as siblings, never both
+            children of the same node, so `noDangerouslySetInnerHtmlWithChildren`
+            is structurally impossible.
+            缩放目标：通过 React 拥有的 dangerouslySetInnerHTML 容纳 SVG，
+            并通过 CSS 变量应用 translate + scale。SVG 字符串放进 state 后，
+            portal 的挂载/卸载循环会基于最新 state 重新注入内容，
+            避免留下空白盒子。SVG 与错误回退互为兄弟节点，永远不会同时
+            作为某个节点的 children，从结构上规避 children 与 innerHTML
+            共存的检查。 */}
+        <div className="mermaid-zoom-target" style={zoomStyle}>
+          {svgContent ? (
+            <div
+              className="mermaid-svg-host"
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: SVG markup is generated by mermaid from the page's own chart source, not untrusted input.
+              dangerouslySetInnerHTML={{ __html: svgContent }}
+            />
+          ) : (
+            <pre className="mermaid-fallback">{chart}</pre>
+          )}
+        </div>
       </div>
 
       <div role="toolbar" aria-label={labels.mermaidToolbar} className="mermaid-toolbar glass-chip">
@@ -267,13 +317,28 @@ export function Mermaid({ chart }: { chart: string }) {
         </button>
         <button
           type="button"
-          onClick={toggleFullscreen}
-          aria-label={isFullscreen ? labels.mermaidExitFullscreen : labels.mermaidFullscreen}
+          onClick={toggleMaximize}
+          aria-label={isMaximized ? labels.mermaidRestore : labels.mermaidMaximize}
           className="mermaid-toolbar__btn"
         >
-          {isFullscreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
+          {isMaximized ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
         </button>
       </div>
     </div>
   );
+
+  // When maximizing we portal to <body> so the position: fixed wrapper is
+  // bounded by the viewport, not by any will-change/transform stacking
+  // context in the docs content (e.g. docs-transition's framer-motion
+  // wrapper). On unmount or restore, React reconciles the subtree back to
+  // its original docs position; the scale / pan / drag / svg state is
+  // preserved across the portal switch.
+  // 放大时通过 portal 挂到 <body>，让 position: fixed 以视口为定位基准，
+  // 避免被文档流里的 will-change/transform 包含块（如 docs-transition 的
+  // framer-motion wrapper）限制在文档列内。卸载或还原时 React 把子树
+  // 复原回原位，scale / pan / 拖动 / svg 等 state 跨 portal 切换完整保留。
+  if (mounted && isMaximized && typeof document !== 'undefined') {
+    return createPortal(wrapperElement, document.body);
+  }
+  return wrapperElement;
 }

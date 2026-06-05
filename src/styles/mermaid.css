@@ -84,7 +84,13 @@
   transition: none;
 }
 
-.mermaid-zoom-target > svg {
+/* The SVG lives inside an inner host div (so the zoom target can swap between
+   the SVG and the error fallback as siblings). Use a descendant selector
+   rather than `>` so the SVG sizing still applies regardless of the inner
+   host node.
+   SVG 套在内部 host 节点里（便于与错误回退互为兄弟节点切换），
+   用后代选择器而非 `>` 仍可命中 SVG。 */
+.mermaid-zoom-target svg {
   display: block;
   max-width: 100%;
   height: auto;
@@ -96,6 +102,22 @@
   .mermaid-zoom-target {
     transition: none;
   }
+}
+
+/* Fallback shown when mermaid fails to render: print the raw chart source
+   so the author can still see what they wrote.
+   mermaid 渲染失败时回退展示原始图表源码，方便作者自查。 */
+.mermaid-fallback {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--fd-muted-foreground);
+  margin: 0;
+  padding: 1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 100%;
+  overflow: auto;
 }
 
 /* Floating toolbar: pill-shaped glass chip anchored to the bottom-center of
@@ -175,25 +197,58 @@
   flex-shrink: 0;
 }
 
-/* Fullscreen: fill the viewport, swap to a flat solid surface (no
-   backdrop-filter — there is nothing behind to refract) and adapt the
-   canvas to the available height.
-   全屏：填满视口，切换为平整实色面（无内容可折射），
-   并让 canvas 适配可用高度。 */
-.mermaid-wrapper:fullscreen {
+/* Maximized state: pin the wrapper to the viewport (page-level maximize,
+   NOT the browser Fullscreen API) so the diagram fills the visible browser
+   area while still scrolling / living inside the docs page. z-index 9999
+   keeps it above the fumadocs navbar / sidebar / TOC. A soft fade-in sells
+   the snap from in-flow to fixed; `prefers-reduced-motion` skips it.
+   放大态：把 wrapper 固定到视口（页面级放大，不是浏览器 Fullscreen API），
+   让图表铺满浏览器可视区，但仍在文档页面内、可随页面一起滚动。
+   z-index 9999 高于 fumadocs 的 navbar / sidebar / TOC。
+   柔和淡入让 in-flow → fixed 的切换不突兀，
+   `prefers-reduced-motion` 关闭淡入。 */
+.mermaid-wrapper[data-maximized] {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   width: 100vw;
   height: 100vh;
+  margin: 0;
+  border: none;
   border-radius: 0;
-  background-color: var(--color-fd-background);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  background-color: color-mix(in oklab, var(--color-fd-background) 78%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(20px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast));
   display: flex;
   align-items: stretch;
   justify-content: stretch;
+  animation: mermaid-maximize-in 0.2s ease;
 }
 
-.mermaid-wrapper:fullscreen .mermaid-canvas {
+.mermaid-wrapper[data-maximized] .mermaid-canvas {
   flex: 1 1 auto;
   max-height: none;
   height: 100%;
+  /* Drop the bottom padding reserved for the floating toolbar in in-flow
+     mode; the toolbar now floats over the full-height viewport.
+     取消 in-flow 模式下为悬浮工具栏预留的底部内边距；
+     工具栏现在悬浮在铺满视口的画布之上。 */
+  padding-bottom: 4rem;
+}
+
+@keyframes mermaid-maximize-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mermaid-wrapper[data-maximized] {
+    animation: none;
+  }
 }

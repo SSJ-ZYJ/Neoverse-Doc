@@ -27,7 +27,7 @@ export const en = {
   mermaidZoomOut: 'Zoom out',
   mermaidZoomIn: 'Zoom in',
   mermaidReset: 'Reset zoom',
-  mermaidFullscreen: 'Enter fullscreen',
-  mermaidExitFullscreen: 'Exit fullscreen',
+  mermaidMaximize: 'Maximize',
+  mermaidRestore: 'Restore',
   mermaidToolbar: 'Diagram toolbar',
 } as const;
