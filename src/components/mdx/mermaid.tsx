@@ -1,8 +1,8 @@
-// Mermaid diagram renderer with zoom / reset / fullscreen controls.
+// Mermaid diagram renderer with zoom / pan / reset / fullscreen controls.
 // Initializes mermaid on mount and re-renders whenever the chart source or
 // theme changes. Falls back to raw text on error.
-// Mermaid 图表渲染器（带缩放 / 重置 / 全屏控制）。挂载时初始化 mermaid，
-// 当图表源码或主题变化时重新渲染。出错时回退为原始文本。
+// Mermaid 图表渲染器（带缩放 / 拖动 / 重置 / 全屏控制）。挂载时初始化
+// mermaid，当图表源码或主题变化时重新渲染。出错时回退为原始文本。
 
 'use client';
 
@@ -10,7 +10,14 @@ import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { Maximize, Minimize, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import mermaid from 'mermaid';
 import { useTheme } from 'next-themes';
-import { type CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { en } from '@/dictionaries/en';
 import { zh } from '@/dictionaries/zh';
 
@@ -27,6 +34,11 @@ const MIN_SCALE = 0.25;
 const MAX_SCALE = 4;
 const SCALE_STEP = 0.25;
 
+// Pan origin. The zoom target starts centered; we keep this as a const so the
+// reset logic and initial state stay in sync.
+// 平移原点。缩放目标初始居中；用常量保持与重置逻辑一致。
+const ORIGIN = { x: 0, y: 0 };
+
 export function Mermaid({ chart }: { chart: string }) {
   // `wrapperRef` wraps the diagram for the Fullscreen API; `ref` is the inner
   // host where mermaid injects the rendered SVG.
@@ -38,6 +50,8 @@ export function Mermaid({ chart }: { chart: string }) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [scale, setScale] = useState(1);
+  const [pan, setPan] = useState(ORIGIN);
+  const [isDragging, setIsDragging] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { locale } = useI18n();
   // Pick the labels for the current fumadocs locale, falling back to the
@@ -100,6 +114,71 @@ export function Mermaid({ chart }: { chart: string }) {
 
   const resetZoom = useCallback(() => {
     setScale(1);
+    setPan(ORIGIN);
+  }, []);
+
+  // ── Drag-to-pan controls / 拖动平移控制 ────────────────────────
+  // Ref-based drag bookkeeping avoids re-renders while the pointer is moving;
+  // we only commit to React state on each `pointermove`.
+  // 用 ref 保存拖动中间状态，pointermove 时再写入 React state，避免额外渲染。
+  const dragStateRef = useRef<{
+    pointerId: number;
+    startClientX: number;
+    startClientY: number;
+    startPanX: number;
+    startPanY: number;
+    moved: boolean;
+  } | null>(null);
+
+  const handlePointerDown = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      // Only the primary button (left mouse / single touch / pen barrel=0) starts a drag.
+      // 仅主指针（鼠标左键 / 单指触摸 / 笔尖）触发拖动。
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      const target = e.currentTarget;
+      try {
+        target.setPointerCapture(e.pointerId);
+      } catch {
+        // Some browsers reject capture for non-primary pointers; fall through
+        // and rely on window-level move listeners if the pointer leaves the
+        // canvas before release.
+        // 部分浏览器对非主指针拒绝 capture；指针移出画布前若未释放，
+        // 退化为靠 window 级 move 监听兜底。
+      }
+      dragStateRef.current = {
+        pointerId: e.pointerId,
+        startClientX: e.clientX,
+        startClientY: e.clientY,
+        startPanX: pan.x,
+        startPanY: pan.y,
+        moved: false,
+      };
+      setIsDragging(true);
+    },
+    [pan],
+  );
+
+  const handlePointerMove = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+    const state = dragStateRef.current;
+    if (!state || state.pointerId !== e.pointerId) return;
+    const deltaX = e.clientX - state.startClientX;
+    const deltaY = e.clientY - state.startClientY;
+    if (deltaX === 0 && deltaY === 0) return;
+    state.moved = true;
+    setPan({ x: state.startPanX + deltaX, y: state.startPanY + deltaY });
+  }, []);
+
+  const endDrag = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+    const state = dragStateRef.current;
+    if (!state || state.pointerId !== e.pointerId) return;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // Capture may already be released by the browser; safe to ignore.
+      // 浏览器可能已自动释放，忽略即可。
+    }
+    dragStateRef.current = null;
+    setIsDragging(false);
   }, []);
 
   // ── Fullscreen controls / 全屏控制 ─────────────────────────────
@@ -124,20 +203,33 @@ export function Mermaid({ chart }: { chart: string }) {
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
 
-  // CSS custom property drives the SVG transform inside the zoom target so we
-  // don't have to mutate the SVG node directly.
+  // CSS custom properties drive the SVG transform inside the zoom target so
+  // we don't have to mutate the SVG node directly.
   // 使用 CSS 变量驱动缩放容器内的 SVG transform，避免直接操作 SVG 节点。
-  const zoomStyle = { '--mermaid-scale': scale } as CSSProperties;
+  const zoomStyle = {
+    '--mermaid-scale': scale,
+    '--mermaid-pan-x': `${pan.x}px`,
+    '--mermaid-pan-y': `${pan.y}px`,
+  } as CSSProperties;
   const canZoomOut = scale > MIN_SCALE;
   const canZoomIn = scale < MAX_SCALE;
-  const canReset = scale !== 1;
+  // Reset is available when either the zoom or the pan has been changed.
+  // 缩放或平移任一被改动即可重置。
+  const canReset = scale !== 1 || pan.x !== 0 || pan.y !== 0;
 
   return (
     <div ref={wrapperRef} className="mermaid-wrapper not-prose group/mermaid relative my-4">
       {/* The wrapper hosts the fullscreen target. The canvas inside is the
-          actual scroll / zoom area; toolbar floats at the bottom-center.
-          wrapper 是全屏目标，canvas 是滚动 / 缩放区域，工具栏悬浮在底部居中。 */}
-      <div className="mermaid-canvas">
+          actual scroll / zoom / drag area; toolbar floats at the bottom-center.
+          wrapper 是全屏目标，canvas 是滚动 / 缩放 / 拖动区域，工具栏悬浮在底部居中。 */}
+      <div
+        className="mermaid-canvas"
+        data-dragging={isDragging || undefined}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
         <div ref={ref} className="mermaid-zoom-target" style={zoomStyle} />
       </div>
 

@@ -27,8 +27,10 @@
 }
 
 /* Scrollable canvas: holds the zoom target so users can pan when zoomed in
-   past the wrapper's visible area.
-   可滚动画布：盛放缩放目标，便于放大超出可视范围后滚动浏览。 */
+   past the wrapper's visible area. Pointer events on this layer handle the
+   drag-to-pan interaction.
+   可滚动画布：盛放缩放目标，便于放大超出可视范围后滚动浏览。
+   该层上的指针事件承载拖动平移交互。 */
 .mermaid-canvas {
   display: flex;
   justify-content: center;
@@ -39,20 +41,47 @@
   padding: 1.25rem 1rem 3.25rem; /* bottom padding reserves space for the floating toolbar. / 底部内边距给悬浮工具栏留位 */
   scrollbar-width: thin;
   scrollbar-color: var(--fd-border) transparent;
+  cursor: grab;
+  /* Block default touch gestures (scroll / pinch) so single-finger drag is
+     used for pan; desktop wheel scroll still works because we only block
+     the touch-action axis. user-select prevents text drag-select on drag.
+     屏蔽默认触摸手势（滚动 / 捏合），单指拖动专用于平移；桌面端滚轮仍可
+     滚动（只屏蔽 touch 轴）。user-select 防止拖动时误选中文本。 */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* Zoom target: scales the rendered SVG via the --mermaid-scale CSS variable.
+.mermaid-canvas[data-dragging] {
+  cursor: grabbing;
+  /* Suppress native scroll while a drag is in progress so the canvas doesn't
+     fight the pan transform.
+     拖动期间禁用原生滚动，避免与平移 transform 互相拉扯。 */
+  touch-action: none;
+}
+
+/* Zoom target: pans and scales the rendered SVG via CSS variables.
    display: inline-block lets the wrapper measure the natural SVG width so
    transform-origin: center top produces a predictable visual centerline.
-   缩放目标：通过 --mermaid-scale 缩放已渲染的 SVG。
+   缩放目标：通过 CSS 变量平移并缩放已渲染的 SVG。
    display: inline-block 让父容器以 SVG 自然宽度为准，
    配合 transform-origin: center top 得到可预测的视觉中心线。 */
 .mermaid-zoom-target {
   display: inline-block;
-  transform: scale(var(--mermaid-scale));
+  transform: translate(var(--mermaid-pan-x, 0), var(--mermaid-pan-y, 0))
+    scale(var(--mermaid-scale, 1));
   transform-origin: center top;
   transition: transform 0.2s ease;
   will-change: transform;
+}
+
+/* While dragging, skip the easing transition so the pan follows the pointer
+   1:1 with no lag. The transition is restored automatically when
+   data-dragging is removed.
+   拖动期间关闭 transform 缓动，使平移与指针 1:1 跟随、无滞后感；
+   data-dragging 移除后过渡自动恢复。 */
+.mermaid-canvas[data-dragging] .mermaid-zoom-target {
+  transition: none;
 }
 
 .mermaid-zoom-target > svg {
