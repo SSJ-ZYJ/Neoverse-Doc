@@ -70,6 +70,7 @@ blockquote {
   /* Liquid Glass Design System — Light / 液态玻璃设计系统 — 亮色 */
   --glass-tint: rgba(248, 250, 252, 0.55);
   --glass-tint-strong: rgba(255, 255, 255, 0.78);
+  --glass-tint-medium: rgba(255, 255, 255, 0.55);
   --glass-tint-soft: rgba(255, 255, 255, 0.35);
   --glass-border-hairline: rgba(15, 23, 42, 0.07);
   --glass-highlight: rgba(255, 255, 255, 0.85);
@@ -84,6 +85,7 @@ blockquote {
   --glass-blur: 24px;
   --glass-blur-strong: 32px;
   --glass-blur-soft: 14px;
+  --glass-blur-backdrop: 12px;
   --glass-saturate: 160%;
   --glass-brightness: 105%;
   --glass-contrast: 102%;
@@ -123,11 +125,12 @@ blockquote {
   /* Liquid Glass Design System — Dark / 液态玻璃设计系统 — 深色 */
   --glass-tint: rgba(15, 23, 42, 0.38);
   --glass-tint-strong: rgba(20, 28, 50, 0.52);
+  --glass-tint-medium: rgba(15, 23, 42, 0.38);
   --glass-tint-soft: rgba(15, 23, 42, 0.24);
   --glass-border-hairline: rgba(255, 255, 255, 0.06);
   --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --glass-shadow-hover: 0 8px 32px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 4px 24px -4px rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --glass-shadow-hover: 0 8px 32px -4px rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.06);
   --glass-ambient-a: rgba(56, 189, 248, 0.14);
   --glass-ambient-b: rgba(168, 85, 247, 0.1);
   --glass-ambient-c: rgba(14, 165, 233, 0.06);

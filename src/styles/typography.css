@@ -14,12 +14,12 @@ pre code {
 .glass-codeblock {
   background:
     linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%),
-    color-mix(in oklab, var(--glass-tint-strong) 58%, transparent);
+    var(--glass-tint-medium);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  border-color: var(--glass-border-hairline);
+  border: 1px solid var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
@@ -35,7 +35,7 @@ pre code {
 }
 
 .glass-codeblock > div:first-child {
-  background-color: color-mix(in oklab, var(--glass-tint-soft) 72%, transparent);
+  background-color: var(--glass-tint-soft);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
 }
@@ -247,8 +247,11 @@ blockquote {
   padding-top: 0.25rem;
 }
 
-/* Nested code blocks inside details / 折叠块内嵌代码块优化 */
-.markdown-details figure.shiki {
+/* Nested code blocks inside details (non-glass only).
+   Glass-codeblock figures are styled by the glass design system.
+   折叠块内嵌代码块优化（仅非玻璃化代码块）。
+   glass-codeblock 由玻璃设计系统控制样式。 */
+.markdown-details figure.shiki:not(.glass-codeblock) {
   border: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
   border-radius: 0.5rem;
@@ -260,9 +263,10 @@ blockquote {
   padding: 0;
 }
 
-/* Dark mode border highlight for nested code blocks / 深色模式下嵌套代码块边缘 */
-[data-theme="dark"] .markdown-details figure.shiki,
-.dark .markdown-details figure.shiki {
+/* Dark mode border highlight for nested code blocks (non-glass only).
+   深色模式下嵌套代码块边缘（仅非玻璃化代码块） */
+[data-theme="dark"] .markdown-details figure.shiki:not(.glass-codeblock),
+.dark .markdown-details figure.shiki:not(.glass-codeblock) {
   border-color: rgba(255, 255, 255, 0.18);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
@@ -404,13 +408,18 @@ figure.shiki > div:first-child {
     0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* Dark mode border highlight for code blocks / 深色模式下代码块边缘高光 */
-[data-theme="dark"] figure.shiki,
-.dark figure.shiki {
-  border-color: rgba(255, 255, 255, 0.25) !important;
+/* Dark mode border highlight for code blocks (non-glass only).
+   Glass-codeblock figures are styled by the glass design system via CSS
+   variables and must not be overridden by hardcoded rgba values.
+   深色模式下代码块边缘高光（仅非玻璃化代码块）。
+   glass-codeblock 图表由玻璃设计系统通过 CSS 变量控制样式，
+   不能被硬编码 rgba 值覆盖。 */
+[data-theme="dark"] figure.shiki:not(.glass-codeblock),
+.dark figure.shiki:not(.glass-codeblock) {
+  border-color: rgba(255, 255, 255, 0.25);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Dark mode adjustments / 深色模式适配 */

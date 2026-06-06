@@ -37,7 +37,7 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
     <figure
       dir="ltr"
       tabIndex={-1}
-      className={`my-4 glass-codeblock rounded-xl shiki relative border shadow-sm not-prose overflow-hidden text-sm ${className || ''}`}
+      className={`my-4 glass-codeblock rounded-xl shiki relative not-prose overflow-hidden text-sm ${className || ''}`}
       {...rest}
     >
       <div className="flex text-fd-muted-foreground items-center gap-2 h-9.5 border-b px-4">

@@ -3,10 +3,10 @@
 
 /* ── TOC Popover Header Enhancement / TOC 弹出层头部增强 ─────────────────── */
 [data-toc-popover-content] > div > div > header.border-b.backdrop-blur-sm.bg-fd-background\/80 {
-  backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
-  -webkit-backdrop-filter: blur(28px) saturate(var(--glass-saturate))
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness));
-  background-color: color-mix(in oklab, var(--color-fd-background) 85%, transparent);
+  background-color: var(--glass-tint-strong);
 }
 
 /* ── TOC Right Sidebar Constraints / TOC 右侧栏约束 ─────────────────── */
@@ -159,7 +159,7 @@
 
 /* TOC popover 内容：整体卡片化 */
 :where([data-toc-popover-content]) > div {
-  background-color: color-mix(in oklab, var(--glass-tint-strong) 30%, transparent) !important;
+  background-color: var(--glass-tint-medium) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
@@ -172,7 +172,7 @@
 /* TOC popover trigger button: glass-chip style (small element, light blur + soft tint).
    TOC 弹出层触发按钮：glass-chip 样式（小元件，轻 blur + 软 tint）。 */
 :where([data-toc-popover-trigger]) {
-  background-color: color-mix(in oklab, var(--glass-tint-soft) 25%, transparent) !important;
+  background-color: var(--glass-tint-soft) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
@@ -186,7 +186,7 @@
    TOC 弹出层头部：将 fumadocs 不透明的 bg-fd-background/80 替换为玻璃 tint，
    使触发按钮的 backdrop-filter 能透视到透明背景。 */
 :where([data-toc-popover]) > header {
-  background-color: color-mix(in oklab, var(--glass-tint) 30%, transparent) !important;
+  background-color: var(--glass-tint-medium) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
@@ -243,7 +243,7 @@
 :where(#nd-page) div[data-orientation]:has(> [role="tablist"]) {
   background:
     linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%),
-    color-mix(in oklab, var(--glass-tint-strong) 58%, transparent);
+    var(--glass-tint-medium);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
@@ -270,7 +270,7 @@
    表头读起来像统一的三段式而不是两个堆叠容器。 */
 :where(#nd-page) div[data-orientation] > [role="tablist"] {
   position: relative;
-  background-color: color-mix(in oklab, var(--glass-tint-soft) 72%, transparent);
+  background-color: var(--glass-tint-soft);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   border-bottom: 1px solid rgba(0, 0, 0, 0.15);

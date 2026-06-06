@@ -9,7 +9,7 @@
 .mermaid-wrapper {
   --mermaid-scale: 1;
   border: 1px solid var(--glass-border-hairline);
-  background-color: color-mix(in oklab, var(--glass-tint-strong) 35%, transparent);
+  background-color: var(--glass-tint-medium);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
@@ -221,9 +221,7 @@
   padding: 0.3125rem;
   border-radius: 9999px;
   z-index: 2;
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
+  /* box-shadow inherited from .glass-chip / 从 .glass-chip 继承 */
   transition:
     background-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease;
@@ -377,11 +375,11 @@
   position: fixed;
   inset: 0;
   z-index: 9998;
-  background-color: color-mix(in oklab, var(--color-fd-background) 60%, transparent);
-  -webkit-backdrop-filter: blur(12px) saturate(var(--glass-saturate))
+  background-color: var(--glass-tint-medium);
+  -webkit-backdrop-filter: blur(var(--glass-blur-backdrop)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(12px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-backdrop)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   animation: mermaid-maximize-in 0.2s ease;
 }
 
