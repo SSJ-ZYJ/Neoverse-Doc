@@ -1,6 +1,6 @@
 ---
-title: Algorithms
-description: 算法章节导读
+title: 何为算法
+description: Algorithms —— 算法章节导读
 author:
     - "Collinor(https://github.com/Collinor)"
 ---

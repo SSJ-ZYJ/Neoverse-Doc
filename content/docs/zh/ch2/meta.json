@@ -1,6 +1,6 @@
 {
   "title": "Chapter 2",
   "description": "算法入门",
-  "pages": ["Algorithms", "---Stage 1: 基础算法---", "2.1 High Accuracy"],
+  "pages": ["index", "---Stage 1: 基础算法---", "2.1-High-Accuracy"],
   "root": true
 }
