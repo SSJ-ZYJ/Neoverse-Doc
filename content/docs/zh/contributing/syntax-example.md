@@ -1,11 +1,11 @@
 ---
 title: Markdown 语法示例
-description: 支持丰富的 GFM 与 Mermaid 图表语法
+description: 支持丰富的 GFM、LaTeX 公式与 Mermaid 图表语法
 author:
   - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 
-本文档展示了基础 Markdown、GitHub Flavored Markdown (GFM) 和 Mermaid 绘图的语法。
+本文档展示了基础 Markdown、GitHub Flavored Markdown (GFM)、LaTeX 公式和 Mermaid 绘图的语法。
 
 ## 1. 基础 Markdown 语法
 
@@ -280,7 +280,33 @@ def read_item(item_id: int, q: str | None = None):
 }
 ```
 
-## 2. Mermaid 图表语法
+<!-- LaTeX syntax examples: documents inline and block math rendering.
+     LaTeX 语法示例：说明行内与块级数学公式渲染。 -->
+## 3. LaTeX 公式语法
+
+### 行内公式 (Inline Math)
+
+行内公式可以直接写在段落中，例如勾股定理 $a^2 + b^2 = c^2$。
+
+```md
+行内公式可以直接写在段落中，例如勾股定理 $a^2 + b^2 = c^2$。
+```
+
+### 块级公式 (Block Math)
+
+块级公式适合展示较长的推导或独立公式：
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+
+```md
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+```
+
+## 4. Mermaid 图表语法
 
 ### 流程图 (Flowchart)
 

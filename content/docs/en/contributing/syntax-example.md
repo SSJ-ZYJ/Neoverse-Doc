@@ -1,9 +1,9 @@
 ---
 title: Markdown Syntax Examples
-description: Rich GFM and Mermaid diagram syntax support
+description: Rich GFM, LaTeX formula, and Mermaid diagram syntax support
 ---
 
-This document demonstrates basic Markdown, GitHub Flavored Markdown (GFM), and Mermaid diagram syntax.
+This document demonstrates basic Markdown, GitHub Flavored Markdown (GFM), LaTeX formulas, and Mermaid diagram syntax.
 
 ## 1. Basic Markdown Syntax
 
@@ -278,7 +278,33 @@ Regular code blocks (without top comments) still work normally, just without the
 }
 ```
 
-## 2. Mermaid Diagram Syntax
+<!-- LaTeX syntax examples: documents inline and block math rendering.
+     LaTeX 语法示例：说明行内与块级数学公式渲染。 -->
+## 3. LaTeX Formula Syntax
+
+### Inline Math
+
+Inline formulas can be written directly in a paragraph, for example the Pythagorean theorem $a^2 + b^2 = c^2$.
+
+```md
+Inline formulas can be written directly in a paragraph, for example the Pythagorean theorem $a^2 + b^2 = c^2$.
+```
+
+### Block Math
+
+Block formulas are useful for longer derivations or standalone equations:
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+
+```md
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+```
+
+## 4. Mermaid Diagram Syntax
 
 ### Flowchart
 

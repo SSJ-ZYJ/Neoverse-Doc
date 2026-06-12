@@ -1,7 +1,9 @@
 import { remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
 import { pageSchema } from 'fumadocs-core/source/schema';
 import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
+import rehypeKatex from 'rehype-katex';
 import remarkGithubBlockquoteAlert from 'remark-github-blockquote-alert';
+import remarkMath from 'remark-math';
 import { z } from 'zod';
 import { remarkCodeTitle } from './src/lib/remark-code-title';
 import { remarkCollapsibleAlert } from './src/lib/remark-collapsible-alert';
@@ -24,12 +26,16 @@ export const docs = defineDocs({
 
 export default defineConfig({
   mdxOptions: {
+    // LaTeX math rendering: parse `$...$` / `$$...$$` and emit KaTeX HTML before code highlighting.
+    // LaTeX 公式渲染：解析 `$...$` / `$$...$$`，并在代码高亮前输出 KaTeX HTML。
     remarkPlugins: [
       remarkCollapsibleAlert,
       remarkGithubBlockquoteAlert,
+      remarkMath,
       remarkMdxMermaid,
       remarkCodeTitle,
     ],
+    rehypePlugins: (plugins) => [rehypeKatex, ...plugins],
     rehypeCodeOptions: {
       transformers: [transformerMetaTitle()],
       icon: {

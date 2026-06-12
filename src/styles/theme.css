@@ -130,7 +130,8 @@ blockquote {
   --glass-border-hairline: rgba(255, 255, 255, 0.06);
   --glass-highlight: rgba(255, 255, 255, 0.12);
   --glass-shadow: 0 4px 24px -4px rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --glass-shadow-hover: 0 8px 32px -4px rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --glass-shadow-hover:
+    0 8px 32px -4px rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.06);
   --glass-ambient-a: rgba(56, 189, 248, 0.14);
   --glass-ambient-b: rgba(168, 85, 247, 0.1);
   --glass-ambient-c: rgba(14, 165, 233, 0.06);

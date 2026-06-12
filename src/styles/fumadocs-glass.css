@@ -3,7 +3,8 @@
 
 /* ── TOC Popover Header Enhancement / TOC 弹出层头部增强 ─────────────────── */
 [data-toc-popover-content] > div > div > header.border-b.backdrop-blur-sm.bg-fd-background\/80 {
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness));
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness));
   background-color: var(--glass-tint-strong);
@@ -242,8 +243,7 @@
    外层 Tabs 容器：用代码块同款玻璃面替换默认的实色 bg-fd-secondary。 */
 :where(#nd-page) div[data-orientation]:has(> [role="tablist"]) {
   background:
-    linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%),
-    var(--glass-tint-medium);
+    linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%), var(--glass-tint-medium);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))

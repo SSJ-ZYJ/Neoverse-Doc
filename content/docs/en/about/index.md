@@ -8,7 +8,7 @@ Neoverse-Doc is a purely static documentation site built with **Next.js 16** + *
 ## Core Features
 
 - **Pure Static Generation (SSG)** — `next build` directly generates complete HTML with no Node.js runtime, deployable to Vercel, Cloudflare Pages, GitHub Pages, and any static hosting platform
-- **MDX-Driven Documentation** — Write with a mix of Markdown and React components, supporting GFM tables, task lists, Mermaid diagrams, and rich syntax
+- **MDX-Driven Documentation** — Write with a mix of Markdown and React components, supporting GFM tables, task lists, Mermaid diagrams, LaTeX formulas, and rich syntax
 - **Bilingual i18n** — Zero hardcoded dictionary-based copy management, covering fumadocs built-in UI and custom project copy
 - **Liquid Glass Theme** — CSS variables + Tailwind v4 for frosted glass effects, with automatic light/dark mode switching
 - **Giscus Community Interaction** — GitHub Discussions-based guestbook with embedded comments at the bottom of every document page
@@ -38,7 +38,7 @@ Join us in building Neoverse-Doc!
 
 - [How to Contribute](../contributing): Entry point and overview for contributions
 - [Contribution Guide](../contributing/guide): Complete code standards, commit conventions, and PR workflow
-- [Markdown Syntax Examples](../contributing/syntax-example): GFM and Mermaid diagram syntax reference
+- [Markdown Syntax Examples](../contributing/syntax-example): GFM, LaTeX formula, and Mermaid diagram syntax reference
 
 ### Project Architecture
 

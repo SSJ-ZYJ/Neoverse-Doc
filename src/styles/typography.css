@@ -13,8 +13,7 @@ pre code {
    玻璃态代码块表面：保留语法高亮颜色，同时让页面环境色透出。 */
 .glass-codeblock {
   background:
-    linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%),
-    var(--glass-tint-medium);
+    linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%), var(--glass-tint-medium);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))

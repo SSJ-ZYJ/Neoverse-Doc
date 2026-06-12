@@ -28,6 +28,9 @@ import { Noto_Sans_SC, Orbitron } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { i18n } from '@/lib/i18n';
 import '@/app/globals.css';
+// KaTeX styles render LaTeX formulas emitted by the MDX math pipeline.
+// KaTeX 样式用于渲染 MDX 数学公式管线输出的 LaTeX 公式。
+import 'katex/dist/katex.css';
 
 const orbitron = Orbitron({
   subsets: ['latin'],

@@ -18,6 +18,7 @@
     - [路由与布局](#路由与布局)
     - [文档内容层](#文档内容层)
     - [代码块增强](#代码块增强)
+    - [LaTeX 公式渲染](#latex-公式渲染)
     - [搜索系统](#搜索系统)
     - [主题体系](#主题体系)
     - [i18n 体系](#i18n-体系)
@@ -30,7 +31,7 @@
 ## 功能亮点
 
 - **纯静态生成 (SSG)** — `next build` 直接生成完整 HTML，无需 Node 运行时，可部署至 Vercel、Cloudflare Pages、GitHub Pages 等任意静态托管平台
-- **MDX 文档驱动** — Markdown + React 组件混合编写，支持 GFM 表格、任务列表、Mermaid 图表等丰富语法
+- **MDX 文档驱动** — Markdown + React 组件混合编写，支持 GFM 表格、任务列表、Mermaid 图表、LaTeX 公式等丰富语法
 - **增强代码块** — 自动识别顶部注释提取文件路径、顶部横条显示语言图标与复制按钮、Shiki 语法高亮
 - **中文搜索支持** — 使用 Orama Mandarin 分词器，支持中文全文搜索
 - **双语 i18n (中文 / 英文)** — 零硬编码的字典式文案管理，覆盖 fumadocs 内置 UI 及项目自定义文案；导航栏右上角内置语言切换器
@@ -56,6 +57,7 @@
 | 图标 | lucide-react |
 | Markdown | remark-github-blockquote-alert (GitHub Alert) |
 | 图表 | Mermaid 11 + fumadocs remarkMdxMermaid 插件 |
+| 数学公式 | remark-math 6 + rehype-katex 7 + KaTeX 0.17 |
 
 ## 快速开始
 
@@ -250,6 +252,20 @@ MDX 代码块 → remarkCodeTitle（提取路径，注入 meta="title=..."）
 - [src/lib/transformer-meta-title.ts](./src/lib/transformer-meta-title.ts) — Shiki transformer
 - [src/components/mdx/custom-codeblock.tsx](./src/components/mdx/custom-codeblock.tsx) — React 组件
 
+<!-- LaTeX math rendering section: records the MDX math pipeline and supported syntax.
+     LaTeX 公式渲染章节：记录 MDX 数学公式管线与支持语法。 -->
+### LaTeX 公式渲染
+
+项目通过 `remark-math`、`rehype-katex` 与 `katex/dist/katex.css` 接入数学公式渲染，支持行内公式 `$...$` 与块级公式 `$$...$$`：
+
+```md
+行内公式：$E = mc^2$
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+```
+
 ### 搜索系统
 
 采用 **Orama 静态搜索**，支持中文全文搜索：
@@ -315,7 +331,7 @@ import { i18nProvider } from '@/lib/layout.shared';
 
 ```text
 next.config.ts (createMDX)
-  → source.config.ts (defineDocs + remarkCodeTitle + transformerMetaTitle)
+  → source.config.ts (defineDocs + remarkMath + rehypeKatex + remarkCodeTitle + transformerMetaTitle)
     → .source/ (fumadocs-mdx 编译产物)
       → src/lib/source.ts (loader + i18n parser:'dir' → Record<lang, pageTree>)
         → src/app/[lang]/docs/layout.tsx (DocsLayout, tree=pageTree[lang])

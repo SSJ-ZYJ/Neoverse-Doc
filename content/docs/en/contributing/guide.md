@@ -174,6 +174,7 @@ refactor(components): refactor Mermaid component rendering logic
 
 - Use Markdown format
 - Use Mermaid syntax for diagrams
+- Use LaTeX syntax for formulas: `$...$` for inline formulas and `$$...$$` for block formulas
 - Use appropriate language identifiers for code blocks
 - Use a half-width space between Chinese and English text
 - Wrap English keywords, commands, and file names in backticks
