@@ -138,13 +138,17 @@ export function Mermaid({ chart }: { chart: string }) {
   // "click zoom should not overflow" contract the user wants. It
   // re-derives on every render where the canvas size or the SVG's
   // natural size could have changed (mount, SVG content update,
-  // maximize toggle, window resize).
+  // maximize toggle, window resize). The fit-to-canvas scale is
+  // recomputed by a layout effect on every render and exposed via
+  // `fitCanvasScaleRef` for `zoomIn` to enforce the "no overflow on
+  // click" contract.
   // fitCanvasScale 是图表在当前画布（in-page 或放大态）内不溢出
   // 的最大缩放。`zoomIn` 把它当作硬上限，确保点击放大按钮不会让
   // 图表超出画布可见边缘 —— 这是用户要求的"点击放大不应溢出"契
   // 约。它在画布尺寸或 SVG 内在尺寸可能变化的每次 render 时重算
-  // （挂载、SVG 内容更新、放大态切换、窗口 resize）。
-  const [fitCanvasScale, setFitCanvasScale] = useState(MAX_SCALE);
+  // （挂载、SVG 内容更新、放大态切换、窗口 resize），并通过
+  // `fitCanvasScaleRef` 暴露给 `zoomIn`。
+  const fitCanvasScaleRef = useRef(MAX_SCALE);
   // `isMaximized` is the page-level maximize flag (NOT the browser
   // Fullscreen API) — it pins the diagram to the viewport inside the page
   // and is exited via the toolbar button, the Escape key, or by re-clicking
@@ -453,10 +457,7 @@ export function Mermaid({ chart }: { chart: string }) {
     // 测量源、始终在；放大克隆只在 `isMaximized` 为真时存在，否则 ref
     // 为 null 直接跳过。跳过 null ref 是安全的——querySelector 只会
     // 返回 null，下面的早返回会处理。
-    const wrappers: (HTMLDivElement | null)[] = [
-      inPageWrapperRef.current,
-      wrapperRef.current,
-    ];
+    const wrappers: (HTMLDivElement | null)[] = [inPageWrapperRef.current, wrapperRef.current];
     for (const wrapper of wrappers) {
       if (!wrapper) continue;
       const svg = wrapper.querySelector<SVGSVGElement>('.mermaid-svg-host > svg');
@@ -514,12 +515,12 @@ export function Mermaid({ chart }: { chart: string }) {
     const svgW = svgNatural.width;
     const svgH = svgNatural.height;
     if (svgW <= 0 || svgH <= 0) {
-      setFitCanvasScale(MAX_SCALE);
+      fitCanvasScaleRef.current = MAX_SCALE;
       return;
     }
     const canvas = canvasRef.current;
     if (!canvas) {
-      setFitCanvasScale(MAX_SCALE);
+      fitCanvasScaleRef.current = MAX_SCALE;
       return;
     }
     // Read computed padding so we don't hardcode the in-page canvas's
@@ -534,10 +535,10 @@ export function Mermaid({ chart }: { chart: string }) {
     const availW = canvas.clientWidth - padX;
     const availH = canvas.clientHeight - padY;
     if (availW <= 0 || availH <= 0) {
-      setFitCanvasScale(MAX_SCALE);
+      fitCanvasScaleRef.current = MAX_SCALE;
       return;
     }
-    setFitCanvasScale(Math.min(MAX_SCALE, availW / svgW, availH / svgH));
+    fitCanvasScaleRef.current = Math.min(MAX_SCALE, availW / svgW, availH / svgH);
   }, [svgNatural.width, svgNatural.height]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: isMaximized intentionally drives recomputeFitCanvasScale so the cap re-derives when the canvas swaps between in-page and maximized layouts.
