@@ -1,4 +1,9 @@
-# Algorithms([算法](https://baike.baidu.com/item/%E7%AE%97%E6%B3%95/209025))
+---
+title: Algorithms([算法](https://baike.baidu.com/item/%E7%AE%97%E6%B3%95/209025))
+description: 算法章节导读
+author:
+  - "Collinor"
+---
 
 算法是计算机科学中**较困难的一个领域**, 也是评判一位计算机从业者专业能力的**重要指标**.
 
