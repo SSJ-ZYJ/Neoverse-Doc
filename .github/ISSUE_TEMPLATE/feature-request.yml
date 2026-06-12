@@ -1,0 +1,33 @@
+name: Feature Request | 功能请求
+description: Suggest a new feature or improvement to the project | 向项目建议一个新功能或改进
+labels: ["enhancement"]
+body:
+  - type: textarea
+    attributes:
+      label: What problem will this feature address? | 这个功能将解决什么问题？
+      description: A clear and concise description of what the problem is. | 请清晰简洁地描述这个问题是什么。
+      placeholder: |
+        I'm always frustrated when I can't do X | 当我无法做 X 时，我总是感到焦虑
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the solution you'd like | 描述你想要的解决方案
+      description: A clear and concise description of what you want to happen. | 请清晰简洁地描述你希望发生什么。
+      placeholder: Add X to the core | 将 X 添加到核心功能中
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe alternatives you've considered | 描述你考虑过的替代方案
+      description: A clear and concise description of any alternative solutions or features you've considered. | 请清晰简洁地描述你考虑过的任何替代解决方案或功能。
+      placeholder: |
+        Maybe use Y as a workaround? | 也许可以使用 Y 作为变通方法？
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional context | 补充信息
+      description: Add any other context or screenshots about the feature request here. | 在这里添加任何其他上下文或截图。
+    validations:
+      required: false

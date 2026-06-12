@@ -1,0 +1,6 @@
+{
+  "title": "关于",
+  "description": "了解本项目的结构、目标与愿景。",
+  "pages": ["---关于---", "index", "---深入了解---", "i18n", "theming", "search"],
+  "root": true
+}

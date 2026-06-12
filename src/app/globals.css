@@ -1,0 +1,13 @@
+/* Global styles entry point: imports all modular stylesheets.
+   全局样式入口：导入所有模块化样式表。 */
+
+/* ── Maple Mono NF CN 字体加载（CDN，无需本地安装） ─────────────── */
+@import "https://cdn.jsdelivr.net/npm/@mogeko/maple-mono-cn@latest/dist/font/result.css";
+
+@import "../styles/theme.css";
+@import "../styles/glass.css";
+@import "../styles/typography.css";
+@import "../styles/fumadocs-glass.css";
+@import "../styles/mermaid.css";
+@import "../styles/home.css";
+@import "../styles/a11y.css";

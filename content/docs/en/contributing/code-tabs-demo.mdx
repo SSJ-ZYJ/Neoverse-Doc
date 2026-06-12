@@ -1,0 +1,83 @@
+---
+title: Multi-Language Code Tabs Demo
+description: Demonstrates how to switch programming languages for the same algorithm via Tabs, with cross-group preference sync.
+author: "Shenshijun(https://www.github.com/SSJ-ZYJ)"
+---
+
+This page demonstrates the "same logic, multiple languages" code block switching experience. Both `Tabs` use `groupId="language"` and `persist`, so switching one group syncs the other and writes the choice to `localStorage` — your selection persists across reloads.
+
+## Sort Algorithm
+
+<Tabs groupId="language" persist items={['C++', 'Python', 'Java']}>
+
+<Tab value="C++">
+
+```cpp
+// src/algo/sort.cpp
+#include <algorithm>
+#include <vector>
+
+void sort_asc(std::vector<int>& nums) {
+  std::sort(nums.begin(), nums.end());
+}
+```
+
+</Tab>
+
+<Tab value="Python">
+
+```python
+# src/algo/sort.py
+def sort_asc(nums: list[int]) -> list[int]:
+    return sorted(nums)
+```
+
+</Tab>
+
+<Tab value="Java">
+
+```java
+// src/algo/Sort.java
+import java.util.Arrays;
+
+class Sort {
+  static int[] sortAsc(int[] nums) {
+    Arrays.sort(nums);
+    return nums;
+  }
+}
+```
+
+</Tab>
+
+</Tabs>
+
+## Hello World
+
+The group below only has two languages. When you switch the group above, this one should follow; if you pick Java above and this group has no Java, it keeps its own default.
+
+<Tabs groupId="language" persist items={['C++', 'Python']}>
+
+<Tab value="C++">
+
+```cpp
+// src/hello.cpp
+#include <iostream>
+int main() {
+  std::cout << "Hello, Neoverse!\n";
+  return 0;
+}
+```
+
+</Tab>
+
+<Tab value="Python">
+
+```python
+# src/hello.py
+print("Hello, Neoverse!")
+```
+
+</Tab>
+
+</Tabs>

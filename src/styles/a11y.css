@@ -1,0 +1,55 @@
+/* Accessibility: reduced motion, reduced transparency, and no backdrop-filter fallback.
+   无障碍：减少动画、减少透明度、无 backdrop-filter 回退。 */
+
+/* prefers-reduced-transparency: all glass surfaces degrade to opaque backgrounds, removing blur and ambient light.
+   用户偏好减少透明度：所有玻璃表面退化为不透明背景，去除 blur 与环境光。 */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel,
+  .glass-card,
+  .glass-chip,
+  .glass-cta,
+  .glass-codeblock,
+  .mermaid-wrapper,
+  .mermaid-maximized-backdrop,
+  :where(#nd-nav) > div,
+  :where(#nd-subnav),
+  :where(#nd-sidebar),
+  #nd-sidebar .bg-fd-secondary\/50,
+  :where([data-toc-popover-content]) > div,
+  :where([data-toc-popover-trigger]),
+  :where([data-toc-popover]) > header,
+  [role="dialog"][data-state="open"]:has(input) {
+    background: var(--background) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+  body::before {
+    display: none;
+  }
+}
+
+/* Browser does not support backdrop-filter: also degrade to opaque backgrounds.
+   浏览器不支持 backdrop-filter：同样退化为不透明背景。 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-panel,
+  .glass-card,
+  .glass-chip,
+  .glass-cta,
+  .glass-codeblock,
+  .mermaid-wrapper,
+  .mermaid-maximized-backdrop,
+  :where(#nd-nav) > div,
+  :where(#nd-subnav),
+  :where(#nd-sidebar),
+  #nd-sidebar .bg-fd-secondary\/50,
+  :where([data-toc-popover-content]) > div,
+  :where([data-toc-popover-trigger]),
+  :where([data-toc-popover]) > header,
+  [role="dialog"][data-state="open"]:has(input) {
+    background: var(--background);
+  }
+  body::before {
+    display: none;
+  }
+}

@@ -1,0 +1,132 @@
+/* Homepage gradient background animations.
+   首页渐变背景动画。 */
+
+.home-gradient-bg {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(56, 189, 248, 0.35), transparent 38%),
+    radial-gradient(circle at 82% 22%, rgba(74, 222, 128, 0.32), transparent 36%),
+    radial-gradient(circle at 50% 82%, rgba(14, 165, 233, 0.25), transparent 42%),
+    linear-gradient(120deg, rgba(243, 249, 255, 0.98), rgba(236, 253, 245, 0.95));
+  background-size:
+    180% 180%,
+    180% 180%,
+    160% 160%,
+    100% 100%;
+  animation: home-gradient-drift 10s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+.home-gradient-bg__orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  opacity: 0.65;
+  mix-blend-mode: screen;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+  animation:
+    home-orb-float 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate,
+    home-orb-pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+}
+
+.home-gradient-bg__orb--one {
+  top: -12%;
+  left: -8%;
+  width: 26rem;
+  height: 26rem;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.7), transparent 70%);
+  animation-delay: 0s, -1.5s;
+}
+
+.home-gradient-bg__orb--two {
+  top: 8%;
+  right: -10%;
+  width: 30rem;
+  height: 30rem;
+  background: radial-gradient(circle, rgba(74, 222, 128, 0.62), transparent 68%);
+  animation-delay: -4s, -3s;
+}
+
+.home-gradient-bg__orb--three {
+  bottom: -16%;
+  left: 28%;
+  width: 28rem;
+  height: 28rem;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.58), transparent 72%);
+  animation-delay: -8s, -5s;
+}
+
+[data-theme="dark"] .home-gradient-bg,
+.dark .home-gradient-bg {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.38), transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(74, 222, 128, 0.34), transparent 36%),
+    radial-gradient(circle at 50% 85%, rgba(14, 165, 233, 0.28), transparent 44%),
+    linear-gradient(120deg, rgba(8, 15, 32, 0.94), rgba(5, 9, 19, 0.98));
+  background-size:
+    180% 180%,
+    180% 180%,
+    160% 160%,
+    100% 100%;
+  animation: home-gradient-drift 10s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+[data-theme="dark"] .home-gradient-bg__orb--one,
+.dark .home-gradient-bg__orb--one {
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.92), transparent 70%);
+}
+
+[data-theme="dark"] .home-gradient-bg__orb--two,
+.dark .home-gradient-bg__orb--two {
+  background: radial-gradient(circle, rgba(74, 222, 128, 0.85), transparent 68%);
+}
+
+[data-theme="dark"] .home-gradient-bg__orb--three,
+.dark .home-gradient-bg__orb--three {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.82), transparent 72%);
+}
+
+@keyframes home-gradient-drift {
+  0% {
+    background-position:
+      0% 50%,
+      100% 0%,
+      50% 100%,
+      0% 0%;
+  }
+
+  50% {
+    background-position:
+      100% 40%,
+      0% 60%,
+      60% 0%,
+      0% 0%;
+  }
+
+  100% {
+    background-position:
+      0% 50%,
+      100% 0%,
+      50% 100%,
+      0% 0%;
+  }
+}
+
+@keyframes home-orb-float {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  100% {
+    transform: translate3d(0, 1rem, 0) scale(1.06);
+  }
+}
+
+@keyframes home-orb-pulse {
+  0% {
+    opacity: 0.42;
+  }
+
+  100% {
+    opacity: 0.72;
+  }
+}

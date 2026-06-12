@@ -1,0 +1,157 @@
+/* Theme variables, Tailwind/fumadocs imports, and color system.
+   主题变量、Tailwind/fumadocs 导入、色彩系统。 */
+
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+@plugin "tailwindcss-animate";
+
+/* ── Smooth Theme Transition / 深浅色主题切换平滑过渡 ─────────────────── */
+/* Single-source-of-truth approach: override fumadocs default 150ms
+   transition duration globally, then ensure all themed surfaces use
+   the same duration. No @property needed — avoids double-transition
+   desync between variable interpolation and element-level transitions.
+   单一来源方案：全局覆盖 fumadocs 默认 150ms 过渡时长，
+   确保所有主题相关表面使用同一速率。
+   不使用 @property——避免变量插值与元素级过渡的双重动画导致不同步。 */
+
+:root {
+  --theme-transition-duration: 0.3s;
+  --default-transition-duration: var(--theme-transition-duration);
+}
+
+/* Global catch-all: elements that inherit themed colors but have no
+   Tailwind transition class still get smooth color changes.
+   全局兜底：继承主题颜色但无 Tailwind transition 类的元素也获得平滑颜色变化。 */
+body,
+body::before,
+.glass-panel,
+.glass-card,
+.glass-chip,
+.glass-cta,
+.glass-codeblock,
+blockquote {
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-transition-duration: 0s;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-orbitron: var(--font-orbitron);
+  --font-noto-sans: var(--font-noto-sans);
+  --font-mono: "Maple Mono NF CN", "Maple Mono CN";
+}
+
+.font-orbitron {
+  font-family: var(--font-orbitron), sans-serif;
+}
+
+:root,
+[data-theme="light"],
+.light {
+  --background: #ffffff;
+  --foreground: #0f172a;
+
+  /* Liquid Glass Effects for Light Mode / 亮色模式液态玻璃效果 */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(15, 23, 42, 0.08);
+
+  /* Liquid Glass Design System — Light / 液态玻璃设计系统 — 亮色 */
+  --glass-tint: rgba(248, 250, 252, 0.55);
+  --glass-tint-strong: rgba(255, 255, 255, 0.78);
+  --glass-tint-medium: rgba(255, 255, 255, 0.55);
+  --glass-tint-soft: rgba(255, 255, 255, 0.35);
+  --glass-border-hairline: rgba(15, 23, 42, 0.07);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  --glass-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.12), 0 1px 2px rgba(15, 23, 42, 0.06);
+  --glass-shadow-hover: 0 8px 32px -4px rgba(15, 23, 42, 0.18), 0 2px 4px rgba(15, 23, 42, 0.08);
+  --glass-ambient-a: rgba(56, 189, 248, 0.16);
+  --glass-ambient-b: rgba(74, 222, 128, 0.12);
+  --glass-ambient-c: rgba(14, 165, 233, 0.08);
+  /* Code block glass sheen / 代码块玻璃高光 */
+  --glass-codeblock-sheen: rgba(56, 189, 248, 0.1);
+  /* Theme-agnostic glass scalars / 主题无关的玻璃标量 */
+  --glass-blur: 24px;
+  --glass-blur-strong: 32px;
+  --glass-blur-soft: 14px;
+  --glass-blur-backdrop: 12px;
+  --glass-saturate: 160%;
+  --glass-brightness: 105%;
+  --glass-contrast: 102%;
+
+  /* Brand Gradients (Light Green to Light Blue) / 品牌渐变（浅绿到浅蓝） */
+  --color-brand-start: #38bdf8; /* Light Blue / 浅蓝 */
+  --color-brand-end: #4ade80; /* Light Green / 浅绿 */
+
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-card: var(--background);
+  --color-fd-card-foreground: var(--foreground);
+  --color-fd-secondary: var(--background);
+  --color-fd-secondary-foreground: var(--foreground);
+  --color-fd-muted: rgba(0, 0, 0, 0.04);
+  --color-fd-muted-foreground: rgba(0, 0, 0, 0.5);
+  --color-fd-popover: var(--background);
+  --color-fd-popover-foreground: var(--foreground);
+  --color-fd-accent: rgba(0, 0, 0, 0.04);
+  --color-fd-accent-foreground: var(--foreground);
+  --color-fd-border: rgba(0, 0, 0, 0.08);
+  --color-fd-ring: rgba(14, 165, 233, 0.4);
+  --color-fd-overlay: rgba(0, 0, 0, 0.2);
+  --fd-primary: #0ea5e9;
+  --fd-primary-foreground: #ffffff;
+}
+
+[data-theme="dark"],
+.dark {
+  --background: #060913;
+  --foreground: #f8fafc;
+
+  /* Liquid Glass Effects for Dark Mode / 深色模式液态玻璃效果 */
+  --glass-bg: rgba(15, 23, 42, 0.35);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Liquid Glass Design System — Dark / 液态玻璃设计系统 — 深色 */
+  --glass-tint: rgba(15, 23, 42, 0.38);
+  --glass-tint-strong: rgba(20, 28, 50, 0.52);
+  --glass-tint-medium: rgba(15, 23, 42, 0.38);
+  --glass-tint-soft: rgba(15, 23, 42, 0.24);
+  --glass-border-hairline: rgba(255, 255, 255, 0.06);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 4px 24px -4px rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --glass-shadow-hover: 0 8px 32px -4px rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --glass-ambient-a: rgba(56, 189, 248, 0.14);
+  --glass-ambient-b: rgba(168, 85, 247, 0.1);
+  --glass-ambient-c: rgba(14, 165, 233, 0.06);
+  /* Code block glass sheen / 代码块玻璃高光 */
+  --glass-codeblock-sheen: rgba(56, 189, 248, 0.08);
+
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-card: var(--background);
+  --color-fd-card-foreground: var(--foreground);
+  --color-fd-secondary: var(--background);
+  --color-fd-secondary-foreground: var(--foreground);
+  --color-fd-muted: rgba(255, 255, 255, 0.06);
+  --color-fd-muted-foreground: rgba(255, 255, 255, 0.6);
+  --color-fd-popover: var(--background);
+  --color-fd-popover-foreground: var(--foreground);
+  --color-fd-accent: rgba(255, 255, 255, 0.06);
+  --color-fd-accent-foreground: var(--foreground);
+  --color-fd-border: rgba(255, 255, 255, 0.08);
+  --color-fd-ring: rgba(56, 189, 248, 0.4);
+  --color-fd-overlay: rgba(0, 0, 0, 0.5);
+  --fd-primary: #38bdf8;
+  --fd-primary-foreground: #ffffff;
+}
