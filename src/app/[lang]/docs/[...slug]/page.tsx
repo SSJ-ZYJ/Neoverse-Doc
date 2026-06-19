@@ -16,12 +16,12 @@ import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { Mermaid } from '@/components/mdx/mermaid';
 import { DocsTransition } from '@/components/transition/docs-transition';
 import { getPageDictionary } from '@/dictionaries';
-import { i18n, type Locale } from '@/lib/i18n';
+import { resolveLocale } from '@/lib/i18n';
 import { source } from '@/lib/source';
 
 export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   const { slug, lang } = await props.params;
-  const locale = (lang as Locale) ?? i18n.defaultLanguage;
+  const locale = resolveLocale(lang);
   const dict = getPageDictionary(locale);
   const page = source.getPage(slug, locale);
   if (!page) notFound();
@@ -69,7 +69,7 @@ export async function generateMetadata(
   props: PageProps<'/[lang]/docs/[...slug]'>,
 ): Promise<Metadata> {
   const { slug, lang } = await props.params;
-  const locale = (lang as Locale) ?? i18n.defaultLanguage;
+  const locale = resolveLocale(lang);
   const page = source.getPage(slug, locale);
   if (!page) notFound();
 

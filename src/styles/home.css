@@ -3,9 +3,21 @@
 
 .home-gradient-bg {
   background:
-    radial-gradient(circle at 18% 18%, rgba(56, 189, 248, 0.35), transparent 38%),
-    radial-gradient(circle at 82% 22%, rgba(74, 222, 128, 0.32), transparent 36%),
-    radial-gradient(circle at 50% 82%, rgba(14, 165, 233, 0.25), transparent 42%),
+    radial-gradient(
+      circle at 18% 18%,
+      color-mix(in srgb, var(--color-brand-start) 35%, transparent),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 82% 22%,
+      color-mix(in srgb, var(--color-brand-end) 32%, transparent),
+      transparent 36%
+    ),
+    radial-gradient(
+      circle at 50% 82%,
+      color-mix(in srgb, var(--color-home-accent) 25%, transparent),
+      transparent 42%
+    ),
     linear-gradient(120deg, rgba(243, 249, 255, 0.98), rgba(236, 253, 245, 0.95));
   background-size:
     180% 180%,
@@ -33,7 +45,11 @@
   left: -8%;
   width: 26rem;
   height: 26rem;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.7), transparent 70%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-start) 70%, transparent),
+    transparent 70%
+  );
   animation-delay: 0s, -1.5s;
 }
 
@@ -42,7 +58,11 @@
   right: -10%;
   width: 30rem;
   height: 30rem;
-  background: radial-gradient(circle, rgba(74, 222, 128, 0.62), transparent 68%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-end) 62%, transparent),
+    transparent 68%
+  );
   animation-delay: -4s, -3s;
 }
 
@@ -51,16 +71,31 @@
   left: 28%;
   width: 28rem;
   height: 28rem;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.58), transparent 72%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-home-accent) 58%, transparent),
+    transparent 72%
+  );
   animation-delay: -8s, -5s;
 }
 
-[data-theme="dark"] .home-gradient-bg,
 .dark .home-gradient-bg {
   background:
-    radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.38), transparent 40%),
-    radial-gradient(circle at 80% 20%, rgba(74, 222, 128, 0.34), transparent 36%),
-    radial-gradient(circle at 50% 85%, rgba(14, 165, 233, 0.28), transparent 44%),
+    radial-gradient(
+      circle at 20% 20%,
+      color-mix(in srgb, var(--color-brand-start) 38%, transparent),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      color-mix(in srgb, var(--color-brand-end) 34%, transparent),
+      transparent 36%
+    ),
+    radial-gradient(
+      circle at 50% 85%,
+      color-mix(in srgb, var(--color-home-accent) 28%, transparent),
+      transparent 44%
+    ),
     linear-gradient(120deg, rgba(8, 15, 32, 0.94), rgba(5, 9, 19, 0.98));
   background-size:
     180% 180%,
@@ -70,19 +105,28 @@
   animation: home-gradient-drift 10s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
 
-[data-theme="dark"] .home-gradient-bg__orb--one,
 .dark .home-gradient-bg__orb--one {
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.92), transparent 70%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-start) 92%, transparent),
+    transparent 70%
+  );
 }
 
-[data-theme="dark"] .home-gradient-bg__orb--two,
 .dark .home-gradient-bg__orb--two {
-  background: radial-gradient(circle, rgba(74, 222, 128, 0.85), transparent 68%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-end) 85%, transparent),
+    transparent 68%
+  );
 }
 
-[data-theme="dark"] .home-gradient-bg__orb--three,
 .dark .home-gradient-bg__orb--three {
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.82), transparent 72%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-home-accent) 82%, transparent),
+    transparent 72%
+  );
 }
 
 @keyframes home-gradient-drift {
@@ -128,5 +172,14 @@
 
   100% {
     opacity: 0.72;
+  }
+}
+
+/* Respect reduced-motion preferences: disable all home animations.
+   尊重减弱动画偏好：禁用首页所有动画。 */
+@media (prefers-reduced-motion: reduce) {
+  .home-gradient-bg,
+  .home-gradient-bg__orb {
+    animation: none;
   }
 }

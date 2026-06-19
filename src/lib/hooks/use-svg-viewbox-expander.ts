@@ -38,6 +38,10 @@ export function useSvgViewBoxExpander(
   // Re-apply the expanded viewBox after every commit. React replaces the SVG
   // element on each parent re-render, so the [svgContent]-scoped effect above
   // is not enough: any setState (zoom, pan, maximize, theme) would reset it.
+  // A guard skips the DOM write when the viewBox is already correct.
+  // 每次 commit 后重新应用扩展 viewBox。React 在父组件重渲染时会替换 SVG
+  // 节点，仅依赖 [svgContent] 的上方的 effect 不够：任何 setState（缩放、
+  // 平移、最大化、主题）都会重置它。加 guard 跳过 viewBox 已正确时的 DOM 写入。
   useLayoutEffect(() => {
     const stored = expandedViewBoxRef.current;
     if (!stored) return;
@@ -47,6 +51,7 @@ export function useSvgViewBoxExpander(
       if (!wrapper) continue;
       const svg = wrapper.querySelector<SVGSVGElement>('.mermaid-svg-host > svg');
       if (!svg) continue;
+      if (svg.getAttribute('viewBox') === stored.viewBox) continue;
       applySvgFixes(svg, stored.viewBox);
     }
   });

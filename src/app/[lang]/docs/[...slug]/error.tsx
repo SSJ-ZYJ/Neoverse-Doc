@@ -8,7 +8,7 @@
 import { RotateCw } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { getPageDictionary } from '@/dictionaries';
-import { i18n, type Locale } from '@/lib/i18n';
+import { resolveLocale } from '@/lib/i18n';
 
 export default function DocsError({
   reset,
@@ -18,8 +18,8 @@ export default function DocsError({
   reset: () => void;
   unstable_retry?: () => void;
 }) {
-  const params = useParams<{ lang?: Locale }>();
-  const locale = (params?.lang as Locale) ?? i18n.defaultLanguage;
+  const params = useParams<{ lang?: string }>();
+  const locale = resolveLocale(params?.lang);
   const dict = getPageDictionary(locale);
 
   // Prefer Next.js App Router retry so failed route segments are refreshed before the boundary resets.

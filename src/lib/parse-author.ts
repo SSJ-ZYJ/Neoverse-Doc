@@ -1,3 +1,11 @@
+/**
+ * Parse author strings from MDX frontmatter into structured records.
+ * Supports the `Name(URL)` format and falls back to plain names.
+ *
+ * 解析 MDX frontmatter 中的作者字符串为结构化记录。
+ * 支持 `Name(URL)` 格式，无 URL 时回退为纯名称。
+ */
+
 const AUTHOR_REGEX = /^(.+?)\((https?:\/\/[^)]+)\)$/;
 
 export interface AuthorInfo {

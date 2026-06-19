@@ -4,15 +4,13 @@
 
 import EnterDocsButton from '@/components/transition/enter-docs-button';
 import { getPageDictionary } from '@/dictionaries';
-import { i18n, type Locale } from '@/lib/i18n';
+import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 
-export function generateStaticParams() {
-  return i18n.languages.map((lang) => ({ lang }));
-}
+export const generateStaticParams = generateLocaleStaticParams;
 
 export default async function HomePage({ params }: PageProps<'/[lang]'>) {
   const { lang } = await params;
-  const locale = (lang as Locale) ?? i18n.defaultLanguage;
+  const locale = resolveLocale(lang);
   const dict = getPageDictionary(locale);
 
   return (
@@ -28,7 +26,7 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
         <h1 className="text-6xl md:text-8xl font-black font-orbitron tracking-widest">
           Neoverse-Doc
         </h1>
-        <p className="text-xl md:text-2xl text-foreground/80 max-w-2xl mx-auto font-light">
+        <p className="text-xl md:text-2xl text-fd-foreground/80 max-w-2xl mx-auto font-light">
           {dict.tagline}
         </p>
       </div>

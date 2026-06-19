@@ -149,9 +149,7 @@
 
 /* Dark mode only: enhance hover glow for better visibility on dark backgrounds.
    深色模式专用：增强悬停发光，使其在深色背景上更明显 */
-[data-theme="dark"] #nd-sidebar .bg-fd-secondary\/50:hover,
 .dark #nd-sidebar .bg-fd-secondary\/50:hover,
-[data-theme="dark"] #nd-sidebar .bg-fd-secondary\/50:has(button:hover),
 .dark #nd-sidebar .bg-fd-secondary\/50:has(button:hover) {
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -302,7 +300,7 @@
   scrollbar-color: var(--fd-border) transparent;
 }
 
-:where([data-theme="dark"], .dark) :where(#nd-page) div[data-orientation] > [role="tablist"] {
+:where(.dark) :where(#nd-page) div[data-orientation] > [role="tablist"] {
   border-bottom-color: rgba(255, 255, 255, 0.2);
 }
 

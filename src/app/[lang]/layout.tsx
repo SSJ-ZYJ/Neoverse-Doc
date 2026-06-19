@@ -8,27 +8,25 @@ import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { Metadata } from 'next';
 import DefaultSearchDialog from '@/components/search';
 import { getPageDictionary } from '@/dictionaries';
-import { i18n, type Locale } from '@/lib/i18n';
+import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 import { i18nProvider, i18nUI } from '@/lib/layout.shared';
 
-export function generateStaticParams() {
-  return i18n.languages.map((lang) => ({ lang }));
-}
+export const generateStaticParams = generateLocaleStaticParams;
 
 export async function generateMetadata(props: LayoutProps<'/[lang]'>): Promise<Metadata> {
   const { lang } = await props.params;
-  const locale = (lang as Locale) ?? i18n.defaultLanguage;
+  const locale = resolveLocale(lang);
   const dict = getPageDictionary(locale);
 
   return {
-    title: 'Neoverse',
+    title: dict.siteTitle,
     description: dict.tagline,
   };
 }
 
 export default async function LangLayout({ params, children }: LayoutProps<'/[lang]'>) {
   const { lang } = await params;
-  const locale = (lang as Locale) ?? i18n.defaultLanguage;
+  const locale = resolveLocale(lang);
 
   return (
     <RootProvider

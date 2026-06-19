@@ -7,17 +7,18 @@ import { ArrowLeft, Home } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { getPageDictionary } from '@/dictionaries';
-import { i18n, type Locale } from '@/lib/i18n';
+import { i18n, isLocale, type Locale } from '@/lib/i18n';
 
 interface LocalizedNotFoundProps {
   variant?: 'default' | 'docs';
 }
 
-function isLocale(value: unknown): value is Locale {
-  return typeof value === 'string' && i18n.languages.includes(value as Locale);
-}
-
-function resolveLocale(paramsLang: unknown, pathname: string | null): Locale {
+// Resolve locale from params first, then from the pathname's first segment,
+// falling back to the default language. More robust than the shared
+// resolveLocale because not-found pages may render outside a [lang] segment.
+// 先从 params 解析 locale，再回退到路径首段，最终回退到默认语言。
+// 比共享的 resolveLocale 更健壮，因为 not-found 页可能不在 [lang] 段下渲染。
+function resolveLocaleFromContext(paramsLang: unknown, pathname: string | null): Locale {
   if (isLocale(paramsLang)) return paramsLang;
 
   const pathLocale = pathname?.split('/').find(Boolean);
@@ -30,15 +31,16 @@ export function LocalizedNotFound({ variant = 'default' }: LocalizedNotFoundProp
   const params = useParams<{ lang?: string }>();
   const pathname = usePathname();
   const router = useRouter();
-  const locale = resolveLocale(params?.lang, pathname);
+  const locale = resolveLocaleFromContext(params?.lang, pathname);
   const dict = getPageDictionary(locale);
 
   const handleBack = () => {
+    // Go back if there's navigation history, otherwise go to the locale root.
+    // 存在浏览历史时后退，否则跳转到当前语言首页。
     if (window.history.length > 1) {
       router.back();
       return;
     }
-
     router.push(`/${locale}`);
   };
 

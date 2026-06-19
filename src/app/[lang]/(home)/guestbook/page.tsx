@@ -6,19 +6,17 @@ import { MessageSquareText } from 'lucide-react';
 import { Guestbook } from '@/components/guestbook';
 import { BackLink } from '@/components/transition/back-link';
 import { getPageDictionary } from '@/dictionaries';
-import { i18n, type Locale } from '@/lib/i18n';
+import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 
 // Stable Giscus term for the standalone guestbook across all locales.
 // 独立留言墙跨语言共用的稳定 Giscus 讨论标识。
 const GUESTBOOK_SLUG_KEY = 'guestbook';
 
-export function generateStaticParams() {
-  return i18n.languages.map((lang) => ({ lang }));
-}
+export const generateStaticParams = generateLocaleStaticParams;
 
 export default async function GuestbookPage({ params }: PageProps<'/[lang]/guestbook'>) {
   const { lang } = await params;
-  const locale = (lang as Locale) ?? i18n.defaultLanguage;
+  const locale = resolveLocale(lang);
   const dict = getPageDictionary(locale);
 
   return (

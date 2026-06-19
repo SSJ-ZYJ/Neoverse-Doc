@@ -58,7 +58,6 @@ blockquote {
 }
 
 :root,
-[data-theme="light"],
 .light {
   --background: #ffffff;
   --foreground: #0f172a;
@@ -93,6 +92,22 @@ blockquote {
   /* Brand Gradients (Light Green to Light Blue) / 品牌渐变（浅绿到浅蓝） */
   --color-brand-start: #38bdf8; /* Light Blue / 浅蓝 */
   --color-brand-end: #4ade80; /* Light Green / 浅绿 */
+  /* Home gradient accent (theme-agnostic — same hue in light & dark).
+     首页渐变强调色（主题无关 — 深浅色同色相）。 */
+  --color-home-accent: #0ea5e9;
+
+  /* Alert / collapsible semantic colors (theme-agnostic base hues).
+     Tint strength differs per theme via --alert-tint-pct.
+     提示框 / 折叠块语义色（基础色相不随主题变化）。
+     背景浓度由 --alert-tint-pct 按主题切换。 */
+  --color-alert-note: #3b82f6;
+  --color-alert-tip: #22c55e;
+  --color-alert-important: #a855f7;
+  --color-alert-warning: #eab308;
+  --color-alert-caution: #ef4444;
+  --color-alert-example: #f97316;
+  --color-alert-hint: #06b6d4;
+  --alert-tint-pct: 8%;
 
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);
@@ -113,7 +128,6 @@ blockquote {
   --fd-primary-foreground: #ffffff;
 }
 
-[data-theme="dark"],
 .dark {
   --background: #060913;
   --foreground: #f8fafc;
@@ -137,6 +151,10 @@ blockquote {
   --glass-ambient-c: rgba(14, 165, 233, 0.06);
   /* Code block glass sheen / 代码块玻璃高光 */
   --glass-codeblock-sheen: rgba(56, 189, 248, 0.08);
+
+  /* Stronger alert tint in dark mode for readability.
+     深色模式使用更浓的提示框背景以提升可读性。 */
+  --alert-tint-pct: 12%;
 
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);

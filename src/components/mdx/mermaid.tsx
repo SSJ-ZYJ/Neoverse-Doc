@@ -11,19 +11,13 @@ import { Maximize, Minimize, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { en } from '@/dictionaries/en';
-import { zh } from '@/dictionaries/zh';
+import { getPageDictionary } from '@/dictionaries';
 import { useFitCanvasScale } from '@/lib/hooks/use-fit-canvas-scale';
 import { useMermaidMaximize } from '@/lib/hooks/use-mermaid-maximize';
 import { useMermaidRender } from '@/lib/hooks/use-mermaid-render';
 import { useSvgViewBoxExpander } from '@/lib/hooks/use-svg-viewbox-expander';
 import { useZoomAndPan } from '@/lib/hooks/use-zoom-and-pan';
-
-// Locale → mermaid toolbar labels lookup. Falls back to the default language
-// so unlisted locales still render sensible defaults.
-// 按 locale 查表获取工具栏文案，未列出的语言回退到默认语言。
-const MERMAID_LABELS = { zh, en } as const;
-const DEFAULT_LOCALE = 'zh';
+import { resolveLocale } from '@/lib/i18n';
 
 export function Mermaid({ chart }: { chart: string }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -33,9 +27,11 @@ export function Mermaid({ chart }: { chart: string }) {
 
   const { resolvedTheme } = useTheme();
   const { locale } = useI18n();
-  const labels =
-    MERMAID_LABELS[(locale ?? DEFAULT_LOCALE) as keyof typeof MERMAID_LABELS] ??
-    MERMAID_LABELS[DEFAULT_LOCALE];
+  // Locale from fumadocs i18n context is a string; resolve to a valid Locale
+  // and pull labels from the shared dictionary (single source of truth).
+  // fumadocs i18n 上下文返回的 locale 为字符串，统一解析为合法 Locale
+  // 后从共享字典（唯一来源）取工具栏文案。
+  const labels = getPageDictionary(resolveLocale(locale));
 
   useEffect(() => {
     setMounted(true);

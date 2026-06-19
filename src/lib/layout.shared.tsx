@@ -14,6 +14,7 @@ import { i18nProvider, uiTranslations } from 'fumadocs-ui/i18n';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/lib/i18n';
+import { REPO_URL } from '@/lib/site-config';
 
 export const i18nUI = i18n
   .translations()
@@ -65,7 +66,7 @@ export function baseOptions(locale: Locale = i18n.defaultLanguage): BaseLayoutPr
       title: <span className="font-orbitron font-bold text-xl tracking-wider">Neoverse-Doc</span>,
       url: `/${locale}`,
     },
-    githubUrl: 'https://github.com/SSJ-ZYJ/Neoverse-Doc',
+    githubUrl: REPO_URL,
     links: [
       {
         text: dict.guestbookTitle,

@@ -5,8 +5,12 @@
 // fumadocs-ui 内部 UI 文案由 src/lib/layout.shared.tsx 的 defineI18nUI 管理。
 // 本字典只承载页面用到的 副标题 / 导航栏名 / 卡片标题等业务文案。
 
+import type { Dictionary } from './index';
+
 export const zh = {
+  siteTitle: 'Neoverse',
   tagline: '一份还在做的文档',
+  loading: '加载中…',
   enterDocs: '进入文档',
   guestbookTitle: '留言板',
   guestbookDesc: '在这里留下你对 Neoverse-Doc 的足迹与反馈',
@@ -29,4 +33,4 @@ export const zh = {
   mermaidMaximize: '放大查看',
   mermaidRestore: '还原',
   mermaidToolbar: '图表工具栏',
-} as const;
+} satisfies Dictionary;

@@ -7,10 +7,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { getPageDictionary } from '@/dictionaries';
 import { i18n } from '@/lib/i18n';
 
 export default function RootRedirect() {
   const router = useRouter();
+  // Loading copy uses the default language since the redirect always targets it.
+  // 加载文案使用默认语言，因为重定向目标始终是默认语言。
+  const { loading } = getPageDictionary(i18n.defaultLanguage);
 
   useEffect(() => {
     router.replace(`/${i18n.defaultLanguage}`);
@@ -18,7 +22,7 @@ export default function RootRedirect() {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="animate-pulse text-muted-foreground">{loading}</div>
     </div>
   );
 }

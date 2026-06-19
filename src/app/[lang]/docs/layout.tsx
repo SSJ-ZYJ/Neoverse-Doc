@@ -10,17 +10,15 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { Sidebar, SidebarTrigger, useSidebar } from 'fumadocs-ui/layouts/docs/slots/sidebar';
 import { SidebarProvider } from '@/components/sidebar-provider';
 import MaskReveal from '@/components/transition/mask-reveal';
-import { i18n, type Locale } from '@/lib/i18n';
+import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 import { baseOptions } from '@/lib/layout.shared';
 import { source } from '@/lib/source';
 
-export function generateStaticParams() {
-  return i18n.languages.map((lang) => ({ lang }));
-}
+export const generateStaticParams = generateLocaleStaticParams;
 
 export default async function Layout({ params, children }: LayoutProps<'/[lang]/docs'>) {
   const { lang } = await params;
-  const locale = (lang as Locale) ?? i18n.defaultLanguage;
+  const locale = resolveLocale(lang);
 
   return (
     <>

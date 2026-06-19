@@ -23,6 +23,10 @@ interface CodeBlockPreProps extends ComponentProps<'pre'> {
   title?: string;
   icon?: ReactNode | string;
   lang?: string;
+  /** Shiki line-numbers transformer flags, spread onto the <pre> element. */
+  /** Shiki 行号 transformer 标记，展开到 <pre> 元素上。 */
+  'data-line-numbers'?: string;
+  'data-line-numbers-start'?: string;
 }
 
 export function CustomCodeBlock(props: CodeBlockPreProps) {
@@ -64,8 +68,8 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
         tabIndex={0}
         className="text-[0.8125rem] py-3.5 overflow-auto max-h-[600px] fd-scroll-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fd-ring"
         style={{
-          counterSet: (rest as Record<string, unknown>)['data-line-numbers']
-            ? `line ${Number((rest as Record<string, unknown>)['data-line-numbers-start'] ?? 1) - 1}`
+          counterSet: rest['data-line-numbers']
+            ? `line ${Number(rest['data-line-numbers-start'] ?? 1) - 1}`
             : undefined,
         }}
       >

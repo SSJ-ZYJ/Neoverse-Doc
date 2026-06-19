@@ -11,6 +11,7 @@
 
 import Link from 'next/link';
 import { type MouseEvent, type ReactNode, useRef } from 'react';
+import { captureTransitionSnapshot } from '@/lib/transition-snapshot';
 
 export default function EnterDocsButton({
   href,
@@ -24,49 +25,21 @@ export default function EnterDocsButton({
   const spanRef = useRef<HTMLSpanElement>(null);
 
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
-    let x = e.clientX;
-    let y = e.clientY;
-
-    if (x === 0 && y === 0) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      x = rect.left + rect.width / 2;
-      y = rect.top + rect.height / 2;
-    }
-
     // Provide immediate tactile feedback via direct DOM manipulation
     // (avoids React state update that could abort the in-flight RSC fetch).
+    // Must happen BEFORE the snapshot so the scaled-down span is captured.
     // 通过直接 DOM 操作提供即时触觉反馈
     // （避免 React 状态更新触发重渲染，从而中止进行中的 RSC 请求）。
+    // 必须在快照之前执行，使缩小后的 span 被捕获进快照。
     if (spanRef.current) {
       spanRef.current.style.transform = 'scale(0.92)';
       spanRef.current.style.opacity = '0.7';
     }
 
-    // Clone the current native DOM shell as a string and cache it;
-    // the new page restores it via dangerouslySetInnerHTML on mount.
-    // Also capture the current scroll offset — HomeLayout is taller than
-    // the viewport (sticky navbar + min-h-screen inner main), so the user
-    // may be scrolled by up to navbar-height pixels. Without this, the
-    // cloned snapshot renders at scrollY=0 and the content appears to
-    // "jump to the top of the page" the instant the mask appears.
-    // 把当前屏幕里的原生态 DOM 节点外壳克隆下来，作为字符串存入缓存
-    // 新页面挂载时通过 dangerouslySetInnerHTML 直接还原
-    // 同时记录当前滚动偏移 — HomeLayout 总高 = 顶部 sticky navbar + min-h-screen
-    // 内层主区，比视口高，用户最多可滚动 navbar 那点高度。不记录的话，克隆快照
-    // 总以 scrollY=0 渲染，遮罩出现的瞬间内容会"瞬间跳到页面顶部"。
-    const mainNode = document.querySelector('main');
-
-    if (mainNode) {
-      const data = {
-        x,
-        y,
-        domHTML: mainNode.outerHTML,
-        scrollY: window.scrollY,
-        ts: Date.now(),
-        isTransitioning: true,
-      };
-      sessionStorage.setItem('nd-docs-transition', JSON.stringify(data));
-    }
+    // Snapshot the current <main> (including the tactile feedback above) so
+    // MaskReveal on the destination page can play the radial cutout reveal.
+    // 快照当前 <main>（含上方触觉反馈），供目标页 MaskReveal 播放径向镂空揭示。
+    captureTransitionSnapshot(e);
 
     // Do NOT call e.preventDefault() or router.push() here.
     // Let the <Link> handle navigation natively — calling router.push

@@ -263,6 +263,18 @@
   outline-offset: 1px;
 }
 
+/* Touch devices: enlarge buttons to the 40px minimum tap target for
+   accessibility. Coarse pointers (fingers) need a bigger hit area than
+   the compact 1.75rem used on hover-capable devices.
+   触摸设备：将按钮放大至 40px 最小点击区域以符合无障碍标准。
+   手指等粗指针需要比悬停设备上 1.75rem 紧凑尺寸更大的命中区域。 */
+@media (pointer: coarse) {
+  .mermaid-toolbar__btn {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
 .mermaid-toolbar__scale {
   min-width: 3rem;
   text-align: center;

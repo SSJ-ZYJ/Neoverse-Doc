@@ -68,76 +68,53 @@ blockquote {
 }
 
 .markdown-alert-note {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.08);
+  border-color: var(--color-alert-note);
+  background: color-mix(in srgb, var(--color-alert-note) var(--alert-tint-pct), transparent);
 }
 .markdown-alert-note .octicon {
-  fill: #3b82f6;
+  fill: var(--color-alert-note);
 }
 
 .markdown-alert-tip {
-  border-color: #22c55e;
-  background: rgba(34, 197, 94, 0.08);
+  border-color: var(--color-alert-tip);
+  background: color-mix(in srgb, var(--color-alert-tip) var(--alert-tint-pct), transparent);
 }
 .markdown-alert-tip .octicon {
-  fill: #22c55e;
+  fill: var(--color-alert-tip);
 }
 
 .markdown-alert-important {
-  border-color: #a855f7;
-  background: rgba(168, 85, 247, 0.08);
+  border-color: var(--color-alert-important);
+  background: color-mix(in srgb, var(--color-alert-important) var(--alert-tint-pct), transparent);
 }
 .markdown-alert-important .octicon {
-  fill: #a855f7;
+  fill: var(--color-alert-important);
 }
 
 .markdown-alert-warning {
-  border-color: #eab308;
-  background: rgba(234, 179, 8, 0.08);
+  border-color: var(--color-alert-warning);
+  background: color-mix(in srgb, var(--color-alert-warning) var(--alert-tint-pct), transparent);
 }
 .markdown-alert-warning .octicon {
-  fill: #eab308;
+  fill: var(--color-alert-warning);
 }
 
 .markdown-alert-caution {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.08);
+  border-color: var(--color-alert-caution);
+  background: color-mix(in srgb, var(--color-alert-caution) var(--alert-tint-pct), transparent);
 }
 .markdown-alert-caution .octicon {
-  fill: #ef4444;
-}
-
-[data-theme="dark"] .markdown-alert-note,
-.dark .markdown-alert-note {
-  background: rgba(59, 130, 246, 0.12);
-}
-[data-theme="dark"] .markdown-alert-tip,
-.dark .markdown-alert-tip {
-  background: rgba(34, 197, 94, 0.12);
-}
-[data-theme="dark"] .markdown-alert-important,
-.dark .markdown-alert-important {
-  background: rgba(168, 85, 247, 0.12);
-}
-[data-theme="dark"] .markdown-alert-warning,
-.dark .markdown-alert-warning {
-  background: rgba(234, 179, 8, 0.12);
-}
-[data-theme="dark"] .markdown-alert-caution,
-.dark .markdown-alert-caution {
-  background: rgba(239, 68, 68, 0.12);
+  fill: var(--color-alert-caution);
 }
 
 /* ────────────── Inline Code Enhancement / 行内代码增强 ────────────── */
 
 :root,
-[data-theme="light"],
 .light {
   --inline-code-bg: rgba(0, 0, 0, 0.06);
   --inline-code-border: rgba(0, 0, 0, 0.08);
 }
 
-[data-theme="dark"],
 .dark {
   --inline-code-bg: rgba(255, 255, 255, 0.15);
   --inline-code-border: rgba(255, 255, 255, 0.3);
@@ -264,7 +241,6 @@ blockquote {
 
 /* Dark mode border highlight for nested code blocks (non-glass only).
    深色模式下嵌套代码块边缘（仅非玻璃化代码块） */
-[data-theme="dark"] .markdown-details figure.shiki:not(.glass-codeblock),
 .dark .markdown-details figure.shiki:not(.glass-codeblock) {
   border-color: rgba(255, 255, 255, 0.18);
   box-shadow:
@@ -277,7 +253,6 @@ figure.shiki > div:first-child {
   border-bottom-color: rgba(0, 0, 0, 0.15);
 }
 
-[data-theme="dark"] figure.shiki > div:first-child,
 .dark figure.shiki > div:first-child {
   border-bottom-color: rgba(255, 255, 255, 0.2);
 }
@@ -286,20 +261,20 @@ figure.shiki > div:first-child {
 
 /* FAQ - 常见问题 */
 .markdown-details-faq {
-  border-color: #3b82f6;
+  border-color: var(--color-alert-note);
 }
 .markdown-details-faq > .markdown-details-summary {
-  background: rgba(59, 130, 246, 0.08);
+  background: color-mix(in srgb, var(--color-alert-note) var(--alert-tint-pct), transparent);
 }
 .markdown-details-faq > .markdown-details-summary:hover {
-  background: rgba(59, 130, 246, 0.15);
+  background: color-mix(in srgb, var(--color-alert-note) 15%, transparent);
 }
 .markdown-details-type-faq::before {
   content: "";
   display: inline-block;
   width: 16px;
   height: 16px;
-  background-color: #3b82f6;
+  background-color: var(--color-alert-note);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
   mask-size: contain;
   mask-repeat: no-repeat;
@@ -313,20 +288,20 @@ figure.shiki > div:first-child {
 
 /* ANSWER - 解答 */
 .markdown-details-answer {
-  border-color: #22c55e;
+  border-color: var(--color-alert-tip);
 }
 .markdown-details-answer > .markdown-details-summary {
-  background: rgba(34, 197, 94, 0.08);
+  background: color-mix(in srgb, var(--color-alert-tip) var(--alert-tint-pct), transparent);
 }
 .markdown-details-answer > .markdown-details-summary:hover {
-  background: rgba(34, 197, 94, 0.15);
+  background: color-mix(in srgb, var(--color-alert-tip) 15%, transparent);
 }
 .markdown-details-type-answer::before {
   content: "";
   display: inline-block;
   width: 16px;
   height: 16px;
-  background-color: #22c55e;
+  background-color: var(--color-alert-tip);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpolyline points='22 4 12 14.01 9 11.01'/%3E%3C/svg%3E");
   mask-size: contain;
   mask-repeat: no-repeat;
@@ -340,20 +315,20 @@ figure.shiki > div:first-child {
 
 /* EXAMPLE - 示例 */
 .markdown-details-example {
-  border-color: #f97316;
+  border-color: var(--color-alert-example);
 }
 .markdown-details-example > .markdown-details-summary {
-  background: rgba(249, 115, 22, 0.08);
+  background: color-mix(in srgb, var(--color-alert-example) var(--alert-tint-pct), transparent);
 }
 .markdown-details-example > .markdown-details-summary:hover {
-  background: rgba(249, 115, 22, 0.15);
+  background: color-mix(in srgb, var(--color-alert-example) 15%, transparent);
 }
 .markdown-details-type-example::before {
   content: "";
   display: inline-block;
   width: 16px;
   height: 16px;
-  background-color: #f97316;
+  background-color: var(--color-alert-example);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cpath d='M12 18v-6'/%3E%3Cpath d='M9 15l3 3 3-3'/%3E%3C/svg%3E");
   mask-size: contain;
   mask-repeat: no-repeat;
@@ -367,20 +342,20 @@ figure.shiki > div:first-child {
 
 /* HINT - 提示 */
 .markdown-details-hint {
-  border-color: #06b6d4;
+  border-color: var(--color-alert-hint);
 }
 .markdown-details-hint > .markdown-details-summary {
-  background: rgba(6, 182, 212, 0.08);
+  background: color-mix(in srgb, var(--color-alert-hint) var(--alert-tint-pct), transparent);
 }
 .markdown-details-hint > .markdown-details-summary:hover {
-  background: rgba(6, 182, 212, 0.15);
+  background: color-mix(in srgb, var(--color-alert-hint) 15%, transparent);
 }
 .markdown-details-type-hint::before {
   content: "";
   display: inline-block;
   width: 16px;
   height: 16px;
-  background-color: #06b6d4;
+  background-color: var(--color-alert-hint);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z'/%3E%3Cpath d='M9 21h6'/%3E%3C/svg%3E");
   mask-size: contain;
   mask-repeat: no-repeat;
@@ -393,14 +368,10 @@ figure.shiki > div:first-child {
 }
 
 /* Dark mode border highlight for plain DETAILS only / 仅普通 DETAILS 折叠块边缘高光 */
-[data-theme="dark"]
-  .markdown-details:not(.markdown-details-faq):not(.markdown-details-answer):not(
-    .markdown-details-example
-  ):not(.markdown-details-hint),
 .dark
-  .markdown-details:not(.markdown-details-faq):not(.markdown-details-answer):not(
-    .markdown-details-example
-  ):not(.markdown-details-hint) {
+.markdown-details:not(.markdown-details-faq):not(.markdown-details-answer):not(
+  .markdown-details-example
+):not(.markdown-details-hint) {
   border-color: rgba(255, 255, 255, 0.25);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.06),
@@ -413,28 +384,9 @@ figure.shiki > div:first-child {
    深色模式下代码块边缘高光（仅非玻璃化代码块）。
    glass-codeblock 图表由玻璃设计系统通过 CSS 变量控制样式，
    不能被硬编码 rgba 值覆盖。 */
-[data-theme="dark"] figure.shiki:not(.glass-codeblock),
 .dark figure.shiki:not(.glass-codeblock) {
   border-color: rgba(255, 255, 255, 0.25);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.06),
     0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* Dark mode adjustments / 深色模式适配 */
-[data-theme="dark"] .markdown-details-faq > .markdown-details-summary,
-.dark .markdown-details-faq > .markdown-details-summary {
-  background: rgba(59, 130, 246, 0.12);
-}
-[data-theme="dark"] .markdown-details-answer > .markdown-details-summary,
-.dark .markdown-details-answer > .markdown-details-summary {
-  background: rgba(34, 197, 94, 0.12);
-}
-[data-theme="dark"] .markdown-details-example > .markdown-details-summary,
-.dark .markdown-details-example > .markdown-details-summary {
-  background: rgba(249, 115, 22, 0.12);
-}
-[data-theme="dark"] .markdown-details-hint > .markdown-details-summary,
-.dark .markdown-details-hint > .markdown-details-summary {
-  background: rgba(6, 182, 212, 0.12);
 }

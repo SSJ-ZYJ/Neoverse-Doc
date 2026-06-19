@@ -10,7 +10,8 @@
 import Giscus from '@giscus/react';
 import { useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { i18n, type Locale } from '@/lib/i18n';
+import { type Locale, i18n, resolveLocale } from '@/lib/i18n';
+import { GISCUS_CONFIG } from '@/lib/site-config';
 
 const GISCUS_LANG_MAP: Record<Locale, string> = {
   zh: 'zh-CN',
@@ -23,16 +24,18 @@ interface GuestbookProps {
 
 export function Guestbook({ slugKey }: GuestbookProps) {
   const { resolvedTheme } = useTheme();
-  const params = useParams<{ lang?: Locale }>();
-  const locale = (params?.lang as Locale) ?? i18n.defaultLanguage;
+  const params = useParams<{ lang?: string }>();
+  const locale = resolveLocale(params?.lang);
+  // Fallback references i18n.defaultLanguage to stay consistent if the default ever changes.
+  // 回退引用 i18n.defaultLanguage，确保默认语言变更时保持一致。
   const giscusLang = GISCUS_LANG_MAP[locale] ?? GISCUS_LANG_MAP[i18n.defaultLanguage];
 
   return (
     <Giscus
-      repo="SSJ-ZYJ/Neoverse-Doc"
-      repoId="R_kgDOSl2-Eg"
-      category="Announcements"
-      categoryId="DIC_kwDOSl2-Es4C9t6O"
+      repo={GISCUS_CONFIG.repo}
+      repoId={GISCUS_CONFIG.repoId}
+      category={GISCUS_CONFIG.category}
+      categoryId={GISCUS_CONFIG.categoryId}
       mapping="specific"
       term={slugKey}
       reactionsEnabled="1"

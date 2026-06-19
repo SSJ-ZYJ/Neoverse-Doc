@@ -12,6 +12,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent } from 'react';
+import { captureTransitionSnapshot } from '@/lib/transition-snapshot';
 
 interface BackLinkProps {
   fallbackHref: string;
@@ -22,37 +23,18 @@ export function BackLink({ fallbackHref, label }: BackLinkProps) {
   const router = useRouter();
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (typeof window === 'undefined') return;
+    // Snapshot the current <main> so MaskReveal (mounted in docs/layout.tsx)
+    // can expand a radial cutout from the return button outward, revealing the
+    // destination docs page beneath a snapshot of the guestbook just left.
+    // 快照当前 <main>，供 docs/layout.tsx 中挂载的 MaskReveal 从返回按钮位置
+    // 向外扩展遮罩：内圈揭示目标文档页，外圈展示用户刚离开的留言板快照。
+    captureTransitionSnapshot(event);
 
-    // Capture the click point and current <main> outerHTML so MaskReveal
-    // (mounted in docs/layout.tsx) can expand a radial cutout from the
-    // return button outward, revealing the destination docs page beneath
-    // a snapshot of the guestbook the user just left.
-    // 记录点击坐标与当前 <main> 外层 HTML，供 docs/layout.tsx 中挂载的
-    // MaskReveal 从返回按钮位置向外扩展遮罩：内圈揭示目标文档页，
-    // 外圈展示用户刚离开的留言板快照。
-    let x = event.clientX;
-    let y = event.clientY;
-    if (x === 0 && y === 0) {
-      const rect = event.currentTarget.getBoundingClientRect();
-      x = rect.left + rect.width / 2;
-      y = rect.top + rect.height / 2;
-    }
-
-    const mainNode = document.querySelector('main');
-    if (mainNode) {
-      const data = {
-        x,
-        y,
-        domHTML: mainNode.outerHTML,
-        scrollY: window.scrollY,
-        ts: Date.now(),
-        isTransitioning: true,
-      };
-      sessionStorage.setItem('nd-docs-transition', JSON.stringify(data));
-    }
-
-    if (window.history.length > 1) {
+    // If there's navigation history, intercept the Link click and go back
+    // so the browser restores scroll position and previous state.
+    // 存在浏览历史时拦截 Link 点击并后退，
+    // 让浏览器恢复滚动位置与上一页状态。
+    if (typeof window !== 'undefined' && window.history.length > 1) {
       event.preventDefault();
       router.back();
     }
