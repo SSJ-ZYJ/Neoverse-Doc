@@ -32,6 +32,27 @@
   }
 }
 
+/* ── Wide-screen Docs Layout Distribution / 文档页宽屏布局分散对齐 ─────────── */
+/* xl+: distribute the three columns so the left sidebar is flush against the
+   left viewport edge and the right TOC is flush against the right viewport edge,
+   instead of having both sidebars crowd around the centered document.
+   The main content column remains centered; the remaining viewport width is
+   split equally between the two gutters.
+   xl 以上：三栏改为左目录栏紧贴视口左边缘、右 TOC 紧贴视口右边缘，避免两侧
+   同时向居中的文档靠拢。正文列保持居中，多余视口宽度作为两侧间距均分。 */
+@media (min-width: 1280px) {
+  #nd-docs-layout {
+    grid-template:
+      "sidebar . header . toc"
+      "sidebar . toc-popover . toc"
+      "sidebar . main . toc" 1fr
+      / var(--fd-sidebar-col) 1fr minmax(
+        0,
+        calc(var(--fd-layout-width, 97rem) - var(--fd-sidebar-width) - var(--fd-toc-width))
+      ) 1fr var(--fd-toc-width) !important;
+  }
+}
+
 /* ── Fumadocs Surface Glassification / Fumadocs 表面玻璃化 ─────────────────── */
 /* :where() wrapper keeps lowest specificity, avoiding conflicts with the #nd-toc constraint block above
    and not blocking fumadocs default hover / collapse utility overrides.
