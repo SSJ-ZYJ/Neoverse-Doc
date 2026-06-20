@@ -11,4 +11,4 @@ author:
 
 ## 如何贡献
 
-请仔细查看[该文档](./contributing/guide)。
+请仔细查看 [该文档](./contributing/guide)。

@@ -10,7 +10,7 @@
 import Giscus from '@giscus/react';
 import { useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { type Locale, i18n, resolveLocale } from '@/lib/i18n';
+import { i18n, type Locale, resolveLocale } from '@/lib/i18n';
 import { GISCUS_CONFIG } from '@/lib/site-config';
 
 const GISCUS_LANG_MAP: Record<Locale, string> = {
