@@ -1,6 +1,6 @@
 {
-  "title": "Chapter 0",
-  "description": "那些你应该知道的东西",
+  "title": "Chapter 0：文档自述与前言",
+  "description": "What? Why? How?",
   "pages": ["---Stage 0：始---", "index"],
   "root": true
 }
