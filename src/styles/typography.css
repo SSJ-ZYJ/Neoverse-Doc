@@ -367,11 +367,90 @@ figure.shiki > div:first-child {
   flex-shrink: 0;
 }
 
+/* AI - AI-generated summary with adaptive typewriter reveal.
+   AI - 带自适应打字机揭示效果的 AI 生成摘要。 */
+.markdown-details-ai {
+  border-color: var(--color-alert-ai);
+}
+.markdown-details-ai > .markdown-details-summary {
+  background: color-mix(in srgb, var(--color-alert-ai) var(--alert-tint-pct), transparent);
+}
+.markdown-details-ai > .markdown-details-summary:hover {
+  background: color-mix(in srgb, var(--color-alert-ai) 15%, transparent);
+}
+.markdown-details-type-ai::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-alert-ai);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 8V4H8'/%3E%3Crect width='16' height='12' x='4' y='8' rx='2'/%3E%3Cpath d='M2 14h2'/%3E%3Cpath d='M20 14h2'/%3E%3Cpath d='M15 13v2'/%3E%3Cpath d='M9 13v2'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 8V4H8'/%3E%3Crect width='16' height='12' x='4' y='8' rx='2'/%3E%3Cpath d='M2 14h2'/%3E%3Cpath d='M20 14h2'/%3E%3Cpath d='M15 13v2'/%3E%3Cpath d='M9 13v2'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  flex-shrink: 0;
+}
+
+/* AI typewriter body keeps layout stable while revealing text chunks.
+   AI 打字机正文在逐段揭示文字的同时保持布局稳定。 */
+.markdown-details-ai-body {
+  position: relative;
+}
+.markdown-details-ai-body > * {
+  margin-block: 0;
+}
+.markdown-details-ai-body > * + * {
+  margin-block-start: 0.75rem;
+}
+.markdown-details-ai-typed-chunk {
+  opacity: 1;
+}
+.markdown-details-ai[data-ai-typing="true"] .markdown-details-ai-typed-chunk {
+  opacity: 0;
+}
+.markdown-details-ai[data-ai-typing="true"]
+  .markdown-details-ai-typed-chunk[data-ai-visible="true"] {
+  opacity: 1;
+}
+/* AI typewriter caret follows the latest visible text chunk instead of the block end.
+   AI 打字机光标跟随最新显示的文字分片，而不是固定在正文块末尾。 */
+.markdown-details-ai[data-ai-typing="true"]
+.markdown-details-ai-typed-chunk[data-ai-caret="true"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.45em;
+  height: 1em;
+  margin-left: 0.15em;
+  vertical-align: -0.12em;
+  background: var(--color-alert-ai);
+  animation: markdown-details-ai-caret-blink 0.85s steps(1, end) infinite;
+}
+
+@keyframes markdown-details-ai-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markdown-details-ai[data-ai-typing="true"] .markdown-details-ai-typed-chunk {
+    opacity: 1;
+  }
+  .markdown-details-ai[data-ai-typing="true"]
+    .markdown-details-ai-typed-chunk[data-ai-caret="true"]::after {
+    display: none;
+  }
+}
+
 /* Dark mode border highlight for plain DETAILS only / 仅普通 DETAILS 折叠块边缘高光 */
 .dark
 .markdown-details:not(.markdown-details-faq):not(.markdown-details-answer):not(
   .markdown-details-example
-):not(.markdown-details-hint) {
+):not(.markdown-details-hint):not(.markdown-details-ai) {
   border-color: rgba(255, 255, 255, 0.25);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.06),

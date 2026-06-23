@@ -1,167 +1,212 @@
 ---
 title: Markdown Syntax Examples
-description: Rich GFM, LaTeX formula, and Mermaid diagram syntax support
+description: Categorized examples for Markdown, GFM, project extensions, LaTeX, and Mermaid diagrams
 ---
 
-This document demonstrates basic Markdown, GitHub Flavored Markdown (GFM), LaTeX formulas, and Mermaid diagram syntax.
+<!-- Markdown syntax guide rewrite: groups native Markdown, GFM, project extensions, code, math, and diagrams into stable sections.
+     Markdown 语法指南重写：按原生 Markdown、GFM、项目增强、代码、数学与图表分组。 -->
 
-## 1. Basic Markdown Syntax
+This document groups the Markdown syntax supported by this project by function. Basic Markdown covers everyday writing, while project extensions cover alerts, collapsible blocks, code titles, math formulas, and diagrams.
 
-### Headers
+## Syntax Overview
 
-# Heading 1
+| Category | Features | Best For |
+| :--- | :--- | :--- |
+| Basic Markdown | Headings, emphasis, lists, links, images, inline code, horizontal rules | Regular document structure |
+| GFM Extensions | Task lists, tables, strikethrough, autolinks, blockquotes | Collaboration notes and structured content |
+| Project Extensions | GitHub Alert, collapsible blocks, AI summary blocks | Callouts, supplements, generated summaries |
+| Code Blocks | Syntax highlighting, file-path title bar, copy button | Code examples and configuration snippets |
+| Math and Diagrams | LaTeX, Mermaid | Formulas, flowcharts, sequence diagrams, state diagrams |
 
-## Heading 2
+## 1. Basic Markdown
 
-### Heading 3
+### 1.1 Headings and Paragraphs
 
-#### Heading 4
+The page title comes from the frontmatter `title` field. Start body headings from `##` to keep the table of contents clean.
 
 ```md
-# Heading 1
-## Heading 2
-### Heading 3
-#### Heading 4
+## Level 2 Heading
+
+Separate paragraphs with a blank line.
+
+### Level 3 Heading
+
+Continue writing body content.
 ```
 
-### Emphasis
+### 1.2 Emphasis and Line Breaks
 
 *Italic text*
+
 **Bold text**
+
 ***Bold italic text***
 
 ```md
 *Italic text*
+
 **Bold text**
+
 ***Bold italic text***
+
+When content needs strong separation, prefer separate paragraphs or list items.
 ```
 
-### Lists
+### 1.3 Inline Code
 
-**Unordered list:**
+Use backticks for commands, variables, file names, or short snippets, such as `bun run check`, `src/app/globals.css`, and `console.log()`.
 
-* Item A
-* Item B
-  * Sub-item B.1
-  * Sub-item B.2
+```md
+Run `bun run check` to format and check the project.
+```
 
-**Ordered list:**
+### 1.4 Lists
 
-1. First item
-2. Second item
-3. Third item
+Use unordered lists for parallel information and ordered lists for procedures.
 
-### Links & Images
+```md
+* Install dependencies
+* Start the development server
+  * The default URL is `http://localhost:3000`
 
+1. Fork the repository
+2. Create a feature branch
+3. Open a Pull Request
+```
+
+### 1.5 Links, Images, and Rules
+
+```md
 [SSJ's Blog](https://blog.shenshijun.space/)
 
-![SSJ's Avatar](https://q2.qlogo.cn/headimg_dl?dst_uin=1764341276&spec=0 "This is SSJ's avatar title")
+![Image description](https://example.com/image.png "Optional title")
 
-### Inline Code
-
-You can embed a small snippet of code in text, like `console.log('Hello World')`.
-
-### Horizontal Rules
-
----
-
-```md
 ---
 ```
 
-## 2. GitHub Flavored Markdown (GFM) Syntax
+---
 
-### Task Lists
+## 2. GitHub Flavored Markdown
+
+### 2.1 Task Lists
 
 * [x] Complete requirements analysis
 * [x] Write example documentation
-* [ ] Submit code and deploy to production
+* [ ] Open a Pull Request
 
-### Tables
+```md
+* [x] Complete requirements analysis
+* [x] Write example documentation
+* [ ] Open a Pull Request
+```
+
+### 2.2 Tables
 
 | Feature | Support | Notes |
 | :--- | :---: | ---: |
-| Table support | Perfect | Center and right alignment |
-| Task lists | Perfect | GFM standard |
-| Strikethrough | Perfect | `~~text~~` |
+| Tables | Complete | Supports left, center, and right alignment |
+| Task lists | Complete | Uses GFM syntax |
+| Strikethrough | Complete | Uses `~~text~~` |
 
-### Strikethrough
+```md
+| Feature | Support | Notes |
+| :--- | :---: | ---: |
+| Tables | Complete | Supports left, center, and right alignment |
+```
 
-This is some ~~struck-through text~~.
+### 2.3 Strikethrough and Autolinks
 
-### Autolinks
+This is ~~deleted text~~.
 
-You can directly visit my blog: <https://blog.shenshijun.space/>
+Autolink example: <https://blog.shenshijun.space/>
 
-### Blockquotes
+```md
+This is ~~deleted text~~.
+Autolink example: <https://blog.shenshijun.space/>
+```
+
+### 2.4 Blockquotes
 
 > This is a first-level blockquote.
-> > This is a nested second-level blockquote.
-> >
-> > **Note:** Other Markdown syntax can also be used within blockquotes.
+> > This is a nested blockquote.
+> > **Tip:** Blockquotes can also contain emphasis, links, and inline code.
 
-### Alerts
+```md
+> This is a first-level blockquote.
+> > This is a nested blockquote.
+```
 
-GitHub supports special blockquote syntax to render colored and iconified callout blocks:
+## 3. Project Extensions
+
+### 3.1 GitHub Alert Callouts
+
+Callouts are useful for supplementary information, suggestions, important context, warnings, and destructive actions.
 
 > [!NOTE]
-> This is a note providing useful supplementary information.
-
----
+> Note: supplementary information.
 
 > [!TIP]
-> This is a tip providing suggestions or shortcuts.
-
----
+> Tip: suggestions or shortcuts.
 
 > [!IMPORTANT]
-> This is important information highlighting key context.
-
----
+> Important: key context.
 
 > [!WARNING]
-> This is a warning reminding you to proceed with caution to avoid issues.
-
----
+> Warning: proceed carefully.
 
 > [!CAUTION]
-> This is a caution informing you of actions that may lead to destructive consequences.
+> Caution: actions that may lead to destructive results.
 
-### Collapsible Details
+```md
+> [!NOTE]
+> Note: supplementary information.
 
-Collapsible detail blocks are supported, suitable for hiding supplementary notes, advanced content, or lengthy comments:
+> [!WARNING]
+> Warning: proceed carefully.
+```
 
-> [!DETAILS]
->
-> This is a collapsible content block that is collapsed by default. You can place additional information, example code, or lengthy explanations here.
+### 3.2 Basic Collapsible Blocks
 
-Default expanded detail block:
+Collapsible blocks are useful for supplementary notes, advanced content, or long explanations.
+
+> [!DETAILS] Collapsible Note
+> This block is collapsed by default. Readers can expand it when needed.
 
 > [!DETAILS+] Expanded by Default
->
-> Use the `[!DETAILS+]` syntax to make the collapsible block expanded by default.
+> Add `+` after `DETAILS` to make the block expanded by default.
 
-### Collapsible Block Variants
+```md
+> [!DETAILS] Collapsible Note
+> This block is collapsed by default.
 
-In addition to the basic `[!DETAILS]`, several semantic collapsible block types are supported using the `[!DETAILS-XXX]` syntax:
+> [!DETAILS+] Expanded by Default
+> Add `+` after `DETAILS` to make the block expanded by default.
+```
 
-#### FAQ
+### 3.3 Semantic Collapsible Blocks
+
+Semantic collapsible blocks use `[!DETAILS-XXX]`. The summary can be written directly after the marker.
+
+| Syntax | Default Title | Use Case |
+| :--- | :--- | :--- |
+| `[!DETAILS-FAQ]` | FAQ | Question-style content |
+| `[!DETAILS-ANSWER]` | Answer | Answers for FAQ blocks |
+| `[!DETAILS-EXAMPLE]` | Example | Code or usage examples |
+| `[!DETAILS-HINT]` | Hint | Short tips |
+| `[!DETAILS-AI]` | AI Summary | AI-generated summaries |
+
+#### FAQ and Answer
 
 > [!DETAILS-FAQ] What is Neoverse?
->
-> Neoverse is a future-oriented documentation platform committed to providing an elegant documentation reading experience.
-
-#### Answer
+> Neoverse is a future-oriented documentation platform committed to an elegant reading experience.
 
 > [!DETAILS-ANSWER] How can I contribute?
->
-> You can participate by submitting Pull Requests, reporting Issues, or improving documentation.
+> You can contribute by submitting Pull Requests, reporting Issues, or improving documentation.
 
-#### Example
+#### Example and Hint
 
 > [!DETAILS-EXAMPLE] Organizing Code Examples with Collapsible Blocks
->
-> You can place longer code examples inside collapsible blocks, allowing readers to expand them as needed, keeping documentation concise.
+> Longer code examples can be placed inside collapsible blocks so readers can expand them when needed.
 >
 > ```cpp
 > // src/example.cpp
@@ -172,100 +217,68 @@ In addition to the basic `[!DETAILS]`, several semantic collapsible block types 
 > }
 > ```
 
-#### Hint
-
 > [!DETAILS-HINT] Keyboard Shortcut Tips
->
-> Use `Ctrl + K` to quickly open the search dialog, improving documentation browsing efficiency.
+> Use `Ctrl + K` to quickly open the search dialog.
 
-### Syntax-Highlighted Code Blocks
+#### AI Summary
 
-The code blocks in this document support the following enhanced features:
+AI summary blocks are designed for AI-generated summaries. After expansion, the body appears with a typewriter effect; when the typable character count reaches `360`, it switches to the medium-length speed tier, and when it reaches `900`, it switches to the long-content speed tier to avoid making readers wait too long.
 
-* Automatic file path detection from top comments
-* File path display in the code block title bar
-* Built-in copy button in the top-right corner for one-click copying
-* Preserving all of fumadocs' original code highlighting and line number features
+> [!DETAILS-AI] AI-generated Summary
+> This variant is designed for AI-generated summaries. After expansion, the body text appears in short batches, and the cursor follows the latest generated text.
 
-### Example 1: JavaScript Code Block
+```md
+> [!DETAILS-AI] AI-generated Summary
+> Put the AI-generated summary body here.
+```
+
+## 4. Code Blocks
+
+### 4.1 Basic Code Blocks
+
+Use a language identifier on fenced code blocks to enable syntax highlighting.
 
 ```javascript
 // src/utils/helper.js
 export function greet(name) {
   return `Hello, ${name}!`;
 }
-
-export const add = (a, b) => a + b;
 ```
 
-### Example 2: TypeScript Code Block
+````md
+```javascript
+// src/utils/helper.js
+export function greet(name) {
+  return `Hello, ${name}!`;
+}
+```
+````
+
+### 4.2 File-Path Title Bar
+
+Top comments that look like file paths are extracted into the code block title bar and removed from the rendered code body.
+
+| Language Type | Supported Top Comment |
+| :--- | :--- |
+| JavaScript / TypeScript / C++ | `// src/example.ts` |
+| CSS | `/* src/styles/example.css */` |
+| Shell / Python | `# scripts/example.sh` |
+| HTML | `<!-- public/index.html -->` |
 
 ```typescript
 // src/components/Button.tsx
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+type ButtonProps = {
+  label: string;
+};
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
-  variant?: 'primary' | 'secondary';
-}
-
-export function Button({ children, variant = 'primary', ...props }: ButtonProps) {
-  return (
-    <button className={`btn btn-${variant}`} {...props}>
-      {children}
-    </button>
-  );
+export function Button({ label }: ButtonProps) {
+  return <button type="button">{label}</button>;
 }
 ```
 
-### Example 3: HTML Code Block
+### 4.3 Code Blocks Without File Paths
 
-```html
-<!-- public/index.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>My Project</title>
-</head>
-<body>
-  <div id="root"></div>
-</body>
-</html>
-```
-
-### Example 4: Shell Script
-
-```bash
-# scripts/deploy.sh
-#!/bin/bash
-
-echo "Starting deployment..."
-npm run build
-rsync -avz ./dist/ user@server:/var/www/html
-echo "Deployment complete!"
-```
-
-### Example 5: Python Code Block
-
-```python
-# app/main.py
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
-```
-
-### Example 6: Code Block Without File Path
-
-Regular code blocks (without top comments) still work normally, just without the file path title:
+Code blocks without top file-path comments are still highlighted normally, but no path title is shown.
 
 ```css
 .container {
@@ -273,26 +286,22 @@ Regular code blocks (without top comments) still work normally, just without the
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
 }
 ```
 
-<!-- LaTeX syntax examples: documents inline and block math rendering.
-     LaTeX 语法示例：说明行内与块级数学公式渲染。 -->
-## 3. LaTeX Formula Syntax
+## 5. LaTeX Formulas
 
-### Inline Math
+### 5.1 Inline Math
 
-Inline formulas can be written directly in a paragraph, for example the Pythagorean theorem $a^2 + b^2 = c^2$.
+Inline formulas are written inside `$...$`, for example the Pythagorean theorem $a^2 + b^2 = c^2$.
 
 ```md
-Inline formulas can be written directly in a paragraph, for example the Pythagorean theorem $a^2 + b^2 = c^2$.
+Inline formulas are written inside `$...$`, for example $a^2 + b^2 = c^2$.
 ```
 
-### Block Math
+### 5.2 Block Math
 
-Block formulas are useful for longer derivations or standalone equations:
+Block formulas are written in standalone `$$...$$` blocks and are useful for derivations or important formulas.
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
@@ -304,9 +313,9 @@ $$
 $$
 ```
 
-## 4. Mermaid Diagram Syntax
+## 6. Mermaid Diagrams
 
-### Flowchart
+### 6.1 Flowchart
 
 ```mermaid
 graph TD;
@@ -317,7 +326,7 @@ graph TD;
     D --> E;
 ```
 
-### Sequence Diagram
+### 6.2 Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -328,14 +337,12 @@ sequenceDiagram
     Client->>Server: Send login request
     activate Server
     Server->>Database: Query user info
-    activate Database
     Database-->>Server: Return verification result
-    deactivate Database
     Server-->>Client: Return Token
     deactivate Server
 ```
 
-### State Diagram
+### 6.3 State Diagram
 
 ```mermaid
 stateDiagram-v2

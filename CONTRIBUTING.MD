@@ -273,6 +273,18 @@ class Sort { static void demo() {} }
 - 每个 `<Tab>` 内可放任意 Markdown 内容，并不限定代码块；代码块首行注释（如 `// src/foo.cpp`）仍会被自动提取为文件路径标题，复制按钮、Shiki 高亮等装饰与普通代码块完全一致。
 - 完整的运行示例见 [`content/docs/zh/about/code-tabs-demo.mdx`](content/docs/zh/about/code-tabs-demo.mdx)。
 
+<!-- AI collapsible authoring guide: documents how contributors should write AI summary details blocks.
+     AI 折叠块编写指南：说明贡献者如何编写 AI 摘要折叠块。 -->
+### AI 摘要折叠块
+
+当需要收纳 AI 生成的摘要内容时，使用 `[!DETAILS-AI]` 变体。它继承普通折叠块语法，并在读者展开后以自适应打字机效果分批显示正文；内容较长时会自动加快显示速度。
+
+```md
+> [!DETAILS-AI] AI 生成摘要
+>
+> 这里填写 AI 生成的摘要正文。
+```
+
 ## Pull Request 流程
 
 ### 提交前检查

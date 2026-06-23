@@ -31,7 +31,9 @@
 ## 功能亮点
 
 - **纯静态生成 (SSG)** — `next build` 直接生成完整 HTML，无需 Node 运行时，可部署至 Vercel、Cloudflare Pages、GitHub Pages 等任意静态托管平台
-- **MDX 文档驱动** — Markdown + React 组件混合编写，支持 GFM 表格、任务列表、Mermaid 图表、LaTeX 公式等丰富语法
+<!-- AI collapsible feature note: highlights `[!DETAILS-AI]` support in the public feature list.
+     AI 折叠块功能说明：在公开功能列表中说明 `[!DETAILS-AI]` 支持。 -->
+- **MDX 文档驱动** — Markdown + React 组件混合编写，支持 GFM 表格、任务列表、GitHub Alert 风格提示块、可折叠块、AI 摘要打字机、Mermaid 图表、LaTeX 公式等丰富语法
 - **增强代码块** — 自动识别顶部注释提取文件路径、顶部横条显示语言图标与复制按钮、Shiki 语法高亮
 - **中文搜索支持** — 使用 Orama Mandarin 分词器，支持中文全文搜索
 - **双语 i18n (中文 / 英文)** — 零硬编码的字典式文案管理，覆盖 fumadocs 内置 UI 及项目自定义文案；导航栏右上角内置语言切换器
@@ -172,6 +174,7 @@ Neoverse-Doc/
 │   │   │   └── back-link.tsx         # 返回链接组件
 │   │   ├── mdx/                   # MDX 内容渲染组件
 │   │   │   ├── custom-codeblock.tsx  # 增强代码块组件（文件路径 + 复制按钮）
+│   │   │   ├── collapsible-details.tsx # AI 折叠块打字机渲染组件
 │   │   │   ├── mermaid.tsx           # Mermaid 图表渲染组件
 │   │   │   └── docs-author.tsx       # 文档作者与贡献者展示组件
 │   │   ├── search.tsx             # 静态搜索对话框（Orama + Mandarin 分词）

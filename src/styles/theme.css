@@ -107,6 +107,9 @@ blockquote {
   --color-alert-caution: #ef4444;
   --color-alert-example: #f97316;
   --color-alert-hint: #06b6d4;
+  /* AI summary collapsible accent follows the active fumadocs primary color.
+     AI 摘要折叠块强调色跟随当前 fumadocs 主色。 */
+  --color-alert-ai: var(--fd-primary);
   --alert-tint-pct: 8%;
 
   --color-fd-background: var(--background);

@@ -11,6 +11,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Guestbook } from '@/components/guestbook';
 import { Tab, Tabs } from '@/components/mdx/code-tabs';
+import { CollapsibleDetails } from '@/components/mdx/collapsible-details';
 import { CustomCodeBlock } from '@/components/mdx/custom-codeblock';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { Mermaid } from '@/components/mdx/mermaid';
@@ -39,7 +40,18 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
       <DocsBody>
         <DocsTransition slugKey={slugKey}>
-          <MDX components={{ ...defaultMdxComponents, Mermaid, pre: CustomCodeBlock, Tabs, Tab }} />
+          {/* AI details renderer enables adaptive typewriter reveal for `[!DETAILS-AI]` blocks.
+              AI 折叠块渲染器为 `[!DETAILS-AI]` 块启用自适应打字机揭示效果。 */}
+          <MDX
+            components={{
+              ...defaultMdxComponents,
+              details: CollapsibleDetails,
+              Mermaid,
+              pre: CustomCodeBlock,
+              Tabs,
+              Tab,
+            }}
+          />
         </DocsTransition>
       </DocsBody>
       {contributors && (

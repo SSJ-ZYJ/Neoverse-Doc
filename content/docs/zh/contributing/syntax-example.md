@@ -1,161 +1,217 @@
 ---
 title: Markdown 语法示例
-description: 支持丰富的 GFM、LaTeX 公式与 Mermaid 图表语法
+description: 按功能分类展示 Markdown、GFM、项目增强语法、LaTeX 与 Mermaid 图表
 author:
   - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 
-本文档展示了基础 Markdown、GitHub Flavored Markdown (GFM)、LaTeX 公式和 Mermaid 绘图的语法。
+本文档按功能分类展示本项目支持的 Markdown 写法。基础内容适合日常文档编写，项目增强语法适合需要提示框、折叠块、代码标题、数学公式或图表的页面。
 
-## 1. 基础 Markdown 语法
+## 语法速查
 
-### 标题 (Headers)
+| 分类 | 语法能力 | 适用场景 |
+| :--- | :--- | :--- |
+| 基础 Markdown | 标题、强调、列表、链接、图片、行内代码、分隔线 | 普通正文结构 |
+| GFM 扩展 | 任务列表、表格、删除线、自动链接、引用 | 协作说明与结构化信息 |
+| 项目增强 | GitHub Alert、可折叠块、AI 摘要折叠块 | 提示、补充说明、摘要内容 |
+| 代码块 | 语法高亮、文件路径标题栏、复制按钮 | 代码示例与配置片段 |
+| 数学与图表 | LaTeX、Mermaid | 公式、流程图、时序图、状态图 |
+
+## 1. 基础 Markdown
+
+### 1.1 标题与段落
+
+文档页标题来自 frontmatter 的 `title` 字段，正文标题建议从 `##` 开始，保持页面目录结构清晰。
 
 ```md
-# 一级标题
 ## 二级标题
+
+普通段落之间使用空行分隔。
+
 ### 三级标题
-#### 四级标题
+
+继续编写正文内容。
 ```
 
-### 文本强调 (Emphasis)
+### 1.2 文本强调与换行
 
-*斜体文字*  
-**粗体文字**  
+*斜体文字*
+
+**粗体文字**
+
 ***粗斜体文字***
 
 ```md
 *斜体文字*
+
 **粗体文字**
-***粗斜体文字*** 
+
+***粗斜体文字***
+
+需要强制分隔内容时，优先拆成独立段落或列表项。
 ```
 
-### 列表 (Lists)
+### 1.3 行内代码
 
-**无序列表:**
-
-* 项目 A
-* 项目 B
-  * 子项目 B.1
-  * 子项目 B.2
-
-**有序列表:**
-
-1. 第一项
-2. 第二项
-3. 第三项
-
-### 链接与图片 (Links & Images)
-
-[SSJ的博客](https://blog.shenshijun.space/)
-
-![SSJ的头像](https://q2.qlogo.cn/headimg_dl?dst_uin=1764341276&spec=0 "这是SSJ的头像标题")
-
-### 行内代码 (Inline Code)
-
-文本中可以穿插一小段代码，比如 `console.log('Hello World')`。
-
-### 分隔线 (Horizontal Rules)
-
----
+在正文中引用命令、变量、文件名或短代码片段时，使用反引号包裹，例如 `bun run check`、`src/app/globals.css`、`console.log()`。
 
 ```md
+运行 `bun run check` 完成格式化与检查。
+```
+
+### 1.4 列表
+
+无序列表适合并列信息，有序列表适合步骤说明。
+
+```md
+* 安装依赖
+* 启动开发服务器
+  * 默认地址为 `http://localhost:3000`
+
+1. Fork 仓库
+2. 创建功能分支
+3. 提交 Pull Request
+```
+
+### 1.5 链接、图片与分隔线
+
+```md
+[SSJ 的博客](https://blog.shenshijun.space/)
+
+![图片描述](https://example.com/image.png "可选标题")
+
 ---
 ```
 
-## 2. GitHub Flavored Markdown (GFM) 语法
+---
 
-### 任务列表 (Task Lists)
+## 2. GitHub Flavored Markdown
+
+### 2.1 任务列表
 
 * [x] 完成需求分析
 * [x] 编写示例文档
-* [ ] 提交代码并在生产环境部署  
-3
+* [ ] 提交 Pull Request
 
-### 表格 (Tables)
+```md
+* [x] 完成需求分析
+* [x] 编写示例文档
+* [ ] 提交 Pull Request
+```
+
+### 2.2 表格
 
 | 特性 | 支持度 | 备注 |
 | :--- | :---: | ---: |
-| 表格支持 | 完美 | 居中居右对齐 |
-| 任务列表 | 完美 | GFM 标准 |
-| 删除线 | 完美 | `~~文字~~` |
+| 表格 | 完整 | 支持左、中、右对齐 |
+| 任务列表 | 完整 | 使用 GFM 写法 |
+| 删除线 | 完整 | 使用 `~~文字~~` |
 
-### 删除线 (Strikethrough)
+```md
+| 特性 | 支持度 | 备注 |
+| :--- | :---: | ---: |
+| 表格 | 完整 | 支持左、中、右对齐 |
+```
 
-这是一段~~被划掉的文本~~。
+### 2.3 删除线与自动链接
 
-### 自动链接 (Autolinks)
+这是一段 ~~被删除的文本~~。
 
-你可以直接访问我的博客: <https://blog.shenshijun.space/>
+自动链接示例：<https://blog.shenshijun.space/>
 
-### 引用强调 (Blockquotes)
+```md
+这是一段 ~~被删除的文本~~。
+自动链接示例：<https://blog.shenshijun.space/>
+```
 
-> 这是一个一级引用文本。
-> > 这是一个嵌套的二级引用。
-> >
-> > **注意:** 引用中也可以使用其他 Markdown 语法。
+### 2.4 引用
 
-### 警告与提示 (Alerts)
+> 这是一级引用。
+> > 这是嵌套引用。
+> > **提示：** 引用块中也可以使用强调、链接与行内代码。
 
-GitHub 支持特殊的 Blockquote 语法来渲染带有颜色和图标的提示块：
+```md
+> 这是一级引用。
+> > 这是嵌套引用。
+```
 
-> [!NOTE]  
-> 这是一个注记 (Note)，提供有用的补充信息。
+## 3. 项目增强语法
 
----
+### 3.1 GitHub Alert 提示框
 
-> [!TIP]  
-> 这是一个提示 (Tip)，提供建议或简便方法。
+提示框适合突出补充信息、建议、重要上下文、风险提醒或危险操作。
 
----
+> [!NOTE]
+> 注记：提供补充信息。
 
-> [!IMPORTANT]  
-> 这是一个重要信息 (Important)，突出关键上下文。
+> [!TIP]
+> 提示：提供建议或快捷方法。
 
----
+> [!IMPORTANT]
+> 重要：突出关键上下文。
 
-> [!WARNING]  
-> 这是一个警告 (Warning)，提醒需要小心操作以避免意外。
+> [!WARNING]
+> 警告：提醒需要小心操作。
 
----
+> [!CAUTION]
+> 危险：告知可能造成破坏性后果的操作。
 
-> [!CAUTION]  
-> 这是一个危险警告 (Caution)，告知可能会导致破坏性后果的操作。
+```md
+> [!NOTE]
+> 注记：提供补充信息。
 
-#### 可折叠块 (Collapsible Details)
+> [!WARNING]
+> 警告：提醒需要小心操作。
+```
 
-支持可折叠的详情块，适合隐藏补充说明、进阶内容或长篇注释：
+### 3.2 基础可折叠块
 
-> [!DETAILS]
+可折叠块适合隐藏补充说明、进阶内容或较长注释。
+
+> [!DETAILS] 折叠说明
+> 
+> 这是一个默认折叠的详情块。读者可以按需展开查看。
+
+> [!DETAILS+] 默认展开的折叠说明
+> 
+> 在 `DETAILS` 后追加 `+`，即可让折叠块默认展开。
+
+```md
+> [!DETAILS] 折叠说明
 >
-> 这是一个可折叠的内容块，默认处于折叠状态。你可以在这里放置额外的信息、示例代码或者长篇说明。
+> 这是一个默认折叠的详情块。
 
-默认展开的详情块：
-> [!DETAILS+] 默认展开折叠的详情块
+> [!DETAILS+] 默认展开的折叠说明
 >
-> 使用 `[!DETAILS+]` 语法可以让折叠块默认处于展开状态。
+> 在 `DETAILS` 后追加 `+`，即可让折叠块默认展开。
+```
 
-#### 可折叠块变体 (Collapsible Variants)
+### 3.3 语义可折叠块
 
-除了基础的 `[!DETAILS]` 之外，还支持多种语义化折叠块类型，使用 `[!DETAILS-XXX]` 语法：
+语义折叠块使用 `[!DETAILS-XXX]` 写法，标题行可以直接跟在标记后面。
 
-##### 常见问题 (FAQ)
+| 语法 | 默认标题 | 用途 |
+| :--- | :--- | :--- |
+| `[!DETAILS-FAQ]` | 常见问题 | 提问类内容 |
+| `[!DETAILS-ANSWER]` | 答案 | FAQ 的回答 |
+| `[!DETAILS-EXAMPLE]` | 示例 | 代码或用法示例 |
+| `[!DETAILS-HINT]` | 提示 | 快捷技巧 |
+| `[!DETAILS-AI]` | AI 摘要 | AI 生成摘要 |
+
+#### 常见问题与答案
 
 > [!DETAILS-FAQ] 什么是 Neoverse？
->
+> 
 > Neoverse 是一个面向未来的文档平台，致力于提供优雅的文档阅读体验。
 
-##### 解答 (Answer)
-
 > [!DETAILS-ANSWER] 如何参与贡献？
->
+> 
 > 你可以通过提交 Pull Request、报告 Issue 或改进文档来参与项目贡献。
 
-##### 示例 (Example)
+#### 示例与提示
 
 > [!DETAILS-EXAMPLE] 使用折叠块组织代码示例
->
-> 你可以将较长的代码示例放入折叠块中，让读者按需展开查看，保持文档的简洁性。
+> 可以将较长代码示例放入折叠块中，让读者按需展开查看。
 >
 > ```cpp
 > // src/example.cpp
@@ -166,100 +222,69 @@ GitHub 支持特殊的 Blockquote 语法来渲染带有颜色和图标的提示�
 > }
 > ```
 
-##### 提示 (Hint)
-
 > [!DETAILS-HINT] 快捷键技巧
 >
-> 使用 `Ctrl + K` 可以快速打开搜索对话框，提升文档浏览效率。
+> 使用 `Ctrl + K` 可以快速打开搜索对话框。
 
-#### 语法高亮代码块 (Code Blocks)
+#### AI 摘要
 
-本文档中的代码块支持以下增强功能：
+AI 摘要折叠块适合放置 AI 生成的摘要内容。展开后，正文会以打字机效果分批显示；当可打字字符数达到 `360` 时会进入中等长度速度档，达到 `900` 时会进入长内容速度档，避免读者等待过久。
 
-* 从代码顶部注释自动识别文件路径
-* 在代码块标题栏显示文件路径
-* 右上角内置复制按钮，支持一键复制
-* 保留 fumadocs 原有的所有代码高亮和行号功能
+> [!DETAILS-AI] AI 生成摘要
+> 这类折叠块适合放置 AI 生成的摘要内容。展开后，正文会按短片段逐渐显示，并且光标会跟随最新生成的文字移动。
 
-#### 示例 1：JavaScript 代码块
+```md
+> [!DETAILS-AI] AI 生成摘要
+> 这里填写 AI 生成的摘要正文。
+```
+
+## 4. 代码块
+
+### 4.1 基础代码块
+
+代码围栏请带上语言标识，以便启用语法高亮。
 
 ```javascript
 // src/utils/helper.js
 export function greet(name) {
   return `Hello, ${name}!`;
 }
-
-export const add = (a, b) => a + b;
 ```
 
-#### 示例 2：TypeScript 代码块
+````md
+```javascript
+// src/utils/helper.js
+export function greet(name) {
+  return `Hello, ${name}!`;
+}
+```
+````
+
+### 4.2 文件路径标题栏
+
+代码块顶部的文件路径注释会被自动提取到标题栏，并从正文代码中移除。
+
+| 语言类型 | 支持的顶部注释 |
+| :--- | :--- |
+| JavaScript / TypeScript / C++ | `// src/example.ts` |
+| CSS | `/* src/styles/example.css */` |
+| Shell / Python | `# scripts/example.sh` |
+| HTML | `<!-- public/index.html -->` |
 
 ```typescript
 // src/components/Button.tsx
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+type ButtonProps = {
+  label: string;
+};
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
-  variant?: 'primary' | 'secondary';
-}
-
-export function Button({ children, variant = 'primary', ...props }: ButtonProps) {
-  return (
-    <button className={`btn btn-${variant}`} {...props}>
-      {children}
-    </button>
-  );
+export function Button({ label }: ButtonProps) {
+  return <button type="button">{label}</button>;
 }
 ```
 
-#### 示例 3：HTML 代码块
+### 4.3 无文件路径代码块
 
-```html
-<!-- public/index.html -->
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <title>我的项目</title>
-</head>
-<body>
-  <div id="root"></div>
-</body>
-</html>
-```
-
-#### 示例 4：Shell 脚本
-
-```bash
-# scripts/deploy.sh
-#!/bin/bash
-
-echo "开始部署..."
-npm run build
-rsync -avz ./dist/ user@server:/var/www/html
-echo "部署完成！"
-```
-
-#### 示例 5：Python 代码块
-
-```python
-# app/main.py
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
-```
-
-#### 示例 6：不带文件路径的代码块
-
-普通的代码块（不带顶部注释）也能正常工作，只是不会显示文件路径标题：
+不带顶部文件路径注释的代码块也会正常高亮，只是不显示路径标题。
 
 ```css
 .container {
@@ -267,26 +292,22 @@ def read_item(item_id: int, q: str | None = None):
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
 }
 ```
 
-<!-- LaTeX syntax examples: documents inline and block math rendering.
-     LaTeX 语法示例：说明行内与块级数学公式渲染。 -->
-### 3. LaTeX 公式语法
+## 5. LaTeX 公式
 
-#### 行内公式 (Inline Math)
+### 5.1 行内公式
 
-行内公式可以直接写在段落中，例如勾股定理 $a^2 + b^2 = c^2$。
+行内公式写在 `$...$` 中，例如勾股定理 $a^2 + b^2 = c^2$。
 
 ```md
-行内公式可以直接写在段落中，例如勾股定理 $a^2 + b^2 = c^2$。
+行内公式写在 `$...$` 中，例如勾股定理 $a^2 + b^2 = c^2$。
 ```
 
-#### 块级公式 (Block Math)
+### 5.2 块级公式
 
-块级公式适合展示较长的推导或独立公式：
+块级公式写在独立的 `$$...$$` 中，适合展示推导或重点公式。
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
@@ -298,9 +319,9 @@ $$
 $$
 ```
 
-### 4. Mermaid 图表语法
+## 6. Mermaid 图表
 
-#### 流程图 (Flowchart)
+### 6.1 流程图
 
 ```mermaid
 graph TD;
@@ -311,31 +332,29 @@ graph TD;
     D --> E;
 ```
 
-#### 时序图 (Sequence Diagram)
+### 6.2 时序图
 
 ```mermaid
 sequenceDiagram
-    participant 客户端 as Client
-    participant 服务器 as Server
-    participant 数据库 as Database
+    participant Client as 客户端
+    participant Server as 服务器
+    participant Database as 数据库
 
-    客户端->>服务器: 发起登录请求
-    activate 服务器
-    服务器->>数据库: 查询用户信息
-    activate 数据库
-    数据库-->>服务器: 返回验证结果
-    deactivate 数据库
-    服务器-->>客户端: 返回 Token
-    deactivate 服务器
+    Client->>Server: 发起登录请求
+    activate Server
+    Server->>Database: 查询用户信息
+    Database-->>Server: 返回验证结果
+    Server-->>Client: 返回 Token
+    deactivate Server
 ```
 
-#### 状态图 (State Diagram)
+### 6.3 状态图
 
 ```mermaid
 stateDiagram-v2
     [*] --> 闲置
     闲置 --> 运行中 : 开始
-    运行中 --> 暂停 : 暂缓
+    运行中 --> 暂停 : 暂停
     暂停 --> 运行中 : 恢复
     运行中 --> 结束 : 停止
     结束 --> [*]

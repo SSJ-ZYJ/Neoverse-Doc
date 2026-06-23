@@ -2,7 +2,7 @@ import type { Paragraph, PhrasingContent, Root } from 'mdast';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
-const DETAILS_REGEX = /^\[!DETAILS(?:-(FAQ|ANSWER|EXAMPLE|HINT))?(\+?)\]/i;
+const DETAILS_REGEX = /^\[!DETAILS(?:-(FAQ|ANSWER|EXAMPLE|HINT|AI))?(\+?)\]/i;
 
 /**
  * Remark plugin: converts blockquotes starting with `[!DETAILS]` or `[!DETAILS+]`
@@ -23,21 +23,27 @@ const DETAILS_REGEX = /^\[!DETAILS(?:-(FAQ|ANSWER|EXAMPLE|HINT))?(\+?)\]/i;
  *   [!DETAILS-ANSWER] / [!DETAILS-ANSWER+] - Answer (use with FAQ)
  *   [!DETAILS-EXAMPLE] / [!DETAILS-EXAMPLE+] - Example block
  *   [!DETAILS-HINT] / [!DETAILS-HINT+]   - Hint block
+ *   [!DETAILS-AI] / [!DETAILS-AI+]       - AI-generated summary block
  *
  * Remark 插件：将以 `[!DETAILS]` 等开头的引用块转换为
  * HTML `<details>` / `<summary>` 可折叠块。
  */
 
-type CollapsibleType = 'details' | 'faq' | 'answer' | 'example' | 'hint';
+type CollapsibleType = 'details' | 'faq' | 'answer' | 'example' | 'hint' | 'ai';
 type Locale = 'zh' | 'en';
 
+// Collapsible variant map: adds semantic aliases while keeping the `[!DETAILS-XXX]` syntax stable.
+// 折叠块变体映射：在保持 `[!DETAILS-XXX]` 语法稳定的前提下增加语义别名。
 const VARIANT_MAP: Record<string, CollapsibleType> = {
   FAQ: 'faq',
   ANSWER: 'answer',
   EXAMPLE: 'example',
   HINT: 'hint',
+  AI: 'ai',
 };
 
+// Localized default titles for collapsible blocks when the summary text is omitted.
+// 折叠块未提供摘要文本时使用的本地化默认标题。
 const DEFAULT_TITLES: Record<Locale, Record<CollapsibleType, string>> = {
   zh: {
     details: '折叠块',
@@ -45,6 +51,7 @@ const DEFAULT_TITLES: Record<Locale, Record<CollapsibleType, string>> = {
     answer: '答案',
     example: '示例',
     hint: '提示',
+    ai: 'AI 摘要',
   },
   en: {
     details: 'Details',
@@ -52,6 +59,7 @@ const DEFAULT_TITLES: Record<Locale, Record<CollapsibleType, string>> = {
     answer: 'Answer',
     example: 'Example',
     hint: 'Hint',
+    ai: 'AI Summary',
   },
 };
 
@@ -82,7 +90,16 @@ export const remarkCollapsibleAlert: Plugin<[], Root> = () => {
       if (!match) return;
 
       const isOpen = (match[2] ?? '') === '+';
-      const remainingText = text.replace(DETAILS_REGEX, '').replace(/^\n+/, '').trim();
+      const remainingTextRaw = text.replace(DETAILS_REGEX, '').replace(/^\n+/, '');
+      const lineBreakMatch = remainingTextRaw.match(/\r?\n/);
+      const remainingText =
+        lineBreakMatch && lineBreakMatch.index !== undefined
+          ? remainingTextRaw.slice(0, lineBreakMatch.index).trim()
+          : remainingTextRaw.trim();
+      const inlineBodyText =
+        lineBreakMatch && lineBreakMatch.index !== undefined
+          ? remainingTextRaw.slice(lineBreakMatch.index + lineBreakMatch[0].length).trimStart()
+          : '';
 
       const variantKey = match[1]?.toUpperCase();
       const collapsibleType: CollapsibleType = variantKey
@@ -106,9 +123,20 @@ export const remarkCollapsibleAlert: Plugin<[], Root> = () => {
         summaryNodes = [{ type: 'text', value: DEFAULT_TITLES[locale][collapsibleType] }];
       }
 
+      // Support markdownlint-friendly details syntax without a blank `>` separator line.
+      // 支持不使用空 `>` 分隔行的 markdownlint 友好折叠块语法。
+      const inlineBodyNodes: Paragraph[] = inlineBodyText.trim()
+        ? [
+            {
+              type: 'paragraph',
+              children: [{ type: 'text', value: inlineBodyText }],
+            },
+          ]
+        : [];
+
       // Remove leading empty paragraphs used as separators
       // 过滤掉作为分隔符的前导空段落
-      const bodyNodes = node.children.slice(contentStartIndex);
+      const bodyNodes = [...inlineBodyNodes, ...node.children.slice(contentStartIndex)];
       while (bodyNodes.length > 0) {
         const child = bodyNodes[0];
         if (child.type !== 'paragraph') break;
