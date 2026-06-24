@@ -74,6 +74,88 @@ function detectLocale(filePath?: string): Locale {
   return 'zh';
 }
 
+interface SplitInlineDetails {
+  summaryNodes: PhrasingContent[];
+  inlineBodyChildren: PhrasingContent[];
+}
+
+// Split marker paragraph into summary and inline body at the first hard line break.
+// 按第一个硬换行将标记段落拆分为标题和内联正文。
+function splitInlineDetailsNodes(children: PhrasingContent[]): SplitInlineDetails {
+  const [firstNode, ...restNodes] = children;
+  if (firstNode?.type !== 'text') return { summaryNodes: [], inlineBodyChildren: [] };
+
+  const nodesAfterMarker: PhrasingContent[] = [
+    { ...firstNode, value: firstNode.value.replace(DETAILS_REGEX, '').replace(/^\n+/, '') },
+    ...restNodes,
+  ];
+  const summaryNodes: PhrasingContent[] = [];
+  const inlineBodyChildren: PhrasingContent[] = [];
+  let foundBodyBreak = false;
+
+  for (const child of nodesAfterMarker) {
+    if (foundBodyBreak) {
+      inlineBodyChildren.push(child);
+      continue;
+    }
+
+    if (child.type !== 'text') {
+      summaryNodes.push(child);
+      continue;
+    }
+
+    const lineBreakMatch = child.value.match(/\r?\n/);
+    if (!lineBreakMatch || lineBreakMatch.index === undefined) {
+      summaryNodes.push(child);
+      continue;
+    }
+
+    const summaryText = child.value.slice(0, lineBreakMatch.index);
+    const bodyText = child.value.slice(lineBreakMatch.index + lineBreakMatch[0].length);
+    if (summaryText) summaryNodes.push({ ...child, value: summaryText });
+    if (bodyText) inlineBodyChildren.push({ ...child, value: bodyText });
+    foundBodyBreak = true;
+  }
+
+  return {
+    summaryNodes: trimPhrasingEnd(trimPhrasingStart(summaryNodes)),
+    inlineBodyChildren: trimPhrasingStart(inlineBodyChildren),
+  };
+}
+
+function trimPhrasingStart(children: PhrasingContent[]) {
+  const trimmed = [...children];
+  while (trimmed[0]?.type === 'text') {
+    const value = trimmed[0].value.trimStart();
+    if (value) {
+      trimmed[0] = { ...trimmed[0], value };
+      break;
+    }
+    trimmed.shift();
+  }
+  return trimmed;
+}
+
+function trimPhrasingEnd(children: PhrasingContent[]) {
+  const trimmed = [...children];
+  while (trimmed.at(-1)?.type === 'text') {
+    const lastNode = trimmed.at(-1);
+    if (lastNode?.type !== 'text') break;
+
+    const value = lastNode.value.trimEnd();
+    if (value) {
+      trimmed[trimmed.length - 1] = { ...lastNode, value };
+      break;
+    }
+    trimmed.pop();
+  }
+  return trimmed;
+}
+
+function hasPhrasingContent(children: PhrasingContent[]) {
+  return children.some((child) => child.type !== 'text' || child.value.trim() !== '');
+}
+
 export const remarkCollapsibleAlert: Plugin<[], Root> = () => {
   return (tree, file) => {
     const locale = detectLocale(file.path);
@@ -90,33 +172,19 @@ export const remarkCollapsibleAlert: Plugin<[], Root> = () => {
       if (!match) return;
 
       const isOpen = (match[2] ?? '') === '+';
-      const remainingTextRaw = text.replace(DETAILS_REGEX, '').replace(/^\n+/, '');
-      const lineBreakMatch = remainingTextRaw.match(/\r?\n/);
-      const remainingText =
-        lineBreakMatch && lineBreakMatch.index !== undefined
-          ? remainingTextRaw.slice(0, lineBreakMatch.index).trim()
-          : remainingTextRaw.trim();
-      const inlineBodyText =
-        lineBreakMatch && lineBreakMatch.index !== undefined
-          ? remainingTextRaw.slice(lineBreakMatch.index + lineBreakMatch[0].length).trimStart()
-          : '';
-
       const variantKey = match[1]?.toUpperCase();
       const collapsibleType: CollapsibleType = variantKey
         ? (VARIANT_MAP[variantKey] ?? 'details')
         : 'details';
+      const splitDetails = splitInlineDetailsNodes(firstChild.children);
 
       let summaryNodes: PhrasingContent[] = [];
       const contentStartIndex = 1;
 
-      if (remainingText) {
-        // Inline summary: > [!DETAILS] Summary Title
-        // 内联摘要：> [!DETAILS] 摘要标题
-        summaryNodes = [{ type: 'text', value: remainingText }, ...firstChild.children.slice(1)];
-      } else if (firstChild.children.length > 1) {
-        // Inline summary with other nodes (e.g. bold)
-        // 内联摘要与其他节点（例如加粗）
-        summaryNodes = firstChild.children.slice(1) as PhrasingContent[];
+      if (hasPhrasingContent(splitDetails.summaryNodes)) {
+        // Inline summary supports plain text and formatted phrasing nodes before the first line break.
+        // 内联标题支持第一个换行前的纯文本与格式化短语节点。
+        summaryNodes = splitDetails.summaryNodes;
       } else {
         // No summary provided: use default title
         // 未提供摘要：使用默认标题
@@ -125,11 +193,11 @@ export const remarkCollapsibleAlert: Plugin<[], Root> = () => {
 
       // Support markdownlint-friendly details syntax without a blank `>` separator line.
       // 支持不使用空 `>` 分隔行的 markdownlint 友好折叠块语法。
-      const inlineBodyNodes: Paragraph[] = inlineBodyText.trim()
+      const inlineBodyNodes: Paragraph[] = hasPhrasingContent(splitDetails.inlineBodyChildren)
         ? [
             {
               type: 'paragraph',
-              children: [{ type: 'text', value: inlineBodyText }],
+              children: splitDetails.inlineBodyChildren,
             },
           ]
         : [];
