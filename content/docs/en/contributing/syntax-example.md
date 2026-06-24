@@ -12,11 +12,11 @@ This document groups the Markdown syntax supported by this project by function. 
 
 | Category | Features | Best For |
 | :--- | :--- | :--- |
-| Basic Markdown | Headings, emphasis, lists, links, images, inline code, horizontal rules | Regular document structure |
-| GFM Extensions | Task lists, tables, strikethrough, autolinks, blockquotes | Collaboration notes and structured content |
-| Project Extensions | GitHub Alert, collapsible blocks, AI summary blocks | Callouts, supplements, generated summaries |
-| Code Blocks | Syntax highlighting, file-path title bar, copy button | Code examples and configuration snippets |
-| Math and Diagrams | LaTeX, Mermaid | Formulas, flowcharts, sequence diagrams, state diagrams |
+| [Basic Markdown](#1-basic-markdown) | [Headings & Paragraphs](#11-headings-and-paragraphs), [Emphasis](#12-emphasis-and-line-breaks), [Lists](#14-lists), [Links & Images](#15-links-images-and-rules), [Inline Code](#13-inline-code), [Horizontal Rules](#15-links-images-and-rules) | Regular document structure |
+| [GFM Extensions](#2-github-flavored-markdown) | [Task Lists](#21-task-lists), [Tables](#22-tables), [Strikethrough](#23-strikethrough-and-autolinks), [Autolinks](#23-strikethrough-and-autolinks), [Blockquotes](#24-blockquotes) | Collaboration notes and structured content |
+| [Project Extensions](#3-project-extensions) | [GitHub Alert Callouts](#31-github-alert-callouts), [Basic Collapsible Blocks](#32-basic-collapsible-blocks), [Semantic Collapsible Blocks](#33-semantic-collapsible-blocks) | Callouts, supplements, generated summaries |
+| [Code Blocks](#4-code-blocks) | [Syntax Highlighting](#41-basic-code-blocks), [File-Path Title Bar](#42-file-path-title-bar), [Code Blocks Without Paths](#43-code-blocks-without-file-paths), Copy Button | Code examples and configuration snippets |
+| [Math and Diagrams](#5-latex-formulas) | [LaTeX Formulas](#5-latex-formulas), [Mermaid Flowchart](#61-flowchart), [Sequence Diagram](#62-sequence-diagram), [State Diagram](#63-state-diagram) | Formulas, flowcharts, sequence diagrams, state diagrams |
 
 ## 1. Basic Markdown
 
