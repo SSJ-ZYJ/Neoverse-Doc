@@ -2,11 +2,13 @@
  * Custom code block that always renders a top header bar with:
  * - Language icon (from Shiki transformerIcon)
  * - File path (only when set via remark-code-title)
+ * - Runtime fallback for stale MDX output that still contains a path comment
  * - Copy button
  *
  * 自定义代码块，始终渲染顶部横条，包含：
  * - 编程语言图标（由 Shiki transformerIcon 设置）
  * - 文件路径（仅当通过 remark-code-title 设置时显示）
+ * - 对仍保留路径注释的旧 MDX 输出做运行时兜底
  * - 复制按钮
  */
 
@@ -16,7 +18,16 @@ import { Pre } from 'fumadocs-ui/components/codeblock';
 import { useTranslations } from 'fumadocs-ui/contexts/i18n';
 import { useCopyButton } from 'fumadocs-ui/utils/use-copy-button';
 import { Check, Clipboard } from 'lucide-react';
-import { type ComponentProps, type ReactNode, useRef } from 'react';
+import {
+  Children,
+  type ComponentProps,
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+  useRef,
+} from 'react';
+import { getFilePathFromCodeTitleLine } from '@/lib/code-title';
 import { getLanguageDisplayName } from '@/lib/language-mapping';
 
 interface CodeBlockPreProps extends ComponentProps<'pre'> {
@@ -32,7 +43,11 @@ interface CodeBlockPreProps extends ComponentProps<'pre'> {
 export function CustomCodeBlock(props: CodeBlockPreProps) {
   const { children, title, icon, lang, className, ...rest } = props;
   const areaRef = useRef<HTMLDivElement>(null);
-  const hasTitle = typeof title === 'string' && title.length > 0;
+  const fallbackTitle =
+    typeof title === 'string' && title.length > 0 ? null : getFallbackTitle(children);
+  const codeTitle = typeof title === 'string' && title.length > 0 ? title : fallbackTitle;
+  const hasTitle = typeof codeTitle === 'string' && codeTitle.length > 0;
+  const codeChildren = fallbackTitle ? stripFallbackTitleLine(children) : children;
   const language = typeof lang === 'string' ? getLanguageDisplayName(lang) : null;
 
   // Glass code block wrapper keeps page ambient colors visible without changing Shiki markup.
@@ -52,7 +67,7 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
           <div className="[&_svg]:size-3.5">{icon}</div>
         ) : null}
         {hasTitle ? (
-          <figcaption className="flex-1 truncate">{title}</figcaption>
+          <figcaption className="flex-1 truncate">{codeTitle}</figcaption>
         ) : language ? (
           <span className="flex-1 text-xs font-medium">{language}</span>
         ) : (
@@ -73,10 +88,81 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
             : undefined,
         }}
       >
-        <Pre>{children}</Pre>
+        <Pre>{codeChildren}</Pre>
       </div>
     </figure>
   );
+}
+
+function getFallbackTitle(children: ReactNode) {
+  const firstLine = getTextContent(children).split(/\r?\n/)[0] ?? '';
+
+  return getFilePathFromCodeTitleLine(firstLine);
+}
+
+function getTextContent(node: ReactNode): string {
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(getTextContent).join('');
+  if (isValidElement<{ children?: ReactNode }>(node)) return getTextContent(node.props.children);
+
+  return '';
+}
+
+function stripFallbackTitleLine(children: ReactNode) {
+  const state = { stripped: false };
+
+  return stripFirstCodeLine(children, state);
+}
+
+function stripFirstCodeLine(node: ReactNode, state: { stripped: boolean }): ReactNode {
+  if (state.stripped || node == null || typeof node === 'boolean') return node;
+  if (Array.isArray(node)) return node.map((child) => stripFirstCodeLine(child, state));
+  if (!isValidElement<{ children?: ReactNode }>(node)) return node;
+
+  const element = node as ReactElement<{ children?: ReactNode }>;
+  const nextChildren =
+    element.type === 'code'
+      ? stripFirstLineChildren(element.props.children, state)
+      : stripFirstCodeLine(element.props.children, state);
+
+  if (nextChildren === element.props.children) return node;
+
+  return cloneElement(element, undefined, nextChildren);
+}
+
+function stripFirstLineChildren(children: ReactNode, state: { stripped: boolean }) {
+  const nextChildren: ReactNode[] = [];
+  let consumedFirstLine = false;
+  let shouldDropLeadingBreak = false;
+
+  state.stripped = true;
+
+  for (const child of Children.toArray(children)) {
+    if (!consumedFirstLine) {
+      consumedFirstLine = true;
+
+      if (typeof child === 'string') {
+        const remainingText = child.replace(/^[^\r\n]*(?:\r?\n)?/, '');
+        if (remainingText.length > 0) nextChildren.push(remainingText);
+      } else {
+        shouldDropLeadingBreak = true;
+      }
+
+      continue;
+    }
+
+    if (shouldDropLeadingBreak && typeof child === 'string') {
+      const remainingText = child.replace(/^\r?\n/, '');
+      shouldDropLeadingBreak = false;
+      if (remainingText.length > 0) nextChildren.push(remainingText);
+      continue;
+    }
+
+    shouldDropLeadingBreak = false;
+    nextChildren.push(child);
+  }
+
+  return nextChildren;
 }
 
 function CopyButton({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {

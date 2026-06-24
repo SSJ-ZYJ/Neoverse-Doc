@@ -1,6 +1,7 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
+import { extractLeadingCodeTitle } from './code-title';
 
 /**
  * Remark plugin: extracts file path from top comment in code blocks
@@ -16,39 +17,21 @@ import { visit } from 'unist-util-visit';
  * 将其以 `title="..."` 格式注入代码围栏的 meta 字符串。
  */
 
-const FILE_PATH_PATTERNS = [
-  /^[^\S\n]*\/\/[^\S\n]*(.+?)(?:\r?\n|$)/m,
-  /^[^\S\n]*\/\*[^\S\n]*(.+?)\s*\*\//m,
-  /^[^\S\n]*#[^\S\n]*(.+?)(?:\r?\n|$)/m,
-  /^[^\S\n]*<!--[^\S\n]*(.+?)\s*-->/m,
-];
-
-const PATH_HINT_RE = /[/\\]/;
-
-function isFilePath(text: string) {
-  return PATH_HINT_RE.test(text) || /\.\w{1,6}$/.test(text);
-}
-
 export const remarkCodeTitle: Plugin<[], Root> = () => {
   return (tree) => {
     visit(tree, 'code', (node) => {
       if (!node.value || !node.lang) return;
 
-      for (const pattern of FILE_PATH_PATTERNS) {
-        const match = node.value.match(pattern);
-        if (!match?.[1]) continue;
+      const title = extractLeadingCodeTitle(node.value);
+      if (!title) return;
 
-        const candidate = match[1].trim();
-        if (!isFilePath(candidate)) continue;
+      const existingMeta = node.meta || '';
+      if (/\btitle=/.test(existingMeta)) return;
 
-        const existingMeta = node.meta || '';
-        if (/\btitle=/.test(existingMeta)) break;
-
-        node.meta = existingMeta ? `${existingMeta} title="${candidate}"` : `title="${candidate}"`;
-
-        node.value = node.value.replace(pattern, '').trimStart();
-        break;
-      }
+      node.meta = existingMeta
+        ? `${existingMeta} title="${title.title}"`
+        : `title="${title.title}"`;
+      node.value = title.body;
     });
   };
 };

@@ -12,6 +12,7 @@ import {
   Children,
   type ComponentProps,
   cloneElement,
+  Fragment,
   isValidElement,
   type ReactElement,
   type ReactNode,
@@ -217,7 +218,13 @@ function renderTypedNode(
   if (!node || typeof node === 'boolean') return node;
 
   if (Array.isArray(node)) {
-    return node.map((child) => renderTypedNode(child, visibleChunks, chunkSize, state));
+    // Nested MDX child arrays need keyed fragments after recursive typewriter splitting.
+    // 递归拆分打字机节点后，嵌套的 MDX 子数组需要带 key 的 Fragment。
+    return node.map((child, index) => (
+      <Fragment key={getTypedNodeKey(child, index)}>
+        {renderTypedNode(child, visibleChunks, chunkSize, state)}
+      </Fragment>
+    ));
   }
 
   if (!isValidElement<TypableElementProps>(node) || shouldSkipTyping(node)) return node;
@@ -227,6 +234,11 @@ function renderTypedNode(
     undefined,
     renderTypedNode(node.props.children, visibleChunks, chunkSize, state),
   );
+}
+
+function getTypedNodeKey(node: ReactNode, index: number) {
+  if (isValidElement(node) && node.key !== null) return `typed-${node.key}`;
+  return `typed-${index}`;
 }
 
 function renderTypedText(

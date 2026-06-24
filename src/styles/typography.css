@@ -49,10 +49,56 @@ blockquote {
 }
 
 .markdown-alert {
-  border-left: 3px solid;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
+  --markdown-alert-accent: var(--color-alert-note);
+  --markdown-alert-border: color-mix(
+    in srgb,
+    var(--markdown-alert-accent) 42%,
+    var(--glass-border-hairline)
+  );
+
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--markdown-alert-accent) 8%, transparent),
+      transparent 42%
+    ),
+    var(--glass-tint-medium);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border: 1px solid var(--markdown-alert-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  padding: 0.75rem 1rem 0.75rem 1.5rem;
+  position: relative;
   margin: 1rem 0;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+/* Alert accent rail: separated from the rounded corner to avoid jagged subpixel clipping.
+   提示框强调色光带：与圆角保持距离，避免粗描边在圆角处出现锯齿。 */
+.markdown-alert::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.85rem;
+  inset-inline-start: 0.65rem;
+  width: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--markdown-alert-accent) 82%, transparent),
+    color-mix(in srgb, var(--markdown-alert-accent) 54%, transparent)
+  );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--markdown-alert-accent) 24%, transparent);
+  pointer-events: none;
 }
 
 .markdown-alert-title {
@@ -61,6 +107,7 @@ blockquote {
   gap: 0.5rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
+  color: var(--markdown-alert-accent);
 }
 
 .markdown-alert-title .octicon {
@@ -68,43 +115,114 @@ blockquote {
 }
 
 .markdown-alert-note {
-  border-color: var(--color-alert-note);
-  background: color-mix(in srgb, var(--color-alert-note) var(--alert-tint-pct), transparent);
+  --markdown-alert-accent: var(--color-alert-note);
 }
 .markdown-alert-note .octicon {
   fill: var(--color-alert-note);
 }
 
 .markdown-alert-tip {
-  border-color: var(--color-alert-tip);
-  background: color-mix(in srgb, var(--color-alert-tip) var(--alert-tint-pct), transparent);
+  --markdown-alert-accent: var(--color-alert-tip);
 }
 .markdown-alert-tip .octicon {
   fill: var(--color-alert-tip);
 }
 
 .markdown-alert-important {
-  border-color: var(--color-alert-important);
-  background: color-mix(in srgb, var(--color-alert-important) var(--alert-tint-pct), transparent);
+  --markdown-alert-accent: var(--color-alert-important);
 }
 .markdown-alert-important .octicon {
   fill: var(--color-alert-important);
 }
 
 .markdown-alert-warning {
-  border-color: var(--color-alert-warning);
-  background: color-mix(in srgb, var(--color-alert-warning) var(--alert-tint-pct), transparent);
+  --markdown-alert-accent: var(--color-alert-warning);
 }
 .markdown-alert-warning .octicon {
   fill: var(--color-alert-warning);
 }
 
 .markdown-alert-caution {
-  border-color: var(--color-alert-caution);
-  background: color-mix(in srgb, var(--color-alert-caution) var(--alert-tint-pct), transparent);
+  --markdown-alert-accent: var(--color-alert-caution);
 }
 .markdown-alert-caution .octicon {
   fill: var(--color-alert-caution);
+}
+
+/* Glass table surface: keeps Markdown tables visually aligned with code blocks, alerts, and details.
+   玻璃态表格表面：让 Markdown 表格与代码块、提示框、折叠块保持统一视觉。 */
+:where(#nd-page) :where(.prose-no-margin):has(> table) {
+  /* Table header tint: a continuous neutral glass row, separated from code block's blue sheen.
+     表头色层：使用连续的中性玻璃行，并与代码块的蓝色斜光解耦。 */
+  --markdown-table-head-bg: color-mix(in srgb, var(--color-fd-muted) 82%, var(--glass-tint-soft));
+  --markdown-table-head-border: color-mix(
+    in srgb,
+    var(--color-fd-foreground) 9%,
+    var(--glass-border-hairline)
+  );
+
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--glass-highlight) 28%, transparent),
+      transparent 38%
+    ),
+    var(--glass-tint-medium);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  overflow: auto;
+  transform: translateZ(0);
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table {
+  width: 100%;
+  margin: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table thead {
+  background: var(--markdown-table-head-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow: inset 0 -1px 0 var(--markdown-table-head-border);
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table th,
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table td {
+  background-color: transparent;
+  border-color: var(--glass-border-hairline);
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table thead th {
+  background: transparent;
+  border-bottom: 1px solid var(--markdown-table-head-border);
+  color: var(--color-fd-foreground);
+  font-weight: 600;
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table tbody tr {
+  transition: background-color var(--theme-transition-duration) ease;
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent);
 }
 
 /* ────────────── Inline Code Enhancement / 行内代码增强 ────────────── */
@@ -135,12 +253,39 @@ blockquote {
 /* ── Collapsible Details / 可折叠块 ─────────────────────────────── */
 
 .markdown-details {
-  border: 1px solid var(--color-fd-border);
-  border-radius: 0.5rem;
+  --markdown-details-accent: var(--color-fd-muted-foreground);
+  --markdown-details-border: var(--glass-border-hairline);
+  --markdown-details-summary-bg: var(--glass-tint-soft);
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--glass-tint-soft) 70%,
+    var(--color-fd-accent)
+  );
+
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--markdown-details-accent) 8%, transparent),
+      transparent 42%
+    ),
+    var(--glass-tint-medium);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border: 1px solid var(--markdown-details-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
   margin: 1rem 0;
   overflow: hidden;
-  background: var(--color-fd-card);
   interpolate-size: allow-keywords;
+  transform: translateZ(0);
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
 }
 
 /* Smooth expand/collapse animation / 平滑展开折叠动画 */
@@ -166,11 +311,21 @@ blockquote {
   user-select: none;
   list-style: none;
   color: var(--color-fd-foreground);
-  transition: background-color var(--theme-transition-duration) ease;
+  background: var(--markdown-details-summary-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease;
 }
 
 .markdown-details-summary:hover {
-  background: var(--color-fd-accent);
+  background: var(--markdown-details-summary-hover-bg);
+}
+
+.markdown-details[open] > .markdown-details-summary {
+  border-bottom-color: var(--markdown-details-border);
 }
 
 .markdown-details-summary::-webkit-details-marker {
@@ -230,7 +385,7 @@ blockquote {
 .markdown-details figure.shiki:not(.glass-codeblock) {
   border: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-xl);
   margin: 0.5rem 0.5rem;
 }
 
@@ -261,13 +416,22 @@ figure.shiki > div:first-child {
 
 /* FAQ - 常见问题 */
 .markdown-details-faq {
-  border-color: var(--color-alert-note);
-}
-.markdown-details-faq > .markdown-details-summary {
-  background: color-mix(in srgb, var(--color-alert-note) var(--alert-tint-pct), transparent);
-}
-.markdown-details-faq > .markdown-details-summary:hover {
-  background: color-mix(in srgb, var(--color-alert-note) 15%, transparent);
+  --markdown-details-accent: var(--color-alert-note);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-note) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-note) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-note) 16%,
+    var(--glass-tint-soft)
+  );
 }
 .markdown-details-type-faq::before {
   content: "";
@@ -288,13 +452,22 @@ figure.shiki > div:first-child {
 
 /* ANSWER - 解答 */
 .markdown-details-answer {
-  border-color: var(--color-alert-tip);
-}
-.markdown-details-answer > .markdown-details-summary {
-  background: color-mix(in srgb, var(--color-alert-tip) var(--alert-tint-pct), transparent);
-}
-.markdown-details-answer > .markdown-details-summary:hover {
-  background: color-mix(in srgb, var(--color-alert-tip) 15%, transparent);
+  --markdown-details-accent: var(--color-alert-tip);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-tip) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-tip) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-tip) 16%,
+    var(--glass-tint-soft)
+  );
 }
 .markdown-details-type-answer::before {
   content: "";
@@ -315,13 +488,22 @@ figure.shiki > div:first-child {
 
 /* EXAMPLE - 示例 */
 .markdown-details-example {
-  border-color: var(--color-alert-example);
-}
-.markdown-details-example > .markdown-details-summary {
-  background: color-mix(in srgb, var(--color-alert-example) var(--alert-tint-pct), transparent);
-}
-.markdown-details-example > .markdown-details-summary:hover {
-  background: color-mix(in srgb, var(--color-alert-example) 15%, transparent);
+  --markdown-details-accent: var(--color-alert-example);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-example) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-example) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-example) 16%,
+    var(--glass-tint-soft)
+  );
 }
 .markdown-details-type-example::before {
   content: "";
@@ -342,13 +524,22 @@ figure.shiki > div:first-child {
 
 /* HINT - 提示 */
 .markdown-details-hint {
-  border-color: var(--color-alert-hint);
-}
-.markdown-details-hint > .markdown-details-summary {
-  background: color-mix(in srgb, var(--color-alert-hint) var(--alert-tint-pct), transparent);
-}
-.markdown-details-hint > .markdown-details-summary:hover {
-  background: color-mix(in srgb, var(--color-alert-hint) 15%, transparent);
+  --markdown-details-accent: var(--color-alert-hint);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-hint) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-hint) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-hint) 16%,
+    var(--glass-tint-soft)
+  );
 }
 .markdown-details-type-hint::before {
   content: "";
@@ -370,13 +561,22 @@ figure.shiki > div:first-child {
 /* AI - AI-generated summary with adaptive typewriter reveal.
    AI - 带自适应打字机揭示效果的 AI 生成摘要。 */
 .markdown-details-ai {
-  border-color: var(--color-alert-ai);
-}
-.markdown-details-ai > .markdown-details-summary {
-  background: color-mix(in srgb, var(--color-alert-ai) var(--alert-tint-pct), transparent);
-}
-.markdown-details-ai > .markdown-details-summary:hover {
-  background: color-mix(in srgb, var(--color-alert-ai) 15%, transparent);
+  --markdown-details-accent: var(--color-alert-ai);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-ai) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-ai) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-ai) 16%,
+    var(--glass-tint-soft)
+  );
 }
 .markdown-details-type-ai::before {
   content: "";
@@ -444,17 +644,6 @@ figure.shiki > div:first-child {
     .markdown-details-ai-typed-chunk[data-ai-caret="true"]::after {
     display: none;
   }
-}
-
-/* Dark mode border highlight for plain DETAILS only / 仅普通 DETAILS 折叠块边缘高光 */
-.dark
-.markdown-details:not(.markdown-details-faq):not(.markdown-details-answer):not(
-  .markdown-details-example
-):not(.markdown-details-hint):not(.markdown-details-ai) {
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Dark mode border highlight for code blocks (non-glass only).
