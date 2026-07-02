@@ -113,10 +113,32 @@
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
 }
+
+/* Collapsed state (panel translated off-screen).
+   Keep the SAME blur + shadow as the floating state so the slide-in/out animation
+   stays visually consistent — only background-color transitions, never a backdrop-filter jump.
+   折叠态（面板被移出屏幕外）：保留与悬浮态相同的 blur + 阴影，
+   使滑入 / 滑出动画中只有 background-color 在过渡，backdrop-filter 恒定，
+   不再出现"收回途中变透明"的跳变。 */
 :where(#nd-sidebar)[data-collapsed="true"] {
   background-color: var(--glass-tint-soft);
-  border-color: var(--glass-border-hairline);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border: 1px solid var(--glass-border-hairline);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 0 0 0.5px var(--glass-highlight),
+    var(--glass-shadow-hover);
+}
+
+/* Floating state (collapsed + hovered): the sidebar slides out as a detached panel over the page.
+   Inherits blur + shadow from the collapsed rule; only background-color differs for hover feedback.
+   悬浮态（折叠 + 悬停）：侧栏作为分离面板滑出覆盖在页面之上。
+   blur / 阴影沿用折叠态规则，仅 background-color 在 hover 时切换以给出反馈。 */
+:where(#nd-sidebar)[data-collapsed="true"][data-hovered="true"] {
+  background-color: var(--glass-tint-soft);
 }
 
 /* ── Sidebar Buttons Glassification / 侧栏按钮玻璃化 ────────────────────── */
