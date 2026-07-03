@@ -175,6 +175,59 @@
   }
 }
 
+/* Pull the page content up under the sticky navbar so the home gradient
+   (and its colored orbs) extends behind the floating glass surface —
+   otherwise the body's white background shows through the transparent
+   #nd-nav header band, reading as a white strip below / around the nav.
+   The navbar (z-40) stays above the pulled-up content (z-auto).
+   h-14 = 3.5rem matches fumadocs' sticky header height.
+   将页面内容上拉 h-14（3.5rem），让首页渐变及其色球延伸到悬浮玻璃导航
+   背后。否则透明的 #nd-nav 头部会透出 body 白底，在导航下方形成白条。
+   导航 z-40 仍在上层，内容 z-auto 在下层不被遮挡。
+   留言墙页 py-24 上拉后仍剩 2.5rem 顶部留白，不会被遮挡。 */
+#nd-home-layout > div {
+  margin-top: -3.5rem;
+}
+
+/* ── Homepage Floating Glass Navbar / 首页悬浮玻璃导航栏 ─────────────────── */
+/* Float the home navbar's inner glass surface off the left/right edges so it
+   reads as a floating pill, WITHOUT touching the header (#nd-nav) itself:
+   - #nd-nav stays full-width and flush with the top (sticky top-0) so no
+     white strip leaks above it from #nd-home-layout's background.
+   - Only the inner div gets horizontal insets + rounded corners + lifted
+     shadow on large screens. Small screens stay edge-to-edge to preserve
+     space for the right-side icons (search / theme / language / github).
+   - Glass blur + tint are inherited from the shared #nd-nav rule in
+     fumadocs-glass.css; here we only reshape geometry and border.
+   让首页导航栏的内层玻璃面左右悬浮呈胶囊状，但不改动 header（#nd-nav）本身：
+   - #nd-nav 保持全宽贴顶（sticky top-0），避免上方漏出 #nd-home-layout 的白底；
+   - 仅内层 div 在大屏左右留白 + 圆角 + 抬升阴影；小屏贴边保留
+     右侧图标（搜索 / 主题 / 语言 / GitHub）的空间；
+   - 玻璃模糊与 tint 沿用 fumadocs-glass.css 中共享的 #nd-nav 规则，
+     此处只调整几何形态与描边。 */
+#nd-home-layout #nd-nav > div {
+  /* Full hairline border (replaces fumadocs default bottom-only border-b)
+     so all four sides read as finished once the surface floats.
+     全边描边（替换 fumadocs 默认仅底边 border-b），使悬浮后四边完整。 */
+  border: 1px solid var(--glass-border-hairline);
+  /* Rounded corners for the floating pill / 胶囊圆角 */
+  border-radius: var(--radius-2xl, 1rem);
+  /* Lifted shadow to sell the floating effect (replaces the flatter shadow
+     from the shared rule). / 抬升阴影强化悬浮感（覆盖共享规则的较平阴影）。 */
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow-hover);
+}
+
+/* Large screens: inset the glass surface horizontally so it floats off the
+   left/right edges. Small screens stay edge-to-edge to preserve icon space.
+   大屏：玻璃面左右留白悬浮；小屏：贴边保留图标空间。 */
+@media (min-width: 1024px) {
+  #nd-home-layout #nd-nav > div {
+    margin-inline: 0.75rem;
+  }
+}
+
 /* Respect reduced-motion preferences: disable all home animations.
    尊重减弱动画偏好：禁用首页所有动画。 */
 @media (prefers-reduced-motion: reduce) {
