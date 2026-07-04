@@ -4,44 +4,30 @@
 'use client';
 
 import { ArrowLeft, Home } from 'lucide-react';
-import Link from 'next/link';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { getPageDictionary } from '@/dictionaries';
-import { i18n, isLocale, type Locale } from '@/lib/i18n';
+import { resolveLocaleFromRouteContext } from '@/lib/route-locale';
 
 interface LocalizedNotFoundProps {
   variant?: 'default' | 'docs';
 }
 
-// Resolve locale from params first, then from the pathname's first segment,
-// falling back to the default language. More robust than the shared
-// resolveLocale because not-found pages may render outside a [lang] segment.
-// 先从 params 解析 locale，再回退到路径首段，最终回退到默认语言。
-// 比共享的 resolveLocale 更健壮，因为 not-found 页可能不在 [lang] 段下渲染。
-function resolveLocaleFromContext(paramsLang: unknown, pathname: string | null): Locale {
-  if (isLocale(paramsLang)) return paramsLang;
-
-  const pathLocale = pathname?.split('/').find(Boolean);
-  if (isLocale(pathLocale)) return pathLocale;
-
-  return i18n.defaultLanguage;
-}
-
 export function LocalizedNotFound({ variant = 'default' }: LocalizedNotFoundProps) {
   const params = useParams<{ lang?: string }>();
   const pathname = usePathname();
-  const router = useRouter();
-  const locale = resolveLocaleFromContext(params?.lang, pathname);
+  const locale = resolveLocaleFromRouteContext(params?.lang, pathname);
   const dict = getPageDictionary(locale);
+  const homeHref = `/${locale}`;
 
   const handleBack = () => {
-    // Go back if there's navigation history, otherwise go to the locale root.
-    // 存在浏览历史时后退，否则跳转到当前语言首页。
+    // Use the browser history API so not-found recovery does not depend on
+    // App Router actions that may still be initializing on fallback pages.
+    // 使用浏览器历史 API，避免 not-found 回退依赖仍在初始化中的 App Router action。
     if (window.history.length > 1) {
-      router.back();
+      window.history.back();
       return;
     }
-    router.push(`/${locale}`);
+    window.location.assign(homeHref);
   };
 
   return (
@@ -64,13 +50,13 @@ export function LocalizedNotFound({ variant = 'default' }: LocalizedNotFoundProp
           <ArrowLeft size={16} />
           {dict.notFoundBack}
         </button>
-        <Link
-          href={`/${locale}`}
+        <a
+          href={homeHref}
           className="inline-flex items-center gap-2 rounded-lg bg-fd-primary px-4 py-2 text-sm font-medium text-fd-primary-foreground transition-colors hover:bg-fd-primary/90"
         >
           <Home size={16} />
           {dict.notFoundHome}
-        </Link>
+        </a>
       </div>
     </main>
   );

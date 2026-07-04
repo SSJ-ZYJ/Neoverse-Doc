@@ -10,7 +10,6 @@
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import type { MouseEvent } from 'react';
 import { captureTransitionSnapshot } from '@/lib/transition-snapshot';
 
@@ -20,8 +19,6 @@ interface BackLinkProps {
 }
 
 export function BackLink({ fallbackHref, label }: BackLinkProps) {
-  const router = useRouter();
-
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     // Snapshot the current <main> so MaskReveal (mounted in docs/layout.tsx)
     // can expand a radial cutout from the return button outward, revealing the
@@ -36,7 +33,7 @@ export function BackLink({ fallbackHref, label }: BackLinkProps) {
     // 让浏览器恢复滚动位置与上一页状态。
     if (typeof window !== 'undefined' && window.history.length > 1) {
       event.preventDefault();
-      router.back();
+      window.history.back();
     }
   };
 
