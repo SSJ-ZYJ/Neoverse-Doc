@@ -11,6 +11,7 @@ export const zh = {
   siteTitle: 'Neoverse',
   tagline: '一份还在做的文档',
   loading: '加载中…',
+  loadingMarquee: 'Loading...',
   enterDocs: '进入文档',
   guestbookTitle: '留言板',
   guestbookDesc: '在这里留下你对 Neoverse-Doc 的足迹与反馈',

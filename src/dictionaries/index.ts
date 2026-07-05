@@ -17,6 +17,7 @@ export interface Dictionary {
   siteTitle: string;
   tagline: string;
   loading: string;
+  loadingMarquee: string;
   enterDocs: string;
   guestbookTitle: string;
   guestbookDesc: string;

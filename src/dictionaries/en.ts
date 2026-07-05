@@ -11,6 +11,7 @@ export const en = {
   siteTitle: 'Neoverse',
   tagline: 'A work in progress documentation',
   loading: 'Loading…',
+  loadingMarquee: 'Loading...',
   enterDocs: 'Enter',
   guestbookTitle: 'Guestbook',
   guestbookDesc: 'Leave your footprints and feedback for Neoverse-Doc here',
