@@ -9,7 +9,6 @@
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { Sidebar, SidebarTrigger, useSidebar } from 'fumadocs-ui/layouts/docs/slots/sidebar';
 import { SidebarProvider } from '@/components/sidebar-provider';
-import MaskReveal from '@/components/transition/mask-reveal';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 import { baseOptions } from '@/lib/layout.shared';
 import { source } from '@/lib/source';
@@ -21,22 +20,19 @@ export default async function Layout({ params, children }: LayoutProps<'/[lang]/
   const locale = resolveLocale(lang);
 
   return (
-    <>
-      <MaskReveal />
-      <DocsLayout
-        tree={source.pageTree[locale]}
-        {...baseOptions(locale)}
-        slots={{
-          sidebar: {
-            provider: SidebarProvider,
-            root: Sidebar,
-            trigger: SidebarTrigger,
-            useSidebar,
-          },
-        }}
-      >
-        {children}
-      </DocsLayout>
-    </>
+    <DocsLayout
+      tree={source.pageTree[locale]}
+      {...baseOptions(locale)}
+      slots={{
+        sidebar: {
+          provider: SidebarProvider,
+          root: Sidebar,
+          trigger: SidebarTrigger,
+          useSidebar,
+        },
+      }}
+    >
+      {children}
+    </DocsLayout>
   );
 }

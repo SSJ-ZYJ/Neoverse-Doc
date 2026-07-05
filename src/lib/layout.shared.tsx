@@ -12,6 +12,7 @@
 
 import { i18nProvider, uiTranslations } from 'fumadocs-ui/i18n';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
+import { NavTitle } from '@/components/transition/nav-title';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/lib/i18n';
 import { REPO_URL } from '@/lib/site-config';
@@ -63,7 +64,7 @@ export function baseOptions(locale: Locale = i18n.defaultLanguage): BaseLayoutPr
 
   return {
     nav: {
-      title: <span className="font-orbitron font-bold text-xl tracking-wider">Neoverse-Doc</span>,
+      title: <NavTitle />,
       url: `/${locale}`,
     },
     githubUrl: REPO_URL,

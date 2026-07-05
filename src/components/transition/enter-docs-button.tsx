@@ -50,7 +50,17 @@ export default function EnterDocsButton({
   };
 
   return (
-    <Link href={href} className={className} onClick={handleClick}>
+    <Link
+      href={href}
+      className={className}
+      onClick={handleClick}
+      // Mark this link as self-capturing so MaskReveal's global click capture
+      // skips it — otherwise the hold overlay would mount before handleClick
+      // applies the button's scale feedback, hiding the press animation.
+      // 标记此链接为自捕获，让 MaskReveal 全局 click 捕获跳过它 ——
+      // 否则遮罩会在 handleClick 应用按钮缩放反馈之前挂载，隐藏按压动画。
+      data-nd-transition-capture
+    >
       <span ref={spanRef} className="inline-block transition-all duration-300 ease-out">
         {children}
       </span>
