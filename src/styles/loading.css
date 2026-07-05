@@ -22,6 +22,8 @@
   --route-loading-band-ink: color-mix(in srgb, var(--foreground) 90%, var(--color-brand-end));
   --route-loading-band-glow: color-mix(in srgb, var(--color-brand-end) 18%, transparent);
   --route-loading-band-shadow: rgba(15, 23, 42, 0.14);
+  --route-loading-release-duration: 560ms;
+  --route-loading-release-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
@@ -125,6 +127,20 @@
   pointer-events: none;
 }
 
+.route-loading-shell--handoff {
+  /* Handoff overlay is a cloned loading page that covers the route swap only.
+     交接覆盖层是克隆的加载页，仅用于覆盖路由替换瞬间。 */
+  pointer-events: none;
+  contain: paint;
+}
+
+.route-loading-shell--release {
+  /* Fade the cloned loading route away after the homepage is ready.
+     首页就绪后淡出克隆的加载路由。 */
+  animation: route-loading-shell-release var(--route-loading-release-duration)
+    var(--route-loading-release-ease) forwards;
+}
+
 .route-loading-band {
   position: relative;
   width: 100vw;
@@ -158,6 +174,11 @@
     0 0 0 1px color-mix(in srgb, var(--glass-highlight) 48%, transparent),
     0 1.2rem 3rem var(--route-loading-band-shadow);
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+}
+
+.route-loading-shell--release .route-loading-band {
+  animation: route-loading-band-release var(--route-loading-release-duration)
+    var(--route-loading-release-ease) forwards;
 }
 
 .route-loading-band::after {
@@ -253,9 +274,29 @@
   }
 }
 
+@keyframes route-loading-shell-release {
+  to {
+    opacity: 0;
+    filter: blur(0.85rem);
+    transform: scale(1.015);
+  }
+}
+
+@keyframes route-loading-band-release {
+  to {
+    opacity: 0;
+    transform: translateY(-0.75rem) scaleX(0.985);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .route-loading-band::after,
   .route-loading-band__track {
     animation: none;
+  }
+
+  .route-loading-shell--release,
+  .route-loading-shell--release .route-loading-band {
+    animation-duration: 1ms;
   }
 }

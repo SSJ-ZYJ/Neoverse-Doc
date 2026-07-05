@@ -4,8 +4,9 @@
 
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { pageEnterTransition, pageEnterVariants } from '@/lib/motion';
+import { releaseRouteLoadingHandoff } from '@/lib/route-loading-handoff';
 import { isCrossRouteGroupTransition, readTransitionSnapshot } from '@/lib/transition-snapshot';
 
 export default function Template({ children }: { children: ReactNode }) {
@@ -23,6 +24,13 @@ export default function Template({ children }: { children: ReactNode }) {
     if (!snapshot) return false;
     return isCrossRouteGroupTransition(snapshot.sourcePath, pathname);
   });
+
+  // Release the cloned root loading screen after the home route has mounted,
+  // smoothing the first "/" → "/{locale}" handoff.
+  // 首页路由挂载后释放克隆的根加载画面，平滑 "/" → "/{locale}" 的首次交接。
+  useEffect(() => {
+    releaseRouteLoadingHandoff();
+  }, []);
 
   return (
     <motion.div
