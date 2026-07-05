@@ -27,6 +27,14 @@ export const zh = {
   notFoundDesc: '你访问的页面可能已被移除、重命名或暂时不可用。',
   notFoundBack: '返回上一页',
   notFoundHome: '返回首页',
+  // Homepage footer labels / 首页 footer 标签
+  homeFooterLabel: '项目页脚',
+  homeFooterCode: '本项目代码',
+  homeFooterOpenSource: '已开源',
+  homeFooterCommit: 'Commit',
+  homeFooterLastCommit: '最后提交',
+  homeFooterAuthor: '作者',
+  homeFooterUnavailable: '未知',
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: '缩小图表',
   mermaidZoomIn: '放大图表',

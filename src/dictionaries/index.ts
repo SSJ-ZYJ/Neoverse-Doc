@@ -33,6 +33,14 @@ export interface Dictionary {
   notFoundDesc: string;
   notFoundBack: string;
   notFoundHome: string;
+  // Homepage footer labels / 首页 footer 标签
+  homeFooterLabel: string;
+  homeFooterCode: string;
+  homeFooterOpenSource: string;
+  homeFooterCommit: string;
+  homeFooterLastCommit: string;
+  homeFooterAuthor: string;
+  homeFooterUnavailable: string;
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: string;
   mermaidZoomIn: string;

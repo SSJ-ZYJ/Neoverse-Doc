@@ -28,6 +28,14 @@ export const en = {
     'The page you are looking for might have been removed, renamed, or temporarily unavailable.',
   notFoundBack: 'Go Back',
   notFoundHome: 'Back to Home',
+  // Homepage footer labels / 首页 footer 标签
+  homeFooterLabel: 'Project footer',
+  homeFooterCode: 'Project code',
+  homeFooterOpenSource: 'open sourced',
+  homeFooterCommit: 'Commit',
+  homeFooterLastCommit: 'Last commit',
+  homeFooterAuthor: 'Author',
+  homeFooterUnavailable: 'Unknown',
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: 'Zoom out',
   mermaidZoomIn: 'Zoom in',
