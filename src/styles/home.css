@@ -2,6 +2,30 @@
    首页渐变背景动画。 */
 
 .home-gradient-bg {
+  --home-theme-transition-duration: 720ms;
+  --home-theme-transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: absolute;
+  overflow: hidden;
+  background: var(--background);
+  isolation: isolate;
+}
+
+.home-gradient-bg::before,
+.home-gradient-bg::after {
+  /* Layered theme scenes crossfade because gradient backgrounds do not
+     interpolate smoothly when the theme class changes.
+     分层主题场景通过透明度交叉淡入淡出，因为主题类切换时渐变背景不会平滑插值。 */
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  will-change: opacity, background-position;
+  transition: opacity var(--home-theme-transition-duration) var(--home-theme-transition-ease);
+  animation: home-gradient-drift 10s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+.home-gradient-bg::before {
   background:
     radial-gradient(
       circle at 18% 18%,
@@ -24,62 +48,10 @@
     180% 180%,
     160% 160%,
     100% 100%;
-  animation: home-gradient-drift 10s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+  opacity: 1;
 }
 
-.home-gradient-bg__orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(120px);
-  opacity: 0.65;
-  mix-blend-mode: screen;
-  transform: translate3d(0, 0, 0);
-  will-change: transform, opacity;
-  animation:
-    home-orb-float 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate,
-    home-orb-pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
-}
-
-.home-gradient-bg__orb--one {
-  top: -12%;
-  left: -8%;
-  width: 26rem;
-  height: 26rem;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-brand-start) 70%, transparent),
-    transparent 70%
-  );
-  animation-delay: 0s, -1.5s;
-}
-
-.home-gradient-bg__orb--two {
-  top: 8%;
-  right: -10%;
-  width: 30rem;
-  height: 30rem;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-brand-end) 62%, transparent),
-    transparent 68%
-  );
-  animation-delay: -4s, -3s;
-}
-
-.home-gradient-bg__orb--three {
-  bottom: -16%;
-  left: 28%;
-  width: 28rem;
-  height: 28rem;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-home-accent) 58%, transparent),
-    transparent 72%
-  );
-  animation-delay: -8s, -5s;
-}
-
-.dark .home-gradient-bg {
+.home-gradient-bg::after {
   background:
     radial-gradient(
       circle at 20% 20%,
@@ -102,10 +74,76 @@
     180% 180%,
     160% 160%,
     100% 100%;
-  animation: home-gradient-drift 10s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+  opacity: 0;
 }
 
-.dark .home-gradient-bg__orb--one {
+.dark .home-gradient-bg::before {
+  opacity: 0;
+}
+
+.dark .home-gradient-bg::after {
+  opacity: 1;
+}
+
+.home-gradient-bg__orb {
+  position: absolute;
+  z-index: 1;
+  border-radius: 9999px;
+  filter: blur(120px);
+  opacity: 0.65;
+  mix-blend-mode: screen;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+  animation:
+    home-orb-float 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate,
+    home-orb-pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+}
+
+.home-gradient-bg__orb::before,
+.home-gradient-bg__orb::after {
+  /* Orb color layers crossfade with the main scene to avoid a one-frame
+     color jump during theme changes.
+     色球颜色层随主场景交叉淡入淡出，避免主题切换时出现单帧跳色。 */
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  content: "";
+  transition: opacity var(--home-theme-transition-duration) var(--home-theme-transition-ease);
+}
+
+.home-gradient-bg__orb::before {
+  opacity: 1;
+}
+
+.home-gradient-bg__orb::after {
+  opacity: 0;
+}
+
+.dark .home-gradient-bg__orb::before {
+  opacity: 0;
+}
+
+.dark .home-gradient-bg__orb::after {
+  opacity: 1;
+}
+
+.home-gradient-bg__orb--one {
+  top: -12%;
+  left: -8%;
+  width: 26rem;
+  height: 26rem;
+  animation-delay: 0s, -1.5s;
+}
+
+.home-gradient-bg__orb--one::before {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-start) 70%, transparent),
+    transparent 70%
+  );
+}
+
+.home-gradient-bg__orb--one::after {
   background: radial-gradient(
     circle,
     color-mix(in srgb, var(--color-brand-start) 92%, transparent),
@@ -113,7 +151,23 @@
   );
 }
 
-.dark .home-gradient-bg__orb--two {
+.home-gradient-bg__orb--two {
+  top: 8%;
+  right: -10%;
+  width: 30rem;
+  height: 30rem;
+  animation-delay: -4s, -3s;
+}
+
+.home-gradient-bg__orb--two::before {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-end) 62%, transparent),
+    transparent 68%
+  );
+}
+
+.home-gradient-bg__orb--two::after {
   background: radial-gradient(
     circle,
     color-mix(in srgb, var(--color-brand-end) 85%, transparent),
@@ -121,7 +175,23 @@
   );
 }
 
-.dark .home-gradient-bg__orb--three {
+.home-gradient-bg__orb--three {
+  bottom: -16%;
+  left: 28%;
+  width: 28rem;
+  height: 28rem;
+  animation-delay: -8s, -5s;
+}
+
+.home-gradient-bg__orb--three::before {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-home-accent) 58%, transparent),
+    transparent 72%
+  );
+}
+
+.home-gradient-bg__orb--three::after {
   background: radial-gradient(
     circle,
     color-mix(in srgb, var(--color-home-accent) 82%, transparent),
@@ -259,8 +329,16 @@
 /* Respect reduced-motion preferences: disable all home animations.
    尊重减弱动画偏好：禁用首页所有动画。 */
 @media (prefers-reduced-motion: reduce) {
-  .home-gradient-bg,
+  .home-gradient-bg::before,
+  .home-gradient-bg::after,
   .home-gradient-bg__orb {
     animation: none;
+  }
+
+  .home-gradient-bg::before,
+  .home-gradient-bg::after,
+  .home-gradient-bg__orb::before,
+  .home-gradient-bg__orb::after {
+    transition-duration: 1ms;
   }
 }
