@@ -25,6 +25,7 @@
 //   - Maple Mono NF CN：代码块字体（本地字体）
 
 import { Noto_Sans_SC, Orbitron } from 'next/font/google';
+import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
 import { i18n } from '@/lib/i18n';
 import '@/app/globals.css';
@@ -34,6 +35,52 @@ import '@/styles/loading.css';
 // KaTeX styles render LaTeX formulas emitted by the MDX math pipeline.
 // KaTeX 样式用于渲染 MDX 数学管线输出的 LaTeX 公式。
 import 'katex/dist/katex.css';
+
+// Native BFCache restore guard: runs before React hydration so external-site
+// back navigation cannot resume stale, non-interactive client trees. It only
+// reacts to persisted BFCache restores so normal App Router transitions (such
+// as Home -> Docs) are never interrupted.
+// 原生 BFCache 恢复守卫：在 React 水合前运行，避免从外部站点回退时恢复到
+// 过期且不可交互的客户端树。它只响应持久化 BFCache 恢复，确保正常的
+// App Router 切换（如首页 -> 文档）不会被打断。
+const historyRestoreScript = `
+(() => {
+  const key = 'nd-history-restore-reload';
+
+  function readReloadMarker() {
+    try {
+      return sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  function writeReloadMarker(value) {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {}
+  }
+
+  function clearReloadMarker() {
+    try {
+      sessionStorage.removeItem(key);
+    } catch {}
+  }
+
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) {
+      clearReloadMarker();
+      return;
+    }
+
+    const marker = location.href;
+    if (readReloadMarker() === marker) return;
+
+    writeReloadMarker(marker);
+    location.reload();
+  });
+})();
+`;
 
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -51,6 +98,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang={i18n.defaultLanguage} suppressHydrationWarning>
       <body className={`antialiased min-h-screen ${orbitron.variable} ${notoSansSC.variable}`}>
+        {/* Native BFCache restore guard must not depend on React hydration.
+            原生 BFCache 恢复守卫不能依赖 React 水合。 */}
+        <Script id="nd-history-restore-guard" strategy="beforeInteractive">
+          {historyRestoreScript}
+        </Script>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>

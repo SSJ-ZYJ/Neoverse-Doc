@@ -17,6 +17,7 @@ import {
   isCrossRouteGroupTransition,
   readTransitionSnapshot,
   removeTransitionHoldOverlay,
+  renderTransitionSnapshotHTML,
   type TransitionSnapshotData,
 } from '@/lib/transition-snapshot';
 
@@ -56,6 +57,29 @@ export default function MaskReveal() {
   const radius = useMotionValue(0);
   const feather = useMotionValue(40);
   const maskRef = useRef<HTMLDivElement>(null);
+
+  // Browser BFCache can restore a page with transient transition layers still
+  // frozen in the DOM. Clean them on persisted restores so both home and docs
+  // routes resume from the real page tree.
+  // 浏览器 BFCache 可能连同临时过渡层一起恢复页面。持久化历史恢复时清理它们，
+  // 确保首页与文档页都从真实页面树继续显示。
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+
+      setRevealData(null);
+      clearTransitionSnapshot();
+      removeTransitionHoldOverlay();
+      radius.set(0);
+      feather.set(40);
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [feather, radius]);
 
   // Consume snapshots on every path change because this component is mounted
   // above the home/docs route groups and therefore persists between them.
@@ -213,10 +237,7 @@ export default function MaskReveal() {
   // 用户当时实际看到的视口偏移渲染。
   useLayoutEffect(() => {
     if (maskRef.current && revealData) {
-      maskRef.current.innerHTML =
-        revealData.scrollY > 0
-          ? `<div style="transform:translateY(${-revealData.scrollY}px);will-change:transform;">${revealData.domHTML}</div>`
-          : revealData.domHTML;
+      maskRef.current.innerHTML = renderTransitionSnapshotHTML(revealData);
       removeTransitionHoldOverlay();
     }
   }, [revealData]);

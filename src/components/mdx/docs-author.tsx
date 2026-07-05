@@ -5,7 +5,7 @@
 
 import { User } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type AuthorInfo, parseAuthor } from '@/lib/parse-author';
 
 type AuthorInput = string | string[];
@@ -29,8 +29,35 @@ function getGithubAvatar(url: string): string | null {
 }
 
 function AuthorAvatar({ name, src }: { name: string; src: string }) {
+  const imageRef = useRef<HTMLImageElement>(null);
   const [error, setError] = useState(false);
   const [loaded, setLoaded] = useState(false);
+
+  // Cached images can be complete before React's onLoad fires after history
+  // restore, so synchronize from the real <img> state on mount/pageshow.
+  // 历史恢复后缓存图片可能已完成但 React onLoad 未触发，因此在挂载与
+  // pageshow 时从真实 <img> 状态同步。
+  useEffect(() => {
+    const syncImageState = () => {
+      const image = imageRef.current;
+      if (!image?.complete) return;
+
+      if (image.naturalWidth > 0) {
+        setLoaded(true);
+        setError(false);
+        return;
+      }
+
+      setError(true);
+    };
+
+    syncImageState();
+    window.addEventListener('pageshow', syncImageState);
+
+    return () => {
+      window.removeEventListener('pageshow', syncImageState);
+    };
+  }, []);
 
   if (error) {
     return (
@@ -46,11 +73,16 @@ function AuthorAvatar({ name, src }: { name: string; src: string }) {
         <span className="absolute inset-0 rounded-md bg-fd-muted-foreground/20 animate-pulse" />
       )}
       <Image
+        ref={imageRef}
         src={src}
         alt={name}
         width={20}
         height={20}
-        className={`rounded-md transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        // Keep the image visible independent of React load state; the skeleton
+        // sits behind it until onLoad/pageshow confirms completion.
+        // 图片可见性不再依赖 React 加载状态；skeleton 位于其后，直到
+        // onLoad/pageshow 确认加载完成。
+        className="relative rounded-md"
         onError={() => setError(true)}
         onLoad={() => setLoaded(true)}
       />

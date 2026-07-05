@@ -1,17 +1,45 @@
 // CTA button that triggers a mask-reveal page transition from the homepage
-// to the docs area. On click, it snapshots the current <main> DOM into
-// sessionStorage so MaskReveal can animate the clip-path reveal.
+// to the docs area. On pointer-up/click capture, it snapshots the current
+// <main> DOM into sessionStorage so MaskReveal can animate the clip-path reveal.
 // Uses Link's native navigation instead of router.push to avoid RSC fetch
 // being aborted by React state-driven re-renders.
 // 触发遮罩揭示页面过渡的 CTA 按钮，从首页跳转至文档区。
-// 点击时将当前 <main> DOM 快照存入 sessionStorage，供 MaskReveal 执行裁剪揭示动画。
+// pointer-up / click capture 时将当前 <main> DOM 快照存入 sessionStorage，供 MaskReveal 执行裁剪揭示动画。
 // 使用 Link 原生导航而非 router.push，避免 React 状态更新导致的重渲染中止 RSC 请求。
 
 'use client';
 
 import Link from 'next/link';
-import { type MouseEvent, type ReactNode, useRef } from 'react';
-import { captureTransitionSnapshot } from '@/lib/transition-snapshot';
+import { type MouseEvent, type PointerEvent, type ReactNode, useRef } from 'react';
+import {
+  captureTransitionSnapshot,
+  captureTransitionSnapshotAtPoint,
+} from '@/lib/transition-snapshot';
+
+function isPlainPrimaryActivation(
+  event: MouseEvent<HTMLAnchorElement> | PointerEvent<HTMLAnchorElement>,
+): boolean {
+  return !(
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  );
+}
+
+function resolveActivationPoint(
+  event: MouseEvent<HTMLAnchorElement> | PointerEvent<HTMLAnchorElement>,
+): { x: number; y: number } {
+  let { clientX: x, clientY: y } = event;
+  if (x === 0 && y === 0) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    x = rect.left + rect.width / 2;
+    y = rect.top + rect.height / 2;
+  }
+  return { x, y };
+}
 
 export default function EnterDocsButton({
   href,
@@ -22,24 +50,38 @@ export default function EnterDocsButton({
   className?: string;
   children: ReactNode;
 }) {
-  const spanRef = useRef<HTMLSpanElement>(null);
+  const hasPrimedSnapshotRef = useRef(false);
 
-  const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
-    // Provide immediate tactile feedback via direct DOM manipulation
-    // (avoids React state update that could abort the in-flight RSC fetch).
-    // Must happen BEFORE the snapshot so the scaled-down span is captured.
-    // 通过直接 DOM 操作提供即时触觉反馈
-    // （避免 React 状态更新触发重渲染，从而中止进行中的 RSC 请求）。
-    // 必须在快照之前执行，使缩小后的 span 被捕获进快照。
-    if (spanRef.current) {
-      spanRef.current.style.transform = 'scale(0.92)';
-      spanRef.current.style.opacity = '0.7';
+  const handlePointerUpCapture = (event: PointerEvent<HTMLAnchorElement>) => {
+    if (!isPlainPrimaryActivation(event)) {
+      return;
     }
 
-    // Snapshot the current <main> (including the tactile feedback above) so
-    // MaskReveal on the destination page can play the radial cutout reveal.
-    // 快照当前 <main>（含上方触觉反馈），供目标页 MaskReveal 播放径向镂空揭示。
-    captureTransitionSnapshot(e);
+    const { x, y } = resolveActivationPoint(event);
+    hasPrimedSnapshotRef.current = true;
+
+    // Pointer-up fires before the following click event, so the hold overlay
+    // is already in the DOM before Next Link begins client navigation.
+    // pointer-up 早于随后派发的 click，因此保底遮罩会先于 Next Link
+    // 客户端导航进入 DOM。
+    captureTransitionSnapshotAtPoint(x, y);
+  };
+
+  const handleClickCapture = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!isPlainPrimaryActivation(event)) {
+      return;
+    }
+
+    if (hasPrimedSnapshotRef.current) {
+      hasPrimedSnapshotRef.current = false;
+      return;
+    }
+
+    // Keyboard activation has no pointer-up, so keep click-capture as the
+    // accessibility fallback before Next Link's bubble-phase navigation.
+    // 键盘触发没有 pointer-up，因此保留 click capture 作为无障碍兜底，
+    // 仍先于 Next Link 冒泡阶段导航执行。
+    captureTransitionSnapshot(event);
 
     // Do NOT call e.preventDefault() or router.push() here.
     // Let the <Link> handle navigation natively — calling router.push
@@ -53,17 +95,16 @@ export default function EnterDocsButton({
     <Link
       href={href}
       className={className}
-      onClick={handleClick}
+      onPointerUpCapture={handlePointerUpCapture}
+      onClickCapture={handleClickCapture}
       // Mark this link as self-capturing so MaskReveal's global click capture
-      // skips it — otherwise the hold overlay would mount before handleClick
-      // applies the button's scale feedback, hiding the press animation.
+      // skips it — this component primes the hold overlay before Next Link
+      // starts navigation, with click-capture kept for keyboard activation.
       // 标记此链接为自捕获，让 MaskReveal 全局 click 捕获跳过它 ——
-      // 否则遮罩会在 handleClick 应用按钮缩放反馈之前挂载，隐藏按压动画。
+      // 本组件会在 Next Link 导航前预先铺好遮罩，并用 click capture 兜底键盘触发。
       data-nd-transition-capture
     >
-      <span ref={spanRef} className="inline-block transition-all duration-300 ease-out">
-        {children}
-      </span>
+      <span className="inline-block transition-all duration-300 ease-out">{children}</span>
     </Link>
   );
 }

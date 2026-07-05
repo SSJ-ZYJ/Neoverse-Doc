@@ -26,6 +26,7 @@ interface TransitionSnapshot {
   y: number;
   domHTML: string;
   scrollY: number;
+  layoutWidth: number;
   sourcePath: string;
   ts: number;
   isTransitioning: true;
@@ -38,6 +39,7 @@ export interface TransitionSnapshotData {
   y: number;
   domHTML: string;
   scrollY: number;
+  layoutWidth: number;
   sourcePath: string;
 }
 
@@ -72,21 +74,15 @@ function isInsideTransitionLayer(element: Element | null): boolean {
 }
 
 // Resolve the main content node for snapshot capture.
-// home layout renders <main id="nd-home-layout">, docs layout renders
-// <div id="nd-docs-layout"> — fall back to the docs container when no <main>
-// exists, otherwise docs → home transitions can't capture a snapshot.
-// Both lookups exclude elements inside the mask / hold overlay, because those
-// layers contain cloned DOM (with duplicate <main> / #nd-docs-layout) that
-// would otherwise be picked up first — MaskReveal is rendered before
-// {children} in [lang]/layout.tsx, so cloned nodes precede the real ones in
-// document order and document.querySelector('main') would return the clone.
+// Keep the pre-BFCache-fix behavior of preferring <main>: cloning the full
+// Fumadocs layout can force navbar/grid recalculation inside the fixed overlay
+// and produce a visible pre-animation flash.
+// Docs pages still fall back to #nd-docs-layout because Fumadocs docs content
+// is not always wrapped by a <main>.
 // 解析主内容节点用于快照捕获。
-// home 布局渲染 <main id="nd-home-layout">，docs 布局渲染 <div id="nd-docs-layout"> ——
-// 当 <main> 不存在时回退到 docs 容器，否则 docs → home 过渡无法捕获快照。
-// 两种查找都排除位于遮罩 / 保底遮罩内部的元素，因为这些层含有克隆 DOM
-// （带重复的 <main> / #nd-docs-layout），否则会被优先选中 —— MaskReveal 在
-// [lang]/layout.tsx 中渲染在 {children} 之前，克隆节点在文档顺序上先于真实节点，
-// document.querySelector('main') 会返回克隆而非真实节点。
+// 保持 BFCache 修复前的行为：优先捕获 <main>。克隆完整 Fumadocs 布局会让
+// 导航栏 / grid 在固定遮罩层内重新计算，容易产生动画前闪帧。
+// 文档页仍回退到 #nd-docs-layout，因为 Fumadocs 文档内容不一定包在 <main> 中。
 function resolveMainNode(): Element | null {
   const mains = document.querySelectorAll('main');
   for (const main of mains) {
@@ -94,35 +90,81 @@ function resolveMainNode(): Element | null {
       return main;
     }
   }
-  // Fall back to the docs layout container, also excluding any clone that
-  // might live inside an active transition layer.
-  // 回退到 docs 布局容器，同样排除可能位于活动过渡层内的克隆。
+
   const docsLayouts = document.querySelectorAll('#nd-docs-layout');
   for (const layout of docsLayouts) {
     if (!isInsideTransitionLayer(layout)) {
       return layout;
     }
   }
+
   return null;
 }
 
 function buildTransitionSnapshot(x: number, y: number): TransitionSnapshot | null {
   const mainNode = resolveMainNode();
   if (!mainNode) return null;
+  const snapshotNode = normalizeSnapshotNode(mainNode);
+  const layoutWidth = document.documentElement.clientWidth || window.innerWidth;
 
   return {
     x,
     y,
-    domHTML: mainNode.outerHTML,
+    domHTML: snapshotNode.outerHTML,
     scrollY: window.scrollY,
+    layoutWidth,
     sourcePath: window.location.pathname,
     ts: Date.now(),
     isTransitioning: true,
   };
 }
 
+// Normalize transient animation state before serializing the clone. The live
+// homepage keeps `.home-route-shell--enter` after its entry animation finishes;
+// if that class is cloned into the fixed transition overlay, CSS restarts from
+// the blurred/transparent first frame and creates the white flash on click.
+// 序列化克隆节点前清理临时动画状态。真实首页入场动画结束后仍保留
+// `.home-route-shell--enter`；如果该 class 被克隆进固定过渡遮罩，CSS 会从
+// 模糊 / 透明首帧重新播放，从而在点击瞬间形成白色模糊闪屏。
+function normalizeSnapshotNode(sourceNode: Element): Element {
+  const clone = sourceNode.cloneNode(true) as Element;
+  const animatedShells = [
+    ...(clone.matches('.home-route-shell--enter') ? [clone] : []),
+    ...Array.from(clone.querySelectorAll('.home-route-shell--enter')),
+  ];
+
+  for (const shell of animatedShells) {
+    shell.classList.remove('home-route-shell--enter');
+
+    if (shell instanceof HTMLElement) {
+      shell.style.animation = 'none';
+      shell.style.opacity = '1';
+      shell.style.filter = 'none';
+      shell.style.transform = 'none';
+    }
+  }
+
+  return clone;
+}
+
 function writeTransitionSnapshot(data: TransitionSnapshot): void {
   sessionStorage.setItem(TRANSITION_STORAGE_KEY, JSON.stringify(data));
+}
+
+// Wrap cloned markup in the same layout width as the source page. Fixed
+// overlays use the visual viewport, while the real page content is centered in
+// documentElement.clientWidth (excluding the scrollbar); preserving that width
+// prevents the homepage title from nudging sideways on click.
+// 用源页面相同的布局宽度包裹克隆标记。fixed 遮罩使用视觉视口，而真实页面内容
+// 基于 documentElement.clientWidth（不含滚动条）居中；保持该宽度可避免点击时
+// 首页大标题横向挪动。
+export function renderTransitionSnapshotHTML(data: TransitionSnapshotData): string {
+  const width = Number.isFinite(data.layoutWidth) && data.layoutWidth > 0 ? data.layoutWidth : 0;
+  const widthStyle = width > 0 ? `width:${width}px;max-width:${width}px;` : '';
+  const scrollStyle =
+    data.scrollY > 0 ? `transform:translateY(${-data.scrollY}px);will-change:transform;` : '';
+
+  return `<div style="${widthStyle}${scrollStyle}">${data.domHTML}</div>`;
 }
 
 // Immediate hold overlay: covers the App Router gap between link click and
@@ -135,21 +177,20 @@ function mountTransitionHoldOverlay(data: TransitionSnapshot): void {
   const overlay = document.createElement('div');
   overlay.id = TRANSITION_HOLD_OVERLAY_ID;
   overlay.setAttribute('aria-hidden', 'true');
+  const layoutWidth = data.layoutWidth || document.documentElement.clientWidth || window.innerWidth;
   overlay.style.cssText = [
     'position:fixed',
     'inset:0',
+    'right:auto',
     'z-index:9998',
-    'width:100vw',
+    `width:${layoutWidth}px`,
     'height:100vh',
     'overflow:hidden',
     'pointer-events:none',
     'background:var(--background, #fff)',
     'contain:paint',
   ].join(';');
-  overlay.innerHTML =
-    data.scrollY > 0
-      ? `<div style="transform:translateY(${-data.scrollY}px);will-change:transform;">${data.domHTML}</div>`
-      : data.domHTML;
+  overlay.innerHTML = renderTransitionSnapshotHTML(data);
 
   document.body.appendChild(overlay);
 }
@@ -201,6 +242,10 @@ export function readTransitionSnapshot(): TransitionSnapshotData | null {
         y: data.y ?? 0,
         domHTML: data.domHTML ?? '',
         scrollY: data.scrollY ?? 0,
+        layoutWidth:
+          typeof data.layoutWidth === 'number'
+            ? data.layoutWidth
+            : document.documentElement.clientWidth || window.innerWidth,
         sourcePath: data.sourcePath ?? '',
       };
     }

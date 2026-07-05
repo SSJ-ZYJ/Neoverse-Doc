@@ -1,6 +1,33 @@
 /* Homepage gradient background animations.
    首页渐变背景动画。 */
 
+.home-route-shell {
+  /* CSS-only shell avoids framer-motion inline opacity being restored from
+     BFCache in an invisible state after returning from external sites.
+     纯 CSS 外壳避免从外部站点回退时，framer-motion 的内联 opacity
+     被 BFCache 恢复到不可见状态。 */
+  width: 100%;
+  min-block-size: 100%;
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+
+#nd-home-layout .w-full.h-full:has(.home-page) {
+  /* Legacy BFCache fallback: older hydrated Framer wrappers can stay frozen
+     with inline opacity:0 after external-site back navigation. Keep this
+     scoped to the home layout and only wrappers containing the real homepage.
+     旧版 BFCache 兜底：已经水合的 Framer 外壳可能在外部站点回退后
+     保留 inline opacity:0。此规则仅限定在首页布局且必须包含真实首页。 */
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+.home-route-shell--enter {
+  animation: home-route-enter 0.65s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
 .home-page {
   /* The homepage canvas intentionally extends below the first viewport so
      footer metadata is revealed by scrolling instead of appearing in view.
@@ -221,6 +248,20 @@
   );
 }
 
+@keyframes home-route-enter {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
 @keyframes home-gradient-drift {
   0% {
     background-position:
@@ -422,6 +463,10 @@
 /* Respect reduced-motion preferences: disable all home animations.
    尊重减弱动画偏好：禁用首页所有动画。 */
 @media (prefers-reduced-motion: reduce) {
+  .home-route-shell--enter {
+    animation: none;
+  }
+
   .home-gradient-bg::before,
   .home-gradient-bg::after,
   .home-gradient-bg__orb {
