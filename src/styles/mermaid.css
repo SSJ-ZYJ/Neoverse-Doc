@@ -26,6 +26,16 @@
     box-shadow var(--theme-transition-duration) ease;
 }
 
+/* Wrapper hover：展示性容器，不抬升，仅切换到 hover 投影 +
+   柔辉光，与 .markdown-alert / table 容器保持一致的悬浮层级反馈。 */
+@media (hover: hover) {
+  .mermaid-wrapper:hover {
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+}
+
 /* Scrollable canvas: holds the zoom target. No `max-height` — the canvas
    grows to fit the diagram at the fit-to-view scale, so the whole figure
    is always visible without a vertical scrollbar. Pointer events on this
@@ -238,14 +248,17 @@
   background: transparent;
   color: var(--fd-muted-foreground);
   cursor: pointer;
+  /* Toolbar buttons: aligned with the unified glass-interactive--chip hover spec.
+     工具栏按钮：沿用统一 chip 悬浮规范（tint 切换 + 柔辉光，不抬升）。 */
   transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    transform 0.15s ease;
+    background-color var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .mermaid-toolbar__btn:hover:not(:disabled) {
-  background-color: color-mix(in oklab, var(--fd-accent) 75%, transparent);
+  background-color: var(--glass-control-hover-tint);
   color: var(--fd-accent-foreground);
 }
 

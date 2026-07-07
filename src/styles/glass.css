@@ -1,12 +1,21 @@
 /* Liquid Glass Design System: utility classes, body styles, and ambient light.
-   液态玻璃设计系统：工具类、body 样式、环境光。 */
+   液态玻璃设计系统：工具类、body 样式、环境光。
 
-/* ── Liquid Glass Design System ───────────────────────── */
-/* Common base: tint + blur + saturate + brightness + contrast + hairline border.
-   Sub-classes fine-tune intensity.
-   通用 base：tint + blur + saturate + brightness + contrast + hairline border。
-   子类各自微调强度。 */
+   设计参考：
+   - Apple Liquid Glass —— 单一 hairline 描边 + 顶面 sheen 高光 + 柔和投影，
+     不再叠加多层 inset / outer ring，避免边缘"重影"。
+   - 华为沉浸感 —— 在深色场景下用环境色辉光替代纯黑投影，让玻璃表面
+     呈现"自发光"的悬浮感，而非沉入背景的暗块。
 
+   Token 见 theme.css：tint / hairline / highlight(sheen) / rim-glow /
+   shadow / ambient。所有玻璃表面共享同一套 token，悬浮反馈由
+   .glass-interactive / .glass-interactive--chip 统一规范。 */
+
+/* ── Surface Foundation / 表面基础 ───────────────────────────────────── */
+/* 所有玻璃表面共用同一套"描边 + 模糊 + 投影"三件套；
+   取消原 inset -1px lowlight 与 0 0 0 1px outline 两层叠加 —— 它们与
+   border 叠加产生"重影"。仅保留 border + 顶 1px sheen + 投影。
+   注：边缘折射系统已移除（用户反馈视觉冗余），仅保留顶部 sheen 高光。 */
 .glass-panel,
 .glass-card,
 .glass-chip,
@@ -17,14 +26,15 @@
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   background-color: var(--glass-tint);
-}
-
-/* Large panels: nav / sidebar / subnav. Inner top 1px highlight + layered outer shadow.
-   大面板：导航 / 侧栏 / subnav。内顶 1px 高光 + 分层外阴影。 */
-.glass-panel {
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
+}
+
+/* Large panels: nav / sidebar / subnav.
+   大面板：导航 / 侧栏 / subnav。 */
+.glass-panel {
+  /* 共用基础即可，无额外修饰。 */
 }
 
 /* Modals / drawers / search: stronger blur + denser tint, larger border-radius.
@@ -36,35 +46,33 @@
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   border-radius: 1rem;
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
 }
 
-/* Small elements: icon chip / buttons. Light blur + soft tint, no outer shadow.
-   小元件：icon chip / 按钮。轻 blur + 软 tint，不带外阴影。 */
+/* Small elements: icon chip / buttons. Light blur + soft tint.
+   小元件：icon chip / 按钮。轻 blur + 软 tint。 */
 .glass-chip {
   background-color: var(--glass-tint-soft);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
 }
 
 /* Border + inner highlight decoration, no blur — for elements that already have a background.
-   描边 + 内高光修饰，不带 blur，用于已有背景的元素。 */
+   描边 + 内高光修饰，不带 blur，用于已有背景的元素。
+   注：折射层已移除，仅保留顶部 sheen。 */
 .glass-edge {
   border: 1px solid var(--glass-border-hairline);
   box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
-/* Homepage CTA: keeps independent blur and shadow intensity.
-   首页 CTA：保留独立 blur 与阴影强度。 */
+/* Homepage CTA: high transparency so the animated gradient background shows through.
+   首页 CTA：高透明度，让动态渐变背景透过玻璃可见。
+   使用 --glass-tint（而非 tint-strong）以保证背景透出；
+   顶部 sheen + 投影构成基础玻璃面。 */
 .glass-cta {
-  background-color: var(--glass-tint-strong);
+  position: relative;
+  background-color: var(--glass-tint);
   -webkit-backdrop-filter: blur(20px) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(20px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
@@ -74,13 +82,86 @@
     var(--glass-shadow);
 }
 
-/* Guard hover effects with @media (hover: hover) so touch devices don't get
-   stuck hover states after a tap.
-   使用 @media (hover: hover) 包裹悬停效果，避免触屏设备点击后悬停状态卡住。 */
+/* ── Unified Hover System / 统一悬浮规范 ──────────────────────────────── */
+/* 所有可交互玻璃元素共享同一套悬浮反馈：
+   1. transform: translateY(-1px) —— 轻微抬升，"浮起"感
+   2. box-shadow 切换至 --glass-shadow-hover —— 加入 rim glow 柔辉光
+   3. background-color 切换至 hover tint —— 底色微调，更透/更亮
+   4. transition 使用统一的 spring-like 缓动
+
+   使用方式：
+   - 默认玻璃表面在 hover 时希望"抬升 + 辉光"：直接应用 .glass-interactive
+   - 小型 chip / 按钮希望 hover 反馈更克制（不抬升，仅辉光 + tint）：
+     应用 .glass-interactive--chip
+   - 不可交互的展示性玻璃（如 .glass-panel 静态面板）不加任何 interactive 类
+
+   @media (hover: hover) 包裹避免触屏设备点击后悬停状态卡住。 */
+@media (hover: hover) {
+  .glass-interactive,
+  .glass-cta.glass-interactive {
+    transition:
+      background-color var(--theme-transition-duration) ease,
+      border-color var(--theme-transition-duration) ease,
+      box-shadow var(--theme-transition-duration) ease,
+      transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .glass-interactive:hover,
+  .glass-cta.glass-interactive:hover {
+    transform: translateY(-1px);
+    background-color: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+
+  /* Chip 变体：不抬升（避免小元件抖动），仅切换 tint 与加入 rim glow。 */
+  .glass-interactive--chip {
+    transition:
+      background-color var(--theme-transition-duration) ease,
+      border-color var(--theme-transition-duration) ease,
+      box-shadow var(--theme-transition-duration) ease,
+      color var(--theme-transition-duration) ease;
+  }
+
+  .glass-interactive--chip:hover {
+    background-color: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+
+  /* Active 反馈：按下时回落 + 微缩，强化点击感。 */
+  .glass-interactive:active,
+  .glass-cta.glass-interactive:active {
+    transform: translateY(0) scale(0.99);
+  }
+
+  .glass-interactive--chip:active {
+    transform: scale(0.97);
+  }
+
+  /* Focus-visible：键盘聚焦时显示清晰描边，与鼠标悬浮区分。 */
+  .glass-interactive:focus-visible,
+  .glass-interactive--chip:focus-visible {
+    outline: 2px solid var(--color-fd-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Legacy .glass-cta:hover kept for backward compatibility with existing markup,
+   but now aligned with the unified hover system (no scale(1.04) jump).
+   兼容旧标记：.glass-cta 直接 hover 也走统一规范，不再用 scale(1.04) 跳变。 */
 @media (hover: hover) {
   .glass-cta:hover {
-    transform: scale(1.04);
-    box-shadow: var(--glass-shadow-hover);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+
+  .glass-cta:active {
+    transform: translateY(0) scale(0.99);
   }
 }
 
@@ -93,7 +174,9 @@ body {
 }
 
 /* Global ambient light: provides refraction color sources for glass surfaces.
-   全局环境光：给玻璃表面提供折射色源。 */
+   全局环境光：给玻璃表面提供折射色源。
+   华为沉浸感核心：多色相、低浓度、大半径的环境光在玻璃上形成柔和折射，
+   深浅色统一可见，避免玻璃表面"死板"。 */
 body::before {
   content: "";
   position: fixed;

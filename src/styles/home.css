@@ -321,7 +321,11 @@
 #nd-home-layout {
   --home-nav-shell-height: 4.5rem;
   --home-nav-top-gap: 0.75rem;
-  --home-nav-inline-gap: clamp(0.75rem, 1.5vw, 1.5rem);
+  /* Inline gap enlarged so the floating pill has breathing room around the
+     Neoverse title and trailing language button, instead of hugging content.
+     加大水平留白，让胶囊在 Neoverse 标题与尾部语言按钮周围有呼吸空间，
+     不再紧贴内容。 */
+  --home-nav-inline-gap: clamp(1.25rem, 2.4vw, 2.25rem);
   --home-nav-radius: 1rem;
 }
 
@@ -339,20 +343,36 @@
    让顶部间隙仍显示首页渐变，而不是 body 底色。玻璃模糊与 tint 沿用
    fumadocs-glass.css 中共享的 #nd-nav 规则，此处只微调几何、描边、高光与阴影。 */
 #nd-home-layout #nd-nav {
-  width: 100vw;
+  /* Nav width set to 3/4 of the viewport so the floating pill has ample
+     room for the title, search, theme, and language buttons without
+     crowding. margin-inline:auto centers the pill.
+     导航宽度设为视口宽度的 3/4，让悬浮胶囊有充足空间容纳
+     标题、搜索、主题、语言按钮，不再拥挤。margin-inline:auto 使其居中。 */
+  width: 75vw;
   max-width: 100vw;
   min-width: 0;
   box-sizing: border-box;
   height: var(--home-nav-shell-height);
   padding-block-start: var(--home-nav-top-gap);
   padding-inline: var(--home-nav-inline-gap);
+  margin-inline: auto;
   pointer-events: none;
+}
+
+/* Loosen the inner fumadocs nav row so the title, search, theme, and language
+   buttons don't crowd together. fumadocs ships a tight gap; the homepage's
+   floating pill has room to spare now that --home-nav-inline-gap is larger.
+   放宽 fumadocs 导航内部行间距，让标题、搜索、主题、语言按钮不再挤在一起。
+   fumadocs 默认 gap 较紧；现在 --home-nav-inline-gap 加大后胶囊有空间容纳。 */
+#nd-home-layout #nd-nav > div > * {
+  gap: clamp(0.5rem, 1vw, 0.875rem);
 }
 
 /* Shape only the inner fumadocs backdrop surface; shared blur/tint behavior
    still comes from fumadocs-glass.css.
    仅调整 fumadocs 内层 backdrop 容器的形态；共享的模糊与 tint 仍由
-   fumadocs-glass.css 提供。 */
+   fumadocs-glass.css 提供。边缘走统一规范（border + 顶 sheen + 投影），
+   不再叠加 inset lowlight / outer ring，避免重影。 */
 #nd-home-layout #nd-nav > div {
   pointer-events: auto;
   margin-inline: 0;
@@ -369,13 +389,52 @@
     color-mix(in srgb, var(--glass-highlight) 28%, transparent),
     transparent 58%
   );
-  /* Lifted shadow to sell the floating effect (replaces the flatter shadow
-     from the shared rule). / 抬升阴影强化悬浮感（覆盖共享规则的较平阴影）。 */
+  /* Top sheen + lifted shadow. Deep dark mode uses foreground-mixed ambient glow
+     instead of pure black for the "self-luminous" immersive feel.
+     顶部 sheen + 抬升阴影，深色模式下不用纯黑，改用前景色混合的环境辉光。 */
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
-    inset 0 -1px 0 color-mix(in srgb, var(--glass-border-hairline) 72%, transparent),
     0 18px 44px -28px color-mix(in srgb, var(--foreground) 42%, transparent),
     var(--glass-shadow);
+}
+
+/* Homepage theme switch: keep the same neutral glass chip language as search
+   and language buttons. It intentionally opts out of the global light-mode
+   visibility boost used by the docs/sidebar theme switcher.
+   首页主题切换：与搜索、语言按钮保持一致的中性玻璃 chip 语言；
+   有意避开文档/侧栏主题切换器使用的浅色可见度增强。 */
+#nd-home-layout #nd-nav button[data-theme-toggle] {
+  background-color: var(--glass-tint-soft) !important;
+  border: 1px solid var(--glass-border-hairline) !important;
+  border-radius: 0.5rem !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
+}
+
+#nd-home-layout #nd-nav button[data-theme-toggle] > svg {
+  border-radius: 0.375rem !important;
+}
+
+#nd-home-layout #nd-nav button[data-theme-toggle] > svg.bg-fd-accent {
+  background-color: color-mix(in srgb, var(--glass-tint-soft) 68%, var(--foreground) 8%) !important;
+}
+
+@media (hover: hover) {
+  #nd-home-layout #nd-nav button[data-theme-toggle]:hover {
+    background-color: var(--glass-tint-soft) !important;
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover) !important;
+  }
+
+  #nd-home-layout #nd-nav button[data-theme-toggle] > svg:not(.bg-fd-accent):hover {
+    background-color: color-mix(
+      in srgb,
+      var(--glass-tint-soft) 72%,
+      var(--foreground) 6%
+    ) !important;
+  }
 }
 
 /* Compact screens reduce the shell spacing so navbar actions keep enough room.
@@ -389,13 +448,20 @@
   }
 }
 
-/* Homepage footer: muted project metadata with a clear glass separator band.
-   首页 footer：弱化的项目元信息，并用清晰玻璃分隔带与主体内容区分。 */
+/* Homepage footer: muted project metadata with a glass separator band.
+   首页 footer：弱化的项目元信息，并用玻璃分隔带与主体内容区分。
+   链接颜色使用 foreground 混合品牌色（柔和、不刺眼），hover 时提亮 +
+   微辉光；分割线改为中央渐隐光带，两端自然消失。 */
 .home-footer {
-  --home-footer-link: color-mix(in srgb, var(--color-brand-start) 72%, var(--color-home-accent));
-  --home-footer-link-hover: color-mix(in srgb, var(--color-brand-end) 58%, var(--foreground));
-  --home-footer-text: color-mix(in srgb, var(--foreground) 58%, transparent);
-  --home-footer-line: color-mix(in srgb, var(--color-brand-start) 28%, var(--foreground) 8%);
+  /* Link color: foreground-dominant with a hint of brand blue — readable but
+     not jarring, matching Apple's muted footer link style.
+     链接色：以 foreground 为主、混入少量品牌蓝 —— 可读但不刺眼。 */
+  --home-footer-link: color-mix(in srgb, var(--foreground) 70%, var(--color-home-accent));
+  /* Hover: shifts toward brand blue + soft glow. */
+  --home-footer-link-hover: var(--color-home-accent);
+  --home-footer-text: color-mix(in srgb, var(--foreground) 55%, transparent);
+  /* Divider: brand-tinted, fades at both ends via the gradient stops. */
+  --home-footer-line: color-mix(in srgb, var(--color-home-accent) 22%, var(--foreground) 10%);
   --home-footer-surface: color-mix(in srgb, var(--glass-tint-strong) 70%, transparent);
 
   position: absolute;
@@ -416,8 +482,11 @@
   z-index: -1;
   background:
     linear-gradient(180deg, transparent, var(--home-footer-surface) 32%),
-    linear-gradient(90deg, transparent, var(--home-footer-line) 18% 82%, transparent) top / 100% 1px
-    no-repeat;
+    /* Divider: a thin gradient line that fades at both ends — replaces the
+       old hard-edged 18%-82% band. The center is a soft brand-tinted glow.
+       分割线：中央渐隐光带，两端自然消失，替代旧的硬边 18%-82% 色带。 */
+    radial-gradient(60% 1px at 50% 0, var(--home-footer-line) 0%, transparent 100%)
+    top / 100% 1px no-repeat;
   content: "";
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
 }
@@ -446,6 +515,9 @@
   color: var(--home-footer-link);
   font-weight: 800;
   text-decoration-line: none;
+  /* Footer links: chip-style hover — tint shift + soft rim glow, no lift.
+     页脚链接：chip 悬浮规范 —— tint 切换 + 柔辉光，不抬升，
+     与全站可交互元素反馈一致。 */
   transition:
     color var(--theme-transition-duration) ease,
     text-shadow var(--theme-transition-duration) ease;
@@ -453,7 +525,7 @@
 
 .home-footer__link:hover {
   color: var(--home-footer-link-hover);
-  text-shadow: 0 0 1rem color-mix(in srgb, var(--home-footer-link) 34%, transparent);
+  text-shadow: 0 0 0.6rem color-mix(in srgb, var(--color-home-accent) 38%, transparent);
 }
 
 .home-footer__commit {

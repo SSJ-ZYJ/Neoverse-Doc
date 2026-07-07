@@ -67,6 +67,7 @@
 :where(#nd-sidebar):not([data-collapsed="true"]),
 :where(#nd-sidebar)[data-collapsed="true"],
 :where([data-toc-popover-content]) > div,
+button[data-theme-toggle],
 [role="dialog"][data-state="open"]:has(input) {
   transition-duration: var(--theme-transition-duration);
 }
@@ -129,8 +130,7 @@
   border: 1px solid var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
-    inset 0 0 0 0.5px var(--glass-highlight),
-    var(--glass-shadow-hover);
+    var(--glass-shadow);
 }
 
 /* Floating state (collapsed + hovered): the sidebar slides out as a detached panel over the page.
@@ -143,7 +143,8 @@
 
 /* ── Sidebar Buttons Glassification / 侧栏按钮玻璃化 ────────────────────── */
 /* Unified glass styling for sidebar functional buttons and panels (about, search, theme, language, etc.)
-   统一覆盖侧边栏内的功能级按钮与面板（关于、搜索、主题、语言等）为液态玻璃 */
+   统一覆盖侧边栏内的功能级按钮与面板（关于、搜索、主题、语言等）为液态玻璃。
+   沿用统一悬浮规范：底色微调 + 柔辉光投影，不再切换 blur 强度（避免抖动）。 */
 #nd-sidebar .bg-fd-secondary\/50 {
   background-color: var(--glass-tint) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
@@ -151,33 +152,111 @@
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline) !important;
-  box-shadow: inset 0 1px 0 var(--glass-highlight) !important;
-  transition: all var(--theme-transition-duration) ease !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-/* Hover state: background becomes more transparent (better glass light feedback), keeping glass highlight shadow intact.
-   悬停状态：背景变得进一步透明（更符合玻璃光影反馈），并保持玻璃高亮阴影不丢失 */
+/* Hover state: 统一悬浮规范 —— 不切换 blur，仅 tint + shadow 切换 + 微抬升。
+   保留原 :has(button:hover) 选择器以兼容子按钮触发。 */
 #nd-sidebar .bg-fd-secondary\/50:hover,
 #nd-sidebar .bg-fd-secondary\/50:has(button:hover) {
-  background-color: var(--glass-tint-soft) !important;
+  background-color: var(--glass-control-hover-tint) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow-hover) !important;
+  transform: translateY(-1px);
+}
+
+/* Active 反馈：回落 + 微缩 */
+#nd-sidebar .bg-fd-secondary\/50:active,
+#nd-sidebar .bg-fd-secondary\/50:has(button:active) {
+  transform: translateY(0) scale(0.99);
+}
+
+/* Theme toggle: gives Fumadocs' built-in switcher a glass surface, pointer cursor,
+   and clear hover / focus / active feedback without replacing its theme logic.
+   主题切换：为 Fumadocs 内置切换器补充玻璃底、手型光标，以及清晰的 hover / focus / active 反馈，
+   不替换其原有主题逻辑。统一走 chip 悬浮规范（不抬升，仅 tint + 辉光）。
+   关键修复：覆盖 fumadocs 默认 overflow:hidden，避免 svg 图标被裁剪。
+   关键修复：移除 svg.bg-fd-accent 的 box-shadow —— 它在圆形按钮内产生矩形阴影重叠。 */
+button[data-theme-toggle] {
+  position: relative;
+  isolation: isolate;
+  cursor: pointer;
+  overflow: visible !important;
+  background-color: var(--glass-control-surface) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  border-color: var(--glass-border-hairline) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow-hover) !important;
+    var(--glass-shadow);
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Dark mode only: enhance hover glow for better visibility on dark backgrounds.
-   深色模式专用：增强悬停发光，使其在深色背景上更明显 */
-.dark #nd-sidebar .bg-fd-secondary\/50:hover,
-.dark #nd-sidebar .bg-fd-secondary\/50:has(button:hover) {
+/* Light mode theme switcher visibility: add a stronger hairline and inner sheen
+   so the control remains visible on the light homepage navbar.
+   浅色模式主题切换器可见度：加强描边与内高光，避免在浅色首页导航中融入背景。 */
+.light button[data-theme-toggle],
+:root:not(.dark) button[data-theme-toggle] {
+  border-color: color-mix(in srgb, var(--foreground) 18%, transparent) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow-hover) !important;
-  border-color: var(--glass-border-hairline) !important;
-  transform: translateZ(0);
+    0 0 0 1px color-mix(in srgb, var(--foreground) 8%, transparent),
+    var(--glass-shadow);
+}
+
+/* Theme toggle icons: active icon gets a local luminous glass fill, while inactive icons
+   only show a small round hover background when directly hovered.
+   主题切换图标：激活图标获得局部发光玻璃填充，未激活图标仅在直接悬浮时显示小圆形 hover 背景。
+   关键修复：确保 svg 尺寸完整显示，不被 padding 裁剪。
+   关键修复：移除 svg 的 box-shadow —— 圆形按钮内矩形阴影会产生"重叠矩形"视觉。 */
+button[data-theme-toggle] > svg {
+  position: relative;
+  z-index: 1;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease;
+}
+
+button[data-theme-toggle] > svg.bg-fd-accent {
+  background-color: var(--glass-control-active-tint) !important;
+}
+
+@media (hover: hover) {
+  button[data-theme-toggle]:hover {
+    background-color: var(--glass-control-hover-tint) !important;
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+
+  button[data-theme-toggle] > svg:not(.bg-fd-accent):hover {
+    background-color: var(--glass-control-hover-tint) !important;
+    color: var(--color-fd-accent-foreground);
+  }
+}
+
+button[data-theme-toggle]:active {
+  transform: scale(0.97);
+}
+
+button[data-theme-toggle]:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 2px;
 }
 
 /* Fix physical sizing for legacy components like language switcher, force large border-radius.
@@ -190,8 +269,74 @@
   display: flex !important;
 }
 
-:where(#nd-sidebar) div:has(> button[data-theme-toggle]) {
+/* Sidebar footer theme toggle: share the parent toolbar surface with icon links,
+   keeping the switcher in a fixed right segment so it cannot overlap GitHub icons.
+   侧栏底部主题切换：与图标链接共用父级工具条玻璃面，将切换器固定为右侧分段，
+   避免与 GitHub 图标发生重叠或嵌套挤压。 */
+#nd-sidebar div:has(> button[data-theme-toggle]) {
   border-radius: var(--radius-lg) !important;
+  gap: calc(var(--spacing) * 1);
+  overflow: hidden;
+  padding-inline-end: calc(var(--spacing) * 0.5) !important;
+}
+
+#nd-sidebar div:has(> button[data-theme-toggle]) > a {
+  flex: 0 0 auto;
+}
+
+#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle] {
+  flex: 0 0 auto;
+  min-inline-size: 4rem;
+  max-inline-size: calc(100% - 2.5rem);
+  margin-inline-start: auto !important;
+  position: relative;
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border-block-width: 0 !important;
+  border-inline-start-width: 0 !important;
+  border-inline-end-width: 0 !important;
+  box-shadow: none !important;
+  transform: none;
+}
+
+#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]::before {
+  position: absolute;
+  inset-block: 0.375rem;
+  inset-inline-start: 0;
+  width: 1px;
+  background: var(--glass-border-hairline);
+  content: "";
+  pointer-events: none;
+}
+
+/* Sidebar footer parent toolbar: keep the base surface when hovering the theme switcher,
+   otherwise the parent's :has(button:hover) rule creates a second rectangular hover layer.
+   侧栏底部父工具条：悬浮主题切换器时保持基础玻璃面，
+   避免父级 :has(button:hover) 再叠一层矩形 hover 背景。 */
+#nd-sidebar .bg-fd-secondary\/50:has(> button[data-theme-toggle]:hover) {
+  background-color: var(--glass-tint) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
+  transform: none;
+}
+
+@media (hover: hover) {
+  #nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]:hover {
+    background: transparent !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    transform: none;
+  }
+}
+
+#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]:active {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none;
 }
 
 /* 右侧 TOC：仅追加极淡背景，不覆盖上方约束块的 box-sizing/max-width/overflow。 */
@@ -212,7 +357,8 @@
 }
 
 /* TOC popover trigger button: glass-chip style (small element, light blur + soft tint).
-   TOC 弹出层触发按钮：glass-chip 样式（小元件，轻 blur + 软 tint）。 */
+   TOC 弹出层触发按钮：glass-chip 样式（小元件，轻 blur + 软 tint）。
+   作为可交互 chip，hover 时走 chip 悬浮规范。 */
 :where([data-toc-popover-trigger]) {
   background-color: var(--glass-tint-soft) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
@@ -220,7 +366,26 @@
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (hover: hover) {
+  :where([data-toc-popover-trigger]):hover {
+    background-color: var(--glass-control-hover-tint) !important;
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+
+  :where([data-toc-popover-trigger]):active {
+    transform: scale(0.97);
+  }
 }
 
 /* TOC popover header: replace fumadocs opaque bg-fd-background/80 with glass tint
@@ -234,7 +399,9 @@
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
 }
 
 /* TOC popover inner scrollable content: glass-edge style (border + highlight, no blur
@@ -263,8 +430,39 @@
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline) !important;
   box-shadow:
-    inset 0 0 0 1px var(--glass-highlight),
+    inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow) !important;
+}
+
+/* Search dialog result list: custom inline glass scrollbar.
+   搜索弹窗结果列表：自定义内嵌玻璃滚动条。
+   设计原则：中性灰色 + 玻璃半透明 + 圆角，hover 时提亮。
+   避免使用品牌蓝（太刺眼），与玻璃表面风格一致。 */
+[role="dialog"][data-state="open"]:has(input) ::-webkit-scrollbar {
+  width: 5px;
+}
+
+[role="dialog"][data-state="open"]:has(input) ::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+  margin-block: 0.25rem;
+}
+
+[role="dialog"][data-state="open"]:has(input) ::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--foreground) 18%, transparent);
+  border-radius: 3px;
+  border: none;
+  transition: background-color var(--theme-transition-duration) ease;
+}
+
+[role="dialog"][data-state="open"]:has(input) ::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--foreground) 32%, transparent);
+}
+
+/* Firefox: use thin scrollbar with neutral colors. */
+[role="dialog"][data-state="open"]:has(input) * {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 18%, transparent) transparent;
 }
 
 /* ── Docs Layout Spacing / 文档布局间距优化 ─────────────────── */
@@ -281,8 +479,10 @@
    将语言切换条与代码块文件路径条整合为同一片连续玻璃面，而不是两个堆叠容器。 */
 
 /* Outer Tabs container: replace solid bg-fd-secondary with code-block glass.
-   外层 Tabs 容器：用代码块同款玻璃面替换默认的实色 bg-fd-secondary。 */
-:where(#nd-page) div[data-orientation]:has(> [role="tablist"]) {
+   外层 Tabs 容器：用代码块同款玻璃面替换默认的实色 bg-fd-secondary。
+   关键修复：移除 :where() 包裹（其优先级为 0，会被 fumadocs 的 Tailwind
+   类覆盖），直接用 #nd-page 提高优先级。 */
+#nd-page div[data-orientation]:has(> [role="tablist"]) {
   background:
     linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%), var(--glass-tint-medium);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
@@ -301,6 +501,15 @@
   overflow: hidden;
 }
 
+/* Tabs container hover: 展示性容器，不抬升，仅切换 hover 投影。 */
+@media (hover: hover) {
+  #nd-page div[data-orientation]:has(> [role="tablist"]):hover {
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+}
+
 /* TabsList: thin glass strip using the same soft tint as the file-path bar
    below it, so the two read as one cohesive header. The bottom divider color
    matches typography.css's figure header divider for visual symmetry between
@@ -309,7 +518,7 @@
    底部分隔线与 typography.css 里"文件路径 / 代码体"分隔线同色，
    让"Tab / 文件路径"与"文件路径 / 代码体"两条分隔线视觉等粗，
    表头读起来像统一的三段式而不是两个堆叠容器。 */
-:where(#nd-page) div[data-orientation] > [role="tablist"] {
+#nd-page div[data-orientation] > [role="tablist"] {
   position: relative;
   background-color: var(--glass-tint-soft);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
@@ -322,16 +531,33 @@
   scrollbar-color: var(--fd-border) transparent;
 }
 
-:where(.dark) :where(#nd-page) div[data-orientation] > [role="tablist"] {
+.dark #nd-page div[data-orientation] > [role="tablist"] {
   border-bottom-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Tab buttons: hand cursor on hover, matching every other interactive
-   element in the docs (copy button, sidebar items, search trigger).
-   Tab 按钮：悬停时显示手型光标，与文档内其它可交互元素
-   （复制按钮、侧栏条目、搜索触发器）保持一致。 */
-:where(#nd-page) div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]) {
+/* Tab buttons: hand cursor + chip-style hover (tint shift + soft glow),
+   matching every other interactive element in the docs.
+   Tab 按钮：手型光标 + chip 悬浮规范（tint 切换 + 柔辉光），
+   与文档内其它可交互元素保持一致。
+   关键修复：移除 :where()，用 !important 确保 hover 覆盖 fumadocs 的
+   Tailwind hover:text-fd-accent-foreground 类。 */
+#nd-page div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]) {
   cursor: pointer;
+  border-radius: 0.375rem;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease;
+}
+
+@media (hover: hover) {
+  #nd-page div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]):hover {
+    background-color: var(--glass-control-hover-tint) !important;
+    color: var(--color-fd-accent-foreground) !important;
+  }
+
+  #nd-page div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]):active {
+    transform: scale(0.97);
+  }
 }
 
 /* Sliding active-tab indicator: a shared brand-color underline that
@@ -343,7 +569,7 @@
    而不是各自切换 border-b。位置与宽度由 [components/mdx/code-tabs.tsx]
    写入的 --tab-indicator-x / --w CSS 变量驱动；cubic-bezier 给出
    "起手快、落点稳"的缓动（接近 Vercel Tabs 体感）。 */
-:where(#nd-page) div[data-orientation] > [role="tablist"]::after {
+#nd-page div[data-orientation] > [role="tablist"]::after {
   content: "";
   position: absolute;
   bottom: -1px;
@@ -365,7 +591,7 @@
    targeting just the active state is enough.
    屏蔽 fumadocs 默认每个 Tab 自带的品牌色 border-b，只保留共享下划线；
    未激活 Tab 本来就是透明 border，仅覆盖激活态即可。 */
-:where(#nd-page) div[data-orientation] > [role="tablist"] > [role="tab"][data-state="active"] {
+#nd-page div[data-orientation] > [role="tablist"] > [role="tab"][data-state="active"] {
   border-bottom-color: transparent;
 }
 
@@ -373,14 +599,14 @@
    snap to the new tab instead of the 320ms slide.
    尊重系统的"减少动效"偏好：直接瞬切到新位置，不做 320ms 滑动。 */
 @media (prefers-reduced-motion: reduce) {
-  :where(#nd-page) div[data-orientation] > [role="tablist"]::after {
+  #nd-page div[data-orientation] > [role="tablist"]::after {
     transition: none;
   }
 }
 
 /* TabsContent: transparent so the outer glass panel shows through.
    TabsContent：透明背景，露出外层玻璃面。 */
-:where(#nd-page) div[data-orientation] > [role="tabpanel"] {
+#nd-page div[data-orientation] > [role="tabpanel"] {
   background-color: transparent;
 }
 
@@ -390,7 +616,7 @@
    divider between header and code body.
    Tab 内仅包含一个玻璃代码块时：移除其自身玻璃面 / 阴影 / 边框 / 顶部圆角，
    让文件路径条无缝接住上方 Tab 条，其 border-b 成为表头与正文之间唯一分隔线。 */
-:where(#nd-page) div[data-orientation] > [role="tabpanel"] > figure.glass-codeblock:only-child {
+#nd-page div[data-orientation] > [role="tabpanel"] > figure.glass-codeblock:only-child {
   background: transparent !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
@@ -398,4 +624,154 @@
   border: none !important;
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
+}
+
+/* ── Unified Nav Popover / Dialog Glass / 统一导航弹窗玻璃风格 ────────── */
+/* fumadocs 的 PopoverContent 默认 bg-fd-popover/60 + backdrop-blur-lg +
+   min-w-[240px]，SearchDialog 用 bg-fd-popover + shadow-2xl。
+   此处统一所有从 nav 弹出的二级面板为同一套玻璃表面：
+   相同 tint、blur、圆角、顶部 sheen + 投影 —— 不再"一个组件一个样子"。 */
+
+/* Language popover + any Radix popover triggered from #nd-nav:
+   统一为玻璃卡片，圆角 1rem，顶部 sheen + 投影。 */
+#nd-nav [data-radix-popper-content-wrapper] > * {
+  border: 1px solid var(--glass-border-hairline) !important;
+  border-radius: 1rem !important;
+  background-color: var(--glass-tint-strong) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
+}
+
+/* Language popover content: narrower, card-like — not a wide strip.
+   语言弹窗：更窄、卡片化 —— 不再是宽条选择框。
+   关键修复：fumadocs 默认 min-w-[240px] 让弹窗过宽，与触发按钮尺寸不符。
+   直接匹配 PopoverContent 本身（它带有 "flex flex-col gap-0.5" class），
+   而非用 :has(> ...) 匹配其子元素（之前的匹配失败）。
+   缩窄为 fit-content，让弹窗刚好包裹语言列表。 */
+#nd-nav [data-radix-popper-content-wrapper] > [class*="flex"][class*="flex-col"][class*="gap-0.5"] {
+  min-width: 0 !important;
+  width: fit-content !important;
+  padding: 0.5rem !important;
+}
+
+/* Language popover header ("Choose a language"):
+   弱化标题样式，与玻璃表面融合。 */
+#nd-nav
+  [data-radix-popper-content-wrapper]
+  > [class*="flex"][class*="flex-col"][class*="gap-0.5"]
+  > p {
+  padding: 0.375rem 0.5rem !important;
+  color: var(--color-fd-muted-foreground) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+
+/* Language list items: unified chip-style hover, replacing fumadocs default
+   bg-fd-accent block. Each language button gets rounded + tint + active state.
+   语言列表项：统一 chip 悬浮，替换 fumadocs 默认的 bg-fd-accent 色块。
+   关键修复：fumadocs 默认 px-2 py-1.5 text-sm，此处统一为更紧凑的尺寸，
+   让弹窗宽度与触发按钮匹配。 */
+#nd-nav
+  [data-radix-popper-content-wrapper]
+  [class*="flex"][class*="flex-col"][class*="gap-0.5"]
+  button[type="button"] {
+  border-radius: 0.5rem !important;
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.8125rem !important;
+  min-width: 7.5rem !important;
+  text-align: start !important;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease !important;
+}
+
+@media (hover: hover) {
+  #nd-nav
+    [data-radix-popper-content-wrapper]
+    [class*="flex"][class*="flex-col"][class*="gap-0.5"]
+    button[type="button"]:hover {
+    background-color: var(--glass-control-hover-tint) !important;
+    color: var(--fd-primary) !important;
+  }
+}
+
+/* Search trigger button on home/docs nav: unified glass-chip surface.
+   导航上的搜索触发按钮：统一为 glass-chip 玻璃表面。
+   关键修复：使用 data-search 属性选择器（fumadocs 内置标记），而非
+   aria-label（多语言下 aria-label 文本不同，难以统一匹配）。
+   fumadocs 默认 buttonVariants ghost（透明背景）—— 此处覆盖为玻璃面 +
+   四边折射，与主题切换、语言按钮完全一致。 */
+#nd-nav button[data-search],
+#nd-nav button[data-search-full] {
+  background-color: var(--glass-tint-soft) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  border: 1px solid var(--glass-border-hairline) !important;
+  border-radius: 0.5rem !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@media (hover: hover) {
+  #nd-nav button[data-search]:hover,
+  #nd-nav button[data-search-full]:hover {
+    background-color: var(--glass-control-hover-tint) !important;
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover) !important;
+  }
+
+  #nd-nav button[data-search]:active,
+  #nd-nav button[data-search-full]:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Language trigger button: same glass-chip surface as search trigger.
+   语言触发按钮：与搜索触发按钮相同的 glass-chip 玻璃表面。
+   使用 data-language-select 属性或通过 fumadocs 的 LanguageSelect 组件
+   结构匹配。这里用属性选择器匹配 fumadocs 内置的 popover trigger。 */
+#nd-nav button[aria-haspopup="menu"]:has(svg.lucide-languages),
+#nd-nav button:has(> svg.lucide-languages) {
+  background-color: var(--glass-tint-soft) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  border: 1px solid var(--glass-border-hairline) !important;
+  border-radius: 0.5rem !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@media (hover: hover) {
+  #nd-nav button[aria-haspopup="menu"]:has(svg.lucide-languages):hover,
+  #nd-nav button:has(> svg.lucide-languages):hover {
+    background-color: var(--glass-control-hover-tint) !important;
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover) !important;
+  }
+
+  #nd-nav button[aria-haspopup="menu"]:has(svg.lucide-languages):active,
+  #nd-nav button:has(> svg.lucide-languages):active {
+    transform: scale(0.97);
+  }
 }

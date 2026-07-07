@@ -67,17 +67,33 @@ blockquote {
   --glass-border: rgba(15, 23, 42, 0.08);
 
   /* Liquid Glass Design System — Light / 液态玻璃设计系统 — 亮色 */
+  /* Token 命名遵循 Apple Liquid Glass 规范：tint(底色) / hairline(描边) /
+     sheen(顶高光) / rim(外辉光) / shadow(投影) / ambient(环境光)。 */
   --glass-tint: rgba(248, 250, 252, 0.55);
   --glass-tint-strong: rgba(255, 255, 255, 0.78);
   --glass-tint-medium: rgba(255, 255, 255, 0.55);
   --glass-tint-soft: rgba(255, 255, 255, 0.35);
-  --glass-border-hairline: rgba(15, 23, 42, 0.07);
-  --glass-highlight: rgba(255, 255, 255, 0.85);
-  --glass-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.12), 0 1px 2px rgba(15, 23, 42, 0.06);
-  --glass-shadow-hover: 0 8px 32px -4px rgba(15, 23, 42, 0.18), 0 2px 4px rgba(15, 23, 42, 0.08);
-  --glass-ambient-a: rgba(56, 189, 248, 0.16);
-  --glass-ambient-b: rgba(74, 222, 128, 0.12);
-  --glass-ambient-c: rgba(14, 165, 233, 0.08);
+  /* Hairline 是边缘的唯一描边层 —— 取消 inset lowlight + 0 0 0 1px 外环
+     两层叠加，避免出现"重影"。 */
+  --glass-border-hairline: rgba(15, 23, 42, 0.12);
+  /* Sheen 顶高光：模拟玻璃顶面反光，白色高透明度。 */
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  /* Rim glow 是悬浮时的柔辉光（spread 较大、低透明度），替代原来的 1px 硬环。 */
+  --glass-rim-glow: rgba(14, 165, 233, 0.22);
+  /* Control surface tokens: keep small controls visible on light glass surfaces.
+     控件表面 token：提升小控件在浅色玻璃面上的可见度。 */
+  --glass-control-surface: color-mix(in srgb, white 86%, var(--foreground) 6%);
+  /* Hover tint：悬浮时底色微调，使用中性浅灰，避免品牌蓝破坏浅色玻璃和谐度。 */
+  --glass-control-active-tint: color-mix(in srgb, white 82%, var(--foreground) 8%);
+  --glass-control-hover-tint: color-mix(in srgb, white 84%, var(--foreground) 6%);
+  /* 投影使用品牌色轻微着色，避免纯灰显得脏；保留双层投影近实远虚。 */
+  --glass-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.14), 0 1px 3px rgba(15, 23, 42, 0.05);
+  --glass-shadow-hover:
+    0 10px 30px -8px rgba(15, 23, 42, 0.2), 0 2px 6px rgba(15, 23, 42, 0.08),
+    0 0 18px -4px var(--glass-rim-glow);
+  --glass-ambient-a: rgba(56, 189, 248, 0.18);
+  --glass-ambient-b: rgba(74, 222, 128, 0.14);
+  --glass-ambient-c: rgba(14, 165, 233, 0.1);
   /* Code block glass sheen / 代码块玻璃高光 */
   --glass-codeblock-sheen: rgba(56, 189, 248, 0.1);
   /* Theme-agnostic glass scalars / 主题无关的玻璃标量 */
@@ -140,18 +156,30 @@ blockquote {
   --glass-border: rgba(255, 255, 255, 0.08);
 
   /* Liquid Glass Design System — Dark / 液态玻璃设计系统 — 深色 */
-  --glass-tint: rgba(15, 23, 42, 0.38);
-  --glass-tint-strong: rgba(20, 28, 50, 0.52);
-  --glass-tint-medium: rgba(15, 23, 42, 0.38);
-  --glass-tint-soft: rgba(15, 23, 42, 0.24);
-  --glass-border-hairline: rgba(255, 255, 255, 0.06);
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 4px 24px -4px rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  /* 深色模式下玻璃表面需要透出更多环境光，tint 比浅色更浓以保留可读性。 */
+  --glass-tint: rgba(15, 23, 42, 0.42);
+  --glass-tint-strong: rgba(20, 28, 50, 0.58);
+  --glass-tint-medium: rgba(15, 23, 42, 0.42);
+  --glass-tint-soft: rgba(15, 23, 42, 0.28);
+  /* Hairline 在深色背景上需要更高对比才能看清，使用浅色半透明。 */
+  --glass-border-hairline: rgba(226, 232, 240, 0.18);
+  /* Sheen 顶高光在深色上保持可见但不过亮。 */
+  --glass-highlight: rgba(248, 250, 252, 0.28);
+  /* Rim glow 在深色下更亮、更广，让悬浮反馈明显。 */
+  --glass-rim-glow: rgba(125, 211, 252, 0.4);
+  --glass-control-surface: var(--glass-tint-soft);
+  --glass-control-active-tint: rgba(125, 211, 252, 0.18);
+  --glass-control-hover-tint: rgba(56, 189, 248, 0.14);
+  /* 关键：放弃 rgba(0,0,0,0.82) 纯黑投影 —— 在 #060913 背景上几乎不可见。
+     改用浅色 foreground 混合 + 蓝色环境辉光：投影层提供层次，辉光层提供
+     "玻璃浮起"的发光感，符合华为沉浸感在深色场景的"自发光"特征。 */
+  --glass-shadow: 0 8px 28px -10px rgba(15, 23, 42, 0.5), 0 0 24px -12px rgba(56, 189, 248, 0.22);
   --glass-shadow-hover:
-    0 8px 32px -4px rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --glass-ambient-a: rgba(56, 189, 248, 0.14);
-  --glass-ambient-b: rgba(168, 85, 247, 0.1);
-  --glass-ambient-c: rgba(14, 165, 233, 0.06);
+    0 14px 36px -12px rgba(15, 23, 42, 0.6), 0 0 32px -10px rgba(56, 189, 248, 0.32),
+    0 0 22px -6px var(--glass-rim-glow);
+  --glass-ambient-a: rgba(56, 189, 248, 0.16);
+  --glass-ambient-b: rgba(168, 85, 247, 0.12);
+  --glass-ambient-c: rgba(14, 165, 233, 0.08);
   /* Code block glass sheen / 代码块玻璃高光 */
   --glass-codeblock-sheen: rgba(56, 189, 248, 0.08);
 

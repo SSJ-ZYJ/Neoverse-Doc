@@ -1,0 +1,113 @@
+/* Immersive Light Ripple: Huawei immersivelight-inspired particle wave feedback.
+   沉浸光感波纹：华为沉浸光感启发的粒子波动点击反馈。
+
+   设计参考：华为沉浸光感"粒子流转与空间光效"特征 —— 点击时从中心
+   扩散出一圈柔光波纹，带品牌色辉光，模拟光在玻璃介质中的波动力学传播。
+   与 Material Design ripple 的区别：
+   - 更柔和（用 radial-gradient 而非纯色圆）
+   - 带品牌色辉光（box-shadow 配合）
+   - 透明度衰减更慢（更"沉浸"的感觉）
+
+   使用方式：自动应用于 .glass-interactive 和 .glass-interactive--chip。
+   尊重 prefers-reduced-motion：减少动效用户不播放波纹。 */
+
+/* ── Ripple Host Positioning / 波纹宿主定位 ──────────────────────────── */
+/* 关键修复：必须显式声明 position: relative，否则 ::after 的 absolute
+   定位会逃逸到最近的 positioned 祖先，波纹不可见或错位。
+   isolation: isolate 建立独立 stacking context，确保波纹层不被
+   父级 z-index 压住。 */
+.glass-interactive,
+.glass-interactive--chip,
+.glass-cta {
+  position: relative;
+  isolation: isolate;
+}
+
+/* ── Ripple Pseudo-Element Setup / 波纹伪元素基础 ─────────────────────── */
+/* 为所有可交互玻璃元素创建 ::after 伪元素作为波纹载体。
+   默认不可见（opacity:0），仅在 :active 时触发动画。
+   z-index: 2 让波纹浮在背景之上、内容之下（内容通过下方规则提升到 3）。 */
+.glass-interactive::after,
+.glass-interactive--chip::after,
+.glass-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  /* Radial gradient: brand-tinted glow from center, fading to transparent.
+     径向渐变：品牌色辉光从中心向外衰减。
+     提高 0% 处的浓度到 45% 让波纹在浅 / 深色背景上都清晰可见。 */
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--fd-primary) 45%, transparent) 0%,
+    color-mix(in srgb, var(--fd-primary) 22%, transparent) 38%,
+    transparent 70%
+  );
+  /* transform-origin 中心，scale 从 0 扩散。 */
+  transform: scale(0);
+  transition: opacity 0.1s ease;
+  /* 关键修复：允许 ::after 溢出父元素的 overflow:hidden（如 nav 内层
+     div），否则波纹被裁剪不可见。 */
+  overflow: visible;
+}
+
+/* Ensure content stays above the ripple layer.
+   确保内容在波纹层之上。 */
+.glass-interactive > *,
+.glass-interactive--chip > *,
+.glass-cta > * {
+  position: relative;
+  z-index: 3;
+}
+
+/* ── Ripple Animation / 波纹动画 ──────────────────────────────────────── */
+/* 触发条件：:active 状态。波纹从 scale(0) 扩散到 scale(1.4)，同时透明度
+   从 0.9 衰减到 0。动画时长 600ms，缓动用 ease-out（起手快、落点稳）。
+   关键修复：用 animation-fill-mode: forwards 防止动画结束后跳回初始态。 */
+.glass-interactive:active::after,
+.glass-interactive--chip:active::after,
+.glass-cta:active::after {
+  animation: glass-ripple 600ms ease-out forwards;
+  opacity: 0.9;
+}
+
+@keyframes glass-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* ── Reduced Motion / 减少动效 ────────────────────────────────────────── */
+/* 尊重系统的"减少动效"偏好：不播放波纹动画，仅保留轻微 tint 闪现。 */
+@media (prefers-reduced-motion: reduce) {
+  .glass-interactive:active::after,
+  .glass-interactive--chip:active::after,
+  .glass-cta:active::after {
+    animation: none;
+    opacity: 0.3;
+    transform: scale(1);
+    transition: opacity 0.2s ease;
+  }
+}
+
+/* ── Touch Device Fallback / 触屏设备适配 ─────────────────────────────── */
+/* 触屏设备 :active 状态可能在 touchend 后立即消失，波纹会一闪而过。
+   在触屏上缩短波纹时长并保持 forwards 让最终态保持透明 0，避免残影。 */
+@media (hover: none) and (pointer: coarse) {
+  .glass-interactive:active::after,
+  .glass-interactive--chip:active::after,
+  .glass-cta:active::after {
+    animation-duration: 400ms;
+  }
+}

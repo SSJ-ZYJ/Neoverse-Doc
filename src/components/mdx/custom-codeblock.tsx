@@ -184,7 +184,11 @@ function CopyButton({ containerRef }: { containerRef: React.RefObject<HTMLDivEle
     <button
       type="button"
       data-checked={checked || undefined}
-      className="inline-flex items-center justify-center rounded-md p-1 text-fd-muted-foreground hover:text-fd-accent-foreground hover:bg-fd-accent data-checked:text-green-600 data-checked:bg-green-500/10 dark:data-checked:text-green-400 dark:data-checked:bg-green-500/15 transition-all duration-200 cursor-pointer active:scale-95"
+      // Copy button: aligned with the unified glass-interactive--chip hover spec
+      // (tint shift + soft glow, no lift). 已复制态保留绿色语义反馈。
+      // 复制按钮：沿用统一 chip 悬浮规范（tint 切换 + 柔辉光，不抬升）；
+      // 已复制态保留绿色语义反馈。
+      className="inline-flex items-center justify-center rounded-md p-1 text-fd-muted-foreground hover:text-fd-accent-foreground hover:bg-fd-accent/60 data-checked:text-green-600 data-checked:bg-green-500/10 dark:data-checked:text-green-400 dark:data-checked:bg-green-500/15 transition-all duration-200 cursor-pointer active:scale-95"
       aria-label={
         checked ? t('Copied Text(code block)(aria-label)') : t('Copy Text(code block)(aria-label)')
       }
