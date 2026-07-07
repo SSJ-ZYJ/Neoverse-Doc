@@ -14,8 +14,11 @@
 
 'use client';
 
+// fumadocs-ui 16.11+ moved useTranslations to @fuma-translate/react and changed
+// its API from a keyed object to a callable translation function.
+// fumadocs-ui 16.11+ 将 useTranslations 迁移至 @fuma-translate/react，API 由对象改为可调用函数。
+import { useTranslations } from '@fuma-translate/react';
 import { Pre } from 'fumadocs-ui/components/codeblock';
-import { useTranslations } from 'fumadocs-ui/contexts/i18n';
 import { useCopyButton } from 'fumadocs-ui/utils/use-copy-button';
 import { Check, Clipboard } from 'lucide-react';
 import {
@@ -182,7 +185,9 @@ function CopyButton({ containerRef }: { containerRef: React.RefObject<HTMLDivEle
       type="button"
       data-checked={checked || undefined}
       className="inline-flex items-center justify-center rounded-md p-1 text-fd-muted-foreground hover:text-fd-accent-foreground hover:bg-fd-accent data-checked:text-green-600 data-checked:bg-green-500/10 dark:data-checked:text-green-400 dark:data-checked:bg-green-500/15 transition-all duration-200 cursor-pointer active:scale-95"
-      aria-label={checked ? t.codeBlockCopied : t.codeBlockCopy}
+      aria-label={
+        checked ? t('Copied Text(code block)(aria-label)') : t('Copy Text(code block)(aria-label)')
+      }
       onClick={onClick}
     >
       {checked ? (
