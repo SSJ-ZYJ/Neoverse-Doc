@@ -8,13 +8,13 @@
 import type { Dictionary } from './index';
 
 export const en = {
-  siteTitle: 'Neoverse',
-  tagline: 'A work in progress documentation',
+  siteTitle: 'Neoverse-Docs',
+  tagline: 'A documentation for CSers',
   loading: 'Loading…',
   loadingMarquee: 'Loading...',
   enterDocs: 'Enter',
   guestbookTitle: 'Guestbook',
-  guestbookDesc: 'Leave your footprints and feedback for Neoverse-Doc here',
+  guestbookDesc: 'Leave your suggestions and feedback for Neoverse-Docs here',
   communityTitle: 'Discussion',
   communityDesc: 'Welcome to share your thoughts and feedback',
   primaryAuthorLabel: 'Primary author:',

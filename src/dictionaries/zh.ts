@@ -8,13 +8,13 @@
 import type { Dictionary } from './index';
 
 export const zh = {
-  siteTitle: 'Neoverse',
-  tagline: '一份还在做的文档',
+  siteTitle: 'Neoverse-Docs',
+  tagline: '面向 CSer 的一份文档',
   loading: '加载中…',
   loadingMarquee: 'Loading...',
   enterDocs: '进入文档',
   guestbookTitle: '留言板',
-  guestbookDesc: '在这里留下你对 Neoverse-Doc 的足迹与反馈',
+  guestbookDesc: '在这里留下你对 Neoverse-Docs 的建议与反馈',
   communityTitle: '讨论区',
   communityDesc: '欢迎分享你的想法与反馈',
   primaryAuthorLabel: '主要编写者：',
