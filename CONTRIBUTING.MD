@@ -1,6 +1,6 @@
 # 参与贡献
 
-首先，感谢你对 Neoverse-Doc 项目的关注！本文档将帮助你了解如何为项目做出贡献。
+首先,感谢你对 Neoverse-Docs 项目的关注！本文档将帮助你了解如何为项目做出贡献。
 
 ## 目录
 
@@ -389,4 +389,4 @@ feat(i18n): 新增日语语言支持
 
 ---
 
-再次感谢你对 Neoverse-Doc 的贡献！如有任何问题，欢迎通过 [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) 或 [Email](mailto:me@shenshijun.space) 与我们交流。
+再次感谢你对 Neoverse-Docs 的贡献！如有任何问题，欢迎通过 [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) 或 [Email](mailto:me@shenshijun.space) 与我们交流。
