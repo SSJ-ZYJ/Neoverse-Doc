@@ -278,9 +278,10 @@ function emitParticleBurst(
       PARTICLE_SAFE_INSET_PX,
       maxY,
     );
-    const followsDrag = options.direction !== undefined && Math.random() < 0.72;
+    const dragDirection = options.direction;
+    const followsDrag = dragDirection !== undefined && Math.random() < 0.72;
     let angle = followsDrag
-      ? options.direction + randomBetween(-1.45, 1.45)
+      ? dragDirection + randomBetween(-1.45, 1.45)
       : (index * PARTICLE_GOLDEN_ANGLE + randomBetween(-0.38, 0.38)) % PARTICLE_FULL_TURN;
     let edgeDistance = distanceToControlEdge(startX, startY, angle, rect.width, rect.height);
 
