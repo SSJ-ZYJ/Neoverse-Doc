@@ -5,9 +5,10 @@ import { getPageDictionary } from '@/dictionaries';
 import { getGitInfo } from '@/lib/git-info';
 import type { Locale } from '@/lib/i18n';
 import {
-  AUTHOR_GITHUB_ID,
   AUTHOR_GITHUB_URL,
   AUTHOR_NAME,
+  CO_AUTHOR_GITHUB_URL,
+  CO_AUTHOR_NAME,
   PROJECT_START_YEAR,
   REPO_URL,
 } from '@/lib/site-config';
@@ -56,7 +57,15 @@ export function HomeFooter({ locale }: HomeFooterProps) {
           >
             {AUTHOR_NAME}
           </a>
-          <span>{` (@${AUTHOR_GITHUB_ID})`}</span>
+          <span> & </span>
+          <a
+            className="home-footer__link"
+            href={CO_AUTHOR_GITHUB_URL}
+            rel="noreferrer"
+            target="_blank"
+          >
+            {CO_AUTHOR_NAME}
+          </a>
         </p>
         <p className="home-footer__row">
           <span>{dict.homeFooterCode} </span>

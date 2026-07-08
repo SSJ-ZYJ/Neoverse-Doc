@@ -11,9 +11,18 @@ export const REPO_URL = 'https://github.com/SSJ-ZYJ/Neoverse-Doc';
 // Homepage footer project metadata.
 // 首页 footer 项目元信息。
 export const PROJECT_START_YEAR = 2026;
+
+// Primary author (Shenshijun)
+// 主要作者（Shenshijun）
 export const AUTHOR_NAME = 'Shenshijun';
 export const AUTHOR_GITHUB_ID = 'SSJ-ZYJ';
 export const AUTHOR_GITHUB_URL = `https://github.com/${AUTHOR_GITHUB_ID}`;
+
+// Co-author (Collinor)
+// 合作者（Collinor）
+export const CO_AUTHOR_NAME = 'Collinor';
+export const CO_AUTHOR_GITHUB_ID = 'Collinor';
+export const CO_AUTHOR_GITHUB_URL = `https://github.com/${CO_AUTHOR_GITHUB_ID}`;
 
 // Giscus configuration — values come from https://giscus.app.
 // Giscus 配置，取值来自 https://giscus.app。
