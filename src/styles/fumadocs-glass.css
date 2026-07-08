@@ -280,7 +280,7 @@ button[data-theme-toggle],
   padding: 0.1875rem !important;
 }
 
-#nd-sidebar-mobile button[data-theme-toggle] > svg {
+#nd-sidebar-mobile :is(button[data-theme-toggle], button[data-theme-toggle][aria-label]) > svg {
   inline-size: 1.625rem !important;
   block-size: 1.625rem !important;
   flex: 0 0 auto;
@@ -477,7 +477,9 @@ button[data-theme-toggle] {
    主题切换图标：激活图标获得局部发光玻璃填充，未激活图标仅在直接悬浮时显示小圆形 hover 背景。
    关键修复：确保 svg 尺寸完整显示，不被 padding 裁剪。
    关键修复：移除 svg 的 box-shadow —— 圆形按钮内矩形阴影会产生"重叠矩形"视觉。 */
-button[data-theme-toggle] > svg {
+:is(#nd-nav, #nd-sidebar, #nd-sidebar-mobile, body)
+  :is(button[data-theme-toggle], button[data-theme-toggle][aria-label])
+  > svg {
   position: relative;
   z-index: 1;
   border-radius: var(--glass-icon-inner-radius) !important;
@@ -515,7 +517,7 @@ button[data-theme-toggle]:focus-visible {
 
 /* Fix physical sizing for legacy components like language switcher, force large border-radius.
    补充"语言切换"等旧组件的物理尺寸规整，并强制使用大圆角 */
-:where(#nd-sidebar) button:has(svg.lucide-languages) {
+#nd-sidebar button:has(svg.lucide-languages) {
   border-radius: var(--radius-lg) !important;
   padding: calc(var(--spacing) * 2) !important;
   gap: calc(var(--spacing) * 2) !important;
@@ -993,9 +995,17 @@ button[data-theme-toggle]:focus-visible {
     var(--glass-shadow) !important;
 }
 
-[data-radix-popper-content-wrapper] > [role="dialog"] button,
-[data-radix-popper-content-wrapper] > [role="menu"] button,
-[role="dialog"][data-state="open"]:not(:has(input)) button {
+:is(#nd-nav, #nd-docs-layout, body)
+  [data-radix-popper-content-wrapper]
+  > [role="dialog"]
+  :is(button, button[type="button"][aria-label]),
+:is(#nd-nav, #nd-docs-layout, body)
+  [data-radix-popper-content-wrapper]
+  > [role="menu"]
+  :is(button, button[type="button"][aria-label]),
+:is(#nd-nav, #nd-docs-layout, body)
+  [role="dialog"][data-state="open"]:not(:has(input))
+  :is(button, button[type="button"][aria-label]) {
   border-radius: var(--glass-secondary-inner-radius) !important;
   transition:
     background-color var(--theme-transition-duration) ease,
@@ -1004,15 +1014,31 @@ button[data-theme-toggle]:focus-visible {
 }
 
 @media (hover: hover) {
-  [data-radix-popper-content-wrapper] > [role="dialog"] button:hover,
-  [data-radix-popper-content-wrapper] > [role="menu"] button:hover,
-  [role="dialog"][data-state="open"]:not(:has(input)) button:hover {
+  :is(#nd-nav, #nd-docs-layout, body)
+    [data-radix-popper-content-wrapper]
+    > [role="dialog"]
+    :is(button:hover, button[type="button"][aria-label]:hover),
+  :is(#nd-nav, #nd-docs-layout, body)
+    [data-radix-popper-content-wrapper]
+    > [role="menu"]
+    :is(button:hover, button[type="button"][aria-label]:hover),
+  :is(#nd-nav, #nd-docs-layout, body)
+    [role="dialog"][data-state="open"]:not(:has(input))
+    :is(button:hover, button[type="button"][aria-label]:hover) {
     background-color: var(--glass-control-hover-tint) !important;
   }
 
-  [data-radix-popper-content-wrapper] > [role="dialog"] button:active,
-  [data-radix-popper-content-wrapper] > [role="menu"] button:active,
-  [role="dialog"][data-state="open"]:not(:has(input)) button:active {
+  :is(#nd-nav, #nd-docs-layout, body)
+    [data-radix-popper-content-wrapper]
+    > [role="dialog"]
+    :is(button:active, button[type="button"][aria-label]:active),
+  :is(#nd-nav, #nd-docs-layout, body)
+    [data-radix-popper-content-wrapper]
+    > [role="menu"]
+    :is(button:active, button[type="button"][aria-label]:active),
+  :is(#nd-nav, #nd-docs-layout, body)
+    [role="dialog"][data-state="open"]:not(:has(input))
+    :is(button:active, button[type="button"][aria-label]:active) {
     transform: scale(0.98);
   }
 }
@@ -1152,7 +1178,7 @@ button[data-theme-toggle]:focus-visible {
    same rounded icon chip used by homepage controls.
    移动端文档导航图标触发器：将点击粒子层裁到首页控件同款圆角图标 chip 内。 */
 #nd-nav
-  button:has(
+  button:is([data-glass-ripple], :not([data-glass-ripple])):has(
     > svg:is(
         .lucide-search,
         .lucide-panel-left,
@@ -1169,7 +1195,7 @@ button[data-theme-toggle]:focus-visible {
 }
 
 #nd-nav
-  button:has(
+  button:is([data-glass-ripple], :not([data-glass-ripple])):has(
     > svg:is(
         .lucide-search,
         .lucide-panel-left,
@@ -1180,7 +1206,7 @@ button[data-theme-toggle]:focus-visible {
       )
   )::after,
 #nd-nav
-  button:has(
+  button:is([data-glass-ripple], :not([data-glass-ripple])):has(
     > svg:is(
         .lucide-search,
         .lucide-panel-left,
