@@ -73,6 +73,9 @@ blockquote {
   --glass-tint-strong: rgba(255, 255, 255, 0.78);
   --glass-tint-medium: rgba(255, 255, 255, 0.55);
   --glass-tint-soft: rgba(255, 255, 255, 0.35);
+  /* Search dialog 专用更透的底色：让背后背景文字可透出识别。
+     较低 alpha 配合更强 blur，兼顾"可透视"与前景可读性。 */
+  --glass-tint-search: rgba(255, 255, 255, 0.18);
   /* Hairline 是边缘的唯一描边层 —— 取消 inset lowlight + 0 0 0 1px 外环
      两层叠加，避免出现"重影"。 */
   --glass-border-hairline: rgba(15, 23, 42, 0.12);
@@ -101,6 +104,8 @@ blockquote {
   --glass-blur-strong: 32px;
   --glass-blur-soft: 14px;
   --glass-blur-backdrop: 12px;
+  /* Search dialog 专用更强 blur：更低 alpha 下维持液态玻璃质感与前景可读性。 */
+  --glass-blur-search: 36px;
   --glass-saturate: 160%;
   --glass-brightness: 105%;
   --glass-contrast: 102%;
@@ -161,6 +166,9 @@ blockquote {
   --glass-tint-strong: rgba(20, 28, 50, 0.58);
   --glass-tint-medium: rgba(15, 23, 42, 0.42);
   --glass-tint-soft: rgba(15, 23, 42, 0.28);
+  /* Search dialog 专用更透的底色：让背后背景文字可透出识别。
+     深色下保持与浅色相近的透明度，依赖 blur + 描边维持前景可读性。 */
+  --glass-tint-search: rgba(15, 23, 42, 0.18);
   /* Hairline 在深色背景上需要更高对比才能看清，使用浅色半透明。 */
   --glass-border-hairline: rgba(226, 232, 240, 0.18);
   /* Sheen 顶高光在深色上保持可见但不过亮。 */

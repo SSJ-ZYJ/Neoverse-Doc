@@ -27,6 +27,7 @@
 import { Noto_Sans_SC, Orbitron } from 'next/font/google';
 import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
+import GlassRippleController from '@/components/glass-ripple-controller';
 import { i18n } from '@/lib/i18n';
 import '@/app/globals.css';
 // Route loading styles are imported at the root CSS entry for Turbopack tracking.
@@ -104,6 +105,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {historyRestoreScript}
         </Script>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {/* Global glass ripple controller keeps particle feedback visible after pointer release.
+              全局玻璃波纹控制器，让粒子反馈在指针释放后仍完整播放。 */}
+          <GlassRippleController />
           {children}
         </ThemeProvider>
       </body>

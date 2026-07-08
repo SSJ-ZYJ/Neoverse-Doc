@@ -14,12 +14,18 @@
   :where(#nd-nav) > div,
   :where(#nd-subnav),
   :where(#nd-sidebar),
+  :where(#nd-sidebar-mobile),
+  #nd-docs-layout header.border-b.backdrop-blur-sm,
   #nd-sidebar .bg-fd-secondary\/50,
+  #nd-sidebar-mobile .bg-fd-secondary\/50,
   button[data-theme-toggle],
   :where([data-toc-popover-content]) > div,
   :where([data-toc-popover-trigger]),
   :where([data-toc-popover]) > header,
-  [role="dialog"][data-state="open"]:has(input) {
+  [role="dialog"][data-state="open"]:has(input),
+  [data-radix-popper-content-wrapper] > [role="dialog"],
+  [data-radix-popper-content-wrapper] > [role="menu"],
+  [role="dialog"][data-state="open"]:not(:has(input)) {
     background: var(--background) !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
@@ -43,12 +49,18 @@
   :where(#nd-nav) > div,
   :where(#nd-subnav),
   :where(#nd-sidebar),
+  :where(#nd-sidebar-mobile),
+  #nd-docs-layout header.border-b.backdrop-blur-sm,
   #nd-sidebar .bg-fd-secondary\/50,
+  #nd-sidebar-mobile .bg-fd-secondary\/50,
   button[data-theme-toggle],
   :where([data-toc-popover-content]) > div,
   :where([data-toc-popover-trigger]),
   :where([data-toc-popover]) > header,
-  [role="dialog"][data-state="open"]:has(input) {
+  [role="dialog"][data-state="open"]:has(input),
+  [data-radix-popper-content-wrapper] > [role="dialog"],
+  [data-radix-popper-content-wrapper] > [role="menu"],
+  [role="dialog"][data-state="open"]:not(:has(input)) {
     background: var(--background);
   }
   body::before {
