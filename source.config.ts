@@ -2,11 +2,11 @@ import { remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
 import { pageSchema } from 'fumadocs-core/source/schema';
 import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
 import rehypeKatex from 'rehype-katex';
-import remarkGithubBlockquoteAlert from 'remark-github-blockquote-alert';
 import remarkMath from 'remark-math';
 import { z } from 'zod';
 import { remarkCodeTitle } from './src/lib/remark-code-title';
 import { remarkCollapsibleAlert } from './src/lib/remark-collapsible-alert';
+import { remarkGithubAlert } from './src/lib/remark-github-alert';
 import { transformerMetaTitle } from './src/lib/transformer-meta-title';
 
 // Shared person field schema for author and contributor frontmatter.
@@ -30,7 +30,7 @@ export default defineConfig({
     // LaTeX 公式渲染：解析 `$...$` / `$$...$$`，并在代码高亮前输出 KaTeX HTML。
     remarkPlugins: [
       remarkCollapsibleAlert,
-      remarkGithubBlockquoteAlert,
+      remarkGithubAlert,
       remarkMath,
       remarkMdxMermaid,
       remarkCodeTitle,

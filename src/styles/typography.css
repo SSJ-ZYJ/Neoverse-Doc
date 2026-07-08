@@ -168,6 +168,15 @@ blockquote {
   fill: var(--color-alert-note);
 }
 
+/* INFO alert uses the existing hint cyan accent while preserving GitHub alert markup.
+   INFO 提示复用现有 hint 青色强调色，并保持 GitHub alert 的 DOM 结构。 */
+.markdown-alert-info {
+  --markdown-alert-accent: var(--color-alert-hint);
+}
+.markdown-alert-info .octicon {
+  fill: var(--color-alert-hint);
+}
+
 .markdown-alert-tip {
   --markdown-alert-accent: var(--color-alert-tip);
 }

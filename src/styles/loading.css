@@ -70,73 +70,59 @@
   min-height: 100dvh;
   place-items: center;
   overflow: hidden;
-  background:
-    radial-gradient(55vmax 42vmax at 16% 22%, var(--route-loading-canvas-glow-a), transparent 62%),
-    radial-gradient(58vmax 48vmax at 86% 78%, var(--route-loading-canvas-glow-b), transparent 64%),
-    repeating-linear-gradient(90deg, var(--route-loading-canvas-line) 0 1px, transparent 1px 5rem),
-    repeating-linear-gradient(0deg, var(--route-loading-canvas-line) 0 1px, transparent 1px 5rem),
-    var(--route-loading-canvas-base);
+  background: linear-gradient(
+    135deg,
+    var(--route-loading-canvas-base),
+    var(--route-loading-canvas-depth)
+  );
   color: var(--foreground);
   isolation: isolate;
 }
 
 .route-loading-shell::before {
-  /* AI node decorations stay outside the center band to avoid visual clutter.
-     AI 节点点缀避开中间加载横条，避免视觉拥挤。 */
+  /* Soft aurora gradient replaces the previous grid and AI-node decoration.
+     柔和极光渐变替代原有网格与 AI 节点装饰。 */
   position: absolute;
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(circle at 17% 22%, var(--route-loading-ai-node) 0 0.15rem, transparent 0.18rem),
-    radial-gradient(circle at 29% 14%, var(--route-loading-ai-node) 0 0.12rem, transparent 0.15rem),
-    radial-gradient(circle at 42% 27%, var(--route-loading-ai-node) 0 0.14rem, transparent 0.17rem),
-    radial-gradient(circle at 64% 18%, var(--route-loading-ai-node) 0 0.13rem, transparent 0.16rem),
-    radial-gradient(circle at 82% 30%, var(--route-loading-ai-node) 0 0.15rem, transparent 0.18rem),
-    radial-gradient(circle at 21% 74%, var(--route-loading-ai-node) 0 0.15rem, transparent 0.18rem),
-    radial-gradient(circle at 36% 86%, var(--route-loading-ai-node) 0 0.12rem, transparent 0.15rem),
-    radial-gradient(circle at 57% 78%, var(--route-loading-ai-node) 0 0.14rem, transparent 0.17rem),
-    radial-gradient(circle at 73% 88%, var(--route-loading-ai-node) 0 0.13rem, transparent 0.16rem),
-    radial-gradient(circle at 88% 70%, var(--route-loading-ai-node) 0 0.15rem, transparent 0.18rem),
-    linear-gradient(
-      24deg,
-      transparent 0 23%,
-      var(--route-loading-ai-line) 23.1% 23.25%,
-      transparent 23.35% 100%
+    conic-gradient(
+      from 220deg at 52% 46%,
+      transparent 0 12%,
+      var(--route-loading-canvas-wash-a) 22%,
+      transparent 36%,
+      var(--route-loading-canvas-wash-b) 50%,
+      transparent 66%,
+      var(--route-loading-canvas-wash-c) 80%,
+      transparent 100%
     ),
     linear-gradient(
-      338deg,
-      transparent 0 62%,
-      var(--route-loading-ai-line) 62.1% 62.24%,
-      transparent 62.34% 100%
-    ),
-    linear-gradient(
-      156deg,
-      transparent 0 36%,
-      var(--route-loading-ai-line) 36.1% 36.24%,
-      transparent 36.34% 100%
+      118deg,
+      var(--route-loading-canvas-wash-a),
+      transparent 32% 62%,
+      var(--route-loading-canvas-wash-b)
     );
   content: "";
-  opacity: 0.72;
-  mask-image: linear-gradient(180deg, black 0 34%, transparent 43% 57%, black 66% 100%);
+  filter: blur(48px) saturate(120%);
+  opacity: 0.86;
   pointer-events: none;
+  transform: scale(1.06);
 }
 
 .route-loading-shell::after {
+  /* Glass vignette keeps depth without CRT scanlines.
+     玻璃暗角保留层次感，不再使用 CRT 扫描线。 */
   position: absolute;
   inset: 0;
   z-index: -1;
   background:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 0.82rem,
-      var(--route-loading-canvas-scan) 0.82rem 0.88rem
-    ),
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--background) 12%, transparent),
-      transparent 18% 82%,
-      color-mix(in srgb, var(--foreground) 4%, transparent)
-    );
+      var(--route-loading-canvas-sheen),
+      transparent 22% 72%,
+      color-mix(in srgb, var(--foreground) 6%, transparent)
+    ),
+    radial-gradient(130% 100% at 50% 50%, transparent 48%, var(--route-loading-canvas-vignette));
   content: "";
   pointer-events: none;
 }
@@ -165,21 +151,16 @@
   border-radius: 0;
   background:
     linear-gradient(180deg, var(--glass-highlight), transparent 36%),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 0.48rem,
-      var(--route-loading-band-line) 0.48rem 0.54rem
-    ),
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 0.48rem,
-      var(--route-loading-band-line) 0.48rem 0.54rem
-    ),
     linear-gradient(
       90deg,
       var(--route-loading-band-accent),
       transparent 26% 74%,
       color-mix(in srgb, var(--color-brand-start) 10%, transparent)
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--glass-tint-strong) 42%, transparent),
+      transparent
     ),
     var(--route-loading-band-surface);
   box-shadow:
