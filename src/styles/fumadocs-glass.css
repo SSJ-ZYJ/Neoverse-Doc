@@ -403,16 +403,18 @@ button[data-theme-toggle]:focus-visible {
   background-color: transparent;
 }
 
-/* TOC popover 内容：整体卡片化 */
+/* TOC popover content: translucent glass that lets blurred page text show through.
+   TOC 弹层内容：使用更透明的玻璃底，让下方正文能以模糊形态透出。 */
 :where([data-toc-popover-content]) > div {
-  background-color: var(--glass-tint-medium) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+  background-color: color-mix(in srgb, var(--glass-tint-soft) 18%, transparent) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  border-inline-width: 0 !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
+    0 18px 48px -32px color-mix(in srgb, var(--foreground) 42%, transparent) !important;
 }
 
 /* TOC popover trigger button: glass-chip style (small element, light blur + soft tint).
@@ -452,24 +454,23 @@ button[data-theme-toggle]:focus-visible {
    TOC 弹出层头部：将 fumadocs 不透明的 bg-fd-background/80 替换为玻璃 tint，
    使触发按钮的 backdrop-filter 能透视到透明背景。 */
 :where([data-toc-popover]) > header {
-  background-color: var(--glass-tint-medium) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
+  background-color: color-mix(in srgb, var(--glass-tint-soft) 20%, transparent) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
 }
 
-/* TOC popover inner scrollable content: glass-edge style (border + highlight, no blur
-   to avoid double blur on top of the already-glassified outer container).
-   TOC 弹出层内部滚动内容：glass-edge 样式（描边 + 高光，不带 blur，
-   避免与已玻璃化的外层容器产生双重 blur）。 */
+/* TOC popover inner scrollable content: remove the extra edge so the clerk
+   progress line is the only vertical guide on the left.
+   TOC 弹层内部滚动内容：移除额外描边，让 clerk 进度线成为左侧唯一竖向引导线。 */
 :where([data-toc-popover-content]) > div > div {
-  border: 1px solid var(--glass-border-hairline);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 /* Search dialog / Radix Dialog content: take over the dialog surface itself
