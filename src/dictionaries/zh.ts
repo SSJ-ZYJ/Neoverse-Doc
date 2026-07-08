@@ -16,7 +16,7 @@ export const zh = {
   guestbookTitle: '留言板',
   guestbookDesc: '在这里留下你对 Neoverse-Docs 的建议与反馈',
   communityTitle: '讨论区',
-  communityDesc: '欢迎分享你的想法与反馈',
+  communityDesc: '欢迎分享你的想法与建议',
   primaryAuthorLabel: '主要编写者：',
   documentContributorsTitle: '本文档贡献者',
   backToDocs: '返回文档',

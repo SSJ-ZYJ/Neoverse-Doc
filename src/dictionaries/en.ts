@@ -16,7 +16,7 @@ export const en = {
   guestbookTitle: 'Guestbook',
   guestbookDesc: 'Leave your suggestions and feedback for Neoverse-Docs here',
   communityTitle: 'Discussion',
-  communityDesc: 'Welcome to share your thoughts and feedback',
+  communityDesc: 'Welcome to share your thoughts and suggestions',
   primaryAuthorLabel: 'Primary author:',
   documentContributorsTitle: 'Document contributors',
   backToDocs: 'Back to Docs',

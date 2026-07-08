@@ -1,0 +1,83 @@
+---
+title: 多语言代码块演示
+description: 演示如何在同一段算法实现里通过 Tabs 切换不同编程语言，并跨 Tab 组同步用户偏好。
+author: "Shenshijun(https://www.github.com/SSJ-ZYJ)"
+---
+
+本页用于演示"同一段逻辑、多种语言"的代码块切换体验。两个 `Tabs` 都使用了 `groupId="language"` 与 `persist`，因此切换一组会同步另一组，并把选择写入 `localStorage` —— 关掉浏览器再回来仍会记住。
+
+## 排序算法
+
+<Tabs groupId="language" persist items={['C++', 'Python', 'Java']}>
+
+<Tab value="C++">
+
+```cpp
+// src/algo/sort.cpp
+#include <algorithm>
+#include <vector>
+
+void sort_asc(std::vector<int>& nums) {
+  std::sort(nums.begin(), nums.end());
+}
+```
+
+</Tab>
+
+<Tab value="Python">
+
+```python
+# src/algo/sort.py
+def sort_asc(nums: list[int]) -> list[int]:
+    return sorted(nums)
+```
+
+</Tab>
+
+<Tab value="Java">
+
+```java
+// src/algo/Sort.java
+import java.util.Arrays;
+
+class Sort {
+  static int[] sortAsc(int[] nums) {
+    Arrays.sort(nums);
+    return nums;
+  }
+}
+```
+
+</Tab>
+
+</Tabs>
+
+## Hello World
+
+下面这组只有两个语言。切换上面那组的语言时，本组应同步切换；如果上面选的是 Java，本组没有 Java 则保持自己的默认选项。
+
+<Tabs groupId="language" persist items={['C++', 'Python']}>
+
+<Tab value="C++">
+
+```cpp
+// src/hello.cpp
+#include <iostream>
+int main() {
+  std::cout << "Hello, Neoverse!\n";
+  return 0;
+}
+```
+
+</Tab>
+
+<Tab value="Python">
+
+```python
+# src/hello.py
+print("Hello, Neoverse!")
+```
+
+</Tab>
+
+</Tabs>
