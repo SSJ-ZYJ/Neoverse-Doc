@@ -1,38 +1,49 @@
 ---
-title: Preface
-description: What is this project
+title: 0.0 README | Where It All Begins
+description: About Neoverse-Docs
+author:
+  - Shenshijun(https://github.com/SSJ-ZYJ)
 ---
 
-## 1.1 Why This Document Was Created
+## Welcome to Neoverse-Docs
 
-In the current education system, many computer science freshmen lack basic computer knowledge and have hardly ever used or been exposed to computers. However, as of today, most universities do not teach this kind of foundational knowledge for various reasons. We do not want this lack of common knowledge to become a barrier to future learning and exploration in the field of computer science, which is why we authored this document.
+This is a document designed for computer science students in universities. It may include, but is not limited to, the following content:
 
-## 1.2 What This Document Covers
+- Neoverse-Docs Usage Guide
+- The Missing Semester: Things We Should Know
+  - Windows: How to use
+    - File Management and System Settings
+    - Installing and Uninstalling Programs
+    - Good Computer Usage Habits
+    - Useful Software and Tools
+  - The Art of Asking Questions
+    - Communities and Related Platforms
+    - How to Properly Ask AI Questions
+  - Text Editing
+    - Markdown and Mermaid
+    - LaTeX
+  - Shell Basics
+    - Basic Linux Commands
+    - Text Editing in Terminal
+  - Environment Configuration
+    - Setting Up C/C++ Development Environment in VS Code
+    - Package Managers
+  - Version Control
+    - Git
+    - GitHub and CNB
+  - Docker Basics
+- C/C++ Programming Language
+  - Code Quality
+  - Beyond Code: Code Style and Formatting
+  - Inside Compilation
+  - GDB Debugging
 
-Neoverse-Doc will contain various computer-related content, including but not limited to `{TODO}`.
+## Document Content Sources
 
-## 1.3 Sources of Content
+The documents are primarily written based on the author's subjective usage experience and learning process. For theoretical and academic content, references are made to highly recognized books and credible internet resources for verification and proofreading. AI tools are also used to assist with proofreading.
 
-The document is primarily written based on the author's subjective experience and learning process. Theoretical and academic content is cross-referenced against widely recognized books and highly credible online resources, with AI tools used for supplementary proofreading.
+## Feedback and Support
 
-Despite this, unintentional omissions may still occur. If you find any issues or areas for improvement, please submit an [issue](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) to this repository for feedback.
-
-## 2.1 Document Structure
-
-The document uses **bidirectional links** to annotate certain content, connecting related information to help readers understand — you can click directly on these links to navigate.
-
-Each specific document page will indicate its **status** at the top.
-
-Some links may require ***scientific internet access*** to open.
-
-## 2.2 Referenced Resources
-
-All page covers and thumbnails in this document use images from royalty-free image libraries. Any quoted statements will be cited with their sources in a footnote at the end of the respective page.
-
-For media resources, we strive to use links hosted on domestic servers whenever possible to provide a good access experience for readers in China.
-
-## 3 Afterword
-
-No matter what major you choose, interest is always one of the standards for judging whether your choice is right. Computer science, in particular, is an interest-driven discipline. If you have already spent some time on coursework and find that you have no interest in the relevant subjects or find learning them extremely difficult and torturous — then perhaps, continuing to struggle on this path is not a wise move.
-
-People around you may talk about how "good" the career prospects in computer science are, or how "high" the salaries are after graduation. However, when you truly step into this field, you will discover whether the effort you put in is truly proportional to what you get — the obstacles, the difficulties, and the tension and hesitation at every critical decision — these are things they never mention.
+Despite our best efforts, there may still be inadvertent omissions. If you find any issues with the content or have suggestions for improvement, please submit [issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) to the document repository for feedback.  
+If you are willing to contribute to this document, you can go to `GitHub` and submit your PR to contribute to this project.  
+See also: [Contribution Guide](./about/guide)

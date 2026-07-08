@@ -1,6 +1,14 @@
 {
-  "title": "About",
-  "description": "Learn about the structure, goals, and vision of the Neoverse-Doc project.",
-  "pages": ["---About---", "index", "---Deep Dive---", "i18n", "theming", "search"],
+  "title": "Afterword & Contributing",
+  "description": "Learn about the structure, goals, and vision of this project, and join us in building it.",
+  "pages": [
+    "index",
+    "---About---",
+    "about",
+    "---Contributing---",
+    "guide",
+    "syntax-example",
+    "code-tabs-demo"
+  ],
   "root": true
 }
