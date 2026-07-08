@@ -5,19 +5,26 @@
 .light {
   /* Light tokens keep the strip neutral, with only restrained brand accents.
      浅色变量保持横幅中性，仅保留克制的品牌强调色。 */
-  --route-loading-canvas-base: color-mix(in srgb, var(--background) 92%, var(--foreground) 8%);
-  --route-loading-canvas-line: color-mix(in srgb, var(--foreground) 6%, transparent);
-  --route-loading-canvas-scan: color-mix(in srgb, var(--foreground) 3.5%, transparent);
-  --route-loading-canvas-glow-a: color-mix(in srgb, var(--color-brand-start) 9%, transparent);
-  --route-loading-canvas-glow-b: color-mix(in srgb, var(--color-brand-end) 8%, transparent);
-  --route-loading-ai-node: color-mix(in srgb, var(--foreground) 18%, transparent);
-  --route-loading-ai-line: color-mix(in srgb, var(--color-brand-start) 12%, transparent);
+  --route-loading-canvas-base: color-mix(
+    in srgb,
+    var(--background) 88%,
+    var(--color-brand-start) 12%
+  );
+  --route-loading-canvas-depth: color-mix(
+    in srgb,
+    var(--background) 80%,
+    var(--color-brand-end) 20%
+  );
+  --route-loading-canvas-wash-a: color-mix(in srgb, var(--color-brand-start) 30%, transparent);
+  --route-loading-canvas-wash-b: color-mix(in srgb, var(--color-brand-end) 26%, transparent);
+  --route-loading-canvas-wash-c: color-mix(in srgb, var(--color-home-accent) 16%, transparent);
+  --route-loading-canvas-sheen: color-mix(in srgb, var(--glass-highlight) 34%, transparent);
+  --route-loading-canvas-vignette: color-mix(in srgb, var(--foreground) 10%, transparent);
   --route-loading-band-surface: color-mix(
     in srgb,
     var(--glass-tint-strong) 88%,
     var(--background) 12%
   );
-  --route-loading-band-line: color-mix(in srgb, var(--foreground) 10%, transparent);
   --route-loading-band-accent: color-mix(in srgb, var(--color-brand-end) 18%, transparent);
   --route-loading-band-ink: color-mix(in srgb, var(--foreground) 90%, var(--color-brand-end));
   --route-loading-band-glow: color-mix(in srgb, var(--color-brand-end) 18%, transparent);
@@ -29,19 +36,26 @@
 .dark {
   /* Dark tokens reuse the same geometry while lifting the page off pure black.
      深色变量复用同一结构，同时避免页面落到纯黑底色。 */
-  --route-loading-canvas-base: color-mix(in srgb, var(--background) 88%, var(--foreground) 5%);
-  --route-loading-canvas-line: color-mix(in srgb, var(--foreground) 6%, transparent);
-  --route-loading-canvas-scan: color-mix(in srgb, var(--foreground) 2.5%, transparent);
-  --route-loading-canvas-glow-a: color-mix(in srgb, var(--color-brand-start) 12%, transparent);
-  --route-loading-canvas-glow-b: color-mix(in srgb, var(--color-brand-end) 9%, transparent);
-  --route-loading-ai-node: color-mix(in srgb, var(--foreground) 16%, transparent);
-  --route-loading-ai-line: color-mix(in srgb, var(--color-brand-start) 16%, transparent);
+  --route-loading-canvas-base: color-mix(
+    in srgb,
+    var(--background) 86%,
+    var(--color-brand-start) 14%
+  );
+  --route-loading-canvas-depth: color-mix(
+    in srgb,
+    var(--background) 78%,
+    var(--color-brand-end) 22%
+  );
+  --route-loading-canvas-wash-a: color-mix(in srgb, var(--color-brand-start) 34%, transparent);
+  --route-loading-canvas-wash-b: color-mix(in srgb, var(--color-brand-end) 24%, transparent);
+  --route-loading-canvas-wash-c: color-mix(in srgb, var(--color-home-accent) 18%, transparent);
+  --route-loading-canvas-sheen: color-mix(in srgb, var(--glass-highlight) 22%, transparent);
+  --route-loading-canvas-vignette: color-mix(in srgb, black 28%, transparent);
   --route-loading-band-surface: color-mix(
     in srgb,
     var(--glass-tint-strong) 86%,
     var(--background) 14%
   );
-  --route-loading-band-line: color-mix(in srgb, var(--foreground) 9%, transparent);
   --route-loading-band-accent: color-mix(in srgb, var(--color-brand-start) 17%, transparent);
   --route-loading-band-ink: color-mix(in srgb, var(--foreground) 84%, var(--color-brand-start));
   --route-loading-band-glow: color-mix(in srgb, var(--color-brand-start) 22%, transparent);
