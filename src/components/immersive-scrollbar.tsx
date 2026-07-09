@@ -76,7 +76,9 @@ export default function ImmersiveScrollbar() {
         return false;
       }
 
-      return style.position === 'fixed' || style.position === 'sticky' || rect.top <= TOP_CHROME_GAP;
+      return (
+        style.position === 'fixed' || style.position === 'sticky' || rect.top <= TOP_CHROME_GAP
+      );
     }
 
     function updateChromeOffset() {
@@ -89,14 +91,12 @@ export default function ImmersiveScrollbar() {
       }
 
       const topInset =
-        topChromeBottom > 0
-          ? Math.ceil(topChromeBottom + TOP_CHROME_GAP)
-          : DEFAULT_EDGE_INSET;
+        topChromeBottom > 0 ? Math.ceil(topChromeBottom + TOP_CHROME_GAP) : DEFAULT_EDGE_INSET;
 
       trackElement.style.setProperty('--immersive-scrollbar-inset-block-start', `${topInset}px`);
       trackElement.style.setProperty(
         '--immersive-scrollbar-inset-block-end',
-        `${DEFAULT_EDGE_INSET}px`
+        `${DEFAULT_EDGE_INSET}px`,
       );
     }
 
@@ -144,12 +144,9 @@ export default function ImmersiveScrollbar() {
       root.classList.toggle(ROOT_ACTIVE_CLASS, metrics.visible);
       trackElement.style.setProperty(
         '--immersive-scrollbar-thumb-height',
-        `${metrics.thumbHeight}px`
+        `${metrics.thumbHeight}px`,
       );
-      trackElement.style.setProperty(
-        '--immersive-scrollbar-thumb-offset',
-        `${metrics.thumbTop}px`
-      );
+      trackElement.style.setProperty('--immersive-scrollbar-thumb-offset', `${metrics.thumbTop}px`);
     }
 
     function scheduleApplyMetrics() {

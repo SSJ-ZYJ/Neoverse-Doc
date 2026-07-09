@@ -13,6 +13,9 @@ const RIPPLE_CONTROL_SELECTOR = [
   '#nd-sidebar button',
   '#nd-sidebar-mobile button',
   '#nd-docs-layout header button',
+  // Collapsed docs floating actions should share the same glass click particles.
+  // 文档折叠态浮动操作按钮复用同一套玻璃点击粒子。
+  '#nd-docs-layout > div.fixed.flex button',
   '[role="dialog"] button',
   '[data-radix-popper-content-wrapper] button',
   '[data-toc-popover-trigger]',
