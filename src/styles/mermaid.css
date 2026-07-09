@@ -57,7 +57,7 @@
   overflow: auto;
   padding: 1.25rem 1rem;
   scrollbar-width: thin;
-  scrollbar-color: var(--fd-border) transparent;
+  scrollbar-color: var(--glass-scrollbar-thumb) var(--glass-scrollbar-track);
   cursor: grab;
   /* Block default touch gestures (scroll / pinch) so single-finger drag is
      used for pan; desktop wheel scroll still works because we only block
