@@ -5,17 +5,7 @@
 
 import { useEffect } from 'react';
 
-// Mobile docs sticky title is a full-width straight-edged trigger and needs
-// explicit matching so it receives the same particle feedback as glass buttons.
-// 移动端文档 sticky 标题是整行直角触发器，显式匹配以获得与玻璃按钮一致的粒子反馈。
-const DOCS_STICKY_TITLE_SELECTOR =
-  '#nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm > button.flex.w-full';
-const MOBILE_SIDEBAR_CHAPTER_SELECTOR =
-  '#nd-sidebar-mobile > div:first-child > button.flex.items-center';
-
 const RIPPLE_CONTROL_SELECTOR = [
-  DOCS_STICKY_TITLE_SELECTOR,
-  MOBILE_SIDEBAR_CHAPTER_SELECTOR,
   '.glass-interactive',
   '.glass-interactive--chip',
   '.glass-cta',
@@ -45,26 +35,18 @@ const RIPPLE_SELECTOR = [RIPPLE_CONTROL_SELECTOR, RIPPLE_SURFACE_SELECTOR].join(
 const RIPPLE_DURATION_MS = 1880;
 const INITIAL_PARTICLE_COUNT = 44;
 const TOUCH_INITIAL_PARTICLE_COUNT = 38;
-const TITLE_BAR_INITIAL_PARTICLE_COUNT = 38;
-const TOUCH_TITLE_BAR_INITIAL_PARTICLE_COUNT = 30;
 const SURFACE_INITIAL_PARTICLE_COUNT = 34;
 const TOUCH_SURFACE_INITIAL_PARTICLE_COUNT = 28;
 const DRAG_PARTICLE_COUNT = 14;
 const TOUCH_DRAG_PARTICLE_COUNT = 10;
-const TITLE_BAR_DRAG_PARTICLE_COUNT = 9;
-const TOUCH_TITLE_BAR_DRAG_PARTICLE_COUNT = 6;
 const SURFACE_DRAG_PARTICLE_COUNT = 8;
 const TOUCH_SURFACE_DRAG_PARTICLE_COUNT = 6;
 const DRAG_EMIT_INTERVAL_MS = 64;
 const TOUCH_DRAG_EMIT_INTERVAL_MS = 76;
-const TITLE_BAR_DRAG_EMIT_INTERVAL_MS = 82;
-const TOUCH_TITLE_BAR_DRAG_EMIT_INTERVAL_MS = 98;
 const SURFACE_DRAG_EMIT_INTERVAL_MS = 86;
 const TOUCH_SURFACE_DRAG_EMIT_INTERVAL_MS = 104;
 const DRAG_EMIT_DISTANCE_PX = 4;
 const TOUCH_DRAG_EMIT_DISTANCE_PX = 5.5;
-const TITLE_BAR_DRAG_EMIT_DISTANCE_PX = 6.5;
-const TOUCH_TITLE_BAR_DRAG_EMIT_DISTANCE_PX = 8;
 const SURFACE_DRAG_EMIT_DISTANCE_PX = 7;
 const TOUCH_SURFACE_DRAG_EMIT_DISTANCE_PX = 9;
 const MAX_PARTICLES_PER_TARGET = 128;
@@ -129,24 +111,7 @@ function readControlRect(target: HTMLElement): ControlRect {
 
 function getBurstConfig(pointerType: string, target: HTMLElement) {
   const isTouchLike = pointerType === 'touch' || pointerType === 'pen';
-  const isStickyTitleBar = target.matches(DOCS_STICKY_TITLE_SELECTOR);
   const isContentSurface = target.matches(RIPPLE_SURFACE_SELECTOR);
-
-  if (isStickyTitleBar) {
-    return {
-      dragCount: isTouchLike ? TOUCH_TITLE_BAR_DRAG_PARTICLE_COUNT : TITLE_BAR_DRAG_PARTICLE_COUNT,
-      emitDistance: isTouchLike
-        ? TOUCH_TITLE_BAR_DRAG_EMIT_DISTANCE_PX
-        : TITLE_BAR_DRAG_EMIT_DISTANCE_PX,
-      emitInterval: isTouchLike
-        ? TOUCH_TITLE_BAR_DRAG_EMIT_INTERVAL_MS
-        : TITLE_BAR_DRAG_EMIT_INTERVAL_MS,
-      hasPointerCapture: true,
-      initialCount: isTouchLike
-        ? TOUCH_TITLE_BAR_INITIAL_PARTICLE_COUNT
-        : TITLE_BAR_INITIAL_PARTICLE_COUNT,
-    };
-  }
 
   if (isContentSurface) {
     return {

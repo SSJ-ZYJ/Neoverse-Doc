@@ -9,9 +9,15 @@
   --glass-secondary-inner-radius: 0.625rem;
   --glass-icon-button-radius: 0.5rem;
   --glass-icon-inner-radius: 0.375rem;
+  /* Desktop sidebar collapse trigger uses a compact homepage-style icon chip.
+     桌面侧栏折叠触发器使用紧凑的首页同款图标 chip 尺寸。 */
+  --glass-sidebar-toggle-size: 2rem;
   --glass-mobile-toolbar-action-width: 4rem;
   --glass-mobile-toolbar-action-height: 2.5rem;
   --glass-mobile-toolbar-icon-size: 2.5rem;
+  /* Mobile toolbar action gap separates adjacent icon chips without changing their tap size.
+     移动端工具栏操作间距用于分隔相邻图标 chip，同时不改变触控尺寸。 */
+  --glass-mobile-toolbar-action-gap: clamp(0.375rem, 1.5vw, 0.5rem);
   --glass-sidebar-drawer-duration: 250ms;
 }
 
@@ -117,9 +123,10 @@ button[data-theme-toggle],
   transform: translateZ(0);
 }
 
-/* Mobile docs subnav icon triggers: match homepage icon-chip clipping so
-   hover and particle layers never render as square overlays.
-   移动端文档二级导航图标触发器：复用首页图标 chip 裁剪，避免 hover 与粒子层出现直角矩形。 */
+/* Mobile docs subnav icon triggers: match homepage icon-chip surface and
+   clipping so the controls stay visible on touch viewports.
+   移动端文档二级导航图标触发器：复用首页图标 chip 表面与裁剪，
+   让触控视口中的控件默认可见。 */
 #nd-subnav > button.inline-flex.items-center {
   position: relative;
   isolation: isolate;
@@ -130,9 +137,12 @@ button[data-theme-toggle],
   block-size: var(--glass-mobile-toolbar-icon-size) !important;
   padding: 0 !important;
   overflow: hidden;
-  border: 1px solid transparent !important;
+  border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--glass-icon-button-radius) !important;
-  background-color: transparent !important;
+  background-color: var(--glass-tint-soft) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
   transition:
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
@@ -148,6 +158,12 @@ button[data-theme-toggle],
 #nd-subnav > button.inline-flex.items-center > svg {
   inline-size: 1.25rem;
   block-size: 1.25rem;
+}
+
+/* Mobile docs subnav adjacent actions: keep search and sidebar chips separated.
+   移动端文档二级导航相邻操作：让搜索与侧栏 chip 之间保留空隙。 */
+#nd-subnav > button.inline-flex.items-center + button.inline-flex.items-center {
+  margin-inline-start: var(--glass-mobile-toolbar-action-gap);
 }
 
 @media (hover: hover) {
@@ -268,6 +284,61 @@ button[data-theme-toggle],
   border-radius: var(--glass-icon-button-radius) !important;
 }
 
+/* Mobile drawer sidebar action: give the open/close sidebar icon the same
+   framed glass edge as the adjacent language and theme controls.
+   移动抽屉侧栏操作：为打开/关闭侧栏图标补上与相邻语言、主题控件一致的玻璃外框。 */
+#nd-sidebar-mobile
+  > div:first-child
+  > div.flex
+  > button.inline-flex.items-center:has(
+    > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+  ) {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 var(--glass-mobile-toolbar-icon-size);
+  inline-size: var(--glass-mobile-toolbar-icon-size) !important;
+  min-inline-size: var(--glass-mobile-toolbar-icon-size) !important;
+  max-inline-size: var(--glass-mobile-toolbar-icon-size) !important;
+  block-size: var(--glass-mobile-toolbar-icon-size) !important;
+  padding: 0 !important;
+  overflow: hidden;
+  color: var(--color-fd-secondary-foreground) !important;
+  background-color: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  border: 1px solid var(--glass-border-hairline) !important;
+  border-radius: var(--glass-icon-button-radius) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+#nd-sidebar-mobile
+  > div:first-child
+  > div.flex
+  > button.inline-flex.items-center:has(
+    > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+  )::after,
+#nd-sidebar-mobile
+  > div:first-child
+  > div.flex
+  > button.inline-flex.items-center:has(
+    > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+  )
+  > .glass-ripple-particles {
+  border-radius: inherit;
+}
+
 #nd-sidebar-mobile button[data-theme-toggle] {
   display: inline-flex !important;
   align-items: center !important;
@@ -278,6 +349,11 @@ button[data-theme-toggle],
   block-size: var(--glass-mobile-toolbar-action-height) !important;
   gap: 0.125rem !important;
   padding: 0.1875rem !important;
+  background-color: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent) !important;
+  border: 1px solid var(--glass-border-hairline) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
 }
 
 #nd-sidebar-mobile :is(button[data-theme-toggle], button[data-theme-toggle][aria-label]) > svg {
@@ -286,6 +362,20 @@ button[data-theme-toggle],
   flex: 0 0 auto;
   border-radius: var(--glass-icon-inner-radius) !important;
   margin: 0 !important;
+}
+
+/* Mobile drawer theme toggle in light mode: keep the segmented switch on the
+   same clean glass surface as neighboring toolbar buttons instead of the
+   global gray switcher surface.
+   移动抽屉浅色主题切换：让分段开关使用与相邻工具按钮一致的干净玻璃底，
+   避免套用全局灰色切换器底色。 */
+.light #nd-sidebar-mobile button[data-theme-toggle],
+:root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle] {
+  background-color: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent) !important;
+  border-color: var(--glass-border-hairline) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
 }
 
 #nd-sidebar-mobile button.flex.items-center,
@@ -312,6 +402,8 @@ button[data-theme-toggle],
    presenting the control as the same icon-only chip used on the homepage.
    移动抽屉语言触发器：保留标记中的可访问名称，视觉上呈现为首页同款纯图标 chip。 */
 #nd-sidebar-mobile button:has(svg.lucide-languages) {
+  position: relative;
+  isolation: isolate;
   flex: 0 0 var(--glass-mobile-toolbar-icon-size);
   inline-size: var(--glass-mobile-toolbar-icon-size) !important;
   min-inline-size: var(--glass-mobile-toolbar-icon-size) !important;
@@ -320,6 +412,7 @@ button[data-theme-toggle],
   justify-content: center !important;
   gap: 0 !important;
   padding: 0 !important;
+  overflow: hidden;
   border-radius: var(--glass-icon-button-radius) !important;
   font-size: 0 !important;
   line-height: 0 !important;
@@ -332,14 +425,32 @@ button[data-theme-toggle],
   color: var(--color-fd-secondary-foreground) !important;
 }
 
-#nd-sidebar-mobile button:has(svg.lucide-languages) > :not(svg.lucide-languages) {
+/* Mobile drawer language ripple: hide only the accessible text wrapper, not
+   the imperatively mounted particle layer used by click feedback.
+   移动抽屉语言粒子：仅隐藏可访问文本包装，不隐藏点击反馈临时挂载的粒子层。 */
+#nd-sidebar-mobile
+  button:has(svg.lucide-languages)
+  > :not(svg.lucide-languages, .glass-ripple-particles) {
   display: none !important;
+}
+
+#nd-sidebar-mobile button.inline-flex.items-center:has(svg.lucide-languages)::after,
+#nd-sidebar-mobile
+  button.inline-flex.items-center:has(svg.lucide-languages)
+  > .glass-ripple-particles {
+  border-radius: inherit;
 }
 
 @media (hover: hover) {
   #nd-sidebar-mobile button.flex.items-center:hover,
   #nd-sidebar-mobile .bg-fd-secondary\/50:hover,
-  #nd-sidebar-mobile button[aria-haspopup]:hover {
+  #nd-sidebar-mobile button[aria-haspopup]:hover,
+  #nd-sidebar-mobile
+    > div:first-child
+    > div.flex
+    > button.inline-flex.items-center:has(
+      > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+    ):hover {
     background-color: var(--glass-control-hover-tint) !important;
     box-shadow:
       inset 0 1px 0 var(--glass-highlight),
@@ -349,7 +460,13 @@ button[data-theme-toggle],
 
   #nd-sidebar-mobile button.flex.items-center:active,
   #nd-sidebar-mobile .bg-fd-secondary\/50:active,
-  #nd-sidebar-mobile button[aria-haspopup]:active {
+  #nd-sidebar-mobile button[aria-haspopup]:active,
+  #nd-sidebar-mobile
+    > div:first-child
+    > div.flex
+    > button.inline-flex.items-center:has(
+      > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+    ):active {
     transform: translateY(0) scale(0.99);
   }
 }
@@ -395,6 +512,78 @@ button[data-theme-toggle],
 }
 
 /* ── Sidebar Buttons Glassification / 侧栏按钮玻璃化 ────────────────────── */
+/* Sidebar collapse trigger: give Fumadocs' desktop icon button the same
+   framed glass-chip surface used by homepage nav actions.
+   侧栏折叠触发器：为 Fumadocs 桌面图标按钮补上与首页导航操作一致的带框玻璃 chip。 */
+#nd-sidebar
+  > div:first-child
+  > div.flex
+  > button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close)) {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  inline-size: var(--glass-sidebar-toggle-size);
+  block-size: var(--glass-sidebar-toggle-size);
+  padding: 0 !important;
+  overflow: hidden;
+  color: var(--color-fd-secondary-foreground) !important;
+  background-color: var(--glass-tint-soft) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  border: 1px solid var(--glass-border-hairline) !important;
+  border-radius: var(--glass-icon-button-radius) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+#nd-sidebar
+  > div:first-child
+  > div.flex
+  > button.inline-flex.items-center:has(
+    > svg:is(.lucide-panel-left, .lucide-panel-left-close)
+  )::after,
+#nd-sidebar
+  > div:first-child
+  > div.flex
+  > button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close))
+  > .glass-ripple-particles {
+  border-radius: inherit;
+}
+
+@media (hover: hover) {
+  #nd-sidebar
+    > div:first-child
+    > div.flex
+    > button.inline-flex.items-center:has(
+      > svg:is(.lucide-panel-left, .lucide-panel-left-close)
+    ):hover {
+    background-color: var(--glass-control-hover-tint) !important;
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover) !important;
+    transform: translateY(-1px);
+  }
+
+  #nd-sidebar
+    > div:first-child
+    > div.flex
+    > button.inline-flex.items-center:has(
+      > svg:is(.lucide-panel-left, .lucide-panel-left-close)
+    ):active {
+    transform: translateY(0) scale(0.97);
+  }
+}
+
 /* Unified glass styling for sidebar functional buttons and panels (about, search, theme, language, etc.)
    统一覆盖侧边栏内的功能级按钮与面板（关于、搜索、主题、语言等）为液态玻璃。
    沿用统一悬浮规范：底色微调 + 柔辉光投影，不再切换 blur 强度（避免抖动）。 */
@@ -503,6 +692,27 @@ button[data-theme-toggle] > svg.bg-fd-accent {
   button[data-theme-toggle] > svg:not(.bg-fd-accent):hover {
     background-color: var(--glass-control-hover-tint) !important;
     color: var(--color-fd-accent-foreground);
+  }
+}
+
+/* Mobile drawer theme toggle icon states: reuse the homepage switcher's soft
+   gray fill so individual icons do not flash blue or muddy gray in light mode.
+   移动抽屉主题切换图标状态：复用首页切换器的浅灰填充，避免浅色模式下单个图标偏蓝或发灰。 */
+.light #nd-sidebar-mobile button[data-theme-toggle] > svg.bg-fd-accent,
+:root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle] > svg.bg-fd-accent {
+  background-color: color-mix(in srgb, var(--glass-tint-soft) 68%, var(--foreground) 8%) !important;
+  color: var(--foreground) !important;
+}
+
+@media (hover: hover) {
+  .light #nd-sidebar-mobile button[data-theme-toggle] > svg:not(.bg-fd-accent):hover,
+  :root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle] > svg:not(.bg-fd-accent):hover {
+    background-color: color-mix(
+      in srgb,
+      var(--glass-tint-soft) 72%,
+      var(--foreground) 6%
+    ) !important;
+    color: var(--foreground) !important;
   }
 }
 

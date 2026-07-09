@@ -16,6 +16,17 @@
   :where(#nd-sidebar),
   :where(#nd-sidebar-mobile),
   #nd-docs-layout header.border-b.backdrop-blur-sm,
+  #nd-subnav > button.inline-flex.items-center,
+  #nd-sidebar
+    > div:first-child
+    > div.flex
+    > button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close)),
+  #nd-sidebar-mobile
+    > div:first-child
+    > div.flex
+    > button.inline-flex.items-center:has(
+      > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+    ),
   #nd-sidebar .bg-fd-secondary\/50,
   #nd-sidebar-mobile .bg-fd-secondary\/50,
   button[data-theme-toggle],
@@ -51,6 +62,17 @@
   :where(#nd-sidebar),
   :where(#nd-sidebar-mobile),
   #nd-docs-layout header.border-b.backdrop-blur-sm,
+  #nd-subnav > button.inline-flex.items-center,
+  #nd-sidebar
+    > div:first-child
+    > div.flex
+    > button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close)),
+  #nd-sidebar-mobile
+    > div:first-child
+    > div.flex
+    > button.inline-flex.items-center:has(
+      > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+    ),
   #nd-sidebar .bg-fd-secondary\/50,
   #nd-sidebar-mobile .bg-fd-secondary\/50,
   button[data-theme-toggle],

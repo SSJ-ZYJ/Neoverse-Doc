@@ -22,9 +22,6 @@
   --glass-ripple-track-opacity: 0.5;
   --glass-ripple-peak-opacity: 0.62;
   --glass-ripple-mid-opacity: 0.38;
-  --glass-title-ripple-track-opacity: 0.2;
-  --glass-title-ripple-peak-opacity: 0.28;
-  --glass-title-ripple-mid-opacity: 0.16;
   --glass-ripple-press-a: color-mix(in srgb, var(--fd-primary) 30%, var(--foreground) 7%);
   --glass-ripple-press-b: color-mix(in srgb, var(--color-brand-start) 26%, var(--foreground) 6%);
   --glass-ripple-press-c: color-mix(in srgb, var(--color-home-accent) 28%, var(--foreground) 6%);
@@ -41,9 +38,6 @@
   --glass-ripple-track-opacity: 0.64;
   --glass-ripple-peak-opacity: 0.86;
   --glass-ripple-mid-opacity: 0.56;
-  --glass-title-ripple-track-opacity: 0.26;
-  --glass-title-ripple-peak-opacity: 0.36;
-  --glass-title-ripple-mid-opacity: 0.22;
   --glass-ripple-press-a: color-mix(in srgb, var(--color-brand-start) 58%, transparent);
   --glass-ripple-press-b: color-mix(in srgb, var(--color-brand-end) 54%, transparent);
   --glass-ripple-press-c: color-mix(in srgb, var(--color-home-accent) 50%, transparent);
@@ -87,32 +81,10 @@
   pointer-events: none;
   z-index: 2;
   opacity: 0;
-  /* Pressed glass field: a subtle internal glow underneath the dynamic
-     particle layer, kept inside the control surface.
-     按压玻璃光场：位于动态粒子层下方的内部柔光，始终被裁在控件表面内。 */
+  /* Pressed glass field: only the soft glow remains here; visible particles
+     are generated as small DOM nodes in .glass-ripple-particles.
+     按压玻璃光场：此处只保留柔和光场；可见粒子由 .glass-ripple-particles 中的小 DOM 节点生成。 */
   background:
-    radial-gradient(
-      circle at calc(var(--glass-ripple-x, 50%) - 2.1rem) calc(var(--glass-ripple-y, 50%) + 0.25rem),
-      var(--glass-ripple-press-a) 0 0.13rem,
-      transparent 0.2rem
-    ),
-    radial-gradient(
-      circle at calc(var(--glass-ripple-x, 50%) + 1.65rem)
-        calc(var(--glass-ripple-y, 50%) - 0.55rem),
-      var(--glass-ripple-press-b) 0 0.12rem,
-      transparent 0.2rem
-    ),
-    radial-gradient(
-      circle at calc(var(--glass-ripple-x, 50%) + 2.55rem)
-        calc(var(--glass-ripple-y, 50%) + 0.85rem),
-      var(--glass-ripple-press-c) 0 0.11rem,
-      transparent 0.18rem
-    ),
-    radial-gradient(
-      circle at calc(var(--glass-ripple-x, 50%) - 0.7rem) calc(var(--glass-ripple-y, 50%) - 1.1rem),
-      var(--glass-ripple-press-a) 0 0.1rem,
-      transparent 0.18rem
-    ),
     radial-gradient(
       ellipse at var(--glass-ripple-x, 50%) var(--glass-ripple-y, 50%),
       color-mix(in srgb, var(--fd-primary) 24%, transparent) 0%,
@@ -151,9 +123,9 @@
 .glass-interactive > *,
 .glass-interactive--chip > *,
 .glass-cta > *,
-#nd-docs-layout header.border-b.backdrop-blur-sm > button > *,
-#nd-sidebar-mobile > div:first-child > button.flex.items-center > *,
-[data-glass-ripple] > *:not(.glass-ripple-particles) {
+[data-glass-ripple] > *:not(.glass-ripple-particles),
+#nd-docs-layout header.border-b.backdrop-blur-sm > button > *:not(.glass-ripple-particles),
+#nd-sidebar-mobile > div:first-child > button.flex.items-center > *:not(.glass-ripple-particles) {
   position: relative;
   z-index: 3;
 }
@@ -220,69 +192,6 @@
     transform 160ms ease;
 }
 
-/* Sticky docs title bars are long straight-edged strips, so they use a
-   particle-first press field instead of the larger button glow.
-   文档 sticky 标题栏是细长直角横条，因此使用以粒子为主的轻量按压光场，而不是普通按钮的大面积光晕。 */
-#nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm > button.flex.w-full::after {
-  background:
-    radial-gradient(
-      circle at calc(var(--glass-ripple-x, 50%) - 1.15rem) calc(var(--glass-ripple-y, 50%) + 0.1rem),
-      var(--glass-ripple-press-a) 0 0.11rem,
-      transparent 0.18rem
-    ),
-    radial-gradient(
-      circle at calc(var(--glass-ripple-x, 50%) + 1.25rem)
-        calc(var(--glass-ripple-y, 50%) - 0.18rem),
-      var(--glass-ripple-press-b) 0 0.1rem,
-      transparent 0.18rem
-    ),
-    radial-gradient(
-      circle at calc(var(--glass-ripple-x, 50%) + 2rem) calc(var(--glass-ripple-y, 50%) + 0.18rem),
-      var(--glass-ripple-press-c) 0 0.08rem,
-      transparent 0.16rem
-    ),
-    linear-gradient(
-      90deg,
-      transparent 0%,
-      color-mix(in srgb, var(--fd-primary) 9%, transparent) 46%,
-      color-mix(in srgb, var(--glass-highlight) 12%, transparent) 52%,
-      transparent 100%
-    );
-  background-size:
-    auto,
-    auto,
-    auto,
-    38% 100%;
-  background-position:
-    0 0,
-    0 0,
-    0 0,
-    calc(var(--glass-ripple-x, 50%) - 19%) 0;
-  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--glass-highlight) 44%, transparent);
-  filter: saturate(1.08) brightness(1.01);
-  mix-blend-mode: var(--glass-ripple-field-blend-mode);
-  transform: translate3d(0, 0, 0);
-}
-
-#nd-docs-layout
-  > div.sticky
-  header.border-b.backdrop-blur-sm
-  > button.flex.w-full.glass-ripple--tracking::after {
-  animation: none;
-  opacity: var(--glass-title-ripple-track-opacity);
-  transform: translate3d(0, 0, 0);
-}
-
-#nd-docs-layout
-  > div.sticky
-  header.border-b.backdrop-blur-sm
-  > button.flex.w-full.glass-ripple--active::after,
-#nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm > button.flex.w-full:active::after {
-  animation: glass-ripple-title-bar 1260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  opacity: var(--glass-title-ripple-peak-opacity);
-  transform: translate3d(0, 0, 0);
-}
-
 @keyframes glass-ripple {
   0% {
     background-position:
@@ -324,39 +233,6 @@
     filter: saturate(1.18) brightness(1.02) blur(0.9px);
     opacity: 0;
     transform: translate3d(0, 0, 0) scale(1.018);
-  }
-}
-
-@keyframes glass-ripple-title-bar {
-  0% {
-    background-position:
-      0 0,
-      0 0,
-      0 0,
-      calc(var(--glass-ripple-x, 50%) - 19%) 0;
-    opacity: 0;
-  }
-
-  18% {
-    opacity: var(--glass-title-ripple-peak-opacity);
-  }
-
-  68% {
-    background-position:
-      0.28rem -0.04rem,
-      -0.18rem 0.1rem,
-      -0.34rem -0.08rem,
-      calc(var(--glass-ripple-x, 50%) - 3%) 0;
-    opacity: var(--glass-title-ripple-mid-opacity);
-  }
-
-  100% {
-    background-position:
-      0.58rem -0.1rem,
-      -0.44rem 0.2rem,
-      -0.72rem -0.18rem,
-      calc(var(--glass-ripple-x, 50%) + 20%) 0;
-    opacity: 0;
   }
 }
 
