@@ -27,11 +27,9 @@
   /* Mobile sidebar drawer glass uses a lower blur and lighter tint so page
      content behind the drawer remains visually legible.
      移动端侧栏抽屉玻璃使用更低模糊与更浅 tint，让抽屉后的页面内容仍能被辨认。 */
-  --glass-sidebar-drawer-tint: color-mix(
-    in srgb,
-    var(--glass-tint-search) 70%,
-    var(--glass-tint-soft) 30%
-  );
+  --glass-sidebar-drawer-tint: color-mix(in srgb,
+      var(--glass-tint-search) 70%,
+      var(--glass-tint-soft) 30%);
   --glass-sidebar-drawer-blur: 8px;
   --glass-sidebar-drawer-edge-shadow:
     inset 1px 0 0 color-mix(in srgb, var(--glass-highlight) 42%, transparent),
@@ -40,11 +38,9 @@
 }
 
 /* ── TOC Popover Header Enhancement / TOC 弹出层头部增强 ─────────────────── */
-[data-toc-popover-content] > div > div > header.border-b.backdrop-blur-sm.bg-fd-background\/80 {
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness));
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness));
+[data-toc-popover-content]>div>div>header.border-b.backdrop-blur-sm.bg-fd-background\/80 {
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
   background-color: var(--glass-tint-strong);
 }
 
@@ -57,11 +53,13 @@
   max-width: var(--fd-toc-width);
   overflow: hidden;
 }
+
 #nd-toc a {
   word-break: break-word;
   overflow-wrap: anywhere;
   hyphens: auto;
 }
+
 /* Below xl: force-hide right TOC (consistent with official max-xl:hidden, as a fallback defense).
    不足 xl 时强制隐藏右侧 TOC（与官方默认 max-xl:hidden 一致，作为兜底防御） */
 @media (max-width: 1279.98px) {
@@ -84,10 +82,8 @@
       "sidebar . header . toc"
       "sidebar . toc-popover . toc"
       "sidebar . main . toc" 1fr
-      / var(--fd-sidebar-col) 1fr minmax(
-        0,
-        calc(var(--fd-layout-width, 97rem) - var(--fd-sidebar-width) - var(--fd-toc-width))
-      ) 1fr var(--fd-toc-width) !important;
+      / var(--fd-sidebar-col) 1fr minmax(0,
+        calc(var(--fd-layout-width, 97rem) - var(--fd-sidebar-width) - var(--fd-toc-width))) 1fr var(--fd-toc-width) !important;
   }
 }
 
@@ -100,26 +96,24 @@
 /* Synchronize color transition duration across all glassified surfaces with
    the root CSS variable transition so theme changes feel uniform.
    将所有玻璃化表面的颜色过渡时长与根 CSS 变量过渡同步，使主题切换体感一致。 */
-:where(#nd-nav) > div,
+:where(#nd-nav)>div,
 :where(#nd-subnav),
 :where(#nd-sidebar):not([data-collapsed="true"]),
 :where(#nd-sidebar)[data-collapsed="true"],
 :where(#nd-sidebar-mobile),
-:where([data-toc-popover-content]) > div,
+:where([data-toc-popover-content])>div,
 button[data-theme-toggle],
 [role="dialog"][data-state="open"]:has(input),
-[data-radix-popper-content-wrapper] > [role="dialog"] {
+[data-radix-popper-content-wrapper]>[role="dialog"] {
   transition-duration: var(--theme-transition-duration);
 }
 
 /* Top nav: inner div is the fumadocs backdrop-blur container, strengthen it directly.
    顶部导航：内层 div 是 fumadocs 给的 backdrop-blur 容器，直接强化。 */
-:where(#nd-nav) > div {
+:where(#nd-nav)>div {
   background-color: var(--glass-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-bottom-color: var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -130,10 +124,8 @@ button[data-theme-toggle],
 /* Mobile docs secondary header / 移动端 docs 二级头部 */
 :where(#nd-subnav) {
   background-color: var(--glass-mobile-header-tint);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   border-bottom-color: var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -145,7 +137,7 @@ button[data-theme-toggle],
    clipping so the controls stay visible on touch viewports.
    移动端文档二级导航图标触发器：复用首页图标 chip 表面与裁剪，
    让触控视口中的控件默认可见。 */
-#nd-subnav > button.inline-flex.items-center {
+#nd-subnav>button.inline-flex.items-center {
   position: relative;
   isolation: isolate;
   display: inline-flex !important;
@@ -168,24 +160,24 @@ button[data-theme-toggle],
     transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-#nd-subnav > button.inline-flex.items-center::after,
-#nd-subnav > button.inline-flex.items-center > .glass-ripple-particles {
+#nd-subnav>button.inline-flex.items-center::after,
+#nd-subnav>button.inline-flex.items-center>.glass-ripple-particles {
   border-radius: inherit;
 }
 
-#nd-subnav > button.inline-flex.items-center > svg {
+#nd-subnav>button.inline-flex.items-center>svg {
   inline-size: 1.25rem;
   block-size: 1.25rem;
 }
 
 /* Mobile docs subnav adjacent actions: keep search and sidebar chips separated.
    移动端文档二级导航相邻操作：让搜索与侧栏 chip 之间保留空隙。 */
-#nd-subnav > button.inline-flex.items-center + button.inline-flex.items-center {
+#nd-subnav>button.inline-flex.items-center+button.inline-flex.items-center {
   margin-inline-start: var(--glass-mobile-toolbar-action-gap);
 }
 
 @media (hover: hover) {
-  #nd-subnav > button.inline-flex.items-center:hover {
+  #nd-subnav>button.inline-flex.items-center:hover {
     background-color: var(--glass-control-hover-tint) !important;
     border-color: var(--glass-border-hairline) !important;
     box-shadow:
@@ -193,7 +185,7 @@ button[data-theme-toggle],
       var(--glass-shadow-hover) !important;
   }
 
-  #nd-subnav > button.inline-flex.items-center:active {
+  #nd-subnav>button.inline-flex.items-center:active {
     transform: scale(0.97);
   }
 }
@@ -201,19 +193,17 @@ button[data-theme-toggle],
 /* Mobile docs title dropdown header: glassify the second-level sticky header
    and its full-width trigger while preserving fumadocs layout.
    移动端文档标题下拉头部：玻璃化二级 sticky header 与整行触发按钮，同时保留 fumadocs 布局。 */
-#nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm {
+#nd-docs-layout>div.sticky header.border-b.backdrop-blur-sm {
   background-color: var(--glass-mobile-title-header-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     0 0.75rem 1.75rem -1.5rem color-mix(in srgb, var(--foreground) 28%, transparent);
 }
 
-#nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm > button {
+#nd-docs-layout>div.sticky header.border-b.backdrop-blur-sm>button {
   cursor: pointer;
   background-color: transparent !important;
   border-radius: 0 !important;
@@ -224,12 +214,12 @@ button[data-theme-toggle],
 }
 
 @media (hover: hover) {
-  #nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm > button:hover {
+  #nd-docs-layout>div.sticky header.border-b.backdrop-blur-sm>button:hover {
     background-color: var(--glass-control-hover-tint) !important;
     box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 60%, transparent);
   }
 
-  #nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm > button:active {
+  #nd-docs-layout>div.sticky header.border-b.backdrop-blur-sm>button:active {
     transform: scale(0.995);
   }
 }
@@ -239,10 +229,8 @@ button[data-theme-toggle],
    移动端侧栏抽屉：让移动端 aside 中的二级导航表面与 PC 侧栏玻璃语言统一。 */
 :where(#nd-sidebar-mobile) {
   background-color: var(--glass-sidebar-drawer-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-inline-start: 1px solid var(--glass-border-hairline) !important;
   box-shadow: var(--glass-sidebar-drawer-edge-shadow), var(--glass-shadow) !important;
   backface-visibility: hidden;
@@ -261,10 +249,8 @@ button[data-theme-toggle],
 :where(#nd-sidebar-mobile)[data-state="closed"],
 :where(#nd-sidebar-mobile)[data-state="open"] {
   background-color: var(--glass-sidebar-drawer-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   box-shadow: var(--glass-sidebar-drawer-edge-shadow), var(--glass-shadow) !important;
   opacity: 1 !important;
 }
@@ -278,11 +264,11 @@ button[data-theme-toggle],
   animation: fd-sidebar-in var(--glass-sidebar-drawer-duration) ease both !important;
 }
 
-:where(#nd-sidebar-mobile) > div {
+:where(#nd-sidebar-mobile)>div {
   background: transparent !important;
 }
 
-#nd-sidebar-mobile > div:first-child {
+#nd-sidebar-mobile>div:first-child {
   border-bottom: 1px solid var(--glass-border-hairline);
   background: transparent !important;
   -webkit-backdrop-filter: none !important;
@@ -291,7 +277,7 @@ button[data-theme-toggle],
 
 /* Mobile drawer icon controls use the same compact radii as homepage nav icons.
    移动抽屉图标控件复用主页导航图标的紧凑圆角。 */
-#nd-sidebar-mobile > div:first-child :is(a, button):not(.flex.items-center),
+#nd-sidebar-mobile>div:first-child :is(a, button):not(.flex.items-center),
 #nd-sidebar-mobile button[data-theme-toggle] {
   border-radius: var(--glass-icon-button-radius) !important;
 }
@@ -299,12 +285,7 @@ button[data-theme-toggle],
 /* Mobile drawer sidebar action: give the open/close sidebar icon the same
    framed glass edge as the adjacent language and theme controls.
    移动抽屉侧栏操作：为打开/关闭侧栏图标补上与相邻语言、主题控件一致的玻璃外框。 */
-#nd-sidebar-mobile
-  > div:first-child
-  > div.flex
-  > button.inline-flex.items-center:has(
-    > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
-  ) {
+#nd-sidebar-mobile>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)) {
   position: relative;
   isolation: isolate;
   display: inline-flex !important;
@@ -319,10 +300,8 @@ button[data-theme-toggle],
   overflow: hidden;
   color: var(--color-fd-secondary-foreground) !important;
   background-color: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--glass-icon-button-radius) !important;
   box-shadow:
@@ -335,19 +314,8 @@ button[data-theme-toggle],
     transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-#nd-sidebar-mobile
-  > div:first-child
-  > div.flex
-  > button.inline-flex.items-center:has(
-    > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
-  )::after,
-#nd-sidebar-mobile
-  > div:first-child
-  > div.flex
-  > button.inline-flex.items-center:has(
-    > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
-  )
-  > .glass-ripple-particles {
+#nd-sidebar-mobile>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar))::after,
+#nd-sidebar-mobile>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar))>.glass-ripple-particles {
   border-radius: inherit;
 }
 
@@ -368,7 +336,7 @@ button[data-theme-toggle],
     var(--glass-shadow) !important;
 }
 
-#nd-sidebar-mobile :is(button[data-theme-toggle], button[data-theme-toggle][aria-label]) > svg {
+#nd-sidebar-mobile :is(button[data-theme-toggle], button[data-theme-toggle][aria-label])>svg {
   inline-size: 1.625rem !important;
   block-size: 1.625rem !important;
   flex: 0 0 auto;
@@ -394,10 +362,8 @@ button[data-theme-toggle],
 #nd-sidebar-mobile .bg-fd-secondary\/50,
 #nd-sidebar-mobile button[aria-haspopup] {
   background-color: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--glass-secondary-radius) !important;
   box-shadow:
@@ -430,7 +396,7 @@ button[data-theme-toggle],
   line-height: 0 !important;
 }
 
-#nd-sidebar-mobile button:has(svg.lucide-languages) > svg.lucide-languages {
+#nd-sidebar-mobile button:has(svg.lucide-languages)>svg.lucide-languages {
   inline-size: 1.125rem !important;
   block-size: 1.125rem !important;
   flex: 0 0 auto;
@@ -440,29 +406,21 @@ button[data-theme-toggle],
 /* Mobile drawer language ripple: hide only the accessible text wrapper, not
    the imperatively mounted particle layer used by click feedback.
    移动抽屉语言粒子：仅隐藏可访问文本包装，不隐藏点击反馈临时挂载的粒子层。 */
-#nd-sidebar-mobile
-  button:has(svg.lucide-languages)
-  > :not(svg.lucide-languages, .glass-ripple-particles) {
+#nd-sidebar-mobile button:has(svg.lucide-languages)> :not(svg.lucide-languages, .glass-ripple-particles) {
   display: none !important;
 }
 
 #nd-sidebar-mobile button.inline-flex.items-center:has(svg.lucide-languages)::after,
-#nd-sidebar-mobile
-  button.inline-flex.items-center:has(svg.lucide-languages)
-  > .glass-ripple-particles {
+#nd-sidebar-mobile button.inline-flex.items-center:has(svg.lucide-languages)>.glass-ripple-particles {
   border-radius: inherit;
 }
 
 @media (hover: hover) {
+
   #nd-sidebar-mobile button.flex.items-center:hover,
   #nd-sidebar-mobile .bg-fd-secondary\/50:hover,
   #nd-sidebar-mobile button[aria-haspopup]:hover,
-  #nd-sidebar-mobile
-    > div:first-child
-    > div.flex
-    > button.inline-flex.items-center:has(
-      > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
-    ):hover {
+  #nd-sidebar-mobile>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)):hover {
     background-color: var(--glass-control-hover-tint) !important;
     box-shadow:
       inset 0 1px 0 var(--glass-highlight),
@@ -473,12 +431,7 @@ button[data-theme-toggle],
   #nd-sidebar-mobile button.flex.items-center:active,
   #nd-sidebar-mobile .bg-fd-secondary\/50:active,
   #nd-sidebar-mobile button[aria-haspopup]:active,
-  #nd-sidebar-mobile
-    > div:first-child
-    > div.flex
-    > button.inline-flex.items-center:has(
-      > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
-    ):active {
+  #nd-sidebar-mobile>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)):active {
     transform: translateY(0) scale(0.99);
   }
 }
@@ -487,10 +440,8 @@ button[data-theme-toggle],
    文档左侧栏：展开态完整玻璃化；折叠态外框只走 glass-edge 修饰，避免双重 blur。 */
 :where(#nd-sidebar):not([data-collapsed="true"]) {
   background-color: var(--glass-tint);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   border-inline-end-color: var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -505,10 +456,8 @@ button[data-theme-toggle],
    不再出现"收回途中变透明"的跳变。 */
 :where(#nd-sidebar)[data-collapsed="true"] {
   background-color: var(--glass-tint-soft);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   border: 1px solid var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -527,10 +476,7 @@ button[data-theme-toggle],
 /* Sidebar collapse trigger: give Fumadocs' desktop icon button the same
    framed glass-chip surface used by homepage nav actions.
    侧栏折叠触发器：为 Fumadocs 桌面图标按钮补上与首页导航操作一致的带框玻璃 chip。 */
-#nd-sidebar
-  > div:first-child
-  > div.flex
-  > button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close)) {
+#nd-sidebar>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close)) {
   position: relative;
   isolation: isolate;
   display: inline-flex !important;
@@ -542,10 +488,8 @@ button[data-theme-toggle],
   overflow: hidden;
   color: var(--color-fd-secondary-foreground) !important;
   background-color: var(--glass-tint-soft) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--glass-icon-button-radius) !important;
   box-shadow:
@@ -558,27 +502,13 @@ button[data-theme-toggle],
     transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-#nd-sidebar
-  > div:first-child
-  > div.flex
-  > button.inline-flex.items-center:has(
-    > svg:is(.lucide-panel-left, .lucide-panel-left-close)
-  )::after,
-#nd-sidebar
-  > div:first-child
-  > div.flex
-  > button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close))
-  > .glass-ripple-particles {
+#nd-sidebar>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close))::after,
+#nd-sidebar>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close))>.glass-ripple-particles {
   border-radius: inherit;
 }
 
 @media (hover: hover) {
-  #nd-sidebar
-    > div:first-child
-    > div.flex
-    > button.inline-flex.items-center:has(
-      > svg:is(.lucide-panel-left, .lucide-panel-left-close)
-    ):hover {
+  #nd-sidebar>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close)):hover {
     background-color: var(--glass-control-hover-tint) !important;
     box-shadow:
       inset 0 1px 0 var(--glass-highlight),
@@ -586,12 +516,7 @@ button[data-theme-toggle],
     transform: translateY(-1px);
   }
 
-  #nd-sidebar
-    > div:first-child
-    > div.flex
-    > button.inline-flex.items-center:has(
-      > svg:is(.lucide-panel-left, .lucide-panel-left-close)
-    ):active {
+  #nd-sidebar>div:first-child>div.flex>button.inline-flex.items-center:has(> svg:is(.lucide-panel-left, .lucide-panel-left-close)):active {
     transform: translateY(0) scale(0.97);
   }
 }
@@ -601,10 +526,8 @@ button[data-theme-toggle],
    沿用统一悬浮规范：底色微调 + 柔辉光投影，不再切换 blur 强度（避免抖动）。 */
 #nd-sidebar .bg-fd-secondary\/50 {
   background-color: var(--glass-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -645,10 +568,8 @@ button[data-theme-toggle] {
   cursor: pointer;
   overflow: visible !important;
   background-color: var(--glass-control-surface) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -678,9 +599,7 @@ button[data-theme-toggle] {
    主题切换图标：激活图标获得局部发光玻璃填充，未激活图标仅在直接悬浮时显示小圆形 hover 背景。
    关键修复：确保 svg 尺寸完整显示，不被 padding 裁剪。
    关键修复：移除 svg 的 box-shadow —— 圆形按钮内矩形阴影会产生"重叠矩形"视觉。 */
-:is(#nd-nav, #nd-sidebar, #nd-sidebar-mobile, body)
-  :is(button[data-theme-toggle], button[data-theme-toggle][aria-label])
-  > svg {
+:is(#nd-nav, #nd-sidebar, #nd-sidebar-mobile, body) :is(button[data-theme-toggle], button[data-theme-toggle][aria-label])>svg {
   position: relative;
   z-index: 1;
   border-radius: var(--glass-icon-inner-radius) !important;
@@ -689,7 +608,7 @@ button[data-theme-toggle] {
     color var(--theme-transition-duration) ease;
 }
 
-button[data-theme-toggle] > svg.bg-fd-accent {
+button[data-theme-toggle]>svg.bg-fd-accent {
   background-color: var(--glass-control-active-tint) !important;
 }
 
@@ -701,7 +620,7 @@ button[data-theme-toggle] > svg.bg-fd-accent {
       var(--glass-shadow-hover);
   }
 
-  button[data-theme-toggle] > svg:not(.bg-fd-accent):hover {
+  button[data-theme-toggle]>svg:not(.bg-fd-accent):hover {
     background-color: var(--glass-control-hover-tint) !important;
     color: var(--color-fd-accent-foreground);
   }
@@ -710,20 +629,19 @@ button[data-theme-toggle] > svg.bg-fd-accent {
 /* Mobile drawer theme toggle icon states: reuse the homepage switcher's soft
    gray fill so individual icons do not flash blue or muddy gray in light mode.
    移动抽屉主题切换图标状态：复用首页切换器的浅灰填充，避免浅色模式下单个图标偏蓝或发灰。 */
-.light #nd-sidebar-mobile button[data-theme-toggle] > svg.bg-fd-accent,
-:root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle] > svg.bg-fd-accent {
+.light #nd-sidebar-mobile button[data-theme-toggle]>svg.bg-fd-accent,
+:root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle]>svg.bg-fd-accent {
   background-color: color-mix(in srgb, var(--glass-tint-soft) 68%, var(--foreground) 8%) !important;
   color: var(--foreground) !important;
 }
 
 @media (hover: hover) {
-  .light #nd-sidebar-mobile button[data-theme-toggle] > svg:not(.bg-fd-accent):hover,
-  :root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle] > svg:not(.bg-fd-accent):hover {
-    background-color: color-mix(
-      in srgb,
-      var(--glass-tint-soft) 72%,
-      var(--foreground) 6%
-    ) !important;
+
+  .light #nd-sidebar-mobile button[data-theme-toggle]>svg:not(.bg-fd-accent):hover,
+  :root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle]>svg:not(.bg-fd-accent):hover {
+    background-color: color-mix(in srgb,
+        var(--glass-tint-soft) 72%,
+        var(--foreground) 6%) !important;
     color: var(--foreground) !important;
   }
 }
@@ -758,11 +676,11 @@ button[data-theme-toggle]:focus-visible {
   padding-inline-end: calc(var(--spacing) * 0.5) !important;
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > a {
+#nd-sidebar div:has(> button[data-theme-toggle])>a {
   flex: 0 0 auto;
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle] {
+#nd-sidebar div:has(> button[data-theme-toggle])>button[data-theme-toggle] {
   flex: 0 0 auto;
   min-inline-size: 4rem;
   max-inline-size: calc(100% - 2.5rem);
@@ -778,7 +696,7 @@ button[data-theme-toggle]:focus-visible {
   transform: none;
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]::before {
+#nd-sidebar div:has(> button[data-theme-toggle])>button[data-theme-toggle]::before {
   position: absolute;
   inset-block: 0.375rem;
   inset-inline-start: 0;
@@ -801,7 +719,7 @@ button[data-theme-toggle]:focus-visible {
 }
 
 @media (hover: hover) {
-  #nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]:hover {
+  #nd-sidebar div:has(> button[data-theme-toggle])>button[data-theme-toggle]:hover {
     background: transparent !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
@@ -811,7 +729,7 @@ button[data-theme-toggle]:focus-visible {
   }
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]:active {
+#nd-sidebar div:has(> button[data-theme-toggle])>button[data-theme-toggle]:active {
   background: transparent !important;
   box-shadow: none !important;
   transform: none;
@@ -821,20 +739,15 @@ button[data-theme-toggle]:focus-visible {
    global click ripple overlay that becomes a rectangular layer on this
    transparent segmented control.
    侧栏底部主题切换保留图标级 hover，但屏蔽全局点击波纹层，避免透明分段控件上出现直角矩形层。 */
-#nd-sidebar
-  div:has(> button[data-theme-toggle])
-  > button[data-theme-toggle][data-glass-ripple]::after,
-#nd-sidebar
-  div:has(> button[data-theme-toggle])
-  > button[data-theme-toggle]
-  > .glass-ripple-particles {
+#nd-sidebar div:has(> button[data-theme-toggle])>button[data-theme-toggle][data-glass-ripple]::after,
+#nd-sidebar div:has(> button[data-theme-toggle])>button[data-theme-toggle]>.glass-ripple-particles {
   display: none !important;
 }
 
 /* Docs sidebar footer language action: turn the full-width language selector
    into an icon-only segment and attach it to the GitHub/theme toolbar.
    文档侧栏底部语言操作：将整行语言切换器收敛为纯图标分段，并并入 GitHub / 主题工具栏。 */
-#nd-sidebar > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle]) {
+#nd-sidebar>div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle]) {
   flex-direction: row !important;
   align-items: stretch !important;
   gap: 0 !important;
@@ -843,9 +756,7 @@ button[data-theme-toggle]:focus-visible {
 
 /* Toolbar segment: keep GitHub/theme as the flexible left part of the shared bar.
    工具栏分段：GitHub / 主题区域作为共享工具条的左侧弹性部分。 */
-#nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
-  > div:has(> button[data-theme-toggle]) {
+#nd-sidebar>div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])>div:has(> button[data-theme-toggle]) {
   order: 1;
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -858,9 +769,7 @@ button[data-theme-toggle]:focus-visible {
 /* Language segment: mirror the homepage icon-only trigger while preserving
    Fumadocs' built-in popover behavior.
    语言分段：复用首页的纯图标触发形态，同时保留 Fumadocs 内置弹层逻辑。 */
-#nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
-  > button[aria-haspopup="dialog"] {
+#nd-sidebar>div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])>button[aria-haspopup="dialog"] {
   order: 2;
   flex: 0 0 2.5rem;
   inline-size: 2.5rem !important;
@@ -875,18 +784,12 @@ button[data-theme-toggle]:focus-visible {
   transform: none !important;
 }
 
-#nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
-  > button[aria-haspopup="dialog"]
-  > svg.lucide-languages {
+#nd-sidebar>div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])>button[aria-haspopup="dialog"]>svg.lucide-languages {
   inline-size: 1.125rem !important;
   block-size: 1.125rem !important;
 }
 
-#nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
-  > button[aria-haspopup="dialog"]
-  > :not(svg.lucide-languages) {
+#nd-sidebar>div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])>button[aria-haspopup="dialog"]> :not(svg.lucide-languages) {
   display: none !important;
 }
 
@@ -897,12 +800,10 @@ button[data-theme-toggle]:focus-visible {
 
 /* TOC popover content: translucent glass that lets blurred page text show through.
    TOC 弹层内容：使用更透明的玻璃底，让下方正文能以模糊形态透出。 */
-:where([data-toc-popover-content]) > div {
+:where([data-toc-popover-content])>div {
   background-color: color-mix(in srgb, var(--glass-tint-soft) 18%, transparent) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-inline-width: 0 !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -914,10 +815,8 @@ button[data-theme-toggle]:focus-visible {
    作为可交互 chip，hover 时走 chip 悬浮规范。 */
 :where([data-toc-popover-trigger]) {
   background-color: var(--glass-tint-soft) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -945,12 +844,10 @@ button[data-theme-toggle]:focus-visible {
    so the trigger button's backdrop-filter has something transparent to see through.
    TOC 弹出层头部：将 fumadocs 不透明的 bg-fd-background/80 替换为玻璃 tint，
    使触发按钮的 backdrop-filter 能透视到透明背景。 */
-:where([data-toc-popover]) > header {
+:where([data-toc-popover])>header {
   background-color: color-mix(in srgb, var(--glass-tint-soft) 20%, transparent) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(28px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -960,7 +857,7 @@ button[data-theme-toggle]:focus-visible {
 /* TOC popover inner scrollable content: remove the extra edge so the clerk
    progress line is the only vertical guide on the left.
    TOC 弹层内部滚动内容：移除额外描边，让 clerk 进度线成为左侧唯一竖向引导线。 */
-:where([data-toc-popover-content]) > div > div {
+:where([data-toc-popover-content])>div>div {
   border: 0 !important;
   box-shadow: none !important;
 }
@@ -976,10 +873,8 @@ button[data-theme-toggle]:focus-visible {
    之前用 :not(:has(> h2)) 做排除会把整个搜索 dialog 也排除掉） */
 [role="dialog"][data-state="open"]:has(input) {
   background-color: var(--glass-tint-search) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-search)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-search)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-search)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-search)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -1020,8 +915,8 @@ button[data-theme-toggle]:focus-visible {
 /* ── Docs Layout Spacing / 文档布局间距优化 ─────────────────── */
 /* Reduce spacing between description/author and body content.
    减小描述/作者与正文内容之间的间距。 */
-#nd-page > p.mb-8,
-#nd-page > div.mb-6 {
+#nd-page>p.mb-8,
+#nd-page>div.mb-6 {
   margin-bottom: 0.5rem !important;
 }
 
@@ -1037,10 +932,8 @@ button[data-theme-toggle]:focus-visible {
 #nd-page div[data-orientation]:has(> [role="tablist"]) {
   background:
     linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%), var(--glass-tint-medium);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   border-color: var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -1070,7 +963,7 @@ button[data-theme-toggle]:focus-visible {
    底部分隔线与 typography.css 里"文件路径 / 代码体"分隔线同色，
    让"Tab / 文件路径"与"文件路径 / 代码体"两条分隔线视觉等粗，
    表头读起来像统一的三段式而不是两个堆叠容器。 */
-#nd-page div[data-orientation] > [role="tablist"] {
+#nd-page div[data-orientation]>[role="tablist"] {
   position: relative;
   background-color: var(--glass-tint-soft);
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
@@ -1083,7 +976,7 @@ button[data-theme-toggle]:focus-visible {
   scrollbar-color: var(--fd-border) transparent;
 }
 
-.dark #nd-page div[data-orientation] > [role="tablist"] {
+.dark #nd-page div[data-orientation]>[role="tablist"] {
   border-bottom-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -1093,7 +986,7 @@ button[data-theme-toggle]:focus-visible {
    与文档内其它可交互元素保持一致。
    关键修复：移除 :where()，用 !important 确保 hover 覆盖 fumadocs 的
    Tailwind hover:text-fd-accent-foreground 类。 */
-#nd-page div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]) {
+#nd-page div[data-orientation]>[role="tablist"]>[role="tab"]:not([disabled]) {
   cursor: pointer;
   border-radius: 0.375rem;
   transition:
@@ -1102,12 +995,12 @@ button[data-theme-toggle]:focus-visible {
 }
 
 @media (hover: hover) {
-  #nd-page div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]):hover {
+  #nd-page div[data-orientation]>[role="tablist"]>[role="tab"]:not([disabled]):hover {
     background-color: var(--glass-control-hover-tint) !important;
     color: var(--color-fd-accent-foreground) !important;
   }
 
-  #nd-page div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]):active {
+  #nd-page div[data-orientation]>[role="tablist"]>[role="tab"]:not([disabled]):active {
     transform: scale(0.97);
   }
 }
@@ -1121,7 +1014,7 @@ button[data-theme-toggle]:focus-visible {
    而不是各自切换 border-b。位置与宽度由 [components/mdx/code-tabs.tsx]
    写入的 --tab-indicator-x / --w CSS 变量驱动；cubic-bezier 给出
    "起手快、落点稳"的缓动（接近 Vercel Tabs 体感）。 */
-#nd-page div[data-orientation] > [role="tablist"]::after {
+#nd-page div[data-orientation]>[role="tablist"]::after {
   content: "";
   position: absolute;
   bottom: -1px;
@@ -1143,7 +1036,7 @@ button[data-theme-toggle]:focus-visible {
    targeting just the active state is enough.
    屏蔽 fumadocs 默认每个 Tab 自带的品牌色 border-b，只保留共享下划线；
    未激活 Tab 本来就是透明 border，仅覆盖激活态即可。 */
-#nd-page div[data-orientation] > [role="tablist"] > [role="tab"][data-state="active"] {
+#nd-page div[data-orientation]>[role="tablist"]>[role="tab"][data-state="active"] {
   border-bottom-color: transparent;
 }
 
@@ -1151,14 +1044,14 @@ button[data-theme-toggle]:focus-visible {
    snap to the new tab instead of the 320ms slide.
    尊重系统的"减少动效"偏好：直接瞬切到新位置，不做 320ms 滑动。 */
 @media (prefers-reduced-motion: reduce) {
-  #nd-page div[data-orientation] > [role="tablist"]::after {
+  #nd-page div[data-orientation]>[role="tablist"]::after {
     transition: none;
   }
 }
 
 /* TabsContent: transparent so the outer glass panel shows through.
    TabsContent：透明背景，露出外层玻璃面。 */
-#nd-page div[data-orientation] > [role="tabpanel"] {
+#nd-page div[data-orientation]>[role="tabpanel"] {
   background-color: transparent;
 }
 
@@ -1168,7 +1061,7 @@ button[data-theme-toggle]:focus-visible {
    divider between header and code body.
    Tab 内仅包含一个玻璃代码块时：移除其自身玻璃面 / 阴影 / 边框 / 顶部圆角，
    让文件路径条无缝接住上方 Tab 条，其 border-b 成为表头与正文之间唯一分隔线。 */
-#nd-page div[data-orientation] > [role="tabpanel"] > figure.glass-codeblock:only-child {
+#nd-page div[data-orientation]>[role="tabpanel"]>figure.glass-codeblock:only-child {
   background: transparent !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
@@ -1186,14 +1079,12 @@ button[data-theme-toggle]:focus-visible {
 
 /* Language popover + any Radix popover triggered from #nd-nav:
    统一为玻璃卡片，共用二级圆角 token、顶部 sheen + 投影。 */
-#nd-nav [data-radix-popper-content-wrapper] > * {
+#nd-nav [data-radix-popper-content-wrapper]>* {
   border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--glass-secondary-radius) !important;
   background-color: var(--glass-tint-strong) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow) !important;
@@ -1202,32 +1093,22 @@ button[data-theme-toggle]:focus-visible {
 /* Generic Radix second-level panels: chapter switchers, mobile menus, and
    layout tabs use the same glass card surface as nav popovers.
    通用 Radix 二级面板：章节切换、移动菜单与布局 tabs 统一使用导航弹层同款玻璃卡片。 */
-[data-radix-popper-content-wrapper] > [role="dialog"],
-[data-radix-popper-content-wrapper] > [role="menu"],
+[data-radix-popper-content-wrapper]>[role="dialog"],
+[data-radix-popper-content-wrapper]>[role="menu"],
 [role="dialog"][data-state="open"]:not(:has(input)) {
   border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--glass-secondary-radius) !important;
   background-color: color-mix(in srgb, var(--glass-tint-strong) 84%, transparent) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow) !important;
 }
 
-:is(#nd-nav, #nd-docs-layout, body)
-  [data-radix-popper-content-wrapper]
-  > [role="dialog"]
-  :is(button, button[type="button"][aria-label]),
-:is(#nd-nav, #nd-docs-layout, body)
-  [data-radix-popper-content-wrapper]
-  > [role="menu"]
-  :is(button, button[type="button"][aria-label]),
-:is(#nd-nav, #nd-docs-layout, body)
-  [role="dialog"][data-state="open"]:not(:has(input))
-  :is(button, button[type="button"][aria-label]) {
+:is(#nd-nav, #nd-docs-layout, body) [data-radix-popper-content-wrapper]>[role="dialog"] :is(button, button[type="button"][aria-label]),
+:is(#nd-nav, #nd-docs-layout, body) [data-radix-popper-content-wrapper]>[role="menu"] :is(button, button[type="button"][aria-label]),
+:is(#nd-nav, #nd-docs-layout, body) [role="dialog"][data-state="open"]:not(:has(input)) :is(button, button[type="button"][aria-label]) {
   border-radius: var(--glass-secondary-inner-radius) !important;
   transition:
     background-color var(--theme-transition-duration) ease,
@@ -1236,31 +1117,16 @@ button[data-theme-toggle]:focus-visible {
 }
 
 @media (hover: hover) {
-  :is(#nd-nav, #nd-docs-layout, body)
-    [data-radix-popper-content-wrapper]
-    > [role="dialog"]
-    :is(button:hover, button[type="button"][aria-label]:hover),
-  :is(#nd-nav, #nd-docs-layout, body)
-    [data-radix-popper-content-wrapper]
-    > [role="menu"]
-    :is(button:hover, button[type="button"][aria-label]:hover),
-  :is(#nd-nav, #nd-docs-layout, body)
-    [role="dialog"][data-state="open"]:not(:has(input))
-    :is(button:hover, button[type="button"][aria-label]:hover) {
+
+  :is(#nd-nav, #nd-docs-layout, body) [data-radix-popper-content-wrapper]>[role="dialog"] :is(button:hover, button[type="button"][aria-label]:hover),
+  :is(#nd-nav, #nd-docs-layout, body) [data-radix-popper-content-wrapper]>[role="menu"] :is(button:hover, button[type="button"][aria-label]:hover),
+  :is(#nd-nav, #nd-docs-layout, body) [role="dialog"][data-state="open"]:not(:has(input)) :is(button:hover, button[type="button"][aria-label]:hover) {
     background-color: var(--glass-control-hover-tint) !important;
   }
 
-  :is(#nd-nav, #nd-docs-layout, body)
-    [data-radix-popper-content-wrapper]
-    > [role="dialog"]
-    :is(button:active, button[type="button"][aria-label]:active),
-  :is(#nd-nav, #nd-docs-layout, body)
-    [data-radix-popper-content-wrapper]
-    > [role="menu"]
-    :is(button:active, button[type="button"][aria-label]:active),
-  :is(#nd-nav, #nd-docs-layout, body)
-    [role="dialog"][data-state="open"]:not(:has(input))
-    :is(button:active, button[type="button"][aria-label]:active) {
+  :is(#nd-nav, #nd-docs-layout, body) [data-radix-popper-content-wrapper]>[role="dialog"] :is(button:active, button[type="button"][aria-label]:active),
+  :is(#nd-nav, #nd-docs-layout, body) [data-radix-popper-content-wrapper]>[role="menu"] :is(button:active, button[type="button"][aria-label]:active),
+  :is(#nd-nav, #nd-docs-layout, body) [role="dialog"][data-state="open"]:not(:has(input)) :is(button:active, button[type="button"][aria-label]:active) {
     transform: scale(0.98);
   }
 }
@@ -1269,11 +1135,8 @@ button[data-theme-toggle]:focus-visible {
    locales as a compact segmented control, matching the toolbar button scale.
    语言弹层：直接匹配被 Radix portal 到页面根部的弹层内容，将两个语言选项呈现为紧凑分段控件，
    让尺寸节奏贴近导航栏按钮组。 */
-[data-radix-popper-content-wrapper]
-  > [role="dialog"]:is(
-    [data-side="bottom"],
-    [data-side="top"]
-  )[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"]) {
+[data-radix-popper-content-wrapper]>[role="dialog"]:is([data-side="bottom"],
+  [data-side="top"])[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"]) {
   --language-popover-item-height: 2rem;
 
   align-items: center !important;
@@ -1293,12 +1156,8 @@ button[data-theme-toggle]:focus-visible {
 /* Language popover header: keep the localized label available to assistive tech
    while removing the visual caption that made the menu read like a large card.
    语言弹层标题：保留本地化标题供辅助技术读取，同时移除视觉标题，避免菜单呈现为大卡片。 */
-[data-radix-popper-content-wrapper]
-  > [role="dialog"]:is(
-    [data-side="bottom"],
-    [data-side="top"]
-  )[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"])
-  > p {
+[data-radix-popper-content-wrapper]>[role="dialog"]:is([data-side="bottom"],
+  [data-side="top"])[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"])>p {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -1311,12 +1170,8 @@ button[data-theme-toggle]:focus-visible {
 
 /* Language list items: compact segmented buttons with stable dimensions.
    语言列表项：紧凑的分段按钮，并固定尺寸，避免菜单随文字跳动。 */
-[data-radix-popper-content-wrapper]
-  > [role="dialog"]:is(
-    [data-side="bottom"],
-    [data-side="top"]
-  )[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"])
-  > button[type="button"] {
+[data-radix-popper-content-wrapper]>[role="dialog"]:is([data-side="bottom"],
+  [data-side="top"])[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"])>button[type="button"] {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1336,22 +1191,15 @@ button[data-theme-toggle]:focus-visible {
 
 /* English is longer than 中文, so it gets a slightly wider stable segment.
    English 文案比中文更长，因此给予稍宽的稳定分段宽度。 */
-[data-radix-popper-content-wrapper]
-  > [role="dialog"]:is(
-    [data-side="bottom"],
-    [data-side="top"]
-  )[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"])
-  > button[type="button"]:last-child {
+[data-radix-popper-content-wrapper]>[role="dialog"]:is([data-side="bottom"],
+  [data-side="top"])[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"])>button[type="button"]:last-child {
   min-width: 3.75rem !important;
 }
 
 @media (hover: hover) {
-  [data-radix-popper-content-wrapper]
-    > [role="dialog"]:is(
-      [data-side="bottom"],
-      [data-side="top"]
-    )[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"])
-    > button[type="button"]:hover {
+
+  [data-radix-popper-content-wrapper]>[role="dialog"]:is([data-side="bottom"],
+    [data-side="top"])[class*="flex"][class*="flex-col"][class*="gap-0.5"]:has(> p + button[type="button"])>button[type="button"]:hover {
     background-color: var(--glass-control-hover-tint) !important;
     color: var(--fd-primary) !important;
   }
@@ -1366,10 +1214,8 @@ button[data-theme-toggle]:focus-visible {
 #nd-nav button[data-search],
 #nd-nav button[data-search-full] {
   background-color: var(--glass-tint-soft) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--glass-icon-button-radius) !important;
   box-shadow:
@@ -1382,6 +1228,7 @@ button[data-theme-toggle]:focus-visible {
 }
 
 @media (hover: hover) {
+
   #nd-nav button[data-search]:hover,
   #nd-nav button[data-search-full]:hover {
     background-color: var(--glass-control-hover-tint) !important;
@@ -1399,46 +1246,30 @@ button[data-theme-toggle]:focus-visible {
 /* Mobile docs nav icon triggers: keep the click particle layer clipped to the
    same rounded icon chip used by homepage controls.
    移动端文档导航图标触发器：将点击粒子层裁到首页控件同款圆角图标 chip 内。 */
-#nd-nav
-  button:is([data-glass-ripple], :not([data-glass-ripple])):has(
-    > svg:is(
-        .lucide-search,
-        .lucide-panel-left,
-        .lucide-panel-right,
-        .lucide-panel-left-close,
-        .lucide-panel-right-close,
-        .lucide-sidebar
-      )
-  ) {
+#nd-nav button:is([data-glass-ripple], :not([data-glass-ripple])):has(> svg:is(.lucide-search,
+    .lucide-panel-left,
+    .lucide-panel-right,
+    .lucide-panel-left-close,
+    .lucide-panel-right-close,
+    .lucide-sidebar)) {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   border-radius: var(--glass-icon-button-radius) !important;
 }
 
-#nd-nav
-  button:is([data-glass-ripple], :not([data-glass-ripple])):has(
-    > svg:is(
-        .lucide-search,
-        .lucide-panel-left,
-        .lucide-panel-right,
-        .lucide-panel-left-close,
-        .lucide-panel-right-close,
-        .lucide-sidebar
-      )
-  )::after,
-#nd-nav
-  button:is([data-glass-ripple], :not([data-glass-ripple])):has(
-    > svg:is(
-        .lucide-search,
-        .lucide-panel-left,
-        .lucide-panel-right,
-        .lucide-panel-left-close,
-        .lucide-panel-right-close,
-        .lucide-sidebar
-      )
-  )
-  > .glass-ripple-particles {
+#nd-nav button:is([data-glass-ripple], :not([data-glass-ripple])):has(> svg:is(.lucide-search,
+    .lucide-panel-left,
+    .lucide-panel-right,
+    .lucide-panel-left-close,
+    .lucide-panel-right-close,
+    .lucide-sidebar))::after,
+#nd-nav button:is([data-glass-ripple], :not([data-glass-ripple])):has(> svg:is(.lucide-search,
+    .lucide-panel-left,
+    .lucide-panel-right,
+    .lucide-panel-left-close,
+    .lucide-panel-right-close,
+    .lucide-sidebar))>.glass-ripple-particles {
   border-radius: inherit;
 }
 
@@ -1446,14 +1277,10 @@ button[data-theme-toggle]:focus-visible {
    chip surface so the right-side menu button matches the left controls.
    通用导航菜单触发器：首页移动/菜单按钮复用搜索 chip 表面，保证右侧菜单按钮与左侧控件统一。 */
 #nd-nav button[aria-haspopup]:not([data-theme-toggle]):not([data-search]):not([data-search-full]),
-#nd-home-layout
-  #nd-nav
-  button[aria-expanded]:not([data-theme-toggle]):not([data-search]):not([data-search-full]) {
+#nd-home-layout #nd-nav button[aria-expanded]:not([data-theme-toggle]):not([data-search]):not([data-search-full]) {
   background-color: var(--glass-tint-soft) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--glass-icon-button-radius) !important;
   box-shadow:
@@ -1466,28 +1293,17 @@ button[data-theme-toggle]:focus-visible {
 }
 
 @media (hover: hover) {
-  #nd-nav
-    button[aria-haspopup]:not([data-theme-toggle]):not([data-search]):not([data-search-full]):hover,
-  #nd-home-layout
-    #nd-nav
-    button[aria-expanded]:not([data-theme-toggle]):not([data-search]):not(
-      [data-search-full]
-    ):hover {
+
+  #nd-nav button[aria-haspopup]:not([data-theme-toggle]):not([data-search]):not([data-search-full]):hover,
+  #nd-home-layout #nd-nav button[aria-expanded]:not([data-theme-toggle]):not([data-search]):not([data-search-full]):hover {
     background-color: var(--glass-control-hover-tint) !important;
     box-shadow:
       inset 0 1px 0 var(--glass-highlight),
       var(--glass-shadow-hover) !important;
   }
 
-  #nd-nav
-    button[aria-haspopup]:not([data-theme-toggle]):not([data-search]):not(
-      [data-search-full]
-    ):active,
-  #nd-home-layout
-    #nd-nav
-    button[aria-expanded]:not([data-theme-toggle]):not([data-search]):not(
-      [data-search-full]
-    ):active {
+  #nd-nav button[aria-haspopup]:not([data-theme-toggle]):not([data-search]):not([data-search-full]):active,
+  #nd-home-layout #nd-nav button[aria-expanded]:not([data-theme-toggle]):not([data-search]):not([data-search-full]):active {
     transform: scale(0.97);
   }
 }
@@ -1499,10 +1315,8 @@ button[data-theme-toggle]:focus-visible {
 #nd-nav button[aria-haspopup="menu"]:has(svg.lucide-languages),
 #nd-nav button:has(> svg.lucide-languages) {
   background-color: var(--glass-tint-soft) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--glass-icon-button-radius) !important;
   box-shadow:
@@ -1515,6 +1329,7 @@ button[data-theme-toggle]:focus-visible {
 }
 
 @media (hover: hover) {
+
   #nd-nav button[aria-haspopup="menu"]:has(svg.lucide-languages):hover,
   #nd-nav button:has(> svg.lucide-languages):hover {
     background-color: var(--glass-control-hover-tint) !important;
