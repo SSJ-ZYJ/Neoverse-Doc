@@ -18,6 +18,18 @@
   /* Mobile toolbar action gap separates adjacent icon chips without changing their tap size.
      移动端工具栏操作间距用于分隔相邻图标 chip，同时不改变触控尺寸。 */
   --glass-mobile-toolbar-action-gap: clamp(0.375rem, 1.5vw, 0.5rem);
+  /* Mobile sidebar drawer glass uses a lower blur and lighter tint so page
+     content behind the drawer remains visually legible.
+     移动端侧栏抽屉玻璃使用更低模糊与更浅 tint，让抽屉后的页面内容仍能被辨认。 */
+  --glass-sidebar-drawer-tint: color-mix(
+    in srgb,
+    var(--glass-tint-search) 70%,
+    var(--glass-tint-soft) 30%
+  );
+  --glass-sidebar-drawer-blur: 8px;
+  --glass-sidebar-drawer-edge-shadow:
+    inset 1px 0 0 color-mix(in srgb, var(--glass-highlight) 42%, transparent),
+    -1rem 0 2.75rem -2.35rem color-mix(in srgb, var(--foreground) 26%, transparent);
   --glass-sidebar-drawer-duration: 250ms;
 }
 
@@ -220,16 +232,13 @@ button[data-theme-toggle],
    second-level navigation surface rendered in the mobile aside.
    移动端侧栏抽屉：让移动端 aside 中的二级导航表面与 PC 侧栏玻璃语言统一。 */
 :where(#nd-sidebar-mobile) {
-  background-color: color-mix(in srgb, var(--glass-tint-strong) 58%, transparent) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+  background-color: var(--glass-sidebar-drawer-tint) !important;
+  -webkit-backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+  backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-inline-start: 1px solid var(--glass-border-hairline) !important;
-  box-shadow:
-    inset 1px 0 0 color-mix(in srgb, var(--glass-highlight) 52%, transparent),
-    -1.5rem 0 4rem -3rem color-mix(in srgb, var(--foreground) 42%, transparent),
-    var(--glass-shadow) !important;
+  box-shadow: var(--glass-sidebar-drawer-edge-shadow), var(--glass-shadow) !important;
   backface-visibility: hidden;
   contain: paint;
   opacity: 1 !important;
@@ -245,15 +254,12 @@ button[data-theme-toggle],
    移动抽屉收回时保持同一层玻璃与滤镜，只让位移动画执行，避免背景突然闪回默认面。 */
 :where(#nd-sidebar-mobile)[data-state="closed"],
 :where(#nd-sidebar-mobile)[data-state="open"] {
-  background-color: color-mix(in srgb, var(--glass-tint-strong) 58%, transparent) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+  background-color: var(--glass-sidebar-drawer-tint) !important;
+  -webkit-backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
+  backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  box-shadow:
-    inset 1px 0 0 color-mix(in srgb, var(--glass-highlight) 52%, transparent),
-    -1.5rem 0 4rem -3rem color-mix(in srgb, var(--foreground) 42%, transparent),
-    var(--glass-shadow) !important;
+  box-shadow: var(--glass-sidebar-drawer-edge-shadow), var(--glass-shadow) !important;
   opacity: 1 !important;
 }
 
@@ -272,9 +278,9 @@ button[data-theme-toggle],
 
 #nd-sidebar-mobile > div:first-child {
   border-bottom: 1px solid var(--glass-border-hairline);
-  background-color: color-mix(in srgb, var(--glass-tint-soft) 30%, transparent);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 /* Mobile drawer icon controls use the same compact radii as homepage nav icons.
