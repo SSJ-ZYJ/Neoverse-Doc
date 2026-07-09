@@ -18,6 +18,12 @@
   /* Mobile toolbar action gap separates adjacent icon chips without changing their tap size.
      移动端工具栏操作间距用于分隔相邻图标 chip，同时不改变触控尺寸。 */
   --glass-mobile-toolbar-action-gap: clamp(0.375rem, 1.5vw, 0.5rem);
+  /* Mobile docs header glass only changes background translucency, never text
+     opacity, so the chrome remains readable while more page background shows through.
+     移动端文档头部玻璃只调整背景透明度，不改变文字透明度，
+     在保证顶部控件可读的同时让页面背景透出更多。 */
+  --glass-mobile-header-tint: color-mix(in srgb, var(--glass-tint-search) 90%, transparent);
+  --glass-mobile-title-header-tint: color-mix(in srgb, var(--glass-tint-search) 84%, transparent);
   /* Mobile sidebar drawer glass uses a lower blur and lighter tint so page
      content behind the drawer remains visually legible.
      移动端侧栏抽屉玻璃使用更低模糊与更浅 tint，让抽屉后的页面内容仍能被辨认。 */
@@ -123,7 +129,7 @@ button[data-theme-toggle],
 
 /* Mobile docs secondary header / 移动端 docs 二级头部 */
 :where(#nd-subnav) {
-  background-color: var(--glass-tint);
+  background-color: var(--glass-mobile-header-tint);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
@@ -196,7 +202,7 @@ button[data-theme-toggle],
    and its full-width trigger while preserving fumadocs layout.
    移动端文档标题下拉头部：玻璃化二级 sticky header 与整行触发按钮，同时保留 fumadocs 布局。 */
 #nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm {
-  background-color: color-mix(in srgb, var(--glass-tint-strong) 46%, transparent) !important;
+  background-color: var(--glass-mobile-title-header-tint) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
@@ -209,7 +215,7 @@ button[data-theme-toggle],
 
 #nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm > button {
   cursor: pointer;
-  background-color: color-mix(in srgb, var(--glass-tint-soft) 32%, transparent) !important;
+  background-color: transparent !important;
   border-radius: 0 !important;
   transition:
     background-color var(--theme-transition-duration) ease,
