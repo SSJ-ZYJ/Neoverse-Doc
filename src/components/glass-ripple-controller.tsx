@@ -140,6 +140,10 @@ function isPointInsideControl(rect: ControlRect, clientX: number, clientY: numbe
 function getBurstConfig(pointerType: string, target: HTMLElement) {
   const isTouchLike = pointerType === 'touch' || pointerType === 'pen';
   const isContentSurface = target.matches(RIPPLE_SURFACE_SELECTOR);
+  // Composite visual hosts must not capture pointers from nested interactive
+  // controls; the document listeners already keep their particle session alive.
+  // 组合视觉宿主不得接管内部真实控件的指针；文档级监听已能维持粒子会话。
+  const isCompositeControl = target.matches(SIDEBAR_FOOTER_TOOLBAR_SELECTOR);
 
   if (isContentSurface) {
     return {
@@ -161,7 +165,7 @@ function getBurstConfig(pointerType: string, target: HTMLElement) {
     dragCount: isTouchLike ? TOUCH_DRAG_PARTICLE_COUNT : DRAG_PARTICLE_COUNT,
     emitDistance: isTouchLike ? TOUCH_DRAG_EMIT_DISTANCE_PX : DRAG_EMIT_DISTANCE_PX,
     emitInterval: isTouchLike ? TOUCH_DRAG_EMIT_INTERVAL_MS : DRAG_EMIT_INTERVAL_MS,
-    hasPointerCapture: true,
+    hasPointerCapture: !isCompositeControl,
     initialCount: isTouchLike ? TOUCH_INITIAL_PARTICLE_COUNT : INITIAL_PARTICLE_COUNT,
   };
 }
