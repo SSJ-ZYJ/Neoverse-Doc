@@ -11,6 +11,12 @@ import { useEffect } from 'react';
 const SIDEBAR_FOOTER_TOOLBAR_SELECTOR =
   '#nd-sidebar > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle]) > div:has(> button[data-theme-toggle])';
 
+// A Fumadocs Tabs root is one composite particle surface: language triggers
+// and nested code-block actions must illuminate the same continuous panel.
+// Fumadocs Tabs 根节点是一个完整粒子表面：语言选项与内部代码块操作
+// 必须共同点亮同一片连续面板。
+const TABBED_CONTENT_SURFACE_SELECTOR = '#nd-page div[data-orientation]:has(> [role="tablist"])';
+
 const RIPPLE_CONTROL_SELECTOR = [
   '.glass-interactive',
   '.glass-interactive--chip',
@@ -39,7 +45,7 @@ const RIPPLE_SURFACE_SELECTOR = [
   '.mermaid-wrapper:not([data-maximized])',
   '.markdown-alert',
   '.markdown-details',
-  '#nd-page div[data-orientation]:has(> [role="tablist"])',
+  TABBED_CONTENT_SURFACE_SELECTOR,
   ':where(#nd-page) :where(.prose-no-margin):has(> table)',
 ].join(', ');
 
@@ -413,6 +419,7 @@ export default function GlassRippleController() {
       // 优先选取共享页脚工具栏，避免粒子只局限于内部单个图标。
       const target =
         event.target.closest(SIDEBAR_FOOTER_TOOLBAR_SELECTOR) ??
+        event.target.closest(TABBED_CONTENT_SURFACE_SELECTOR) ??
         event.target.closest(RIPPLE_SELECTOR);
       if (!(target instanceof HTMLElement)) {
         return;

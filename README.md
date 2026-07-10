@@ -301,7 +301,7 @@ frontmatter schema 在 [source.config.ts](source.config.ts) 中通过 `pageSchem
 1. **自动识别文件路径** — 从代码顶部注释（`// path/to/file.tsx`、`/* path */`、`# path`、`<!-- path -->`）提取文件路径
 2. **顶部横条显示** — 所有代码块都有顶部横条，显示语言图标 + 文件路径（可选）+ 复制按钮
 3. **一键复制** — 内置复制按钮，点击后显示 ✓ 反馈
-4. **多语言 Tabs** — `<Tabs>` 组件支持 `groupId` 联动 + `persist` 跨页面记忆
+4. **多语言 Tabs** — `<Tabs>` 组件支持 `groupId` 联动 + `persist` 跨页面记忆，语言选择与内部代码块共享完整的点击粒子表面
 
 实现架构（三层管道）：
 
