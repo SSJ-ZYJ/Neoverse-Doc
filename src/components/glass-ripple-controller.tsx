@@ -33,7 +33,10 @@ const RIPPLE_CONTROL_SELECTOR = [
 // 内容玻璃表面同样接入粒子，但触屏设备使用更轻的粒子预算。
 const RIPPLE_SURFACE_SELECTOR = [
   '.glass-codeblock',
-  '.mermaid-wrapper',
+  // The maximized Mermaid viewport is a layout shell rather than a rounded
+  // surface; only its toolbar buttons should emit particles.
+  // Mermaid 最大化视口是布局外壳而非圆角表面，仅工具栏按钮触发粒子。
+  '.mermaid-wrapper:not([data-maximized])',
   '.markdown-alert',
   '.markdown-details',
   '#nd-page div[data-orientation]:has(> [role="tablist"])',
@@ -64,7 +67,10 @@ const PARTICLE_SAFE_INSET_PX = 4;
 const PARTICLE_START_JITTER_PX = 5;
 const PARTICLE_GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 const PARTICLE_FULL_TURN = Math.PI * 2;
-const PARTICLE_LAYER_SELECTOR = '.glass-ripple-particles';
+// A host must only reuse its own layer. Descendant controls can have an
+// independent layer at the same time (for example Mermaid toolbar buttons).
+// 宿主只复用自己的直属粒子层；Mermaid 工具栏等后代控件可同时独立播放。
+const PARTICLE_LAYER_SELECTOR = ':scope > .glass-ripple-particles';
 
 interface ControlRect {
   height: number;
@@ -196,6 +202,13 @@ function resolveLocalPoint(
   return { rect, x, y };
 }
 
+// Synchronize the owned effect layer with the host's computed corner shape so
+// asymmetric pills and runtime Fumadocs radii share one clipping boundary.
+// 将独立特效层同步到宿主的计算圆角，让非对称胶囊和运行时圆角共用裁剪边界。
+function syncRippleGeometry(target: HTMLElement) {
+  target.style.setProperty('--glass-ripple-border-radius', getComputedStyle(target).borderRadius);
+}
+
 function getParticleLayer(target: HTMLElement, reset = false) {
   const currentLayer = target.querySelector(PARTICLE_LAYER_SELECTOR);
   if (currentLayer instanceof HTMLElement) {
@@ -301,7 +314,10 @@ function emitParticleBurst(
       PARTICLE_SAFE_INSET_PX,
       maxY,
     );
-    const alpha = randomBetween(0.52, 0.98);
+    // Keep particles translucent so the owned light field reads as ambient
+    // refraction instead of a saturated neon burst.
+    // 粒子保持半透明，让独立光场呈现环境折射感，避免变成高饱和霓虹闪光。
+    const alpha = randomBetween(0.36, 0.76);
     const particleDelay = randomBetween(0, 140);
     const particleDuration = randomBetween(980, 1480);
 
@@ -365,6 +381,7 @@ export default function GlassRippleController() {
       target.querySelector(PARTICLE_LAYER_SELECTOR)?.remove();
       target.style.removeProperty('--glass-ripple-x');
       target.style.removeProperty('--glass-ripple-y');
+      target.style.removeProperty('--glass-ripple-border-radius');
       delete target.dataset.glassRippleToken;
     };
 
@@ -415,9 +432,11 @@ export default function GlassRippleController() {
       target.classList.remove('glass-ripple--active');
       target.classList.add('glass-ripple--tracking');
 
+      syncRippleGeometry(target);
+      getParticleLayer(target, true);
       const { x, y } = resolveLocalPoint(target, rect, event.clientX, event.clientY);
       if (!reducedMotion.matches) {
-        emitParticleBurst(target, rect, x, y, { count: burstConfig.initialCount, reset: true });
+        emitParticleBurst(target, rect, x, y, { count: burstConfig.initialCount });
       }
 
       if (burstConfig.hasPointerCapture) {

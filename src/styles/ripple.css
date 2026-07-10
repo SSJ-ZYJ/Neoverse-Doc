@@ -19,33 +19,31 @@
 .light {
   --glass-ripple-field-blend-mode: normal;
   --glass-ripple-particle-blend-mode: normal;
-  --glass-ripple-track-opacity: 0.5;
-  --glass-ripple-peak-opacity: 0.62;
-  --glass-ripple-mid-opacity: 0.38;
-  --glass-ripple-press-a: color-mix(in srgb, var(--fd-primary) 30%, var(--foreground) 7%);
-  --glass-ripple-press-b: color-mix(in srgb, var(--color-brand-start) 26%, var(--foreground) 6%);
-  --glass-ripple-press-c: color-mix(in srgb, var(--color-home-accent) 28%, var(--foreground) 6%);
-  --glass-ripple-field-glow: color-mix(in srgb, var(--fd-primary) 14%, transparent);
-  --glass-particle-core: color-mix(in srgb, var(--fd-primary) 54%, var(--foreground) 26%);
-  --glass-particle-rim: color-mix(in srgb, var(--color-brand-start) 34%, var(--foreground) 14%);
-  --glass-particle-glow-strong: color-mix(in srgb, var(--fd-primary) 26%, transparent);
-  --glass-particle-glow-soft: color-mix(in srgb, var(--color-home-accent) 18%, transparent);
+  --glass-ripple-track-opacity: 0.32;
+  --glass-ripple-peak-opacity: 0.44;
+  --glass-ripple-mid-opacity: 0.24;
+  --glass-ripple-press-a: color-mix(in srgb, var(--fd-primary) 20%, var(--foreground) 4%);
+  --glass-ripple-press-b: color-mix(in srgb, var(--color-brand-start) 18%, var(--foreground) 3%);
+  --glass-ripple-press-c: color-mix(in srgb, var(--color-home-accent) 18%, var(--foreground) 3%);
+  --glass-particle-core: color-mix(in srgb, var(--fd-primary) 44%, var(--foreground) 20%);
+  --glass-particle-rim: color-mix(in srgb, var(--color-brand-start) 26%, var(--foreground) 10%);
+  --glass-particle-glow-strong: color-mix(in srgb, var(--fd-primary) 18%, transparent);
+  --glass-particle-glow-soft: color-mix(in srgb, var(--color-home-accent) 12%, transparent);
 }
 
 .dark {
   --glass-ripple-field-blend-mode: screen;
   --glass-ripple-particle-blend-mode: screen;
-  --glass-ripple-track-opacity: 0.64;
-  --glass-ripple-peak-opacity: 0.86;
-  --glass-ripple-mid-opacity: 0.56;
-  --glass-ripple-press-a: color-mix(in srgb, var(--color-brand-start) 58%, transparent);
-  --glass-ripple-press-b: color-mix(in srgb, var(--color-brand-end) 54%, transparent);
-  --glass-ripple-press-c: color-mix(in srgb, var(--color-home-accent) 50%, transparent);
-  --glass-ripple-field-glow: color-mix(in srgb, var(--fd-primary) 24%, transparent);
-  --glass-particle-core: color-mix(in srgb, var(--glass-highlight) 98%, var(--fd-primary) 18%);
-  --glass-particle-rim: color-mix(in srgb, var(--fd-primary) 78%, transparent);
-  --glass-particle-glow-strong: color-mix(in srgb, var(--glass-highlight) 78%, transparent);
-  --glass-particle-glow-soft: color-mix(in srgb, var(--color-brand-end) 54%, transparent);
+  --glass-ripple-track-opacity: 0.4;
+  --glass-ripple-peak-opacity: 0.6;
+  --glass-ripple-mid-opacity: 0.34;
+  --glass-ripple-press-a: color-mix(in srgb, var(--color-brand-start) 38%, transparent);
+  --glass-ripple-press-b: color-mix(in srgb, var(--color-brand-end) 34%, transparent);
+  --glass-ripple-press-c: color-mix(in srgb, var(--color-home-accent) 32%, transparent);
+  --glass-particle-core: color-mix(in srgb, var(--glass-highlight) 80%, var(--fd-primary) 12%);
+  --glass-particle-rim: color-mix(in srgb, var(--fd-primary) 58%, transparent);
+  --glass-particle-glow-strong: color-mix(in srgb, var(--glass-highlight) 54%, transparent);
+  --glass-particle-glow-soft: color-mix(in srgb, var(--color-brand-end) 38%, transparent);
 }
 
 /* ── Ripple Host Positioning / 波纹宿主定位 ──────────────────────────── */
@@ -89,16 +87,31 @@
   touch-action: none;
 }
 
-/* ── Ripple Pseudo-Element Setup / 波纹伪元素基础 ─────────────────────── */
-/* 为所有可交互玻璃元素创建 ::after 伪元素作为按压亮面。
-   真正的灵动粒子由控制器生成 .glass-ripple-particles。
-   z-index: 2 让光效浮在背景之上、内容之下（内容通过下方规则提升到 3）。 */
-.glass-interactive::after,
-.glass-interactive--chip::after,
-.glass-cta::after,
-#nd-docs-layout header.border-b.backdrop-blur-sm > button::after,
-#nd-sidebar-mobile > div:first-child > button.flex.items-center::after,
-[data-glass-ripple]::after {
+/* ── Owned Ripple Layer / 独立波纹层 ─────────────────────────────────── */
+/* The controller mounts one direct child per host. An explicit rounded
+   clip-path keeps the composited paint surface aligned with the host even
+   when paint containment or blend modes create a separate GPU layer.
+   控制器为每个宿主挂载一个直属层；显式圆角 clip-path 确保在 paint containment
+   或混合模式创建独立合成层时，绘制边缘仍与宿主完全对齐。 */
+.glass-ripple-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  overflow: hidden;
+  contain: layout paint;
+  border-radius: var(--glass-ripple-border-radius, inherit);
+  clip-path: inset(0 round var(--glass-ripple-border-radius, 0));
+  pointer-events: none;
+  mix-blend-mode: var(--glass-ripple-particle-blend-mode);
+}
+
+/* The immersive field lives inside the owned layer instead of borrowing the
+   host's ::after pseudo-element. Radial-only gradients fade before the clip
+   edge, preventing rectangular outlines and tiled gradient seams.
+   沉浸光场收进独立层，不再占用宿主 ::after；仅使用径向渐变并在裁剪边缘前淡出，
+   避免矩形描边和渐变平铺断层。 */
+.glass-ripple-particles::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -111,64 +124,46 @@
      按压玻璃光场：此处只保留柔和光场；可见粒子由 .glass-ripple-particles 中的小 DOM 节点生成。 */
   background:
     radial-gradient(
-      ellipse at var(--glass-ripple-x, 50%) var(--glass-ripple-y, 50%),
-      color-mix(in srgb, var(--fd-primary) 24%, transparent) 0%,
-      color-mix(in srgb, var(--color-brand-end) 14%, transparent) 34%,
-      transparent 68%
+      ellipse 115% 145% at var(--glass-ripple-x, 50%) var(--glass-ripple-y, 50%),
+      var(--glass-ripple-press-a) 0%,
+      var(--glass-ripple-press-b) 30%,
+      var(--glass-ripple-press-c) 52%,
+      transparent 80%
     ),
-    conic-gradient(
-      from 0.66turn at var(--glass-ripple-x, 50%) var(--glass-ripple-y, 50%),
-      transparent 0turn,
-      color-mix(in srgb, var(--color-brand-start) 14%, transparent) 0.12turn,
-      transparent 0.3turn,
-      color-mix(in srgb, var(--color-brand-end) 12%, transparent) 0.46turn,
-      transparent 0.72turn,
-      color-mix(in srgb, var(--color-home-accent) 10%, transparent) 0.88turn,
-      transparent 1turn
-    ),
-    linear-gradient(
-      105deg,
-      transparent 18%,
-      color-mix(in srgb, var(--glass-highlight) 18%, transparent) 48%,
-      transparent 78%
+    radial-gradient(
+      circle at calc(var(--glass-ripple-x, 50%) + 12%) calc(var(--glass-ripple-y, 50%) - 10%),
+      color-mix(in srgb, var(--glass-highlight) 20%, transparent) 0%,
+      transparent 58%
     );
   background-blend-mode: screen;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent),
-    inset 0 0 1.15rem var(--glass-ripple-field-glow);
-  filter: saturate(1.2) brightness(1.04);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  filter: saturate(1.05) brightness(1.01);
   mix-blend-mode: var(--glass-ripple-field-blend-mode);
   /* Keep the immersive field flush with every host edge throughout a click.
      点击全程让沉浸光场贴合宿主边缘，避免宽按钮两侧出现内缩空隙。 */
   transform: translate3d(0, 0, 0) scale(1);
   transform-origin: center;
-  will-change: opacity, transform, filter, background-position;
+  will-change: opacity, transform, filter;
 }
 
 /* Ensure content stays above the ripple layer.
    确保内容在波纹层之上。 */
-.glass-interactive > *,
-.glass-interactive--chip > *,
-.glass-cta > *,
-[data-glass-ripple] > *:not(.glass-ripple-particles),
+.glass-interactive > *:not(.glass-ripple-particles),
+.glass-interactive--chip > *:not(.glass-ripple-particles),
+.glass-cta > *:not(.glass-ripple-particles),
+[data-glass-ripple] > *:not(.glass-ripple-particles, .mermaid-toolbar),
 #nd-docs-layout header.border-b.backdrop-blur-sm > button > *:not(.glass-ripple-particles),
 #nd-sidebar-mobile > div:first-child > button.flex.items-center > *:not(.glass-ripple-particles) {
   position: relative;
   z-index: 3;
 }
 
-/* Dynamic particle layer: real DOM particles scatter from the touch point,
-   while overflow hidden on the host keeps every particle inside the button.
-   动态粒子层：真实 DOM 粒子从触点散开；宿主的 overflow hidden 保证粒子始终在按钮内。 */
-.glass-ripple-particles {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  overflow: hidden;
-  contain: layout paint;
-  border-radius: inherit;
-  pointer-events: none;
-  mix-blend-mode: var(--glass-ripple-particle-blend-mode);
+/* Mermaid's toolbar already owns absolute positioning. Raise only its stacking
+   level during a surface ripple without changing its layout mode.
+   Mermaid 工具栏保留原有绝对定位，表面粒子触发时仅提升层级，不改变布局模式。 */
+[data-glass-ripple] > .mermaid-toolbar {
+  z-index: 3;
 }
 
 .glass-ripple-particle {
@@ -187,7 +182,7 @@
   box-shadow:
     0 0 0.34rem var(--glass-particle-glow-strong),
     0 0 0.72rem var(--glass-particle-glow-soft);
-  filter: saturate(1.42);
+  filter: saturate(1.18);
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(0.36);
@@ -199,17 +194,20 @@
 /* ── Ripple Animation / 波纹动画 ──────────────────────────────────────── */
 /* 触发条件：控制器添加 .glass-ripple--active。相比 :active，状态不会在
    pointerup 后立即消失，因此内部粒子可以完整散开。 */
-.glass-ripple--active::after,
-.glass-interactive:active::after,
-.glass-interactive--chip:active::after,
-.glass-cta:active::after,
-#nd-docs-layout header.border-b.backdrop-blur-sm > button:active::after,
-#nd-sidebar-mobile > div:first-child > button.flex.items-center:active::after {
+.glass-ripple--active > .glass-ripple-particles::before,
+.glass-interactive:active > .glass-ripple-particles::before,
+.glass-interactive--chip:active > .glass-ripple-particles::before,
+.glass-cta:active > .glass-ripple-particles::before,
+#nd-docs-layout header.border-b.backdrop-blur-sm > button:active > .glass-ripple-particles::before,
+#nd-sidebar-mobile
+  > div:first-child
+  > button.flex.items-center:active
+  > .glass-ripple-particles::before {
   animation: glass-ripple 1880ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   opacity: 1;
 }
 
-[data-glass-ripple].glass-ripple--tracking::after {
+[data-glass-ripple].glass-ripple--tracking > .glass-ripple-particles::before {
   animation: none;
   opacity: var(--glass-ripple-track-opacity);
   transform: translate3d(0, 0, 0) scale(1.01);
@@ -221,15 +219,7 @@
 
 @keyframes glass-ripple {
   0% {
-    background-position:
-      0 0,
-      0 0,
-      0 0,
-      0 0,
-      0 0,
-      0 0,
-      -120% 0;
-    filter: saturate(1.45) brightness(1.02) blur(0.35px);
+    filter: saturate(1.12) brightness(1.01) blur(0.35px);
     opacity: 0;
     transform: translate3d(0, 0, 0) scale(1);
   }
@@ -237,27 +227,12 @@
     opacity: var(--glass-ripple-peak-opacity);
   }
   62% {
-    background-position:
-      0.35rem -0.08rem,
-      -0.24rem 0.18rem,
-      -0.4rem -0.2rem,
-      0.16rem 0.28rem,
-      0 0,
-      0.08rem 0,
-      65% 0;
-    filter: saturate(1.34) brightness(1.08) blur(0);
+    filter: saturate(1.08) brightness(1.03) blur(0);
     opacity: var(--glass-ripple-mid-opacity);
+    transform: translate3d(0, 0, 0) scale(1.008);
   }
   100% {
-    background-position:
-      0.72rem -0.14rem,
-      -0.52rem 0.34rem,
-      -0.78rem -0.38rem,
-      0.34rem 0.56rem,
-      0 0,
-      0.18rem 0,
-      160% 0;
-    filter: saturate(1.18) brightness(1.02) blur(0.9px);
+    filter: saturate(1.04) brightness(1.01) blur(0.9px);
     opacity: 0;
     transform: translate3d(0, 0, 0) scale(1.018);
   }
@@ -265,7 +240,7 @@
 
 @keyframes glass-ripple-particle-scatter {
   0% {
-    filter: saturate(1.25) blur(0.25px);
+    filter: saturate(1.08) blur(0.25px);
     opacity: 0;
     transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(0.26);
   }
@@ -276,21 +251,21 @@
   }
 
   56% {
-    filter: saturate(1.6) blur(0);
+    filter: saturate(1.22) blur(0);
     opacity: var(--glass-particle-alpha);
     transform: translate(-50%, -50%)
       translate3d(var(--glass-particle-mid-x), var(--glass-particle-mid-y), 0) scale(1.04);
   }
 
   78% {
-    filter: saturate(1.36) blur(0.22px);
+    filter: saturate(1.14) blur(0.22px);
     opacity: var(--glass-particle-fade-alpha);
     transform: translate(-50%, -50%)
       translate3d(var(--glass-particle-late-x), var(--glass-particle-late-y), 0) scale(0.92);
   }
 
   100% {
-    filter: saturate(1.1) blur(0.9px);
+    filter: saturate(1.03) blur(0.9px);
     opacity: 0;
     transform: translate(-50%, -50%)
       translate3d(var(--glass-particle-end-x), var(--glass-particle-end-y), 0) scale(0.88);
@@ -300,12 +275,18 @@
 /* ── Reduced Motion / 减少动效 ────────────────────────────────────────── */
 /* 尊重系统的"减少动效"偏好：不播放波纹动画，仅保留轻微 tint 闪现。 */
 @media (prefers-reduced-motion: reduce) {
-  .glass-ripple--active::after,
-  .glass-interactive:active::after,
-  .glass-interactive--chip:active::after,
-  .glass-cta:active::after,
-  #nd-docs-layout header.border-b.backdrop-blur-sm > button:active::after,
-  #nd-sidebar-mobile > div:first-child > button.flex.items-center:active::after {
+  .glass-ripple--active > .glass-ripple-particles::before,
+  .glass-interactive:active > .glass-ripple-particles::before,
+  .glass-interactive--chip:active > .glass-ripple-particles::before,
+  .glass-cta:active > .glass-ripple-particles::before,
+  #nd-docs-layout
+    header.border-b.backdrop-blur-sm
+    > button:active
+    > .glass-ripple-particles::before,
+  #nd-sidebar-mobile
+    > div:first-child
+    > button.flex.items-center:active
+    > .glass-ripple-particles::before {
     animation: none;
     opacity: 0.26;
     transform: translate3d(0, 0, 0);
@@ -321,12 +302,18 @@
 /* 触屏设备 :active 状态可能在 touchend 后立即消失，波纹会一闪而过。
    在触屏上缩短波纹时长并保持 forwards 让最终态保持透明 0，避免残影。 */
 @media (hover: none) and (pointer: coarse) {
-  .glass-ripple--active::after,
-  .glass-interactive:active::after,
-  .glass-interactive--chip:active::after,
-  .glass-cta:active::after,
-  #nd-docs-layout header.border-b.backdrop-blur-sm > button:active::after,
-  #nd-sidebar-mobile > div:first-child > button.flex.items-center:active::after {
+  .glass-ripple--active > .glass-ripple-particles::before,
+  .glass-interactive:active > .glass-ripple-particles::before,
+  .glass-interactive--chip:active > .glass-ripple-particles::before,
+  .glass-cta:active > .glass-ripple-particles::before,
+  #nd-docs-layout
+    header.border-b.backdrop-blur-sm
+    > button:active
+    > .glass-ripple-particles::before,
+  #nd-sidebar-mobile
+    > div:first-child
+    > button.flex.items-center:active
+    > .glass-ripple-particles::before {
     animation-duration: 1360ms;
   }
 

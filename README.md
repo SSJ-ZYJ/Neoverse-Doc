@@ -63,7 +63,7 @@ Neoverse-Docs 是一个面向计算机科班学生与开发者社区的开源文
 - **页面过渡动效** — 自研 mask-reveal 径向镂空揭示动画 + page-enter 模糊淡入，由 framer-motion 驱动，按路由组方向不对称切换
 - **中文搜索支持** — 使用 Orama Mandarin 分词器，支持中文全文搜索
 - **双语 i18n (中文 / 英文)** — 零硬编码的字典式文案管理，覆盖 fumadocs 内置 UI 及项目自定义文案；导航栏右上角内置语言切换器
-- **液态玻璃主题** — CSS 变量驱动的毛玻璃效果，深色 / 浅色模式自动适配
+- **液态玻璃主题** — CSS 变量驱动的毛玻璃效果、全边界点击粒子与移动端按压拖动反馈，深色 / 浅色模式自动适配
 - **Giscus 社区互动** — 基于 GitHub Discussions 的留言墙，每个文档页底均内嵌评论区
 - **Mermaid 交互图表** — 内置缩放、拖动、重置、视口内放大工具栏，深色模式自动切换
 - **实用工具链** — TypeScript 严格模式、Biome 格式化与 Lint、Tailwind CSS v4
@@ -188,6 +188,7 @@ Neoverse-Doc/
 │   │   │   ├── mermaid.tsx           # Mermaid 图表渲染（缩放 / 拖动 / 最大化）
 │   │   │   └── docs-author.tsx       # 文档作者与贡献者展示
 │   │   ├── guestbook.tsx          # Giscus 评论组件（按 locale 切换语言）
+│   │   ├── glass-ripple-controller.tsx # 全局玻璃控件点击粒子控制器
 │   │   ├── search.tsx             # 静态搜索对话框（Orama + Mandarin 分词）
 │   │   ├── home-footer.tsx        # 首页 footer（仓库 / Git / 作者元信息）
 │   │   ├── sidebar-provider.tsx   # 侧栏折叠状态持久化 Provider
@@ -222,6 +223,7 @@ Neoverse-Doc/
 │       ├── home.css               # 首页渐变动画
 │       ├── mermaid.css            # Mermaid 图表样式
 │       ├── loading.css            # 路由加载样式
+│       ├── ripple.css             # 沉浸光场与点击粒子动效
 │       └── a11y.css               # 无障碍（减少动画 / 减少透明度 / 回退）
 ├── .github/ISSUE_TEMPLATE/        # GitHub Issue 模板（bug / feature / content）
 ├── .vscode/prompt/                # Commit 规范指引
@@ -347,7 +349,7 @@ Mermaid 11 通过 `fumadocs-core/mdx-plugins` 的 `remarkMdxMermaid` 接入，�
 - 视口内最大化（Portal 弹层）
 - 深色模式自动切换
 
-工具栏文案从共享字典读取，无障碍标签齐全。
+工具栏文案从共享字典读取，无障碍标签齐全。全局点击粒子使用宿主直属裁剪层并同步控件圆角；Mermaid 最大化画布与粒子宿主隔离，触发反馈不会改变图表或工具栏布局。
 
 ### LaTeX 公式渲染
 
@@ -394,6 +396,7 @@ src/styles/
 ├── home.css               # 首页：渐变背景动画
 ├── mermaid.css            # Mermaid：图表样式
 ├── loading.css            # 路由加载样式
+├── ripple.css             # 沉浸光场与点击粒子动效
 └── a11y.css               # 无障碍：减少动画 / 减少透明度 / 回退
 ```
 

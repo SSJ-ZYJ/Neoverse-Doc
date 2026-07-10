@@ -98,6 +98,7 @@ Neoverse-Doc/
 │   │   ├── mdx/               # MDX 内容渲染组件
 │   │   ├── search.tsx         # 静态搜索对话框
 │   │   ├── guestbook.tsx      # Giscus 评论组件
+│   │   ├── glass-ripple-controller.tsx # 全局玻璃控件点击粒子控制器
 │   │   └── sidebar-provider.tsx # 侧栏折叠状态持久化
 │   ├── dictionaries/          # i18n 语言包
 │   ├── lib/                   # 工具函数和配置
@@ -109,6 +110,7 @@ Neoverse-Doc/
 │       ├── fumadocs-glass.css # Fumadocs 表面玻璃化覆盖
 │       ├── typography.css     # 排版样式
 │       ├── home.css           # 首页渐变动画
+│       ├── ripple.css         # 沉浸光场与点击粒子动效
 │       └── a11y.css           # 无障碍样式
 ├── source.config.ts           # fumadocs-mdx 配置
 ├── next.config.ts             # Next.js 配置
@@ -124,6 +126,7 @@ Neoverse-Doc/
 2. **添加注释**：新增代码需添加功能描述注释
 3. **遵循技术栈**：使用 `package.json` 中定义的依赖版本
 4. **类型安全**：充分利用 TypeScript 类型系统
+5. **动效隔离**：命令式挂载的视觉特效必须使用宿主直属层，禁止覆盖业务组件已有的定位与布局属性
 
 ### 代码风格
 
