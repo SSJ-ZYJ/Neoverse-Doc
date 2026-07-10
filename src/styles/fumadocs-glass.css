@@ -753,6 +753,15 @@ button[data-theme-toggle],
   transform: translateY(0) scale(0.99);
 }
 
+/* Home and sidebar search shortcuts use a translucent glass keycap instead
+   of the opaque Fumadocs page background.
+   首页与侧栏搜索快捷键统一使用半透明玻璃键帽，避免纯黑底色割裂搜索按钮。 */
+:is(#nd-nav, #nd-sidebar) button[data-search-full] kbd {
+  background-color: color-mix(in srgb, var(--glass-tint-soft) 58%, transparent) !important;
+  border-color: var(--glass-border-hairline) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 56%, transparent);
+}
+
 /* Theme toggle: gives Fumadocs' built-in switcher a glass surface, pointer cursor,
    and clear hover / focus / active feedback without replacing its theme logic.
    主题切换：为 Fumadocs 内置切换器补充玻璃底、手型光标，以及清晰的 hover / focus / active 反馈，
@@ -959,6 +968,56 @@ button[data-theme-toggle]:focus-visible {
   align-items: stretch !important;
   gap: 0 !important;
   padding-block-start: calc(var(--spacing) * 2) !important;
+  position: relative;
+  isolation: isolate;
+}
+
+/* A shared inset surface follows the existing footer padding without turning
+   the whole footer container into a large glass block.
+   共享内嵌表面沿用页脚原有内边距，避免整个页脚容器变成大面积玻璃块。 */
+#nd-sidebar
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])::before {
+  position: absolute;
+  inset: calc(var(--spacing) * 2) calc(var(--spacing) * 4) calc(var(--spacing) * 4);
+  z-index: 0;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-lg);
+  background-color: var(--glass-tint);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  content: "";
+  pointer-events: none;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+#nd-sidebar
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+  > :is(button[aria-haspopup="dialog"], div:has(> button[data-theme-toggle])) {
+  position: relative;
+  z-index: 1;
+}
+
+/* The footer actions share one hover surface so the language segment and the
+   toolbar no longer illuminate as two detached controls.
+   侧栏底部操作共享同一悬浮表面，让语言分段与左侧工具栏整体发光。 */
+@media (hover: hover) {
+  #nd-sidebar
+    > div:has(> button[aria-haspopup="dialog"]):has(
+      > div > button[data-theme-toggle]
+    ):hover::before {
+    background-color: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
 }
 
 /* Toolbar segment: keep GitHub/theme as the flexible left part of the shared bar.
@@ -971,8 +1030,22 @@ button[data-theme-toggle]:focus-visible {
   min-inline-size: 0;
   border-start-end-radius: 0 !important;
   border-end-end-radius: 0 !important;
-  border-inline-end-width: 0 !important;
+  border-width: 0 !important;
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
   transform: none !important;
+}
+
+#nd-sidebar
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+  > div:has(> button[data-theme-toggle]):hover,
+#nd-sidebar
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+  > div:has(> button[data-theme-toggle]):has(button:hover) {
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 /* Language segment: mirror the homepage icon-only trigger while preserving
@@ -992,7 +1065,22 @@ button[data-theme-toggle]:focus-visible {
   border-start-start-radius: 0 !important;
   border-end-start-radius: 0 !important;
   border-inline-start: 1px solid var(--glass-border-hairline) !important;
+  border-block-width: 0 !important;
+  border-inline-end-width: 0 !important;
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
   transform: none !important;
+}
+
+@media (hover: hover) {
+  #nd-sidebar
+    > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+    > button[aria-haspopup="dialog"]:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
 }
 
 #nd-sidebar
@@ -1006,7 +1094,7 @@ button[data-theme-toggle]:focus-visible {
 #nd-sidebar
   > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
   > button[aria-haspopup="dialog"]
-  > :not(svg.lucide-languages) {
+  > :not(svg.lucide-languages, .glass-ripple-particles) {
   display: none !important;
 }
 

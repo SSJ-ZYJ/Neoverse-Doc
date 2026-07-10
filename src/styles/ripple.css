@@ -64,6 +64,31 @@
   overflow: hidden;
 }
 
+/* Particle-enabled controls own touch drags so mobile browsers do not cancel
+   a held horizontal or vertical gesture as native page scrolling. Content
+   surfaces are deliberately excluded to preserve normal document scrolling.
+   粒子按钮接管触摸拖动，避免移动浏览器将长按横向或纵向手势取消为原生页面滚动；
+   内容表面不在此列，以保留文档的正常滚动。 */
+:is(
+  .glass-interactive,
+  .glass-interactive--chip,
+  .glass-cta,
+  #nd-nav button,
+  #nd-sidebar button,
+  #nd-sidebar-mobile button,
+  #nd-docs-layout header button,
+  #nd-docs-layout > div.fixed.flex button,
+  #nd-sidebar
+    > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+    > div:has(> button[data-theme-toggle]),
+  [role="dialog"] button,
+  [data-radix-popper-content-wrapper] button,
+  [data-toc-popover-trigger],
+  .mermaid-toolbar button
+) {
+  touch-action: none;
+}
+
 /* ── Ripple Pseudo-Element Setup / 波纹伪元素基础 ─────────────────────── */
 /* 为所有可交互玻璃元素创建 ::after 伪元素作为按压亮面。
    真正的灵动粒子由控制器生成 .glass-ripple-particles。
@@ -113,7 +138,9 @@
     inset 0 0 1.15rem var(--glass-ripple-field-glow);
   filter: saturate(1.2) brightness(1.04);
   mix-blend-mode: var(--glass-ripple-field-blend-mode);
-  transform: translate3d(0, 0, 0) scale(0.98);
+  /* Keep the immersive field flush with every host edge throughout a click.
+     点击全程让沉浸光场贴合宿主边缘，避免宽按钮两侧出现内缩空隙。 */
+  transform: translate3d(0, 0, 0) scale(1);
   transform-origin: center;
   will-change: opacity, transform, filter, background-position;
 }
@@ -204,7 +231,7 @@
       -120% 0;
     filter: saturate(1.45) brightness(1.02) blur(0.35px);
     opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.98);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   16% {
     opacity: var(--glass-ripple-peak-opacity);

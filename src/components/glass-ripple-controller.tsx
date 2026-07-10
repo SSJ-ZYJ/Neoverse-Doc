@@ -5,6 +5,12 @@
 
 import { useEffect } from 'react';
 
+// Sidebar footer particles belong to the complete GitHub/theme segment so
+// clicks on either nested action illuminate the whole left toolbar.
+// 侧栏页脚粒子归属于完整的 GitHub / 主题分段，让任一子操作都点亮整条左侧工具栏。
+const SIDEBAR_FOOTER_TOOLBAR_SELECTOR =
+  '#nd-sidebar > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle]) > div:has(> button[data-theme-toggle])';
+
 const RIPPLE_CONTROL_SELECTOR = [
   '.glass-interactive',
   '.glass-interactive--chip',
@@ -13,6 +19,7 @@ const RIPPLE_CONTROL_SELECTOR = [
   '#nd-sidebar button',
   '#nd-sidebar-mobile button',
   '#nd-docs-layout header button',
+  SIDEBAR_FOOTER_TOOLBAR_SELECTOR,
   // Collapsed docs floating actions should share the same glass click particles.
   // 文档折叠态浮动操作按钮复用同一套玻璃点击粒子。
   '#nd-docs-layout > div.fixed.flex button',
@@ -110,6 +117,18 @@ function readControlRect(target: HTMLElement): ControlRect {
     top: rect.top,
     width: rect.width,
   };
+}
+
+// Drag emission pauses outside the captured control and resumes when the
+// pointer re-enters, keeping mobile particles strictly inside button bounds.
+// 拖动离开捕获控件时暂停发射，重新进入后恢复，确保移动端粒子始终位于按钮范围内。
+function isPointInsideControl(rect: ControlRect, clientX: number, clientY: number) {
+  return (
+    clientX >= rect.left &&
+    clientX <= rect.left + rect.width &&
+    clientY >= rect.top &&
+    clientY <= rect.top + rect.height
+  );
 }
 
 function getBurstConfig(pointerType: string, target: HTMLElement) {
@@ -368,7 +387,12 @@ export default function GlassRippleController() {
         return;
       }
 
-      const target = event.target.closest(RIPPLE_SELECTOR);
+      // Prefer the shared footer toolbar over its nested controls so the
+      // particle field fills the entire left segment instead of one icon.
+      // 优先选取共享页脚工具栏，避免粒子只局限于内部单个图标。
+      const target =
+        event.target.closest(SIDEBAR_FOOTER_TOOLBAR_SELECTOR) ??
+        event.target.closest(RIPPLE_SELECTOR);
       if (!(target instanceof HTMLElement)) {
         return;
       }
@@ -433,6 +457,11 @@ export default function GlassRippleController() {
       const dy = event.clientY - session.lastY;
       const distance = Math.hypot(dx, dy);
       const now = performance.now();
+
+      if (!isPointInsideControl(session.rect, event.clientX, event.clientY)) {
+        return;
+      }
+
       const { rect, x, y } = resolveLocalPoint(
         session.target,
         session.rect,
@@ -469,14 +498,17 @@ export default function GlassRippleController() {
       const dx = event.clientX - session.lastX;
       const dy = event.clientY - session.lastY;
       const direction = Math.hypot(dx, dy) > 0.5 ? Math.atan2(dy, dx) : undefined;
-      const { rect, x, y } = resolveLocalPoint(
-        session.target,
-        session.rect,
-        event.clientX,
-        event.clientY,
-      );
 
-      if (!reducedMotion.matches) {
+      if (
+        !reducedMotion.matches &&
+        isPointInsideControl(session.rect, event.clientX, event.clientY)
+      ) {
+        const { rect, x, y } = resolveLocalPoint(
+          session.target,
+          session.rect,
+          event.clientX,
+          event.clientY,
+        );
         emitParticleBurst(session.target, rect, x, y, { count: session.dragCount, direction });
       }
 
