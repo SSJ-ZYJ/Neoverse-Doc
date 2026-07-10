@@ -29,7 +29,7 @@
   --route-loading-band-ink: color-mix(in srgb, var(--foreground) 90%, var(--color-brand-end));
   --route-loading-band-glow: color-mix(in srgb, var(--color-brand-end) 18%, transparent);
   --route-loading-band-shadow: rgba(15, 23, 42, 0.14);
-  --route-loading-release-duration: 560ms;
+  --route-loading-release-duration: var(--nd-duration-loading-release, 560ms);
   --route-loading-release-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -65,7 +65,7 @@
 .route-loading-shell {
   position: fixed;
   inset: 0;
-  z-index: 9998;
+  z-index: var(--nd-z-transition-hold);
   display: grid;
   min-height: 100dvh;
   place-items: center;

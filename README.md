@@ -178,9 +178,7 @@ Neoverse-Doc/
 │   │   ├── transition/            # 页面过渡与遮罩揭示动画组件
 │   │   │   ├── mask-reveal.tsx       # 遮罩揭示径向扩展动画
 │   │   │   ├── enter-docs-button.tsx # 首页进入文档按钮
-│   │   │   ├── back-link.tsx         # 返回链接组件
-│   │   │   ├── docs-transition.tsx   # 文档正文稳定包装器
-│   │   │   └── nav-title.tsx         # 导航栏品牌标题
+│   │   │   └── back-link.tsx         # 返回链接组件
 │   │   ├── mdx/                   # MDX 内容渲染组件
 │   │   │   ├── custom-codeblock.tsx  # 增强代码块（文件路径 + 复制按钮）
 │   │   │   ├── code-tabs.tsx         # 多语言 Tabs 联动组件
@@ -189,6 +187,7 @@ Neoverse-Doc/
 │   │   │   └── docs-author.tsx       # 文档作者与贡献者展示
 │   │   ├── guestbook.tsx          # Giscus 评论组件（按 locale 切换语言）
 │   │   ├── glass-ripple-controller.tsx # 全局玻璃控件点击粒子控制器
+│   │   ├── nav-title.tsx         # 导航栏品牌标题（纯展示组件）
 │   │   ├── search.tsx             # 静态搜索对话框（Orama + Mandarin 分词）
 │   │   ├── home-footer.tsx        # 首页 footer（仓库 / Git / 作者元信息）
 │   │   ├── sidebar-provider.tsx   # 侧栏折叠状态持久化 Provider
@@ -203,6 +202,7 @@ Neoverse-Doc/
 │   │   ├── layout.shared.tsx      # fumadocs UI 翻译 + i18nProvider + baseOptions
 │   │   ├── site-config.ts         # 站点级常量（仓库 / 作者 / Giscus 配置）
 │   │   ├── motion.ts              # framer-motion 动画预设
+│   │   ├── animation-constants.ts # 集中式动画设计 token（时长 / z-index / 缓动 / a11y）
 │   │   ├── transition-snapshot.ts # 路由过渡快照工具（mask-reveal 协议）
 │   │   ├── parse-author.ts        # 作者 / 贡献者信息解析器
 │   │   ├── code-title.ts          # 代码块路径提取工具

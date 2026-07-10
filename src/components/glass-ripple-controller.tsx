@@ -4,6 +4,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { prefersReducedMotion } from '@/lib/animation-constants';
 
 // Sidebar footer particles belong to the complete GitHub/theme segment so
 // clicks on either nested action illuminate the whole left toolbar.
@@ -370,7 +371,6 @@ function emitParticleBurst(
 
 export default function GlassRippleController() {
   useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const sessions = new Map<number, RippleSession>();
     const timers = new WeakMap<HTMLElement, number>();
 
@@ -446,7 +446,7 @@ export default function GlassRippleController() {
       syncRippleGeometry(target);
       getParticleLayer(target, true);
       const { x, y } = resolveLocalPoint(target, rect, event.clientX, event.clientY);
-      if (!reducedMotion.matches) {
+      if (!prefersReducedMotion()) {
         emitParticleBurst(target, rect, x, y, { count: burstConfig.initialCount });
       }
 
@@ -504,7 +504,7 @@ export default function GlassRippleController() {
       }
 
       const direction = Math.atan2(dy, dx);
-      if (!reducedMotion.matches) {
+      if (!prefersReducedMotion()) {
         emitParticleBurst(session.target, rect, x, y, { count: session.dragCount, direction });
       }
 
@@ -530,7 +530,7 @@ export default function GlassRippleController() {
       const direction = Math.hypot(dx, dy) > 0.5 ? Math.atan2(dy, dx) : undefined;
 
       if (
-        !reducedMotion.matches &&
+        !prefersReducedMotion() &&
         isPointInsideControl(session.rect, event.clientX, event.clientY)
       ) {
         const { rect, x, y } = resolveLocalPoint(

@@ -9,15 +9,16 @@
 // 及硬编码的 storage key 字符串。
 
 import type { MouseEvent } from 'react';
+import { ANIMATION_SNAPSHOT, ANIMATION_Z_INDEX } from '@/lib/animation-constants';
 
 // sessionStorage key for the transition snapshot (single source of truth).
 // 过渡快照的 sessionStorage 键名（唯一来源）。
 export const TRANSITION_STORAGE_KEY = 'nd-docs-transition';
 const TRANSITION_HOLD_OVERLAY_ID = 'nd-route-transition-hold';
 
-// TTL: snapshots older than 3s are considered stale and ignored.
-// 有效期：超过 3 秒的快照视为过期并忽略。
-const TRANSITION_TTL_MS = 3000;
+// TTL: snapshots older than this are considered stale and ignored.
+// 有效期：超过此时间的快照视为过期并忽略。
+const TRANSITION_TTL_MS = ANIMATION_SNAPSHOT.ttl;
 
 // Full payload written to sessionStorage.
 // 写入 sessionStorage 的完整载荷。
@@ -41,19 +42,6 @@ export interface TransitionSnapshotData {
   scrollY: number;
   layoutWidth: number;
   sourcePath: string;
-}
-
-// Resolve the click origin: falls back to the anchor's center when the event
-// has zero coordinates (keyboard activation / synthetic click).
-// 解析点击坐标：当事件坐标为 0 时回退到锚点中心（键盘激活 / 合成点击）。
-function resolveClickPoint(event: MouseEvent<HTMLAnchorElement>): { x: number; y: number } {
-  let { clientX: x, clientY: y } = event;
-  if (x === 0 && y === 0) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    x = rect.left + rect.width / 2;
-    y = rect.top + rect.height / 2;
-  }
-  return { x, y };
 }
 
 // IDs of the transient transition layers whose cloned DOM must never be
@@ -182,7 +170,7 @@ function mountTransitionHoldOverlay(data: TransitionSnapshot): void {
     'position:fixed',
     'inset:0',
     'right:auto',
-    'z-index:9998',
+    `z-index:${ANIMATION_Z_INDEX.transitionHold}`,
     `width:${layoutWidth}px`,
     'height:100vh',
     'overflow:hidden',
@@ -197,12 +185,16 @@ function mountTransitionHoldOverlay(data: TransitionSnapshot): void {
 
 // Capture the current <main> outerHTML + click point into sessionStorage so
 // MaskReveal can play the radial cutout transition on the destination page.
+// Uses resolveActivationPoint to handle keyboard activation (zero coordinates)
+// by falling back to the anchor's bounding rect center.
 // 将当前 <main> 外层 HTML 与点击坐标写入 sessionStorage，
 // 供目标页的 MaskReveal 播放径向镂空过渡动画。
+// 使用 resolveActivationPoint 处理键盘激活（坐标为 0）的情况，
+// 回退到锚点的包围矩形中心。
 export function captureTransitionSnapshot(event: MouseEvent<HTMLAnchorElement>): void {
   if (typeof window === 'undefined') return;
 
-  const { x, y } = resolveClickPoint(event);
+  const { x, y } = resolveActivationPoint(event, event.currentTarget);
   captureTransitionSnapshotAtPoint(x, y);
 }
 
@@ -269,13 +261,60 @@ export function removeTransitionHoldOverlay(): void {
   document.getElementById(TRANSITION_HOLD_OVERLAY_ID)?.remove();
 }
 
-// --- Route-group classification ---
-// --- 路由组分类 ---
+// --- Path & activation helpers (shared by transition components) ---
+// --- 路径与激活判断工具（供过渡组件共用） ---
 
-function normalizePathname(pathname: string): string {
+// Normalize a pathname by stripping trailing slashes. Root "/" is preserved.
+// 规范化路径：去除尾部斜杠，根路径 "/" 保留。
+export function normalizePathname(pathname: string): string {
   const normalized = pathname.replace(/\/+$/, '');
   return normalized.length > 0 ? normalized : '/';
 }
+
+// Check whether a pointer/mouse event is a plain primary (left-click without
+// modifier keys) activation. Shared by EnterDocsButton and MaskReveal's global
+// click capture to keep the two code paths in sync.
+// 判断指针 / 鼠标事件是否为普通主键激活（左键且无修饰键）。EnterDocsButton 与
+// MaskReveal 全局 click 捕获共用，保证两处判断逻辑一致。
+export function isPlainPrimaryActivation(event: {
+  defaultPrevented: boolean;
+  button: number;
+  metaKey: boolean;
+  ctrlKey: boolean;
+  shiftKey: boolean;
+  altKey: boolean;
+}): boolean {
+  return !(
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  );
+}
+
+// Resolve the activation point from a mouse/pointer event, falling back to the
+// anchor's bounding rect center when the event has zero coordinates (keyboard
+// activation / synthetic click). Unified to eliminate three copies of the same
+// fallback logic.
+// 从鼠标 / 指针事件解析激活坐标，当事件坐标为 0 时回退到锚点中心
+// （键盘激活 / 合成点击）。统一实现，消除三处重复的回退逻辑。
+export function resolveActivationPoint(
+  event: { clientX: number; clientY: number },
+  currentTarget?: { getBoundingClientRect: () => DOMRect } | null,
+): { x: number; y: number } {
+  let { clientX: x, clientY: y } = event;
+  if (x === 0 && y === 0 && currentTarget) {
+    const rect = currentTarget.getBoundingClientRect();
+    x = rect.left + rect.width / 2;
+    y = rect.top + rect.height / 2;
+  }
+  return { x, y };
+}
+
+// --- Route-group classification ---
+// --- 路由组分类 ---
 
 function getLocalePrefix(pathname: string): string | null {
   const segment = pathname.split('/').filter(Boolean)[0];

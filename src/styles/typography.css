@@ -722,7 +722,8 @@ figure.shiki > div:first-child {
   margin-left: 0.15em;
   vertical-align: -0.12em;
   background: var(--color-alert-ai);
-  animation: markdown-details-ai-caret-blink 0.85s steps(1, end) infinite;
+  animation: markdown-details-ai-caret-blink var(--nd-duration-ai-caret-blink) steps(1, end)
+    infinite;
 }
 
 @keyframes markdown-details-ai-caret-blink {

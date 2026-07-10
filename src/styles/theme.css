@@ -18,6 +18,19 @@
 :root {
   --theme-transition-duration: 0.3s;
   --default-transition-duration: var(--theme-transition-duration);
+
+  /* ── Animation Design Tokens / 动画设计 Token ─────────────────────── */
+  /* Mirrors src/lib/animation-constants.ts. Keep in sync when changing.
+     与 src/lib/animation-constants.ts 同步，修改时请两边一起更新。 */
+  /* Durations / 时长 */
+  --nd-duration-page-enter: 650ms;
+  --nd-duration-mask-reveal: 2500ms;
+  --nd-duration-loading-release: 560ms;
+  --nd-duration-ripple: 1880ms;
+  --nd-duration-ai-caret-blink: 850ms;
+  /* Z-index layers for transient transition overlays / 过渡层 z-index */
+  --nd-z-transition-hold: 9998;
+  --nd-z-mask-reveal: 9999;
 }
 
 /* Global catch-all: elements that inherit themed colors but have no

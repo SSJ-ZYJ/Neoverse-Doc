@@ -10,21 +10,20 @@
 import { animate, motion, useMotionTemplate, useMotionValue, useTransform } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ANIMATION_Z_INDEX, prefersReducedMotion } from '@/lib/animation-constants';
 import { maskRevealTransition } from '@/lib/motion';
 import {
   captureTransitionSnapshotAtPoint,
   clearTransitionSnapshot,
   isCrossRouteGroupTransition,
+  isPlainPrimaryActivation,
+  normalizePathname,
   readTransitionSnapshot,
   removeTransitionHoldOverlay,
   renderTransitionSnapshotHTML,
+  resolveActivationPoint,
   type TransitionSnapshotData,
 } from '@/lib/transition-snapshot';
-
-function normalizePathname(pathname: string): string {
-  const normalized = pathname.replace(/\/+$/, '');
-  return normalized.length > 0 ? normalized : '/';
-}
 
 export default function MaskReveal() {
   const pathname = usePathname();
@@ -129,16 +128,7 @@ export default function MaskReveal() {
     const handleRouteIntent = (event: Event) => {
       if (!(event instanceof MouseEvent)) return;
 
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey
-      ) {
-        return;
-      }
+      if (!isPlainPrimaryActivation(event)) return;
 
       const target = event.target instanceof Element ? event.target : null;
       // Skip custom components that handle their own snapshot capture.
@@ -153,9 +143,7 @@ export default function MaskReveal() {
       if (url.origin !== window.location.origin) return;
       if (!isCrossRouteGroupTransition(window.location.pathname, url.pathname)) return;
 
-      const rect = anchor.getBoundingClientRect();
-      const x = event.clientX || rect.left + rect.width / 2;
-      const y = event.clientY || rect.top + rect.height / 2;
+      const { x, y } = resolveActivationPoint(event, anchor);
       captureTransitionSnapshotAtPoint(x, y);
     };
 
@@ -172,6 +160,17 @@ export default function MaskReveal() {
 
   useEffect(() => {
     if (!revealData) return;
+
+    // Respect prefers-reduced-motion: skip the 2.5s radial animation entirely
+    // and immediately reveal the target page. This prevents vestibular discomfort
+    // for users who have requested reduced motion at the OS level.
+    // 尊重 prefers-reduced-motion：完全跳过 2.5 秒径向动画，立即揭示目标页。
+    // 避免对在系统层面请求减弱动画的用户造成前庭不适。
+    if (prefersReducedMotion()) {
+      setRevealData(null);
+      removeTransitionHoldOverlay();
+      return;
+    }
 
     // Reset MotionValues to their initial states before starting a new
     // animation. Without this, after the first reveal completes radius
@@ -249,9 +248,10 @@ export default function MaskReveal() {
       id="nd-docs-transition-mask"
       // bg-background prevents cloned DOM with transparent areas from showing through.
       // 指定 bg-background 防止克隆过来的 DOM 有透明底区域穿帮。
-      className="fixed inset-0 z-[9999] pointer-events-none bg-background"
+      className="fixed inset-0 pointer-events-none bg-background"
       ref={maskRef}
       style={{
+        zIndex: ANIMATION_Z_INDEX.maskReveal,
         opacity: 1, // Must be absolutely opaque / 必须绝对不透明
         willChange: 'mask-image, -webkit-mask-image',
         WebkitMaskImage: maskImage,

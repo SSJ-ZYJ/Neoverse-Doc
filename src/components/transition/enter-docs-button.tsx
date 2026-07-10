@@ -14,32 +14,9 @@ import { type MouseEvent, type PointerEvent, type ReactNode, useRef } from 'reac
 import {
   captureTransitionSnapshot,
   captureTransitionSnapshotAtPoint,
+  isPlainPrimaryActivation,
+  resolveActivationPoint,
 } from '@/lib/transition-snapshot';
-
-function isPlainPrimaryActivation(
-  event: MouseEvent<HTMLAnchorElement> | PointerEvent<HTMLAnchorElement>,
-): boolean {
-  return !(
-    event.defaultPrevented ||
-    event.button !== 0 ||
-    event.metaKey ||
-    event.ctrlKey ||
-    event.shiftKey ||
-    event.altKey
-  );
-}
-
-function resolveActivationPoint(
-  event: MouseEvent<HTMLAnchorElement> | PointerEvent<HTMLAnchorElement>,
-): { x: number; y: number } {
-  let { clientX: x, clientY: y } = event;
-  if (x === 0 && y === 0) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    x = rect.left + rect.width / 2;
-    y = rect.top + rect.height / 2;
-  }
-  return { x, y };
-}
 
 export default function EnterDocsButton({
   href,
@@ -57,7 +34,7 @@ export default function EnterDocsButton({
       return;
     }
 
-    const { x, y } = resolveActivationPoint(event);
+    const { x, y } = resolveActivationPoint(event, event.currentTarget);
     hasPrimedSnapshotRef.current = true;
 
     // Pointer-up fires before the following click event, so the hold overlay

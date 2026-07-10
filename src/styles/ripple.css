@@ -203,7 +203,7 @@
   > div:first-child
   > button.flex.items-center:active
   > .glass-ripple-particles::before {
-  animation: glass-ripple 1880ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: glass-ripple var(--nd-duration-ripple) cubic-bezier(0.22, 1, 0.36, 1) forwards;
   opacity: 1;
 }
 

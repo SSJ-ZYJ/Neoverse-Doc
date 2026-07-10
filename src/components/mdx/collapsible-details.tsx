@@ -20,6 +20,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { prefersReducedMotion } from '@/lib/animation-constants';
 
 const AI_DETAILS_CLASS = 'markdown-details-ai';
 const AI_DETAILS_BODY_CLASS = 'markdown-details-ai-body';
@@ -80,7 +81,7 @@ export function CollapsibleDetails(props: ComponentProps<'details'>) {
   useEffect(() => {
     if (!isAiDetails || !isOpen || animationRunId === 0 || chunkCount === 0) return;
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (prefersReducedMotion()) {
       setVisibleChunks(chunkCount);
       return;
     }
