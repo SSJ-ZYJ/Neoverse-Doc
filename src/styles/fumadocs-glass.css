@@ -109,7 +109,7 @@
 :where(#nd-sidebar-mobile),
 :where([data-toc-popover-content]) > div,
 button[data-theme-toggle],
-[role="dialog"][data-state="open"]:has(input),
+[role="dialog"][data-state]:has(input),
 [data-radix-popper-content-wrapper] > [role="dialog"] {
   transition-duration: var(--theme-transition-duration);
 }
@@ -1180,9 +1180,13 @@ button[data-theme-toggle]:focus-visible {
    SearchDialogContent, which made the previous :not(:has(> h2)) guard wrongly exclude it.
    搜索弹窗 / Radix Dialog 内容：直接接管 dialog 元素自身（而非首个子元素），
    覆盖 fumadocs 默认不透明的 bg-fd-popover，让下层页面内容透过来。
+   Keep the surface active for both open and closed states because Radix sets
+   data-state="closed" before its exit animation finishes; restricting this
+   rule to open would expose the opaque default surface during the final fade frame.
    通过 :has(input) 识别搜索弹窗（fumadocs 会在 SearchDialogContent 内强制渲染隐藏的 h2 DialogTitle，
-   之前用 :not(:has(> h2)) 做排除会把整个搜索 dialog 也排除掉） */
-[role="dialog"][data-state="open"]:has(input) {
+   之前用 :not(:has(> h2)) 做排除会把整个搜索 dialog 也排除掉）。同时覆盖 open / closed
+   生命周期，因为 Radix 会先切换为 closed 再完成退出动画，避免淡出末帧闪回默认不透明表面。 */
+[role="dialog"][data-state]:has(input) {
   background-color: var(--glass-tint-search) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-search)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
