@@ -290,7 +290,10 @@
   box-shadow: none;
 }
 
-#nd-page :is(figure, table, blockquote, [role="alert"], [role="tablist"], [data-card="true"]) {
+/* Fumadocs Markdown tables keep glass on their outer scroll wrapper so the transparent
+   inner table cannot cover the shared particle field.
+   Fumadocs Markdown 表格由外层滚动容器承载玻璃效果，避免内层透明表格覆盖共享粒子场。 */
+#nd-page :is(figure, blockquote, [role="alert"], [role="tablist"], [data-card="true"]) {
   border-color: var(--border-subtle) !important;
   background: var(--glass-refraction-fill), var(--surface-glass) !important;
   box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
