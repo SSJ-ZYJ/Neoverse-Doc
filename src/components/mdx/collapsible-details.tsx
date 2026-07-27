@@ -18,9 +18,10 @@ import {
   type ReactNode,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
-import { prefersReducedMotion } from '@/lib/animation-constants';
+import { prefersReducedMotion } from '@/lib/motion-config';
 
 const AI_DETAILS_CLASS = 'markdown-details-ai';
 const AI_DETAILS_BODY_CLASS = 'markdown-details-ai-body';
@@ -65,6 +66,15 @@ export function CollapsibleDetails(props: ComponentProps<'details'>) {
   const [isOpen, setIsOpen] = useState(Boolean(open));
   const [visibleChunks, setVisibleChunks] = useState(chunkCount);
   const [animationRunId, setAnimationRunId] = useState(0);
+  // Mirror of visibleChunks for use inside effect closures (visibilitychange
+  // handlers) where reading state directly would capture a stale value.
+  // visibleChunks 的镜像，用于 effect 闭包内（visibilitychange 处理器）读取，
+  // 直接读取 state 会捕获到过期值。
+  const visibleChunksRef = useRef(visibleChunks);
+
+  useEffect(() => {
+    visibleChunksRef.current = visibleChunks;
+  }, [visibleChunks]);
 
   useEffect(() => {
     if (typeof open === 'boolean') {
@@ -87,15 +97,53 @@ export function CollapsibleDetails(props: ComponentProps<'details'>) {
     }
 
     setVisibleChunks(0);
-    const interval = window.setInterval(() => {
-      setVisibleChunks((current) => {
-        const next = Math.min(current + 1, chunkCount);
-        if (next >= chunkCount) window.clearInterval(interval);
-        return next;
-      });
-    }, getAdaptiveInterval(chunkCount));
+    let interval: number | null = null;
 
-    return () => window.clearInterval(interval);
+    const startInterval = () => {
+      if (interval !== null) return;
+      interval = window.setInterval(() => {
+        setVisibleChunks((current) => {
+          const next = Math.min(current + 1, chunkCount);
+          if (next >= chunkCount && interval !== null) {
+            window.clearInterval(interval);
+            interval = null;
+          }
+          return next;
+        });
+      }, getAdaptiveInterval(chunkCount));
+    };
+
+    const stopInterval = () => {
+      if (interval !== null) {
+        window.clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    startInterval();
+
+    // Pause the typewriter when the tab is hidden so background pages do not
+    // keep firing setInterval callbacks. On focus, resume only if the
+    // animation is still in flight (visibleChunksRef.current < chunkCount);
+    // the setInterval reads the latest state via the updater function, so it
+    // resumes from the correct chunk without needing the startChunk argument.
+    // 标签页隐藏时暂停打字机，避免后台页面持续触发 setInterval 回调。
+    // 焦点恢复时仅在动画仍在进行中（visibleChunksRef.current < chunkCount）才恢复；
+    // setInterval 通过 updater 函数读取最新 state，无需 startChunk 参数即可从正确位置继续。
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopInterval();
+      } else if (visibleChunksRef.current < chunkCount) {
+        startInterval();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      stopInterval();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [animationRunId, chunkCount, isAiDetails, isOpen]);
 
   const animatedBody = useMemo(() => {

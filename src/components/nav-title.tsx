@@ -8,5 +8,9 @@
 // 通过不对称的 isCrossRouteGroupTransition 规则改用 page-enter（模糊），
 // 不再需要捕获快照。作为纯展示组件移至当前目录。
 export function NavTitle() {
-  return <span className="font-orbitron font-bold text-xl tracking-wider">Neoverse-Doc</span>;
+  return (
+    <span className="site-brand-title font-orbitron font-bold text-xl tracking-wider">
+      Neoverse-Docs
+    </span>
+  );
 }

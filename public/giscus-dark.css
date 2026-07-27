@@ -1,0 +1,357 @@
+/* Neoverse dark theme for the cross-origin Giscus iframe.
+   Giscus iframe 使用的 Neoverse 深色主题。 */
+
+main {
+  color-scheme: dark;
+  --color-prettylights-syntax-comment: #8294a6;
+  --color-prettylights-syntax-constant: #9b8cff;
+  --color-prettylights-syntax-entity: #67e8f9;
+  --color-prettylights-syntax-storage-modifier-import: #b5c3d1;
+  --color-prettylights-syntax-entity-tag: #4adea6;
+  --color-prettylights-syntax-keyword: #c4b5fd;
+  --color-prettylights-syntax-string: #7dd3fc;
+  --color-prettylights-syntax-variable: #fdba74;
+  --color-prettylights-syntax-brackethighlighter-unmatched: #fb7185;
+  --color-prettylights-syntax-invalid-illegal-text: #f8fafc;
+  --color-prettylights-syntax-invalid-illegal-bg: #991b1b;
+  --color-prettylights-syntax-carriage-return-text: #f8fafc;
+  --color-prettylights-syntax-carriage-return-bg: #b91c1c;
+  --color-prettylights-syntax-string-regexp: #4adea6;
+  --color-prettylights-syntax-markup-list: #fde047;
+  --color-prettylights-syntax-markup-heading: #38bdf8;
+  --color-prettylights-syntax-markup-italic: #b5c3d1;
+  --color-prettylights-syntax-markup-bold: #f8fafc;
+  --color-prettylights-syntax-markup-deleted-text: #fecaca;
+  --color-prettylights-syntax-markup-deleted-bg: rgb(153 27 27 / 34%);
+  --color-prettylights-syntax-markup-inserted-text: #bbf7d0;
+  --color-prettylights-syntax-markup-inserted-bg: rgb(22 101 52 / 32%);
+  --color-prettylights-syntax-markup-changed-text: #fde68a;
+  --color-prettylights-syntax-markup-changed-bg: rgb(133 77 14 / 32%);
+  --color-prettylights-syntax-markup-ignored-text: #b5c3d1;
+  --color-prettylights-syntax-markup-ignored-bg: rgb(3 105 161 / 36%);
+  --color-prettylights-syntax-meta-diff-range: #c4b5fd;
+  --color-prettylights-syntax-brackethighlighter-angle: #8294a6;
+  --color-prettylights-syntax-sublimelinter-gutter-mark: #6c7f90;
+  --color-prettylights-syntax-constant-other-reference-link: #7dd3fc;
+  --color-btn-text: #dbe7ef;
+  --color-btn-bg: rgb(15 23 42 / 42%);
+  --color-btn-border: rgb(226 232 240 / 14%);
+  --color-btn-shadow: inset 0 1px 0 rgb(248 250 252 / 14%);
+  --color-btn-inset-shadow: 0 0 transparent;
+  --color-btn-hover-bg: rgb(56 189 248 / 14%);
+  --color-btn-hover-border: rgb(56 189 248 / 44%);
+  --color-btn-active-bg: rgb(56 189 248 / 20%);
+  --color-btn-active-border: rgb(56 189 248 / 58%);
+  --color-btn-selected-bg: rgb(56 189 248 / 16%);
+  /* The primary action uses a low-luminance ocean glass palette so GitHub login
+     remains prominent without importing the light theme's bright gradient.
+     主操作采用低亮度深海玻璃配色，使 GitHub 登录保持醒目，同时避免沿用浅色主题的高亮渐变。 */
+  --color-btn-primary-text: #dff7ff;
+  --color-btn-primary-bg: #132238;
+  --color-btn-primary-border: rgb(125 211 252 / 44%);
+  --color-btn-primary-shadow: 0 12px 28px -18px rgb(56 189 248 / 50%);
+  --color-btn-primary-inset-shadow: inset 0 1px 0 rgb(248 250 252 / 16%);
+  --color-btn-primary-hover-bg: #17304a;
+  --color-btn-primary-hover-border: rgb(125 211 252 / 70%);
+  --color-btn-primary-selected-bg: #0e2a40;
+  --color-btn-primary-selected-shadow: inset 0 1px 0 rgb(248 250 252 / 12%);
+  --color-btn-primary-disabled-text: rgb(223 247 255 / 52%);
+  --color-btn-primary-disabled-bg: rgb(19 34 56 / 64%);
+  --color-btn-primary-disabled-border: rgb(125 211 252 / 18%);
+  --neoverse-btn-primary-sheen: linear-gradient(
+    135deg,
+    rgb(56 189 248 / 12%),
+    rgb(74 222 166 / 7%)
+  );
+  --color-action-list-item-default-hover-bg: rgb(56 189 248 / 12%);
+  --color-segmented-control-bg: rgb(248 250 252 / 6%);
+  --color-segmented-control-button-bg: rgb(17 25 45 / 58%);
+  --color-segmented-control-button-selected-border: rgb(56 189 248 / 44%);
+  --color-fg-default: #f8fafc;
+  --color-fg-muted: #b5c3d1;
+  --color-fg-subtle: #8294a6;
+  --color-canvas-default: transparent;
+  --color-canvas-overlay: #0b1120;
+  --color-canvas-inset: rgb(4 8 18 / 78%);
+  --color-canvas-subtle: rgb(15 23 42 / 28%);
+  --color-border-default: rgb(226 232 240 / 18%);
+  --color-border-muted: rgb(226 232 240 / 12%);
+  --color-neutral-muted: rgb(181 195 209 / 15%);
+  --color-accent-fg: #38bdf8;
+  --color-accent-emphasis: #0ea5e9;
+  --color-accent-muted: rgb(56 189 248 / 42%);
+  --color-accent-subtle: rgb(56 189 248 / 13%);
+  --color-success-fg: #4adea6;
+  --color-attention-fg: #fde047;
+  --color-attention-muted: rgb(253 224 71 / 34%);
+  --color-attention-subtle: rgb(253 224 71 / 10%);
+  --color-danger-fg: #fb7185;
+  --color-danger-muted: rgb(251 113 133 / 34%);
+  --color-danger-subtle: rgb(251 113 133 / 10%);
+  --color-primer-shadow-inset: inset 0 1px 0 rgb(248 250 252 / 12%);
+  --color-scale-gray-7: rgb(248 250 252 / 8%);
+  --color-scale-blue-8: rgb(56 189 248 / 20%);
+  --color-social-reaction-bg-hover: var(--color-scale-gray-7);
+  --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-8);
+  /* Flat graphite-ocean surfaces replace the directional gradient: the tabs,
+     editor body, and footer use restrained tonal steps with neutral cool edges.
+     平面石墨深海表面替代定向渐变：标签栏、编辑区与底栏使用克制色阶和中性冷色边缘。 */
+  --neoverse-surface: rgb(10 16 30 / 84%);
+  --neoverse-surface-raised: rgb(17 25 43 / 64%);
+  --neoverse-surface-subtle: rgb(11 19 34 / 52%);
+  /* Reaction popovers use a more translucent refractive layer than persistent
+     comment surfaces so the document remains visible through the floating glass.
+     表情弹层使用比常驻评论表面更透明的折射层，使文档背景能透过悬浮玻璃。 */
+  --neoverse-reaction-popover-surface: rgb(10 18 35 / 44%);
+  --neoverse-reaction-popover-refraction: linear-gradient(
+    145deg,
+    rgb(248 250 252 / 8%),
+    transparent 42%,
+    rgb(56 189 248 / 5%)
+  );
+  --neoverse-reaction-popover-shadow: 0 18px 42px -24px rgb(2 6 23 / 82%);
+  --neoverse-edge-light: rgb(203 213 225 / 12%);
+  --neoverse-edge-muted: rgb(125 143 164 / 20%);
+  /* Mirrors --radius-xs / sm / md / pill from the host design system.
+     镜像宿主设计系统的 --radius-xs / sm / md / pill。 */
+  --neoverse-radius-control: 8px;
+  --neoverse-radius-field: 10px;
+  --neoverse-radius-surface: 14px;
+  --neoverse-radius-pill: 999rem;
+  --neoverse-shadow: 0 18px 44px -32px rgb(2 6 23 / 88%);
+}
+
+/* Keep every iframe canvas layer explicitly dark and transparent so theme
+   changes cannot leave an opaque stale root behind the custom surfaces.
+   显式保持 iframe 各画布层为深色透明，避免主题切换后遗留不透明的旧根画布。 */
+html,
+body {
+  color-scheme: dark;
+  background: transparent !important;
+}
+
+/* Stable gsc-prefixed hooks restyle Giscus controls without depending on its DOM nesting.
+   使用稳定的 gsc 前缀钩子调整 Giscus 控件，避免依赖其 DOM 嵌套层级。 */
+body {
+  font-family: "Noto Sans SC", "Segoe UI", sans-serif;
+}
+
+.gsc-main {
+  color: var(--color-fg-default);
+  background: transparent !important;
+}
+
+.gsc-comment-box,
+.gsc-comment,
+.gsc-reply-box,
+.gsc-reactions-popover {
+  overflow: hidden !important;
+  border: 1px solid var(--color-border-muted);
+  border-radius: var(--neoverse-radius-surface) !important;
+  background: var(--neoverse-surface);
+  box-shadow:
+    inset 0 1px 0 var(--neoverse-edge-light),
+    var(--neoverse-shadow);
+  backdrop-filter: blur(8px) saturate(132%);
+}
+
+/* The reaction picker is a floating glass layer: its lower opacity and stronger
+   backdrop blur reveal page context without sacrificing emoji or label contrast.
+   表情选择器使用悬浮玻璃层：降低底色不透明度并增强背景模糊，在保留页面语境的同时
+   确保表情与提示文字清晰。 */
+.gsc-reactions-popover {
+  border-color: var(--neoverse-edge-muted) !important;
+  background:
+    var(--neoverse-reaction-popover-refraction), var(--neoverse-reaction-popover-surface) !important;
+  box-shadow:
+    inset 0 1px 0 var(--neoverse-edge-light),
+    var(--neoverse-reaction-popover-shadow) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(138%);
+  backdrop-filter: blur(18px) saturate(138%);
+}
+
+/* Reactions stay visually unboxed; only individual emoji controls retain the
+   compact control radius.
+   表情区保持无框，仅单个表情控件保留紧凑控件圆角。 */
+.gsc-reactions,
+.gsc-reactions-count {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+/* The editor owns one md-radius clipping boundary. Tabs and the editor body
+   complete its top and bottom corners instead of drawing nested rectangles.
+   评论编辑器仅保留一层 md 圆角裁剪边界，标签栏与主体分别补全上下圆角。 */
+/* Draw the editor outline inward so its right edge cannot be clipped by the iframe viewport.
+   将编辑器轮廓向内绘制，避免右侧边缘被 iframe 视口裁切。 */
+.gsc-comment-box {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  border-color: transparent !important;
+  border-radius: var(--neoverse-radius-surface) !important;
+  box-shadow:
+    inset 0 0 0 1px var(--neoverse-edge-muted),
+    inset 0 1px 0 var(--neoverse-edge-light),
+    var(--neoverse-shadow) !important;
+}
+
+/* The outer editor owns the surface radius; its header, body, and footer stay
+   square internally so their edges merge into one continuous card.
+   编辑器外壳独占表面圆角，内部标题栏、主体与底栏保持方形并连续衔接。 */
+.gsc-comment-box-tabs,
+.gsc-comment-box-main,
+.gsc-comment-box-bottom,
+.gsc-comment-header {
+  border-radius: 0 !important;
+  border-color: var(--color-border-muted);
+  background: transparent;
+}
+
+.gsc-comment-box-tabs button {
+  border-radius: var(--neoverse-radius-control) var(--neoverse-radius-control) 0 0 !important;
+}
+
+/* Flat tonal sections keep the editor hierarchy readable without directional
+   color drift across the rounded outer frame.
+   平面色阶让编辑器层级保持清晰，同时避免圆角外框出现方向性色偏。 */
+.gsc-comment-box-tabs {
+  background: var(--neoverse-surface-raised);
+}
+
+.gsc-comment-box-bottom {
+  background: var(--neoverse-surface-subtle);
+}
+
+.gsc-comment-box-main {
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow: visible !important;
+}
+
+/* Textarea and Markdown hint form one field surface. This removes nested
+   rounded rectangles and lets one clipping boundary protect both right corners.
+   文本区与 Markdown 提示栏组成单一输入表面，消除嵌套圆角并统一保护右侧两角。 */
+.gsc-comment-box-write {
+  box-sizing: border-box;
+  overflow: hidden;
+  max-inline-size: 100%;
+  border-radius: var(--neoverse-radius-field);
+  background: var(--color-canvas-inset);
+  box-shadow:
+    inset 0 0 0 1px var(--neoverse-edge-muted),
+    inset 0 1px 0 var(--neoverse-edge-light);
+}
+
+.gsc-comment-box-write:focus-within {
+  box-shadow:
+    inset 0 0 0 1px var(--color-accent-fg),
+    0 0 0 3px var(--color-accent-subtle);
+}
+
+.gsc-comment-box-textarea,
+.gsc-reply-box-textarea,
+.gsc-comment-box-textarea-extras {
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  color: var(--color-fg-default);
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.gsc-comment-box-textarea {
+  resize: none;
+  scrollbar-color: var(--color-fg-subtle) transparent;
+  scrollbar-width: thin;
+}
+
+.gsc-comment-box-textarea::-webkit-scrollbar {
+  inline-size: 0.75rem;
+}
+
+.gsc-comment-box-textarea::-webkit-scrollbar-track {
+  margin-block: 0.45rem;
+  background: transparent;
+}
+
+.gsc-comment-box-textarea::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--neoverse-radius-pill);
+  background: var(--color-fg-subtle);
+  background-clip: padding-box;
+}
+
+.gsc-comment-box-textarea-extras {
+  border-block-start: 1px solid var(--color-border-muted) !important;
+}
+
+.gsc-comment-box-preview {
+  box-sizing: border-box;
+  overflow: auto;
+  max-inline-size: 100%;
+  border: 1px solid var(--color-border-muted) !important;
+  border-radius: var(--neoverse-radius-field) !important;
+  background: var(--color-canvas-inset) !important;
+  box-shadow: inset 0 1px 0 var(--neoverse-edge-light);
+}
+
+.gsc-toolbar-item,
+.gsc-comment-box-md-toolbar button {
+  border-radius: var(--neoverse-radius-control) !important;
+}
+
+.btn,
+.gsc-social-reaction-summary-item,
+.gsc-reactions-button,
+.gsc-emoji-button {
+  border-radius: var(--neoverse-radius-control);
+  transition:
+    color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn:hover,
+.gsc-social-reaction-summary-item:hover,
+.gsc-reactions-button:hover,
+.gsc-emoji-button:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background-image: var(--neoverse-btn-primary-sheen);
+}
+
+.gsc-comment-author-avatar img,
+.avatar {
+  border-radius: var(--neoverse-radius-control);
+}
+
+a,
+.link-secondary:hover {
+  color: var(--color-accent-fg);
+}
+
+*:focus-visible {
+  outline: 3px solid var(--color-accent-muted);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}

@@ -1,297 +1,412 @@
-/* Homepage loading scene: compact marquee band plus subtle themed ambience.
-   首页加载场景：紧凑跑马灯横幅与轻量主题氛围背景。 */
-
-:root,
-.light {
-  /* Light tokens keep the strip neutral, with only restrained brand accents.
-     浅色变量保持横幅中性，仅保留克制的品牌强调色。 */
-  --route-loading-canvas-base: color-mix(
-    in srgb,
-    var(--background) 88%,
-    var(--color-brand-start) 12%
-  );
-  --route-loading-canvas-depth: color-mix(
-    in srgb,
-    var(--background) 80%,
-    var(--color-brand-end) 20%
-  );
-  --route-loading-canvas-wash-a: color-mix(in srgb, var(--color-brand-start) 30%, transparent);
-  --route-loading-canvas-wash-b: color-mix(in srgb, var(--color-brand-end) 26%, transparent);
-  --route-loading-canvas-wash-c: color-mix(in srgb, var(--color-home-accent) 16%, transparent);
-  --route-loading-canvas-sheen: color-mix(in srgb, var(--glass-highlight) 34%, transparent);
-  --route-loading-canvas-vignette: color-mix(in srgb, var(--foreground) 10%, transparent);
-  --route-loading-band-surface: color-mix(
-    in srgb,
-    var(--glass-tint-strong) 88%,
-    var(--background) 12%
-  );
-  --route-loading-band-accent: color-mix(in srgb, var(--color-brand-end) 18%, transparent);
-  --route-loading-band-ink: color-mix(in srgb, var(--foreground) 90%, var(--color-brand-end));
-  --route-loading-band-glow: color-mix(in srgb, var(--color-brand-end) 18%, transparent);
-  --route-loading-band-shadow: rgba(15, 23, 42, 0.14);
-  --route-loading-release-duration: var(--nd-duration-loading-release, 560ms);
-  --route-loading-release-ease: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.dark {
-  /* Dark tokens reuse the same geometry while lifting the page off pure black.
-     深色变量复用同一结构，同时避免页面落到纯黑底色。 */
-  --route-loading-canvas-base: color-mix(
-    in srgb,
-    var(--background) 86%,
-    var(--color-brand-start) 14%
-  );
-  --route-loading-canvas-depth: color-mix(
-    in srgb,
-    var(--background) 78%,
-    var(--color-brand-end) 22%
-  );
-  --route-loading-canvas-wash-a: color-mix(in srgb, var(--color-brand-start) 34%, transparent);
-  --route-loading-canvas-wash-b: color-mix(in srgb, var(--color-brand-end) 24%, transparent);
-  --route-loading-canvas-wash-c: color-mix(in srgb, var(--color-home-accent) 18%, transparent);
-  --route-loading-canvas-sheen: color-mix(in srgb, var(--glass-highlight) 22%, transparent);
-  --route-loading-canvas-vignette: color-mix(in srgb, black 28%, transparent);
-  --route-loading-band-surface: color-mix(
-    in srgb,
-    var(--glass-tint-strong) 86%,
-    var(--background) 14%
-  );
-  --route-loading-band-accent: color-mix(in srgb, var(--color-brand-start) 17%, transparent);
-  --route-loading-band-ink: color-mix(in srgb, var(--foreground) 84%, var(--color-brand-start));
-  --route-loading-band-glow: color-mix(in srgb, var(--color-brand-start) 22%, transparent);
-  --route-loading-band-shadow: rgba(0, 0, 0, 0.35);
-}
+/* Route loading scene: a viewport-wide data stream on the shared spatial canvas.
+   路由加载场景：在共享空间画布上呈现横贯视口的数据流。 */
 
 .route-loading-shell {
+  --route-loading-release-duration: var(--nd-duration-loading-release);
   position: fixed;
   inset: 0;
   z-index: var(--nd-z-transition-hold);
-  display: grid;
-  min-height: 100dvh;
-  place-items: center;
-  overflow: hidden;
-  background: linear-gradient(
-    135deg,
-    var(--route-loading-canvas-base),
-    var(--route-loading-canvas-depth)
-  );
-  color: var(--foreground);
   isolation: isolate;
-}
-
-.route-loading-shell::before {
-  /* Soft aurora gradient replaces the previous grid and AI-node decoration.
-     柔和极光渐变替代原有网格与 AI 节点装饰。 */
-  position: absolute;
-  inset: 0;
-  z-index: -2;
+  display: grid;
+  min-block-size: 100dvh;
+  overflow: hidden;
+  place-items: center;
+  padding-block: var(--page-gutter);
+  padding-inline: 0;
+  color: var(--text-primary);
+  /* The loading route explicitly follows the project's body typeface so CJK
+     glyphs never fall back to an inconsistent system font.
+     Loading 路由显式沿用项目正文字体，避免中文字符回退到不一致的系统字体。 */
+  font-family: var(--font-noto-sans), "Noto Sans SC", "Noto Sans", sans-serif;
   background:
-    conic-gradient(
-      from 220deg at 52% 46%,
-      transparent 0 12%,
-      var(--route-loading-canvas-wash-a) 22%,
-      transparent 36%,
-      var(--route-loading-canvas-wash-b) 50%,
-      transparent 66%,
-      var(--route-loading-canvas-wash-c) 80%,
-      transparent 100%
-    ),
-    linear-gradient(
-      118deg,
-      var(--route-loading-canvas-wash-a),
-      transparent 32% 62%,
-      var(--route-loading-canvas-wash-b)
-    );
-  content: "";
-  filter: blur(48px) saturate(120%);
-  opacity: 0.86;
-  pointer-events: none;
-  transform: scale(1.06);
+    radial-gradient(circle at 12% 18%, var(--ambient-ice), transparent 28rem),
+    radial-gradient(circle at 88% 78%, var(--ambient-mint), transparent 26rem),
+    var(--background-primary);
 }
 
-.route-loading-shell::after {
-  /* Glass vignette keeps depth without CRT scanlines.
-     玻璃暗角保留层次感，不再使用 CRT 扫描线。 */
+/* Ambient grid and drifting light preserve the homepage depth at a quieter scale.
+   环境网格与漂移光团以更克制的尺度延续首页纵深感。 */
+.route-loading-ambient {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background:
-    linear-gradient(
-      180deg,
-      var(--route-loading-canvas-sheen),
-      transparent 22% 72%,
-      color-mix(in srgb, var(--foreground) 6%, transparent)
-    ),
-    radial-gradient(130% 100% at 50% 50%, transparent 48%, var(--route-loading-canvas-vignette));
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.route-loading-ambient__grid {
+  position: absolute;
+  inset: 8%;
+  opacity: 0.24;
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: clamp(3rem, 7vw, 6rem) clamp(3rem, 7vw, 6rem);
+  mask-image: radial-gradient(ellipse at center, black, transparent 72%);
+}
+
+.route-loading-ambient__orb {
+  position: absolute;
+  inline-size: clamp(18rem, 42vw, 38rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(54px);
+  opacity: 0.72;
+  animation: route-loading-orb-drift var(--motion-loop-ambient) ease-in-out infinite alternate;
+}
+
+.route-loading-ambient__orb--ice {
+  inset-block-start: -18%;
+  inset-inline-start: -10%;
+  background: var(--ambient-ice);
+}
+
+.route-loading-ambient__orb--mint {
+  inset-block-end: -24%;
+  inset-inline-end: -8%;
+  background: color-mix(in srgb, var(--ambient-mint) 72%, var(--ambient-violet));
+  animation-delay: calc(var(--motion-loop-ambient) / -2);
+}
+
+/* The full-width stage restores the previous marquee's scale while using the
+   current semantic palette, spatial grid, and glass hierarchy.
+   全宽舞台恢复上一版跑马灯的尺度，并沿用当前语义配色、空间网格与玻璃层级。 */
+.route-loading-stage {
+  position: relative;
+  display: grid;
+  inline-size: 100vw;
+  place-items: center;
+  animation: route-loading-stage-enter var(--motion-standard) var(--motion-ease-emphasized) both;
+}
+
+.route-loading-stage__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-block-end: clamp(1.15rem, 3vw, 1.75rem);
+  color: var(--accent-primary);
+  font-family: var(--font-orbitron), sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.route-loading-stage__brand::before,
+.route-loading-stage__brand::after {
+  inline-size: clamp(2rem, 7vw, 5rem);
+  block-size: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-primary));
   content: "";
-  pointer-events: none;
+  opacity: 0.56;
 }
 
-.route-loading-shell--handoff {
-  /* Handoff overlay is a cloned loading page that covers the route swap only.
-     交接覆盖层是克隆的加载页，仅用于覆盖路由替换瞬间。 */
-  pointer-events: none;
-  contain: paint;
+.route-loading-stage__brand::after {
+  background: linear-gradient(90deg, var(--accent-primary), transparent);
 }
 
-.route-loading-shell--release {
-  /* Fade the cloned loading route away after the homepage is ready.
-     首页就绪后淡出克隆的加载路由。 */
-  animation: route-loading-shell-release var(--route-loading-release-duration)
-    var(--route-loading-release-ease) forwards;
+.route-loading-stage__signal {
+  inline-size: 0.46rem;
+  block-size: 0.46rem;
+  border-radius: 50%;
+  background: var(--accent-secondary);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-secondary) 38%, transparent);
+  animation: route-loading-signal var(--motion-particle-field) ease-out infinite;
 }
 
+/* The glass band keeps the old edge-to-edge silhouette, enhanced with the
+   project's refractive fill and semantic accents.
+   玻璃横幅保留旧版横贯边缘的轮廓，并加入项目折射填充与语义强调色。 */
 .route-loading-band {
   position: relative;
-  width: 100vw;
-  height: clamp(4.1rem, 8vw, 6.25rem);
+  isolation: isolate;
+  inline-size: 100vw;
+  block-size: clamp(7rem, 13vw, 10rem);
   overflow: hidden;
-  border-block: 1px solid color-mix(in srgb, var(--route-loading-band-ink) 14%, transparent);
-  border-inline: 0;
-  border-radius: 0;
+  border-block: 1px solid color-mix(in srgb, var(--accent-primary) 24%, var(--border-subtle));
   background:
-    linear-gradient(180deg, var(--glass-highlight), transparent 36%),
+    linear-gradient(180deg, color-mix(in srgb, var(--edge-light) 42%, transparent), transparent 34%),
     linear-gradient(
-      90deg,
-      var(--route-loading-band-accent),
-      transparent 26% 74%,
-      color-mix(in srgb, var(--color-brand-start) 10%, transparent)
+      100deg,
+      color-mix(in srgb, var(--ambient-ice) 64%, transparent),
+      transparent 26% 72%,
+      color-mix(in srgb, var(--ambient-mint) 72%, transparent)
     ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--glass-tint-strong) 42%, transparent),
-      transparent
-    ),
-    var(--route-loading-band-surface);
+    var(--glass-refraction-fill), color-mix(in srgb, var(--surface-glass) 88%, transparent);
   box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    inset 0 -1.15rem 2rem color-mix(in srgb, var(--foreground) 5%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--glass-highlight) 48%, transparent),
-    0 1.2rem 3rem var(--route-loading-band-shadow);
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+    inset 0 1px 0 var(--edge-light),
+    inset 0 -2rem 3rem color-mix(in srgb, var(--text-primary) 4%, transparent),
+    0 1.6rem 4.5rem -2.8rem color-mix(in srgb, var(--accent-primary) 38%, transparent);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 }
 
-.route-loading-shell--release .route-loading-band {
-  animation: route-loading-band-release var(--route-loading-release-duration)
-    var(--route-loading-release-ease) forwards;
-}
-
-.route-loading-band::after {
+.route-loading-band::before {
   position: absolute;
-  inset: -30% -12%;
+  inset: 0;
+  z-index: 2;
   background: linear-gradient(
-    105deg,
-    transparent 0 42%,
-    color-mix(in srgb, var(--glass-highlight) 58%, transparent) 50%,
-    transparent 58% 100%
+    108deg,
+    transparent 0 38%,
+    color-mix(in srgb, var(--edge-light) 58%, transparent) 49%,
+    transparent 60% 100%
   );
   content: "";
-  opacity: 0.48;
+  opacity: 0.62;
   pointer-events: none;
-  transform: translateX(-35%);
-  animation: route-loading-band-sheen 2.8s ease-in-out infinite;
+  transform: translateX(-72%);
+  animation: route-loading-band-sheen var(--motion-particle-field) ease-in-out infinite;
 }
 
 .route-loading-band__shade {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--route-loading-canvas-base) 82%, transparent),
-      transparent 11% 89%,
-      color-mix(in srgb, var(--route-loading-canvas-base) 82%, transparent)
-    ),
-    linear-gradient(180deg, transparent, color-mix(in srgb, var(--foreground) 4%, transparent));
+  z-index: 3;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--background-primary) 82%, transparent),
+    transparent 8% 92%,
+    color-mix(in srgb, var(--background-primary) 82%, transparent)
+  );
   pointer-events: none;
 }
 
 .route-loading-band__marquee {
   position: absolute;
   inset: 0;
+  z-index: 0;
   display: flex;
   align-items: center;
   overflow: hidden;
 }
 
-.route-loading-band__track {
-  display: inline-flex;
+.route-loading-band__track,
+.route-loading-band__group {
+  display: flex;
   align-items: center;
-  min-width: max-content;
-  animation: route-loading-band-scroll 9s linear infinite;
+  inline-size: max-content;
+}
+
+.route-loading-band__track {
+  animation: route-loading-band-scroll calc(var(--motion-loop-slow) * 0.72) linear infinite;
+  will-change: transform;
 }
 
 .route-loading-band__text {
+  position: relative;
   display: inline-block;
-  padding-inline: clamp(1.4rem, 3.8vw, 3rem);
-  color: var(--route-loading-band-ink);
-  font-family: var(--font-orbitron), "Maple Mono NF CN", monospace;
+  padding-inline: clamp(1.75rem, 4.5vw, 4.25rem);
+  color: color-mix(in srgb, var(--text-primary) 82%, var(--accent-primary));
+  font-family: var(--font-orbitron), sans-serif;
   font-weight: 900;
-  font-size: clamp(1.55rem, 4.6vw, 3.5rem);
+  font-size: clamp(2.2rem, 6.2vw, 5.4rem);
   line-height: 1;
-  letter-spacing: 0;
+  letter-spacing: -0.035em;
   text-shadow:
-    0.06em 0.06em 0 color-mix(in srgb, var(--background) 32%, transparent),
-    0 0 0.45rem var(--route-loading-band-glow);
+    0.045em 0.045em 0 color-mix(in srgb, var(--background-primary) 34%, transparent),
+    0 0 1.1rem color-mix(in srgb, var(--accent-primary) 28%, transparent);
   white-space: nowrap;
 }
 
-.route-loading-sr-only {
+.route-loading-band__text::after {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  inset-block-start: 50%;
+  inset-inline-end: -0.25rem;
+  inline-size: clamp(0.38rem, 0.75vw, 0.62rem);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--edge-light) 68%, transparent);
+  border-radius: 0.12rem;
+  background: var(--accent-secondary);
+  box-shadow: 0 0 0.9rem var(--accent-secondary);
+  content: "";
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.route-loading-band .rb-split-text__character {
+  display: inline-block;
+}
+
+/* The localized status remains available to screen readers without rendering
+   duplicate visible text outside the marquee.
+   本地化状态继续提供给屏幕阅读器，但不会在跑马灯外重复显示可见文字。 */
+.route-loading-status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
-  border: 0;
+}
+
+/* The progress rail stays subordinate to the marquee and does not imply a
+   fabricated numeric percentage.
+   进度轨道从属于跑马灯，并且不暗示虚构的数字百分比。 */
+.route-loading-progress {
+  inline-size: min(calc(100% - 2 * var(--page-gutter)), 48rem);
+  margin-block-start: clamp(1.35rem, 3.5vw, 2rem);
+}
+
+.route-loading-progress__track {
+  display: block;
+  block-size: 2px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--border-subtle) 74%, transparent);
+}
+
+.route-loading-progress__indicator {
+  display: block;
+  inline-size: 38%;
+  block-size: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--accent-primary), var(--accent-secondary));
+  box-shadow: 0 0 1.1rem color-mix(in srgb, var(--accent-primary) 72%, transparent);
+  animation: route-loading-progress 1.8s var(--motion-ease-standard) infinite;
+}
+
+.route-loading-progress__nodes {
+  display: flex;
+  justify-content: space-between;
+  margin-block-start: 0.65rem;
+}
+
+.route-loading-progress__nodes span {
+  inline-size: 0.3rem;
+  block-size: 0.3rem;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  opacity: 0.3;
+  animation: route-loading-node-pulse var(--motion-particle-field) ease-in-out infinite;
+}
+
+.route-loading-progress__nodes span:nth-child(2) {
+  animation-delay: calc(var(--motion-particle-field) / -3);
+}
+
+.route-loading-progress__nodes span:nth-child(3) {
+  animation-delay: calc(var(--motion-particle-field) / -1.5);
+}
+
+/* Handoff states retain the App Router clone-and-release behavior.
+   交接状态继续沿用 App Router 克隆与释放机制。 */
+.route-loading-shell--handoff {
+  contain: paint;
+  pointer-events: none;
+}
+
+/* The handoff clone replaces the live source visually while both nodes briefly
+   coexist during the App Router commit, preventing two independent marquees
+   from producing doubled text and orbital trails.
+   App Router 提交期间克隆层与源节点会短暂共存；此时仅显示交接克隆层，
+   避免两条独立跑马灯产生文字重影与轨道残影。 */
+body:has(> .route-loading-shell--handoff)
+> .route-loading-shell:not(.route-loading-shell--handoff) {
+  visibility: hidden;
+}
+
+.route-loading-shell--release {
+  animation: route-loading-shell-release var(--route-loading-release-duration)
+    var(--motion-ease-standard) forwards;
+}
+
+.route-loading-shell--release .route-loading-stage {
+  animation: route-loading-stage-release var(--route-loading-release-duration)
+    var(--motion-ease-standard) forwards;
+}
+
+@keyframes route-loading-orb-drift {
+  to {
+    transform: translate(8%, 5%) scale(1.08);
+  }
+}
+
+@keyframes route-loading-stage-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.65rem) scale(0.992);
+  }
 }
 
 @keyframes route-loading-band-scroll {
-  from {
-    transform: translateX(0);
-  }
-
   to {
     transform: translateX(-50%);
   }
 }
 
 @keyframes route-loading-band-sheen {
-  0%,
-  28% {
-    transform: translateX(-35%);
+  62%,
+  100% {
+    transform: translateX(72%);
+  }
+}
+
+@keyframes route-loading-signal {
+  70%,
+  100% {
+    box-shadow: 0 0 0 0.65rem transparent;
+  }
+}
+
+@keyframes route-loading-progress {
+  from {
+    transform: translateX(-110%);
   }
 
-  100% {
-    transform: translateX(35%);
+  to {
+    transform: translateX(260%);
+  }
+}
+
+@keyframes route-loading-node-pulse {
+  45% {
+    opacity: 0.76;
+    transform: scale(1.35);
   }
 }
 
 @keyframes route-loading-shell-release {
   to {
     opacity: 0;
-    filter: blur(0.85rem);
-    transform: scale(1.015);
+    filter: blur(0.55rem);
   }
 }
 
-@keyframes route-loading-band-release {
+@keyframes route-loading-stage-release {
   to {
     opacity: 0;
-    transform: translateY(-0.75rem) scaleX(0.985);
+    transform: translateY(-0.65rem) scaleX(0.992);
+  }
+}
+
+@media (max-width: 640px) {
+  .route-loading-band {
+    block-size: clamp(6.5rem, 31vw, 8rem);
+  }
+
+  .route-loading-band__text {
+    padding-inline: 1.5rem;
+    font-size: clamp(2rem, 11vw, 3.4rem);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .route-loading-band::after,
-  .route-loading-band__track {
+  .route-loading-ambient__orb,
+  .route-loading-stage__signal,
+  .route-loading-band::before,
+  .route-loading-band__track,
+  .route-loading-progress__indicator,
+  .route-loading-progress__nodes span,
+  .route-loading-stage {
     animation: none;
   }
 
+  .route-loading-progress__indicator {
+    inline-size: 100%;
+    opacity: 0.68;
+  }
+
   .route-loading-shell--release,
-  .route-loading-shell--release .route-loading-band {
+  .route-loading-shell--release .route-loading-stage {
     animation-duration: 1ms;
   }
 }

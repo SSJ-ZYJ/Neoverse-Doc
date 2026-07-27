@@ -1,0 +1,84 @@
+/* Host-side Giscus layout: keeps the cross-origin iframe width-safe and
+   deliberately unboxed while iframe-internal controls use public custom themes.
+   Giscus 宿主布局：让跨域 iframe 保持宽度安全并取消整体外框，内部控件使用公共自定义主题。 */
+
+.giscus-shell {
+  position: relative;
+  overflow: visible;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 12rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.giscus-shell > giscus-widget,
+.giscus-shell .giscus,
+.giscus-shell .giscus-frame {
+  position: relative;
+  z-index: 1;
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+/* Newer giscus-component releases expose the iframe as a shadow part; the
+   legacy class selector above remains as a harmless compatibility fallback.
+   新版 giscus-component 通过 shadow part 暴露 iframe；上方旧类名选择器保留为兼容回退。 */
+.giscus-shell .giscus-frame,
+.giscus-shell giscus-widget::part(iframe) {
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-block-size: 10rem;
+  border: 0;
+  color-scheme: light;
+}
+
+/* The embedded browsing context must follow the resolved site theme; leaving
+   it at `normal` lets a dark OS preference paint a black iframe canvas inside
+   the light site before the custom theme surface is composited.
+   嵌入式浏览上下文必须跟随站点最终主题；若保持 `normal`，系统深色偏好会先在
+   浅色站点中绘制黑色 iframe 画布，再与自定义主题表面错误混合。 */
+.dark .giscus-shell .giscus-frame,
+.dark .giscus-shell giscus-widget::part(iframe) {
+  color-scheme: dark;
+}
+
+/* A text-free shimmer reserves layout space until an absolute theme URL can be
+   resolved on the client, preventing the article footer from jumping.
+   无文本微光占位会在客户端解析绝对主题 URL 前预留空间，避免文章页脚跳动。 */
+.giscus-shell__placeholder {
+  min-block-size: 10rem;
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 72%, transparent);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    color-mix(in srgb, var(--edge-light) 38%, transparent) 48%,
+    transparent 66%
+  );
+  background-size: 220% 100%;
+  animation: giscus-shell-loading var(--motion-loop-slow) linear infinite;
+}
+
+@keyframes giscus-shell-loading {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giscus-shell__placeholder {
+    animation: none;
+  }
+}

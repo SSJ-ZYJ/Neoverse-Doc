@@ -57,7 +57,7 @@ export function HomeFooter({ locale }: HomeFooterProps) {
           >
             {AUTHOR_NAME}
           </a>
-          <span> & </span>
+          <span> &amp; </span>
           <a
             className="home-footer__link"
             href={CO_AUTHOR_GITHUB_URL}

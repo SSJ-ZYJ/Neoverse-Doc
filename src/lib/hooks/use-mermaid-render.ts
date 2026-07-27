@@ -26,9 +26,27 @@ export function useMermaidRender(chart: string, theme: 'dark' | 'default') {
     const requestId = ++requestIdRef.current;
 
     try {
+      // Mermaid measures HTML labels during rendering. Wait for project fonts
+      // so its node sizes match the final glyph metrics and text is not clipped.
+      // Mermaid 会在渲染时测量 HTML 标签；等待项目字体就绪，避免最终字形超出节点。
+      await document.fonts?.ready;
+
       mermaid.initialize({
         startOnLoad: false,
-        theme,
+        theme: 'base',
+        fontFamily: 'inherit',
+        flowchart: {
+          htmlLabels: true,
+          useMaxWidth: false,
+        },
+        sequence: {
+          useMaxWidth: false,
+        },
+        themeVariables: {
+          background: 'transparent',
+          fontFamily: 'inherit',
+          darkMode: theme === 'dark',
+        },
       });
 
       const { svg } = await mermaid.render(id, code);

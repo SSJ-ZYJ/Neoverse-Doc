@@ -20,16 +20,23 @@ export default async function GuestbookPage({ params }: PageProps<'/[lang]/guest
   const dict = getPageDictionary(locale);
 
   return (
-    <main className="container mx-auto max-w-3xl py-24 px-4 min-h-screen">
-      <div className="mb-10 flex flex-col items-center text-center">
-        <BackLink fallbackHref={`/${locale}/docs/about`} label={dict.backToDocs} />
-        <div className="mb-4 flex size-12 items-center justify-center rounded-xl glass-chip text-fd-accent-foreground">
-          <MessageSquareText size={24} />
+    <main className="special-page guestbook-page">
+      <div className="guestbook-page__inner">
+        <div className="guestbook-page__header">
+          {/* The guestbook has a deterministic home destination so its route
+              transition can be prefetched and prepared without history lookup.
+              留言板固定返回主页，使路由可预取且无需查询浏览历史即可准备转场。 */}
+          <BackLink href={`/${locale}`} label={dict.backToHome} />
+          <div className="special-page__icon">
+            <MessageSquareText size={24} />
+          </div>
+          <h1 className="mt-5 mb-2 text-3xl font-bold text-fd-foreground">{dict.guestbookTitle}</h1>
+          <p className="m-0 text-base text-fd-muted-foreground">{dict.guestbookDesc}</p>
         </div>
-        <h1 className="text-3xl font-bold text-fd-foreground mb-2">{dict.guestbookTitle}</h1>
-        <p className="text-fd-muted-foreground text-base">{dict.guestbookDesc}</p>
+        <div className="guestbook-page__surface">
+          <Guestbook slugKey={GUESTBOOK_SLUG_KEY} />
+        </div>
       </div>
-      <Guestbook slugKey={GUESTBOOK_SLUG_KEY} />
     </main>
   );
 }

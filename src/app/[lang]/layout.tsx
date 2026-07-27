@@ -7,7 +7,7 @@
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { Metadata } from 'next';
 import DefaultSearchDialog from '@/components/search';
-import MaskReveal from '@/components/transition/mask-reveal';
+import { TransitionProvider } from '@/components/transition/transition-provider';
 import { getPageDictionary } from '@/dictionaries';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 import { i18nProvider, i18nUI } from '@/lib/layout.shared';
@@ -37,10 +37,9 @@ export default async function LangLayout({ params, children }: LayoutProps<'/[la
       theme={{ enabled: false }}
       i18n={i18nProvider(i18nUI, locale)}
     >
-      {/* Global route-group transition guard prevents a blank frame between home and docs layouts.
-          全局路由组过渡守卫，避免 home 与 docs 布局切换时出现空白帧。 */}
-      <MaskReveal />
-      {children}
+      {/* The centralized provider owns route policy, DOM clones, cleanup, and reduced motion.
+          集中式 Provider 统一管理路由策略、DOM 克隆、清理与减弱动画。 */}
+      <TransitionProvider>{children}</TransitionProvider>
     </RootProvider>
   );
 }

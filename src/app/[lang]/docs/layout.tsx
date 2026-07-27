@@ -8,9 +8,11 @@
 
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { Sidebar, SidebarTrigger, useSidebar } from 'fumadocs-ui/layouts/docs/slots/sidebar';
+import { DocsSidebarSeparator } from '@/components/docs-sidebar-separator';
 import { SidebarProvider } from '@/components/sidebar-provider';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 import { baseOptions } from '@/lib/layout.shared';
+import { REPO_URL } from '@/lib/site-config';
 import { source } from '@/lib/source';
 
 export const generateStaticParams = generateLocaleStaticParams;
@@ -23,6 +25,16 @@ export default async function Layout({ params, children }: LayoutProps<'/[lang]/
     <DocsLayout
       tree={source.pageTree[locale]}
       {...baseOptions(locale)}
+      // Fumadocs renders the repository as its native sidebar icon link.
+      // Fumadocs 使用原生侧栏图标链接呈现项目仓库入口。
+      githubUrl={REPO_URL}
+      // The official page-tree slot gives section separators a stable styling hook.
+      // 官方页面树插槽为分组标题提供稳定的样式标记。
+      sidebar={{
+        components: {
+          Separator: DocsSidebarSeparator,
+        },
+      }}
       slots={{
         sidebar: {
           provider: SidebarProvider,

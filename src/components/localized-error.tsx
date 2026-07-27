@@ -39,11 +39,7 @@ export function LocalizedError({ variant = 'default', reset, retry }: LocalizedE
     <main
       data-route-error-fallback="true"
       data-route-error-pathname={routeErrorPathname}
-      className={
-        variant === 'docs'
-          ? 'pointer-events-auto relative z-10 [grid-area:main] flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 py-20 text-center'
-          : 'flex min-h-screen flex-col items-center justify-center gap-4 px-6 py-20 text-center'
-      }
+      className={`special-fallback${variant === 'docs' ? ' pointer-events-auto relative z-10 [grid-area:main]' : ''}`}
     >
       <div className="flex size-12 items-center justify-center rounded-xl glass-chip text-fd-muted-foreground">
         <RotateCw className={isRetrying ? 'animate-spin' : undefined} size={24} />
@@ -55,7 +51,7 @@ export function LocalizedError({ variant = 'default', reset, retry }: LocalizedE
         onClick={handleRetry}
         disabled={isRetrying}
         aria-busy={isRetrying}
-        className="pointer-events-auto mt-2 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-fd-primary px-4 py-2 text-sm font-medium text-fd-primary-foreground transition-colors hover:bg-fd-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+        className="control-surface control-surface--primary pointer-events-auto mt-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
       >
         <RotateCw className={isRetrying ? 'animate-spin' : undefined} size={16} />
         {dict.errorRetry}

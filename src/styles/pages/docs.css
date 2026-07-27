@@ -1,0 +1,643 @@
+/* Reading-first Fumadocs refinements for navigation, sidebar, article, TOC, and search.
+   以阅读为先的 Fumadocs 导航、侧栏、正文、目录与搜索优化。 */
+
+/* Search selectors stay before ID-scoped layout rules so cascade specificity remains predictable.
+   搜索选择器置于 ID 布局规则之前，保证层叠优先级可预测。 */
+[role="dialog"][data-state]:has(input) {
+  overflow: hidden;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--glass-refraction-fill), var(--glass-tint-search) !important;
+  box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
+  backdrop-filter: blur(var(--glass-blur-search)) saturate(var(--glass-saturate)) !important;
+}
+
+:where([role="dialog"][data-state]:has(input)) .search-dialog__header {
+  border-block-end: 1px solid var(--border-subtle) !important;
+  border-block-start: 0 !important;
+  border-inline: 0 !important;
+  border-radius: 0 !important;
+  background: var(--surface-subtle);
+  box-shadow: none !important;
+}
+
+/* The search input keeps focus inside the neutral glass shell without adding
+   an accent-colored outer ring around the complete dialog.
+   搜索输入框将焦点保留在中性玻璃外壳内，不再为整个弹窗增加强调色外圈。 */
+:where([role="dialog"][data-state]:has(input)) input:focus-visible {
+  outline: none !important;
+}
+
+[role="dialog"][data-state]:has(input:focus-visible) {
+  border-color: var(--border-subtle) !important;
+  box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
+}
+
+[role="dialog"][data-state]:has(input) [data-active="true"] {
+  background: var(--accent-soft) !important;
+}
+
+#nd-docs-layout {
+  --fd-layout-width: 100rem;
+  --docs-reading-width: var(--reading-max);
+  --fd-page-width: var(--docs-reading-width);
+  /* Layered circuit grid and ambient nodes enrich the reading canvas while
+     keeping Fumadocs' stable layout grid untouched.
+     分层电路网格与环境节点丰富阅读画布，同时不改变 Fumadocs 的稳定布局网格。 */
+  /* `contain: layout style` isolates the docs layout's layout and style recalc
+     scope without trapping fixed-position backdrops (which `paint` would do).
+     This keeps multi-layered backdrop-filter surfaces from cascading repaints
+     to the root on every scroll. */
+  /* `contain: layout style` 隔离文档布局的 layout 与 style 重算范围，
+     不会困住 fixed 定位的背景层（paint 会），避免多层 backdrop-filter
+     表面在每次滚动时把重绘级联到根。 */
+  contain: layout style;
+  background-color: var(--background-primary);
+  background-image:
+    radial-gradient(circle at 18% 12%, var(--ambient-ice), transparent 28rem),
+    radial-gradient(circle at 86% 68%, var(--ambient-mint), transparent 30rem),
+    radial-gradient(
+      circle at center,
+      color-mix(in srgb, var(--accent-primary) 20%, transparent) 0 1.5px,
+      transparent 2px
+    ),
+    linear-gradient(color-mix(in srgb, var(--border-subtle) 58%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--border-subtle) 58%, transparent) 1px,
+      transparent 1px
+    );
+  background-attachment: fixed;
+  background-position:
+    center,
+    center,
+    1.75rem 1.75rem,
+    center,
+    center;
+  background-size:
+    auto,
+    auto,
+    7rem 7rem,
+    3.5rem 3.5rem,
+    3.5rem 3.5rem;
+}
+
+#nd-docs-layout #nd-nav > div,
+#nd-docs-layout > header {
+  border-color: var(--border-subtle) !important;
+  background: color-mix(in srgb, var(--surface-glass) 62%, transparent) !important;
+  box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+}
+
+#nd-sidebar:not([data-collapsed="true"]) {
+  border-inline-end: 1px solid var(--border-subtle) !important;
+  background: color-mix(in srgb, var(--surface-elevated) 68%, var(--surface-glass)) !important;
+  box-shadow: var(--shadow-edge) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+}
+
+#nd-sidebar,
+#nd-sidebar-mobile {
+  --glass-sidebar-drawer-duration: var(--motion-standard);
+}
+
+/* Detached desktop/mobile sidebars share the project surface curvature.
+   桌面悬浮侧栏与移动端抽屉统一使用项目表面圆角。 */
+#nd-sidebar[data-collapsed="true"],
+#nd-sidebar-mobile {
+  border-radius: var(--radius-md) !important;
+}
+
+#nd-sidebar :is(a, button),
+#nd-sidebar-mobile :is(a, button) {
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    border-color var(--motion-fast) var(--motion-ease-standard) !important;
+}
+
+#nd-sidebar a:not([data-active="true"]):not(:has(.site-brand-title)):hover,
+#nd-sidebar-mobile a:not([data-active="true"]):not(:has(.site-brand-title)):hover {
+  color: var(--text-primary) !important;
+  background: color-mix(in srgb, var(--accent-primary) 14%, transparent) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+#nd-sidebar a[data-active="true"],
+#nd-sidebar a[aria-current="page"],
+#nd-sidebar-mobile a[data-active="true"],
+#nd-sidebar-mobile a[aria-current="page"] {
+  position: relative;
+  color: var(--accent-primary) !important;
+  font-weight: 650;
+  background: color-mix(in srgb, var(--accent-primary) 18%, transparent) !important;
+}
+
+/* Sidebar hover and active states share one inset accent rail instead of
+   switching between a full-height inset border and a shorter indicator.
+   侧栏悬浮与激活状态统一使用同一根内缩竖线，不再切换两种描边形态。 */
+#nd-sidebar a:not(:has(.site-brand-title))::before,
+#nd-sidebar-mobile a:not(:has(.site-brand-title))::before {
+  position: absolute;
+  inset-block: 0.45rem;
+  inset-inline-start: 0;
+  inline-size: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-primary);
+  content: "";
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+#nd-sidebar a:not(:has(.site-brand-title)),
+#nd-sidebar-mobile a:not(:has(.site-brand-title)) {
+  position: relative;
+}
+
+#nd-sidebar a:not(:has(.site-brand-title)):hover::before,
+#nd-sidebar a[data-active="true"]::before,
+#nd-sidebar a[aria-current="page"]::before,
+#nd-sidebar-mobile a:not(:has(.site-brand-title)):hover::before,
+#nd-sidebar-mobile a[data-active="true"]::before,
+#nd-sidebar-mobile a[aria-current="page"]::before {
+  opacity: 1;
+}
+
+/* Desktop footer and mobile-header icon links are utility controls rather than
+   navigation rows, so their hover state never inherits the accent rail.
+   桌面页脚与移动端顶栏图标链接属于工具控件而非导航行，悬浮时不继承导航强调竖线。 */
+#nd-sidebar div:has(> button[data-theme-toggle]) > a::before,
+#nd-sidebar-mobile > div:first-child > div.flex > div:first-child > a::before {
+  display: none !important;
+  content: none !important;
+  opacity: 0 !important;
+}
+
+/* Sidebar category headers and nav item labels: bumped from 0.72rem to
+   improve readability without disrupting the compact sidebar rhythm.
+   侧栏分类标题与导航项标签：从 0.72rem 提升，在不破坏紧凑节奏的前提下
+   改善可读性。 */
+#nd-sidebar p,
+#nd-sidebar [data-radix-collection-item] > span:first-child {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+/* Ensure sidebar nav links use a comfortable base size for body text.
+   确保侧栏导航链接使用舒适的正文基础字号。 */
+#nd-sidebar a {
+  font-size: 0.875rem;
+}
+
+/* TOC links: bumped from fumadocs default to match sidebar readability.
+   TOC 链接：从 fumadocs 默认值提升，与侧栏可读性保持一致。 */
+#nd-toc a {
+  font-size: 0.8125rem;
+}
+
+#nd-page {
+  --fd-page-width: var(--docs-reading-width);
+  /* `contain: layout style` isolates the page card's layout and style recalc
+     scope so child repainting (code blocks, mermaid zoom) does not cascade
+     to siblings or the backdrop-filter layer behind it.
+     `paint` is intentionally omitted because backdrop-filter requires access
+     to the parent stacking context; trapping paint would break the effect. */
+  /* `contain: layout style` 隔离页面卡片的 layout 与 style 重算范围，
+     子元素重绘（代码块、mermaid 缩放）不会级联到兄弟节点或背后的 backdrop-filter 层。
+     刻意不使用 `paint`，因为 backdrop-filter 需要访问父级 stacking context，
+     隔离 paint 会破坏效果。 */
+  contain: layout style;
+  inline-size: min(calc(100% - 1rem), var(--docs-reading-width));
+  justify-self: center;
+  margin-block: clamp(0.75rem, 2vw, 1.5rem) 2rem;
+  margin-inline: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--edge-light) 20%, transparent), transparent 32%),
+    color-mix(in srgb, var(--surface-glass) 46%, transparent);
+  box-shadow: var(--shadow-edge), var(--shadow-float);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+}
+
+#nd-page > article,
+#nd-page [data-docs-body] {
+  max-inline-size: var(--docs-reading-width);
+}
+
+#nd-page h1 {
+  font-weight: 720;
+  letter-spacing: -0.035em;
+}
+
+#nd-page :is(h2, h3, h4) {
+  color: var(--text-primary);
+  scroll-margin-block-start: 6rem;
+  letter-spacing: -0.02em;
+}
+
+#nd-page h2 {
+  margin-block-start: 3.5rem;
+}
+
+#nd-page h3 {
+  margin-block-start: 2.5rem;
+}
+
+#nd-page :is(p, li) {
+  color: color-mix(in srgb, var(--text-primary) 88%, var(--text-secondary));
+  line-height: 1.85;
+}
+
+#nd-page :is(ul, ol) {
+  padding-inline-start: 1.45rem;
+}
+
+#nd-page :not(pre) > code {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.12em 0.34em;
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+  box-shadow: none;
+}
+
+#nd-page :is(figure, table, blockquote, [role="alert"], [role="tablist"], [data-card="true"]) {
+  border-color: var(--border-subtle) !important;
+  background: var(--glass-refraction-fill), var(--surface-glass) !important;
+  box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+}
+
+/* Document controls use the compact glass tier; the larger surrounding bars
+   and cards use medium/large radii, preserving a deliberate radius hierarchy.
+   文档控件使用紧凑玻璃层级，外围工具条与卡片使用中 / 大圆角，形成明确层次。 */
+#nd-page button:not(.mermaid-toolbar__btn, [role="tab"]) {
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-xs);
+  background: var(--glass-refraction-fill), var(--glass-control-surface);
+  box-shadow: var(--shadow-edge);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+}
+
+/* Text tabs stay visually unboxed; the shared tablist supplies the glass container.
+   文本标签保持无框，由外层 tablist 统一提供玻璃容器。 */
+#nd-page [role="tab"] {
+  overflow: visible;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+#nd-page :is([role="tablist"], [data-card="true"], .prose-no-margin:has(> table)) {
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+/* Markdown surfaces reuse the compact homepage-nav radius to avoid mixing
+   oversized capsules with squarer controls throughout one reading page.
+   Markdown 卡片统一复用首页导航按钮的紧凑圆角，避免同页圆角尺度混杂。 */
+#nd-page
+:is(.glass-codeblock, .markdown-alert, .markdown-details, [role="alert"], [data-card="true"]) {
+  border-radius: var(--radius-md) !important;
+}
+
+/* Fumadocs heading anchors also expose an empty data-card attribute. Keep
+   headings and brand text completely unboxed while true cards retain glass.
+   Fumadocs 标题锚点同样带有空 data-card 属性；标题与品牌文字保持无框，
+   仅真正卡片使用玻璃表面。 */
+#nd-page :is(h1, h2, h3, h4, h5, h6),
+#nd-page :is(h1, h2, h3, h4, h5, h6) > a[data-card=""],
+:is(#nd-nav, #nd-sidebar, #nd-sidebar-mobile) .site-brand-title {
+  overflow: visible;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Keep heading anchor actions visually unboxed, then emphasize Fumadocs'
+   built-in copied state through color and motion instead of extra UI text.
+   标题锚点操作保持无框，并通过颜色与动效强化 Fumadocs 内置复制成功状态，
+   避免额外增加提示文本。 */
+#nd-page :is(h1, h2, h3, h4, h5, h6):has(> button) {
+  /* Bottom alignment compensates for the smaller icon button box while
+     remaining stable when the link icon changes to the copied state.
+     底部对齐补偿图标按钮较小的盒尺寸，并在链接图标切换为复制成功状态时保持稳定。 */
+  align-items: flex-end;
+}
+
+#nd-page :is(h1, h2, h3, h4, h5, h6) > button {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+#nd-page :is(h1, h2, h3, h4, h5, h6) > button:has(> .lucide-copy-check) {
+  color: var(--accent-secondary) !important;
+  opacity: 1;
+}
+
+#nd-page :is(h1, h2, h3, h4, h5, h6) > button > .lucide-copy-check {
+  animation: heading-anchor-copied var(--motion-fast) var(--motion-ease-emphasized);
+  filter: drop-shadow(0 0 0.4rem color-mix(in srgb, var(--accent-secondary) 45%, transparent));
+}
+
+@keyframes heading-anchor-copied {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.72) rotate(-8deg);
+  }
+
+  65% {
+    transform: scale(1.12) rotate(2deg);
+  }
+}
+
+/* Brand navigation is a text link, so every interaction state stays unboxed.
+   品牌导航属于文本链接，所有交互状态均保持无矩形背景。 */
+:is(#nd-nav, #nd-sidebar, #nd-sidebar-mobile) a:has(.site-brand-title),
+:is(#nd-nav, #nd-sidebar, #nd-sidebar-mobile) a:has(.site-brand-title):hover,
+:is(#nd-nav, #nd-sidebar, #nd-sidebar-mobile) a:has(.site-brand-title):focus-visible {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+#nd-page blockquote {
+  border-inline-start: 3px solid var(--accent-secondary) !important;
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+}
+
+#nd-page [data-docs-body] img {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* Author avatars use the project's compact rounded-square geometry and must
+   not inherit the large content-image radius.
+   作者头像使用项目统一的紧凑圆角方形，不继承正文图片的大圆角。 */
+.docs-author__avatar,
+.docs-author__avatar-image {
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: var(--radius-xs) !important;
+  box-shadow: none !important;
+}
+
+/* Community heading aligns copy with the icon's top edge and restores the
+   compact rounded-square icon geometry used before global radius overrides.
+   讨论区文字与图标顶部对齐，并恢复全局圆角覆盖前的紧凑圆角方形图标。 */
+.docs-community__header {
+  align-items: flex-start;
+}
+
+.docs-community__icon {
+  flex: 0 0 auto;
+  border-radius: var(--radius-xs) !important;
+}
+
+#nd-page .docs-community__copy :is(h3, p) {
+  margin-block: 0;
+}
+
+#nd-page .docs-community__copy p {
+  margin-block-start: 0.2rem;
+}
+
+/* Both compact floating actions remain individually unboxed while their shared
+   parent keeps the large glass frame.
+   两个悬浮小按钮各自保持无背景无描边，仅保留父级的大玻璃框。 */
+#nd-docs-layout
+  > div.fixed.flex:has(> button[data-search]):has(
+    > button.inline-flex.items-center
+      > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+  )
+  > button.inline-flex.items-center {
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: var(--radius-xs) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+@media (hover: hover) {
+  #nd-docs-layout
+    > div.fixed.flex:has(> button[data-search]):has(
+      > button.inline-flex.items-center
+        > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+    )
+    > button.inline-flex.items-center:hover {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none;
+  }
+}
+
+/* The mobile table-of-contents header floats as one translucent surface; its
+   trigger remains unboxed inside that shared surface.
+   移动端目录栏作为整体悬浮玻璃面，内部触发按钮不再重复套框。 */
+#nd-docs-layout [data-toc-popover] > header {
+  inline-size: 100%;
+  margin-block-start: 0.5rem;
+  margin-inline: 0;
+  overflow: hidden;
+  border: 1px solid var(--glass-border-hairline) !important;
+  border-radius: var(--radius-md);
+  background: var(--glass-refraction-fill), var(--glass-tint-search) !important;
+  box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+}
+
+/* The collapsed TOC remains fully rounded; while expanded, its lower corners
+   become square so the header joins the open content as one continuous panel.
+   TOC 折叠时保留完整圆角；展开时取消下端圆角，使标题栏与内容面板连续衔接。 */
+#nd-docs-layout
+  [data-toc-popover]
+  > header:has(> [data-toc-popover-trigger][aria-expanded="true"]) {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+/* The TOC popover follows the same centered reading width as the article card.
+   TOC 悬浮栏复用正文卡片的居中阅读宽度，左右边缘保持一致。 */
+#nd-docs-layout [data-toc-popover] {
+  inline-size: min(calc(100% - 1rem), var(--docs-reading-width));
+  justify-self: center;
+}
+
+/* Wide viewports can afford a broader document card without weakening the
+   normal desktop and mobile reading measure.
+   宽屏视口在空间充足时适度加宽文档卡片，同时保持常规桌面与移动端阅读宽度不变。 */
+@media (min-width: 96rem) {
+  #nd-docs-layout {
+    --docs-reading-width: var(--reading-wide-max);
+  }
+}
+
+#nd-docs-layout [data-toc-popover-trigger] {
+  border: 0 !important;
+  border-radius: inherit !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+#nd-page table {
+  inline-size: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#nd-page a:not([class]) {
+  color: var(--accent-primary);
+  text-decoration-color: color-mix(in srgb, var(--accent-primary) 34%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+#nd-toc {
+  border-inline-start: 0 !important;
+  background: transparent !important;
+}
+
+#nd-toc a {
+  color: var(--text-muted);
+  transition: color var(--motion-fast) var(--motion-ease-standard);
+}
+
+#nd-toc a[data-active="true"],
+#nd-toc a[aria-current="true"] {
+  color: var(--accent-primary) !important;
+  font-weight: 620;
+}
+
+.mdx-doc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0.85rem;
+  margin-block: 1.75rem;
+}
+
+.mdx-doc-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  min-block-size: 9rem;
+  flex-direction: column;
+  gap: 0.65rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.15rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  background: var(--glass-refraction-fill), var(--surface-glass);
+  box-shadow: var(--shadow-edge), var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  /* Isolate layout/style recalc so hover transforms and ::before sheen
+     animations do not cascade into sibling cards. `paint` is omitted because
+     backdrop-filter samples the parent stacking context. */
+  /* 隔离 layout/style 重算，悬浮变换与 ::before 高光动画不会级联到兄弟卡片。
+     刻意不使用 `paint`，因为 backdrop-filter 需要采样父级 stacking context。 */
+  contain: layout style;
+  transition:
+    border-color var(--motion-standard) var(--motion-ease-standard),
+    background-color var(--motion-standard) var(--motion-ease-standard),
+    transform var(--motion-standard) var(--motion-ease-standard),
+    box-shadow var(--motion-standard) var(--motion-ease-standard);
+}
+
+.mdx-doc-card::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.55;
+  background:
+    radial-gradient(circle at 8% 0%, var(--ambient-ice), transparent 44%),
+    radial-gradient(circle at 96% 100%, var(--ambient-violet), transparent 42%);
+  content: "";
+  transition: opacity var(--motion-standard) var(--motion-ease-standard);
+}
+
+.mdx-doc-card:hover {
+  border-color: var(--border-interactive);
+  background: var(--glass-refraction-fill), var(--surface-glass);
+  box-shadow: var(--shadow-edge), var(--glass-shadow-hover);
+  transform: translateY(-3px);
+}
+
+.mdx-doc-card:hover::before {
+  opacity: 1;
+}
+
+.mdx-doc-card strong {
+  font-size: 1.02rem;
+}
+
+.mdx-doc-card span {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-page :is(h1, h2, h3, h4, h5, h6) > button > .lucide-copy-check {
+    animation: none;
+  }
+
+  #nd-sidebar,
+  #nd-sidebar-mobile,
+  #nd-sidebar *,
+  #nd-sidebar-mobile * {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+@media (max-width: 767px) {
+  #nd-docs-layout {
+    /* Reserve the complete customized TOC header height in Fumadocs' grid so
+       its rounded glass surface cannot overlap the article card below.
+       在 Fumadocs 网格中预留完整的自定义 TOC 标题高度，避免圆角玻璃面与下方正文卡片重叠。 */
+    --fd-toc-popover-height: calc(var(--spacing) * 13) !important;
+
+    background-size:
+      auto,
+      auto,
+      6rem 6rem,
+      3rem 3rem,
+      3rem 3rem;
+  }
+
+  #nd-page {
+    margin-block: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  /* Mobile heading anchor actions align to the title's vertical center and
+     keep hover feedback icon-only, without drawing a detached outer edge.
+     移动端标题锚点操作与标题垂直居中，悬浮反馈仅作用于图标，不再绘制分离的外缘描边。 */
+  #nd-page :is(h1, h2, h3, h4, h5, h6):has(> button) {
+    align-items: center;
+  }
+
+  #nd-page :is(h1, h2, h3, h4, h5, h6) > button:hover {
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}

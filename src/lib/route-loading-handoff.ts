@@ -2,6 +2,8 @@
 // the locale homepage has painted, then release it with a CSS animation.
 // 路由加载交接工具：根加载页保持可见直到多语言首页完成绘制，再通过 CSS 动画释放。
 
+import { MOTION_DURATION_MS } from '@/lib/motion-config';
+
 const ROUTE_LOADING_HANDOFF_ID = 'nd-route-loading-handoff';
 const ROUTE_LOADING_SOURCE_SELECTOR = '.route-loading-shell';
 const ROUTE_LOADING_HANDOFF_CLASS = 'route-loading-shell--handoff';
@@ -41,5 +43,6 @@ export function releaseRouteLoadingHandoff(): void {
   window.requestAnimationFrame(() => {
     overlay.addEventListener('animationend', removeOverlay, { once: true });
     overlay.classList.add(ROUTE_LOADING_RELEASE_CLASS);
+    window.setTimeout(removeOverlay, MOTION_DURATION_MS.loadingRelease + 400);
   });
 }

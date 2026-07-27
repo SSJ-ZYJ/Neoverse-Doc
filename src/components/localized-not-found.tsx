@@ -3,8 +3,10 @@
 
 'use client';
 
-import { ArrowLeft, Home } from 'lucide-react';
+import { ArrowLeft, BookOpen, Home } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
+import { StatusCodeDisplay } from '@/components/status-code-display';
+import { TransitionLink } from '@/components/transition/transition-link';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocaleFromRouteContext } from '@/lib/route-locale';
 
@@ -18,6 +20,7 @@ export function LocalizedNotFound({ variant = 'default' }: LocalizedNotFoundProp
   const locale = resolveLocaleFromRouteContext(params?.lang, pathname);
   const dict = getPageDictionary(locale);
   const homeHref = `/${locale}`;
+  const docsHref = `/${locale}/docs/ch0`;
 
   const handleBack = () => {
     // Use the browser history API so not-found recovery does not depend on
@@ -32,31 +35,30 @@ export function LocalizedNotFound({ variant = 'default' }: LocalizedNotFoundProp
 
   return (
     <main
-      className={
-        variant === 'docs'
-          ? 'pointer-events-auto relative z-10 [grid-area:main] flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 py-20 text-center'
-          : 'flex min-h-screen flex-col items-center justify-center gap-4 px-6 py-20 text-center'
-      }
+      className={`special-fallback${variant === 'docs' ? ' special-fallback--docs pointer-events-auto relative z-10 [grid-area:main]' : ''}`}
     >
-      <p className="text-6xl font-bold text-fd-muted-foreground">404</p>
-      <h1 className="text-2xl font-semibold text-fd-foreground">{dict.notFoundTitle}</h1>
-      <p className="max-w-md text-sm text-fd-muted-foreground">{dict.notFoundDesc}</p>
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-fd-border bg-fd-secondary px-4 py-2 text-sm font-medium text-fd-secondary-foreground transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground"
-        >
-          <ArrowLeft size={16} />
-          {dict.notFoundBack}
-        </button>
-        <a
-          href={homeHref}
-          className="inline-flex items-center gap-2 rounded-lg bg-fd-primary px-4 py-2 text-sm font-medium text-fd-primary-foreground transition-colors hover:bg-fd-primary/90"
-        >
-          <Home size={16} />
-          {dict.notFoundHome}
-        </a>
+      <div className="special-fallback__panel">
+        <StatusCodeDisplay code={dict.notFoundCode} />
+        {/* Group the recovery copy into one editorial block beneath the status mark.
+            将恢复提示文案组合为状态标识下方的单一内容层级。 */}
+        <div className="special-fallback__copy">
+          <h1 className="special-fallback__title">{dict.notFoundTitle}</h1>
+          <p className="special-fallback__description">{dict.notFoundDesc}</p>
+        </div>
+        <div className="special-fallback__actions">
+          <button type="button" onClick={handleBack} className="control-surface cursor-pointer">
+            <ArrowLeft size={16} />
+            {dict.notFoundBack}
+          </button>
+          <TransitionLink href={homeHref} className="control-surface">
+            <Home size={16} />
+            {dict.notFoundHome}
+          </TransitionLink>
+          <TransitionLink href={docsHref} className="control-surface control-surface--primary">
+            <BookOpen size={16} />
+            {dict.notFoundDocs}
+          </TransitionLink>
+        </div>
       </div>
     </main>
   );

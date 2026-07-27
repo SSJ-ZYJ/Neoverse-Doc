@@ -8,22 +8,65 @@
 
 .mermaid-wrapper {
   --mermaid-scale: 1;
+  position: relative;
   border: 1px solid var(--glass-border-hairline);
-  background-color: var(--glass-tint-medium);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  border-radius: 0.875rem;
+  background-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-radius: var(--radius-md);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
   overflow: hidden;
-  isolation: isolate;
+  /* No z-index / isolation here on purpose. Any stacking context (z-index: 0,
+     isolation: isolate, etc.) is a backdrop root per the Filter Effects spec.
+     If the wrapper became a backdrop root, the toolbar's backdrop-filter would
+     be trapped inside the wrapper and could only sample the wrapper's ::before
+     tint (semi-transparent) — blurring that produces an invisible result, so
+     the toolbar reads as transparent. The wrapper is also deliberately
+     excluded from the shared :where(... isolation: isolate) rule in
+     immersive-interactions.css for the same reason. Leaving the wrapper
+     without a stacking context keeps the toolbar's nearest backdrop root at
+     #nd-page, so the toolbar's backdrop-filter samples #nd-page's internal
+     content (semi-transparent tint over the blurred circuit-grid background
+     + the Mermaid SVG), and the blur is actually visible.
+     Particle scoping is handled by the immersive controller's
+     [data-immersive-active] z-index rules instead.
+     此处刻意不设 z-index / isolation。任何层叠上下文（z-index: 0、
+     isolation: isolate 等）按 Filter Effects 规范都是 backdrop root。
+     若 wrapper 成为 backdrop root，工具栏的 backdrop-filter 会被困在
+     wrapper 内部，只能采样 wrapper ::before 的半透明底色，模糊半透明
+     底色不可见。出于同样原因，wrapper 也刻意被排除出 immersive-
+     interactions.css 中共享的 :where(... isolation: isolate) 规则。
+     不给 wrapper 建立层叠上下文，工具栏的最近 backdrop root 保持在
+     #nd-page，工具栏的 backdrop-filter 能采样 #nd-page 内部内容
+    （半透明底色下的已模糊电路网格背景 + Mermaid SVG），模糊效果可见。
+     粒子层 z-index 由 immersive 控制器的 [data-immersive-active]
+     规则负责约束。 */
   transition:
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease;
+}
+
+/* Wrapper tint layer. A plain semi-transparent background (no backdrop-filter)
+   avoids forming a backdrop root that would prevent the floating toolbar from
+   sampling the Mermaid SVG behind it. The wrapper still reads as a glass
+   container through its border + shadow + tint; the toolbar carries the
+   project's full glass-chip treatment (blur + tint + edge + refractive line)
+   on its own element.
+   wrapper 底色层。仅使用半透明底色（不带 backdrop-filter），避免成为
+   backdrop root 阻止悬浮工具栏采样后方的 Mermaid SVG。wrapper 仍通过
+   描边 + 阴影 + 底色呈现为玻璃容器；工具栏则由自身元素承载项目完整的
+   glass-chip 处理（模糊 + 底色 + 描边 + 折射细线）。 */
+.mermaid-wrapper::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background-color: var(--glass-tint-medium);
+  content: "";
+  pointer-events: none;
 }
 
 /* Wrapper hover：展示性容器，不抬升，仅切换到 hover 投影 +
@@ -50,14 +93,25 @@
    align-items: center 真的把图表垂直居中；悬浮工具栏对长图表会有
    小幅重叠，工具栏是半透玻璃色，重叠可接受。 */
 .mermaid-canvas {
+  position: relative;
+  z-index: 1;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: safe center;
+  align-items: safe center;
   min-height: 120px;
   overflow: auto;
-  padding: 1.25rem 1rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--glass-scrollbar-thumb) var(--glass-scrollbar-track);
+  /* Bottom padding enlarged to clear the floating toolbar (~2.4rem tall at
+     bottom: 0.75rem). Previously 1.25rem which let the toolbar overlap the
+     last line of diagram text. 3.5rem gives full clearance with breathing room.
+     底部内边距加大以避让悬浮工具栏（高约 2.4rem，距底 0.75rem）。
+     此前 1.25rem 导致工具栏覆盖图表最后一行文字，3.5rem 留足安全距离。 */
+  padding: 1.25rem 1rem 3.5rem;
+  /* Hide native scrollbars: the diagram is panned by drag, so a visible
+     scrollbar would only add visual noise without aiding interaction.
+     隐藏原生滚动条：图表通过拖动平移，可见滚动条只会增加视觉噪音，
+     对交互无帮助。 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   cursor: grab;
   /* Block default touch gestures (scroll / pinch) so single-finger drag is
      used for pan; desktop wheel scroll still works because we only block
@@ -69,6 +123,12 @@
   -webkit-user-select: none;
 }
 
+/* WebKit (Chrome / Safari / Edge) hides scrollbars via ::-webkit-scrollbar.
+   WebKit（Chrome / Safari / Edge）通过 ::-webkit-scrollbar 隐藏滚动条。 */
+.mermaid-canvas::-webkit-scrollbar {
+  display: none;
+}
+
 .mermaid-canvas[data-dragging] {
   cursor: grabbing;
   /* Suppress native scroll while a drag is in progress so the canvas doesn't
@@ -77,38 +137,31 @@
   touch-action: none;
 }
 
-/* Zoom target: the layout size stays at the SVG's natural dimensions
-   on purpose. The "frame" around the diagram (this element) does NOT
-   grow with zoom — only the diagram inside scales. We use the SVG's
-   `viewBox` to map diagram coordinates into the natural-size box, and
-   push the visual scale onto the inner `.mermaid-svg-host` via
-   `transform: scale()`. The frame's `transform` is reserved for
-   panning only. `overflow: hidden` clips the visually-scaled SVG so
-   it doesn't push the canvas around — the user pans to see other
-   parts at high zoom.
+/* Zoom target uses the initial fit-to-canvas dimensions as a stable frame.
+   The frame never grows with toolbar zoom — only the centered diagram inside
+   scales. The frame's transform is reserved for panning, so enlarged content
+   remains reachable without changing the surrounding canvas layout.
    The fallbacks are `0px` (not bare `0`) so the variables yield valid
    `<length>`s even before the SVG natural size is measured; a bare
    number makes the layout collapse to `auto` and the diagram
    disappears.
    Animate the svg-host's `transform` so the toolbar zoom in/out
-   buttons feel smooth (0.25s ease) instead of snapping. The
+   buttons use the shared standard motion token instead of snapping. The
    zoom-target keeps a shorter, dedicated transform transition for
    panning; the data-dragging override below disables both so the drag
    stays 1:1.
-   缩放目标：layout 尺寸固定为 SVG 原始尺寸。图表"外框"（本元素）
-   不会随缩放变化 —— 缩放只作用在内部的图表上。我们用 SVG 的
-   `viewBox` 把图表坐标映射进原始尺寸盒子里，再把视觉缩放交给
-   内部的 `.mermaid-svg-host`，由 `transform: scale()` 承担。外框
-   的 `transform` 只用于平移。`overflow: hidden` 裁掉视觉溢出，
-   避免把画布撑大 —— 高缩放下用户通过平移看其他部分。
+   缩放目标使用首次适配画布的尺寸作为稳定外框，不会随工具栏缩放变化；
+   只有居中的内部图表执行视觉缩放。外框 transform 仅用于平移，
+   因此放大内容仍可拖动查看，同时不会改变外围画布布局。
    变量用 `0px`（而不是裸 `0`）做回退，保证 SVG 尺寸未测量前
    layout 仍合法；裸数字会让 layout 坍缩成 `auto`、图表直接消失。
-   给 svg-host 的 `transform` 加 0.25s 缓动，让工具栏缩放按钮丝滑
+   svg-host 的 `transform` 使用共享标准动效 Token，让工具栏缩放按钮丝滑
    切换。zoom-target 单独保留更短的过渡专门服务平移；data-dragging
    覆盖规则同时关掉两者，保证拖动 1:1 跟手。 */
 .mermaid-zoom-target {
-  width: var(--svg-w, 0px);
-  height: var(--svg-h, 0px);
+  position: relative;
+  width: var(--svg-frame-w, 0px);
+  height: var(--svg-frame-h, 0px);
   /* Prevent the flex canvas from shrinking this element below its
      explicit width/height. Without this, a narrow canvas would
      compress the zoom-target, causing the SVG to render at a
@@ -120,7 +173,7 @@
   flex-shrink: 0;
   transform: translate(var(--mermaid-pan-x, 0px), var(--mermaid-pan-y, 0px));
   transform-origin: center center;
-  transition: transform 0.2s ease;
+  transition: transform var(--motion-fast) var(--motion-ease-standard);
   will-change: transform;
   /* `overflow: visible` so SVG filter outputs (drop shadows from
      mermaid's `<filter width="130%">`) that extend beyond the SVG's
@@ -143,25 +196,21 @@
   overflow: visible;
 }
 
-/* svg-host fills the zoom target, then is visually scaled via
-   `transform: scale()`. The layout size is still 100% of the
-   zoom-target (= natural SVG), so the canvas sees the natural size
-   and the user's "frame" stays the only thing that gets a width/
-   height — the diagram itself is what visually grows. Scale transition
-   is on this element (not the zoom-target), so zoom in/out animates
-   the diagram without affecting the frame's pan transition.
-   svg-host 填满 zoom-target，再用 `transform: scale()` 做视觉缩放。
-   layout 尺寸仍是 zoom-target 的 100%（= SVG 原始尺寸），画布看到
-   的是原始尺寸，用户的"外框"是唯一带 width/height 的盒子 —— 视觉
-   变化落在图表本身。缩放过渡挂在这个元素（不在 zoom-target），
-   缩放按钮的缓动只影响图表、不影响外框的平移过渡。 */
+/* The SVG host keeps its natural dimensions, is centered inside the stable
+   fit frame, and scales visually. Zoom therefore affects only diagram content,
+   while the surrounding canvas keeps the same width and height.
+   SVG 宿主保留自然尺寸并居中放入稳定的适配外框，只通过 transform
+   做视觉缩放，因此缩放仅影响图表内容，外围画布宽高保持不变。 */
 .mermaid-zoom-target > .mermaid-svg-host {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
   display: block;
-  width: 100%;
-  height: 100%;
-  transform: scale(var(--mermaid-scale, 1));
-  transform-origin: center center;
-  transition: transform 0.25s ease;
+  width: var(--svg-w, 0px);
+  height: var(--svg-h, 0px);
+  transform: translate(-50%, -50%) scale(var(--mermaid-scale, 1));
+  transform-origin: center;
+  transition: transform var(--motion-standard) var(--motion-ease-standard);
   will-change: transform;
 }
 
@@ -177,6 +226,129 @@
   display: block;
   width: 100%;
   height: 100%;
+  margin: auto;
+}
+
+/* Mermaid visual language: translucent compute nodes, luminous borders,
+   restrained labels, and rounded groups match the project's liquid glass UI.
+   Mermaid 视觉语言：半透明计算节点、明亮边缘、克制标签与圆角分组，
+   与项目液态玻璃界面保持一致。 */
+.mermaid-svg-host :is(.node rect, .node polygon, .node circle, .node ellipse, .label-container) {
+  fill: color-mix(in srgb, var(--surface-elevated) 72%, var(--accent-soft)) !important;
+  stroke: color-mix(in srgb, var(--accent-primary) 58%, var(--edge-light)) !important;
+  stroke-width: 1.25px !important;
+}
+
+.mermaid-svg-host :is(.node rect, .label-container, .actor, .note, .labelBox) {
+  rx: 12px;
+  ry: 12px;
+}
+
+.mermaid-svg-host .node {
+  filter: drop-shadow(0 0.4rem 0.75rem color-mix(in srgb, var(--accent-primary) 14%, transparent));
+}
+
+.mermaid-svg-host :is(.cluster rect, .actor, .note, .labelBox) {
+  fill: color-mix(in srgb, var(--surface-glass) 62%, transparent) !important;
+  stroke: color-mix(in srgb, var(--border-interactive) 82%, var(--edge-light)) !important;
+  stroke-width: 1.15px !important;
+}
+
+.mermaid-svg-host .cluster rect {
+  rx: 18px;
+  ry: 18px;
+  stroke-dasharray: 4 5;
+}
+
+.mermaid-svg-host :is(.label, .nodeLabel, .cluster-label, .edgeLabel, .messageText, .noteText) {
+  color: var(--text-primary) !important;
+  fill: var(--text-primary) !important;
+  font-family: var(--font-noto-sans), sans-serif !important;
+}
+
+.mermaid-svg-host :is(.cluster-label, .titleText, .sectionTitle) {
+  color: var(--accent-primary) !important;
+  fill: var(--accent-primary) !important;
+  font-weight: 680 !important;
+}
+
+.mermaid-svg-host :is(.edgeLabel rect, .labelBkg) {
+  fill: transparent !important;
+  stroke: transparent !important;
+  opacity: 0 !important;
+  rx: 8px;
+  ry: 8px;
+}
+
+.mermaid-svg-host
+  :is(
+    .edgePath path,
+    .edgePaths path,
+    path.flowchart-link,
+    path.transition,
+    path[marker-end],
+    path[marker-start],
+    .transition path,
+    .messageLine0,
+    .messageLine1,
+    .loopLine,
+    .note-edge
+  ) {
+  fill: none !important;
+  stroke: color-mix(in srgb, var(--accent-primary) 68%, var(--text-muted)) !important;
+  stroke-width: 1.6px !important;
+  opacity: 1 !important;
+}
+
+.mermaid-svg-host marker path {
+  fill: var(--accent-primary) !important;
+  stroke: var(--accent-primary) !important;
+}
+
+.mermaid-svg-host foreignObject div {
+  color: var(--text-primary) !important;
+  background: transparent !important;
+  line-height: 1.2 !important;
+}
+
+/* Transition labels remain readable without Mermaid's opaque purple blocks.
+   State start/end markers and connectors use one restrained cyan system.
+   转移标签移除 Mermaid 原始紫色块；状态起止点和连线统一使用克制的青色体系。 */
+.mermaid-svg-host :is(.edgeLabel, .edgeLabel p, .edgeLabel span, .edgeLabel div) {
+  color: var(--accent-secondary) !important;
+  background: transparent !important;
+}
+
+.mermaid-svg-host .edgeLabel text {
+  fill: var(--accent-secondary) !important;
+}
+
+.mermaid-svg-host :is(.statediagram-state .divider, .node .fork-join) {
+  stroke: color-mix(in srgb, var(--accent-primary) 64%, var(--text-muted)) !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid-svg-host circle.state-start {
+  fill: var(--accent-primary) !important;
+  stroke: color-mix(in srgb, var(--edge-light) 72%, var(--accent-primary)) !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid-svg-host circle.state-end,
+.mermaid-svg-host .end-state-inner {
+  fill: var(--surface-elevated) !important;
+  stroke: var(--accent-primary) !important;
+  stroke-width: 1.75px !important;
+}
+
+/* Mermaid measures node labels before SVG insertion; keep the measured label
+   box free of decorative overflow clipping and late line-height expansion.
+   Mermaid 在插入 SVG 前测量节点标签；避免裁剪和后置行高变化造成文字显示不全。 */
+.mermaid-svg-host .node foreignObject,
+.mermaid-svg-host :is(.nodeLabel, .nodeLabel p) {
+  overflow: visible !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
 }
 
 /* While dragging, skip the easing transition on BOTH transforms so the
@@ -216,22 +388,119 @@
   overflow: auto;
 }
 
-/* Floating toolbar: pill-shaped glass chip anchored to the bottom-center of
-   the wrapper, matches the project's glass design language.
-   悬浮工具栏：胶囊形玻璃 chip 锚定在 wrapper 底部居中位置，
-   沿用项目玻璃设计语言。 */
+/* Floating toolbar: a pill-shaped glass chip anchored to the bottom-center of
+   the wrapper. The full glass treatment (blur + tint + edge + shadow) lives
+   directly on this element — identical to .glass-chip elsewhere in the project
+   — so the toolbar reads as a single cohesive glass surface.
+   In non-maximized mode the toolbar is portaled to document.body (position:
+   fixed) so its backdrop-filter samples the full viewport content behind it
+   (page background + circuit grid + Mermaid SVG), completely unaffected by
+   intermediate stacking contexts like #nd-page. In maximized mode it stays
+   inside the wrapper (position: absolute) since the maximized wrapper itself
+   is already portaled to body.
+   悬浮工具栏：胶囊形玻璃 chip 锚定在 wrapper 底部居中。完整玻璃处理
+   （模糊 + 底色 + 描边 + 阴影）直接落在本元素上，与项目中 .glass-chip
+   一致，使工具栏呈现为单一完整的玻璃表面。
+   非全屏模式下工具栏通过 Portal 挂到 document.body（position: fixed），
+   使其 backdrop-filter 采样后方完整视口内容（页面背景 + 电路网格 +
+   Mermaid SVG），完全不受 #nd-page 等中间层叠上下文影响。全屏模式下
+   工具栏留在 wrapper 内（position: absolute），因为全屏 wrapper 本身
+   就已经 Portal 到 body 了。 */
 .mermaid-toolbar {
   position: absolute;
   bottom: 0.75rem;
+  inset-inline: 0;
+  z-index: 2;
+  display: grid;
+  width: max-content;
+  margin-inline: auto;
+  padding: 0.3125rem;
+  overflow: hidden;
+  border: 1px solid var(--mermaid-toolbar-edge);
+  border-radius: var(--radius-pill);
+  background: var(--glass-refraction-fill), var(--mermaid-toolbar-tint);
+  box-shadow: var(--mermaid-toolbar-shadow);
+  -webkit-backdrop-filter: blur(var(--mermaid-toolbar-blur)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--mermaid-toolbar-blur)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  /* Logical auto margins center the toolbar without a transform ancestor.
+     使用逻辑自动外边距居中，避免 transform 祖先。 */
+}
+
+/* Portaled toolbar: rendered at document.body level. Both in-page and
+   maximized modes portal the toolbar to body so it escapes wrapper stacking
+   contexts and its backdrop-filter samples real viewport content.
+   - In-page mode: position calculated by JS (left/top set inline).
+   - Maximized mode: fixed to viewport bottom-center via CSS.
+   Portal 工具栏：渲染在 document.body 层级。普通与全屏模式都把工具栏
+   Portal 到 body，使其脱离 wrapper 层叠上下文，backdrop-filter 能采样
+   真实视口内容。
+   - 普通模式：由 JS 计算位置（left/top 内联设置）。
+   - 全屏模式：由 CSS 固定到视口底部居中。 */
+.mermaid-toolbar[data-portaled] {
+  position: fixed;
+  inset-inline: auto;
+  bottom: auto;
+  z-index: 40;
+  margin-inline: 0;
+}
+
+/* In-page mode: z-index sits below fumadocs' search dialog / popover (z-50)
+   so opening search covers the toolbar.
+   普通模式：z-index 低于 fumadocs 搜索弹窗 / popover（z-50），
+   打开搜索时会盖住工具栏。 */
+.mermaid-toolbar[data-portaled="true"] {
+  /* left/top set inline by component */
+}
+
+/* Maximized mode: fixed to viewport bottom-center. z-index above the
+   maximized wrapper (9999) and backdrop (9998) so the toolbar stays
+   visible above the diagram. Uses transform for horizontal centering
+   (transform makes the toolbar a backdrop root, but that only affects
+   descendants' backdrop-filter, not the toolbar's own).
+   全屏模式：固定到视口底部居中。z-index 高于全屏 wrapper（9999）与
+   backdrop（9998），工具栏始终在图表之上。用 transform 水平居中
+   （transform 会使工具栏成为 backdrop root，但只影响后代的
+   backdrop-filter，不影响工具栏自身）。 */
+.mermaid-toolbar[data-portaled="maximized"] {
+  bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 10000;
+  background: var(--glass-refraction-fill), var(--mermaid-toolbar-tint-maximized);
+}
+
+/* Refractive hairline matches .glass-chip::before for consistent glass optics.
+   折射细线与 .glass-chip::before 一致，保持统一的玻璃光学效果。 */
+.mermaid-toolbar::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--glass-refraction-line);
+  content: "";
+  pointer-events: none;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+/* Maximized toolbar tint is applied via [data-portaled='maximized'] above,
+   since the toolbar is now portaled to body in both modes.
+   全屏态工具栏底色已由上面的 [data-portaled='maximized'] 规则应用，
+   因为两种模式下工具栏都 Portal 到 body。 */
+
+/* Control row sits above the toolbar's glass surface and refractive ::before.
+   控件行位于工具栏玻璃表面与折射 ::before 之上。 */
+.mermaid-toolbar__controls {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 0.125rem;
-  padding: 0.3125rem;
-  border-radius: 9999px;
-  z-index: 2;
-  /* box-shadow inherited from .glass-chip / 从 .glass-chip 继承 */
   transition:
     background-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease;
@@ -327,8 +596,8 @@
    way the "frame" the user sees is the diagram itself, not a
    viewport-sized border around it.
    z-index 9999 keeps the wrapper above the backdrop (9998) and
-   above fumadocs navbar / sidebar / TOC. A soft fade-in sells the
-   snap from in-flow to fixed; `prefers-reduced-motion` skips it.
+   above fumadocs navbar / sidebar / TOC. Only the separate backdrop
+   fades in, so the toolbar can sample the diagram from the first frame.
    放大态：dim + blur 背景由独立的 portal 元素
    （下面的 `.mermaid-maximized-backdrop`）提供，wrapper 本身是
    透明居中容器 —— 无边框、无背景、无模糊。wrapper 在这个状态下
@@ -336,8 +605,8 @@
    填充是 backdrop。这样用户看到的"边框"是图表本身，而不是图表
    周围撑满视口的边框。
    z-index 9999 让 wrapper 高于 backdrop（9998）和 fumadocs 的
-   navbar / sidebar / TOC。柔和淡入让 in-flow → fixed 的切换不
-   突兀，`prefers-reduced-motion` 关闭淡入。 */
+   navbar / sidebar / TOC。仅独立 backdrop 淡入，使工具栏从第一帧
+   就能采样图表内容。 */
 .mermaid-wrapper[data-maximized] {
   position: fixed;
   inset: 0;
@@ -352,7 +621,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: mermaid-maximize-in 0.2s ease;
+}
+
+.mermaid-wrapper[data-maximized]::before {
+  display: none;
 }
 
 .mermaid-wrapper[data-maximized] .mermaid-canvas {
@@ -361,21 +633,29 @@
      full-viewport container that centers the diagram. Removing the
      border / background / radius / shadow eliminates the "floating
      frame" look; the user sees the diagram directly on top of the
-     blurred page. A small inner padding (1.5rem) keeps the diagram
-     from touching the screen edges, and `overflow: auto` allows
-     scrolling when the diagram is larger than the viewport.
+     blurred page.
+     The canvas fills the full viewport (height: 100vh). The diagram
+     is shrunk by useMermaidMaximize's fit-viewport scale (which
+     reserves toolbar space via VIEWPORT_FIT_TOOLBAR_GAP) so the
+     whole SVG is visible in one screen with the bottom area left
+     clear for the floating toolbar. The 4rem bottom padding matches
+     that reserved zone; `overflow: auto` only engages when the user
+     manually zooms in beyond the fit scale.
      放大态不使用玻璃边框 —— backdrop 已提供 dim + blur 视觉。
-     canvas 只是一个透明的、撑满视口的容器，居中放置图表。
-     去掉 border / background / radius / shadow 消除"浮动边框"
-     效果；用户看到的是图表直接叠加在模糊页面上。少量内边距
-     （1.5rem）防止图表贴到屏幕边缘，`overflow: auto` 在图表
-     超出视口时允许滚动。 */
+     canvas 只是一个透明的、撑满视口的容器，居中放置图表。去掉
+     border / background / radius / shadow 消除"浮动边框"效果；
+     用户看到的是图表直接叠加在模糊页面上。
+     canvas 占满整个视口（height: 100vh）。图表通过 useMermaidMaximize
+     的 fit-viewport 比例缩小（VIEWPORT_FIT_TOOLBAR_GAP 预留工具栏
+     空间），使整个 SVG 在一屏内可见，底部区域留给悬浮工具栏。
+     4rem 底部内边距与预留区域匹配；`overflow: auto` 仅在用户手动
+     放大超过适配比例时启用。 */
   flex: 0 1 auto;
   width: 100vw;
   height: 100vh;
   max-width: 100vw;
   max-height: 100vh;
-  padding: 1.5rem;
+  padding: 1.5rem 1.5rem 4rem;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -405,7 +685,7 @@
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-backdrop)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  animation: mermaid-maximize-in 0.2s ease;
+  animation: mermaid-maximize-in var(--motion-standard) var(--motion-ease-standard);
 }
 
 @keyframes mermaid-maximize-in {
@@ -418,7 +698,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mermaid-wrapper[data-maximized],
   .mermaid-maximized-backdrop {
     animation: none;
   }

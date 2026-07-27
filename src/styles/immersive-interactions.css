@@ -1,0 +1,273 @@
+/* HarmonyOS-inspired photon field uses only small round ice-blue/white dots.
+   Pointer interpolation keeps drag trails continuous on desktop and touch.
+   HarmonyOS 风格光子场仅使用冰蓝 / 白色小圆点，指针插值让桌面端与触屏拖拽连续。 */
+
+:root,
+.light {
+  --immersive-field-blend: normal;
+  --immersive-particle-blend: normal;
+  --immersive-track-opacity: 0.3;
+  --immersive-peak-opacity: 0.43;
+  --immersive-mid-opacity: 0.23;
+  --immersive-field-a: color-mix(in srgb, var(--accent-primary) 20%, var(--text-primary) 4%);
+  --immersive-field-b: color-mix(in srgb, var(--accent-primary) 9%, transparent);
+  --immersive-particle-core: color-mix(in srgb, white 72%, var(--accent-primary));
+  --immersive-particle-rim: color-mix(in srgb, var(--accent-primary) 52%, transparent);
+  --immersive-particle-glow: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+}
+
+.dark {
+  --immersive-field-blend: screen;
+  --immersive-particle-blend: screen;
+  --immersive-track-opacity: 0.4;
+  --immersive-peak-opacity: 0.58;
+  --immersive-mid-opacity: 0.32;
+  --immersive-field-a: color-mix(in srgb, var(--accent-primary) 38%, transparent);
+  --immersive-field-b: color-mix(in srgb, var(--accent-primary) 16%, transparent);
+  --immersive-particle-core: color-mix(in srgb, white 82%, var(--accent-primary));
+  --immersive-particle-rim: color-mix(in srgb, var(--accent-primary) 68%, transparent);
+  --immersive-particle-glow: color-mix(in srgb, var(--accent-primary) 42%, transparent);
+}
+
+:where(
+  .control-surface,
+  .chapter-card,
+  .mdx-doc-card,
+  .capability-row,
+  [data-card="true"],
+  .surface-panel,
+  .glass-interactive,
+  .glass-interactive--chip,
+  .glass-cta,
+  .glass-codeblock,
+  .markdown-alert,
+  .markdown-details,
+  #nd-nav button,
+  #nd-sidebar button,
+  #nd-sidebar-mobile button,
+  [data-immersive-active]
+) {
+  position: relative;
+  isolation: isolate;
+}
+
+/* .mermaid-wrapper is intentionally excluded from the isolation: isolate rule
+   above. isolation: isolate makes an element a backdrop root (per the Filter
+   Effects spec), which would trap the floating .mermaid-toolbar's
+   backdrop-filter inside the wrapper. The toolbar could then only sample the
+   wrapper's ::before tint (semi-transparent) — blurring that is invisible, so
+   the toolbar reads as transparent. By leaving the wrapper without isolation,
+   the toolbar's nearest backdrop root becomes #nd-page, giving the toolbar's
+   blur real content to sample (page background + circuit grid + SVG).
+   The wrapper keeps position: relative from its own rule in mermaid.css, and
+   the immersive particle layer works independently (it has its own
+   contain: layout paint + overflow: hidden, and the wrapper's overflow:
+   hidden clips any overflow).
+   .mermaid-wrapper 刻意不从上面的 isolation: isolate 规则中继承。isolation:
+   isolate 会使元素成为 backdrop root（按 Filter Effects 规范），把悬浮
+   .mermaid-toolbar 的 backdrop-filter 困在 wrapper 内部。工具栏就只能采样
+   wrapper 的 ::before 底色（半透明），模糊半透明底色不可见，工具栏因此
+   看起来透明。不给 wrapper 设 isolation，工具栏的最近 backdrop root 变成
+   #nd-page，工具栏的模糊能采样到真实内容（页面背景 + 电路网格 + SVG）。
+   wrapper 仍从 mermaid.css 自身规则获得 position: relative，沉浸式粒子层
+   独立工作（自身有 contain: layout paint + overflow: hidden，wrapper 的
+   overflow: hidden 裁剪溢出）。 */
+
+:where(
+  .control-surface,
+  .chapter-card,
+  .mdx-doc-card,
+  .capability-row,
+  [data-card="true"],
+  .surface-panel,
+  .glass-interactive,
+  .glass-interactive--chip,
+  .glass-cta,
+  #nd-nav button,
+  #nd-sidebar button,
+  #nd-sidebar-mobile button,
+  [data-immersive-active]
+) {
+  overflow: hidden;
+}
+
+/* Compact controls own an intentional drag gesture; document surfaces retain
+   native scrolling. 紧凑控件接管明确拖拽，正文与大卡片仍保留原生滚动。 */
+:where(
+  .control-surface,
+  .glass-interactive,
+  .glass-interactive--chip,
+  .glass-cta,
+  #nd-nav button,
+  #nd-sidebar button,
+  #nd-sidebar-mobile button,
+  .mermaid-toolbar button
+) {
+  touch-action: none;
+}
+
+/* The owned layer uses the computed host radius and radial-only illumination,
+   preventing the rectangular seam previously visible on the search trigger.
+   独立层同步宿主圆角并仅使用径向光场，避免搜索触发器出现矩形接缝。 */
+.immersive-particle-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  overflow: hidden;
+  contain: layout paint;
+  border-radius: var(--immersive-radius, inherit);
+  clip-path: inset(0 round var(--immersive-radius, 0));
+  pointer-events: none;
+  mix-blend-mode: var(--immersive-particle-blend);
+}
+
+.immersive-particle-layer::before {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  opacity: 0;
+  background:
+    radial-gradient(
+      ellipse 108% 138% at var(--immersive-x, 50%) var(--immersive-y, 50%),
+      color-mix(in srgb, var(--edge-light) 24%, transparent) 0%,
+      var(--immersive-field-a) 24%,
+      var(--immersive-field-b) 52%,
+      transparent 82%
+    ),
+    linear-gradient(
+      112deg,
+      transparent 24%,
+      color-mix(in srgb, var(--accent-primary) 12%, transparent) 46%,
+      color-mix(in srgb, var(--accent-tertiary) 10%, transparent) 58%,
+      transparent 76%
+    );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  content: "";
+  pointer-events: none;
+  mix-blend-mode: var(--immersive-field-blend);
+  transform: translate3d(0, 0, 0);
+}
+
+[data-immersive-active] > *:not(.immersive-particle-layer, .mermaid-toolbar) {
+  position: relative;
+  z-index: 3;
+}
+
+[data-immersive-active] > .mermaid-toolbar {
+  z-index: 3;
+}
+
+/* Code Tabs use one particle plane above both the tab strip and code panel,
+   so a click inside code can continue visibly through the language strip.
+   代码 Tabs 将粒子层置于语言栏与代码面板之上，使代码区点击反馈能连续显示到语言栏。 */
+#nd-page
+  div[data-orientation]:has(> [role="tablist"]):has(> [role="tabpanel"])
+  > .immersive-particle-layer {
+  z-index: 4;
+}
+
+.immersive-particle {
+  position: absolute;
+  inset-block-start: var(--particle-start-y);
+  inset-inline-start: var(--particle-start-x);
+  inline-size: var(--particle-size);
+  block-size: var(--particle-size);
+  border-radius: var(--radius-pill);
+  opacity: var(--particle-alpha);
+  background: radial-gradient(
+    circle,
+    var(--immersive-particle-core) 0 28%,
+    var(--immersive-particle-rim) 42%,
+    transparent 74%
+  );
+  box-shadow:
+    0 0 0.34rem var(--immersive-particle-glow),
+    0 0 0.82rem color-mix(in srgb, var(--accent-primary) 28%, transparent);
+  pointer-events: none;
+  transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(0.78);
+  animation: immersive-particle-scatter var(--particle-duration) var(--motion-ease-emphasized)
+    var(--particle-delay) forwards;
+  backface-visibility: hidden;
+}
+
+.immersive--tracking > .immersive-particle-layer::before {
+  opacity: var(--immersive-track-opacity);
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+.immersive--active > .immersive-particle-layer::before {
+  animation: immersive-field-settle var(--motion-particle-field) var(--motion-ease-standard)
+    forwards;
+}
+
+@keyframes immersive-field-settle {
+  0% {
+    opacity: var(--immersive-peak-opacity);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  62% {
+    opacity: var(--immersive-mid-opacity);
+    transform: translate3d(0, 0, 0) scale(1.008);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(1.018);
+  }
+}
+
+@keyframes immersive-particle-scatter {
+  0% {
+    filter: saturate(1.12) blur(0.08px);
+    opacity: var(--particle-alpha);
+    transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(0.78);
+  }
+  8% {
+    opacity: var(--particle-alpha);
+    transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(0.96);
+  }
+  56% {
+    filter: saturate(1.2) blur(0);
+    opacity: var(--particle-alpha);
+    transform: translate(-50%, -50%) translate3d(var(--particle-mid-x), var(--particle-mid-y), 0)
+      scale(1.04);
+  }
+  78% {
+    filter: saturate(1.12) blur(0.22px);
+    opacity: var(--particle-fade-alpha);
+    transform: translate(-50%, -50%) translate3d(var(--particle-late-x), var(--particle-late-y), 0)
+      scale(0.92);
+  }
+  100% {
+    filter: saturate(1.03) blur(0.9px);
+    opacity: 0;
+    transform: translate(-50%, -50%) translate3d(var(--particle-end-x), var(--particle-end-y), 0)
+      scale(0.88);
+  }
+}
+
+@media (hover: hover) {
+  :where(
+    .control-surface,
+    .chapter-card,
+    .mdx-doc-card,
+    .capability-row,
+    [data-card="true"],
+    #nd-nav button,
+    #nd-sidebar button
+  ):hover {
+    box-shadow:
+      var(--shadow-edge),
+      var(--shadow-interactive),
+      0 0 1.4rem -0.8rem color-mix(in srgb, var(--accent-primary) 42%, transparent) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .immersive-particle-layer,
+  .immersive-particle {
+    display: none;
+  }
+}

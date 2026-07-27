@@ -9,9 +9,11 @@ import type { Dictionary } from './index';
 
 export const en = {
   siteTitle: 'Neoverse-Docs',
-  tagline: 'A documentation for CSers',
+  tagline: 'An open knowledge network for computer science learners',
   loading: 'Loading…',
-  loadingMarquee: 'Loading...',
+  // Visual loading marquee label.
+  // 可视化加载跑马灯标签。
+  loadingMarquee: 'LOADING...',
   enterDocs: 'Enter',
   guestbookTitle: 'Guestbook',
   guestbookDesc: 'Leave your suggestions and feedback for Neoverse-Docs here',
@@ -20,14 +22,65 @@ export const en = {
   primaryAuthorLabel: 'Primary author:',
   documentContributorsTitle: 'Document contributors',
   backToDocs: 'Back to Docs',
+  backToHome: 'Back to Home',
   errorTitle: 'Page Failed to Load',
   errorDesc: 'An unexpected error occurred. Please try reloading the page.',
   errorRetry: 'Retry',
   notFoundTitle: 'Page Not Found',
+  notFoundCode: '404',
   notFoundDesc:
     'The page you are looking for might have been removed, renamed, or temporarily unavailable.',
   notFoundBack: 'Go Back',
   notFoundHome: 'Back to Home',
+  notFoundDocs: 'Enter Docs',
+  // Homepage portal copy / 首页内容门户文案
+  home: {
+    eyebrow: 'Open knowledge network · Always evolving',
+    heroDescription:
+      'From computer fundamentals to algorithm practice, connect scattered experience into clear, searchable, and collaborative learning paths.',
+    scrollHint: 'Explore the knowledge map',
+    chaptersEyebrow: 'Knowledge coordinates',
+    chaptersTitle: 'Start with real chapters',
+    chaptersDescription:
+      'These entries come directly from the current documentation tree and evolve with it.',
+    chapterAction: 'Open chapter',
+    learningEyebrow: 'Learning navigator',
+    learningTitle: 'Turn a broad major into reachable next steps',
+    learningDescription:
+      'For computer science and related majors, build reliable study and problem-solving habits from daily tools to engineering practice.',
+    learningPaths: [
+      {
+        title: 'Computing foundations',
+        description: 'Understand everyday computing through files, systems, and browsers.',
+      },
+      {
+        title: 'Development tools',
+        description: 'Build confidence with terminals, text editing, and version control.',
+      },
+      {
+        title: 'Engineering first steps',
+        description: 'Connect environments, containers, and collaboration into reusable methods.',
+      },
+      {
+        title: 'Clear expression',
+        description: 'Use Markdown, Mermaid, and code examples to keep useful notes.',
+      },
+      {
+        title: 'Problem solving',
+        description: 'Practice searching, asking, and validating to turn blockers into actions.',
+      },
+      {
+        title: 'Learning together',
+        description: 'Discuss, correct, and preserve experience beside the relevant guide.',
+      },
+    ],
+    communityEyebrow: 'Built together',
+    communityTitle: 'Help the knowledge network grow',
+    communityDescription:
+      'Found an error, a missing path, or a clearer explanation? Start a discussion or contribute directly.',
+    communityPrimaryAction: 'Contribute',
+    communitySecondaryAction: 'Visit guestbook',
+  },
   // Homepage footer labels / 首页 footer 标签
   homeFooterLabel: 'Project footer',
   homeFooterCode: 'Project code',

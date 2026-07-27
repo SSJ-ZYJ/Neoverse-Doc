@@ -51,6 +51,11 @@ export default function ImmersiveScrollbar() {
 
     let animationFrame = 0;
     let dragState: DragState | null = null;
+    // Paused while the tab is hidden so background pages do not keep firing
+    // ResizeObserver / scroll / resize callbacks for a scrollbar no one sees.
+    // 标签页隐藏时暂停，避免后台页面持续触发 ResizeObserver / scroll / resize
+    // 回调来更新一个无人可见的滚动条。
+    let paused = false;
 
     // Mark the viewport as handled only after the custom scrollbar has mounted.
     // 仅在自定义滚动条挂载后标记视口已接管，避免无 JS 时丢失原生滚动条。
@@ -150,7 +155,10 @@ export default function ImmersiveScrollbar() {
     }
 
     function scheduleApplyMetrics() {
-      if (animationFrame !== 0) return;
+      // Skip scheduling while the tab is hidden; visibilitychange handler
+      // will trigger a single applyMetrics() on resume.
+      // 标签页隐藏时跳过调度；visibilitychange 处理器会在恢复时触发一次 applyMetrics。
+      if (animationFrame !== 0 || paused) return;
 
       animationFrame = window.requestAnimationFrame(() => {
         animationFrame = 0;
@@ -223,6 +231,22 @@ export default function ImmersiveScrollbar() {
     trackElement.addEventListener('pointercancel', finishDragging);
     applyMetrics();
 
+    // Pause work while the tab is hidden; on resume, run a single synchronous
+    // update so the thumb reflects the current scroll position immediately.
+    // 标签页隐藏时暂停；恢复时执行一次同步更新，使 thumb 立即反映当前滚动位置。
+    const handleVisibilityChange = () => {
+      paused = document.hidden;
+      if (animationFrame !== 0) {
+        window.cancelAnimationFrame(animationFrame);
+        animationFrame = 0;
+      }
+      if (!paused) {
+        applyMetrics();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       if (animationFrame !== 0) {
         window.cancelAnimationFrame(animationFrame);
@@ -235,6 +259,7 @@ export default function ImmersiveScrollbar() {
       trackElement.removeEventListener('pointermove', handlePointerMove);
       trackElement.removeEventListener('pointerup', finishDragging);
       trackElement.removeEventListener('pointercancel', finishDragging);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       root.classList.remove(ROOT_READY_CLASS, ROOT_ACTIVE_CLASS, ROOT_DRAGGING_CLASS);
     };
   }, []);

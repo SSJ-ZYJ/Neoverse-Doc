@@ -1,0 +1,1186 @@
+/* Spatial knowledge-network homepage with restrained React Bits adaptations.
+   具有克制 React Bits 效果的空间知识网络首页。 */
+
+.home-route-shell {
+  display: flex;
+  min-block-size: 0;
+  inline-size: 100%;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
+/* Direct home entry fades without retaining a transform. A transformed route
+   shell becomes the containing block for the fixed ambient layer and can add
+   scrollable overflow after the footer.
+   首页直达入场仅使用淡入，不保留 transform。带 transform 的路由外壳会成为
+   固定环境层的包含块，并可能在页脚后产生可滚动溢出。 */
+.home-route-shell--enter {
+  animation: nd-home-fade-in var(--motion-standard) var(--motion-ease-standard) both;
+}
+
+@keyframes nd-home-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+:is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"]) {
+  --home-nav-height: 4.75rem;
+  /* Knowledge-map cards share a lighter, lower-blur glass so the underlying
+     grid remains softly recognizable across chapter and learning-path cards.
+     知识版图卡片共用更透明、低模糊的玻璃层，让章节与学习路径卡片下方纹理均可柔和辨认。 */
+  --home-map-card-surface: color-mix(in srgb, var(--surface-glass) 56%, transparent);
+  --home-map-card-blur: 3px;
+  /* The community callout uses a low-fill, low-blur surface so the
+     knowledge-network backdrop remains clearly visible behind its content.
+     共建卡片使用低填充、低模糊表面，让知识网络背景可清晰透过内容区域。 */
+  --home-community-surface: color-mix(in srgb, var(--surface-glass) 18%, transparent);
+  /* Mobile chapter indices gain enough scale for scanning without competing
+     with the chapter title hierarchy.
+     移动端章节编号适度放大以便快速扫读，同时不抢占章节标题层级。 */
+  --home-chapter-index-mobile-size: 0.875rem;
+  /* Floating nav uses a restrained two-layer shadow: a tight contact shadow
+     near the pill and a soft mid-range cast. Keeps the lifted feel without
+     weighing down the light homepage aesthetic.
+     悬浮导航采用克制的两层阴影：贴近胶囊的接触阴影与中距柔投影，
+     保持悬浮感而不让轻盈的首页视觉变得沉重。 */
+  --home-nav-shadow: 0 2px 4px -1px rgb(14 34 44 / 8%), 0 12px 28px -10px rgb(14 34 44 / 14%);
+  min-block-size: 100dvh;
+  background: var(--background-primary);
+}
+
+:is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"])
+  :is(#nd-nav, [data-nd-transition-source-id="nd-nav"]) {
+  inline-size: min(calc(100% - 2 * var(--page-gutter)), var(--content-max));
+  block-size: var(--home-nav-height);
+  margin-inline: auto;
+  padding-block-start: 0.75rem;
+  pointer-events: none;
+}
+
+:is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"])
+  :is(#nd-nav, [data-nd-transition-source-id="nd-nav"])
+  > div {
+  min-block-size: 3.25rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--glass-refraction-fill), var(--surface-glass) !important;
+  box-shadow: var(--shadow-edge), var(--home-nav-shadow) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  pointer-events: auto;
+}
+
+/* Dark mode: black drop shadows vanish on the navy canvas, so the floating
+   pill gets luminous ambient glow layers instead to preserve the lifted feel.
+   深色模式：黑色投影在海军蓝画布上不可见，改用明亮的环境辉光层，
+   保持胶囊的悬浮感。 */
+.dark :is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"]) {
+  --home-nav-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent-primary) 12%, transparent),
+    0 12px 28px -10px color-mix(in srgb, var(--accent-primary) 16%, transparent);
+}
+
+.home-page {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-block-size: 0;
+  inline-size: 100%;
+  flex: 1 0 auto;
+  flex-direction: column;
+  /* Do NOT add overflow-x: clip/hidden here: any overflow value other than
+     visible creates a containing block for position: fixed descendants,
+     which traps the ambient orb layer (::before) and makes it size relative
+     to this element instead of the viewport — producing a large blank strip
+     below the footer. Horizontal overflow from the fixed orb layer is clipped
+     by the viewport itself and does not create scrollbars.
+     切勿在此添加 overflow-x: clip/hidden：任何非 visible 的 overflow 值都会为
+     position: fixed 后代创建包含块，使环境光球层（::before）相对于此元素而非
+     视口定位，从而在 footer 下方产生大片空白。固定光球层的水平溢出由视口
+     自身裁剪，不会产生滚动条。 */
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 8% 16%, var(--ambient-ice), transparent 27rem),
+    radial-gradient(circle at 92% 34%, var(--ambient-mint), transparent 24rem),
+    var(--background-primary);
+}
+
+/* Animated ambient orb layer: four large blurred gradient orbs that drift
+   slowly across the viewport, creating a living, breathing background that
+   shifts as the user scrolls. Uses position: fixed so the orbs stay in the
+   viewport during scroll, with animation-timeline: scroll() adding parallax
+   depth (progressive enhancement — browsers without scroll-timeline support
+   still get the drift animation, just without parallax).
+   动画环境光球层：四个大尺寸模糊渐变光球缓慢漂移，营造随滚动变化的
+   活背景。使用 position: fixed 使光球在滚动时留在视口内，
+   animation-timeline: scroll() 叠加视差纵深（渐进增强 —— 不支持
+   scroll-timeline 的浏览器仍有漂移动画，只是无视差）。 */
+.home-page::before {
+  content: "";
+  position: fixed;
+  inset: -15%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 22% 28%,
+      color-mix(in srgb, var(--accent-primary) 7%, transparent),
+      transparent 32rem
+    ),
+    radial-gradient(
+      circle at 78% 62%,
+      color-mix(in srgb, var(--accent-secondary) 6%, transparent),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 58% 15%,
+      color-mix(in srgb, var(--ambient-ice) 60%, transparent),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 35% 82%,
+      color-mix(in srgb, var(--ambient-mint) 55%, transparent),
+      transparent 34rem
+    );
+  filter: blur(40px);
+  opacity: 0.85;
+  animation: nd-ambient-drift var(--motion-loop-ambient) ease-in-out infinite alternate;
+  will-change: transform;
+  /* `contain: strict` fully isolates the fixed ambient layer: its layout,
+     style, paint, and size are independent of the rest of the page. Safe
+     because the element is purely decorative (no children, no incoming
+     content flow) and already position: fixed. */
+  /* `contain: strict` 完全隔离固定环境光层：其 layout、style、paint、size
+     均与页面其他部分独立。安全因为该元素纯装饰（无子节点、无外部内容流入）
+     且已 position: fixed。 */
+  contain: strict;
+}
+
+/* Scroll-driven parallax: when supported, the orb layer shifts vertically
+   as the page scrolls, creating depth. Combined with the drift animation
+   via a separate transform on a child layer — but since we only have one
+   pseudo-element, we use the drift for movement and opacity modulation for
+   scroll reactivity.
+   滚动视差：浏览器支持时，光球层随页面滚动产生纵向位移与透明度变化，
+   营造纵深感。 */
+@supports (animation-timeline: scroll()) {
+  .home-page::before {
+    animation:
+      nd-ambient-drift var(--motion-loop-ambient) ease-in-out infinite alternate,
+      nd-ambient-scroll linear both;
+    animation-timeline: auto, scroll(root);
+  }
+}
+
+@keyframes nd-ambient-drift {
+  0% {
+    transform: translate(0%, 0%) scale(1);
+  }
+  33% {
+    transform: translate(2.5%, -1.5%) scale(1.04);
+  }
+  66% {
+    transform: translate(-1.8%, 2.2%) scale(1.06);
+  }
+  100% {
+    transform: translate(1.2%, -0.8%) scale(1.02);
+  }
+}
+
+@keyframes nd-ambient-scroll {
+  0% {
+    opacity: 0.85;
+    translate: 0 0;
+  }
+  50% {
+    opacity: 1;
+    translate: 0 -3%;
+  }
+  100% {
+    opacity: 0.7;
+    translate: 0 -6%;
+  }
+}
+
+.home-hero {
+  position: relative;
+  display: grid;
+  min-block-size: 100svh;
+  place-items: center;
+  padding: 9rem var(--page-gutter) 7rem;
+  flex-shrink: 0;
+  /* Pull the hero up to sit behind the transparent sticky nav instead of
+     applying the offset to the whole layout wrapper. This keeps the rest of
+     the page flow intact and eliminates the blank strip below the footer.
+     将 hero 向上拉，使其位于透明 sticky 导航下方，而不是把整个布局包装器
+     都向上偏移。这样保持页面其余部分的正常流，消除 footer 下方的空白条。 */
+  margin-block-start: calc(-1 * var(--home-nav-height));
+}
+
+.home-hero__network {
+  position: absolute;
+  inset: 10% 4% 8%;
+  z-index: -1;
+  opacity: 0.32;
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: clamp(3rem, 7vw, 6rem) clamp(3rem, 7vw, 6rem);
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 72%);
+  /* Subtle breathing pulse: the grid opacity gently oscillates to avoid
+     feeling like a static decal. 18s period is slow enough to be ambient.
+     微妙呼吸脉冲：网格透明度轻柔振荡，避免像静态贴纸。18s 周期
+     足够慢，作为环境效果而非干扰。 */
+  animation: nd-network-pulse 28s ease-in-out infinite alternate;
+}
+
+@keyframes nd-network-pulse {
+  0% {
+    opacity: 0.26;
+    background-position: 0 0;
+  }
+  50% {
+    opacity: 0.38;
+  }
+  100% {
+    opacity: 0.3;
+    background-position: clamp(1.5rem, 3.5vw, 3rem) clamp(1.5rem, 3.5vw, 3rem);
+  }
+}
+
+.home-hero__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  max-inline-size: 66rem;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.home-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.4rem;
+  color: var(--accent-primary);
+  font-weight: 720;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.home-eyebrow::before {
+  inline-size: 1.6rem;
+  block-size: 1px;
+  background: currentColor;
+  content: "";
+}
+
+.home-hero__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 760;
+  font-size: clamp(1.85rem, min(8.4vw, 10svh), 7rem);
+  line-height: 0.92;
+  letter-spacing: clamp(0.018em, 0.34vw, 0.052em);
+  text-wrap: balance;
+  white-space: nowrap;
+}
+
+.rb-split-text__character {
+  display: inline-block;
+}
+
+.home-hero__description {
+  max-inline-size: 45rem;
+  margin: clamp(1.6rem, 4vw, 2.5rem) 0 0;
+  color: var(--text-secondary);
+  font-size: clamp(1rem, 2.1vw, 1.22rem);
+  line-height: 1.8;
+  text-wrap: balance;
+}
+
+.home-hero__actions,
+.home-community__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-block-start: 2.25rem;
+}
+
+.home-primary-action,
+.rb-magnet {
+  transition: transform var(--motion-standard) var(--motion-ease-standard);
+}
+
+/* Primary CTA behaves like a refractive capsule with a slow spectral sweep.
+   首页主 CTA 使用折射胶囊造型与缓慢光谱扫光。 */
+.home-cta {
+  min-block-size: 3rem;
+  border-radius: var(--radius-xs);
+  padding-inline: 1.55rem 1.25rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  background:
+    linear-gradient(
+      110deg,
+      transparent 20%,
+      color-mix(in srgb, white 30%, transparent) 46%,
+      transparent 72%
+    )
+    200% 0 / 220% 100%,
+    linear-gradient(
+      118deg,
+      color-mix(in srgb, var(--accent-primary) 92%, white),
+      color-mix(in srgb, var(--accent-primary) 72%, var(--accent-tertiary))
+    );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 72%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--accent-tertiary) 28%, transparent),
+    0 1.25rem 3rem -1.5rem var(--accent-primary);
+  animation: nd-cta-refraction var(--motion-loop-slow) ease-in-out infinite;
+}
+
+.home-cta > * {
+  position: relative;
+  z-index: 1;
+}
+
+.home-cta svg {
+  border-radius: 50%;
+  transition: transform var(--motion-standard) var(--motion-ease-standard);
+}
+
+@media (hover: hover) {
+  .home-cta:hover svg {
+    transform: translate(0.2rem, -0.2rem);
+  }
+}
+
+@keyframes nd-cta-refraction {
+  50% {
+    background-position:
+      -60% 0,
+      0 0;
+  }
+}
+
+.home-scroll-cue {
+  position: absolute;
+  inset-block-end: 1.75rem;
+  inset-inline-start: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-decoration: none;
+  transform: translateX(-50%);
+}
+
+.home-section {
+  position: relative;
+  isolation: isolate;
+  inline-size: min(calc(100% - 2 * var(--page-gutter)), var(--content-max));
+  margin-inline: auto;
+  padding-block: var(--section-gap);
+  scroll-margin-block-start: 6rem;
+  flex-shrink: 0;
+}
+
+/* The last section (community) sits right above the footer. Reduce its
+   bottom padding so the footer doesn't feel detached by a large blank area.
+   最后一个区段（community）紧贴 footer，减小其底部内边距，避免 footer
+   因大片空白而显得脱节。 */
+.home-section:last-of-type {
+  padding-block-end: calc(var(--section-gap) * 0.45);
+}
+
+/* Subtle section-level backdrop: a very faint glass tint plus a soft top
+   sheen line gives each scroll section its own readable surface without
+   breaking the airy homepage aesthetic. The pseudo-element stays behind
+   content (z-index: -1) and inherits the ambient orb color through the
+   transparent tint.
+   Note: no backdrop-filter here on purpose. .home-section has
+   `isolation: isolate` (making it a backdrop root per the Filter Effects
+   spec), so a backdrop-filter on this ::before could only sample
+   .home-section's own (transparent) subtree — blurring nothing. The
+   ambient orbs live on .home-page::before, outside this backdrop root,
+   and would be excluded from the sample. The transparent background
+   below already lets the orb color show through via plain alpha
+   compositing, so the section reads as a readable surface without
+   needing backdrop-filter.
+   微妙的区段级背景：极淡的玻璃色 + 顶部柔光线条，让每个滚动区段拥有
+   独立的可读表面，同时保持首页通透感。伪元素位于内容后方，透明 tint
+   让环境光球色透过来。
+   注意：此处刻意不设 backdrop-filter。.home-section 设了
+   `isolation: isolate`（按 Filter Effects 规范使其成为 backdrop root），
+   若在 ::before 上设 backdrop-filter，只能采样 .home-section 自身
+   （透明）的子树——什么都模糊不到。环境光球位于 .home-page::before，
+   在此 backdrop root 之外，会被排除在采样范围外。下方透明 background
+   已通过普通 alpha 合成让光球色透过来，区段无需 backdrop-filter 即可
+   呈现为可读表面。 */
+.home-section::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--section-gap) * 0.35) calc(-1 * var(--page-gutter))
+    calc(var(--section-gap) * 0.35);
+  z-index: -1;
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--glass-highlight) 18%, transparent),
+      transparent 12%
+    ),
+    color-mix(in srgb, var(--surface-subtle) 42%, transparent);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Lower sections use a restrained AI accelerator board: a visible processor,
+   compute cores, memory banks, and orthogonal buses replace the former web of
+   unrelated curves. 首页下方使用克制的 AI 加速器板：处理器、计算核心、存储单元
+   与正交总线取代此前杂乱的曲线网络。 */
+.home-chapters::before {
+  background:
+    radial-gradient(circle at 14% 28%, var(--ambient-ice), transparent 22rem),
+    radial-gradient(circle at 82% 70%, var(--ambient-violet), transparent 24rem),
+    color-mix(in srgb, var(--surface-glass) 62%, transparent);
+}
+
+.home-learning::before {
+  background:
+    radial-gradient(circle at 86% 36%, var(--ambient-mint), transparent 24rem),
+    radial-gradient(circle at 18% 72%, var(--ambient-ice), transparent 22rem),
+    color-mix(in srgb, var(--surface-glass) 58%, transparent);
+}
+
+.ai-compute {
+  position: absolute;
+  inset: calc(var(--section-gap) * 0.35) calc(-1 * var(--page-gutter));
+  z-index: 0;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  color: var(--accent-primary);
+  opacity: 0.24;
+  pointer-events: none;
+  /* Isolate layout/style/paint so the SVG's animation-timeline: view() reveal
+     and the pulsing accent layer never trigger reflow on the parent section.
+     Safe because the backdrop is purely decorative (pointer-events: none,
+     aria-hidden on the SVG) and its content size is fixed by inset. */
+  /* 隔离 layout/style/paint，SVG 的 animation-timeline: view() 揭示与
+     脉动层不会触发父级 section 的 reflow。安全因为该背景纯装饰
+     （pointer-events: none、SVG 设置 aria-hidden）且内容尺寸由 inset 固定。 */
+  contain: layout style paint;
+}
+
+.ai-compute--learning {
+  color: color-mix(in srgb, var(--accent-primary) 62%, var(--accent-tertiary));
+}
+
+.ai-compute--community {
+  inset: 0;
+  color: var(--accent-tertiary);
+  opacity: 0.13;
+}
+
+.ai-compute__board {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  filter: drop-shadow(0 0 1rem color-mix(in srgb, currentColor 22%, transparent));
+}
+
+.ai-compute__buses {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+}
+
+.ai-compute__memory rect,
+.ai-compute__chip > rect {
+  fill: color-mix(in srgb, var(--surface-elevated) 64%, transparent);
+  stroke: currentColor;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.ai-compute__chip > rect:first-child {
+  fill: color-mix(in srgb, var(--surface-glass) 76%, transparent);
+  stroke-width: 2;
+}
+
+.ai-compute__cores rect {
+  fill: color-mix(in srgb, currentColor 14%, var(--surface-elevated));
+  stroke: color-mix(in srgb, currentColor 72%, var(--edge-light));
+  stroke-width: 1;
+}
+
+.ai-compute__cores rect:nth-child(5) {
+  fill: color-mix(in srgb, var(--accent-tertiary) 28%, var(--surface-elevated));
+}
+
+.ai-compute__nodes circle {
+  fill: var(--background-primary);
+  stroke: currentColor;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.ai-compute__pulse {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: min(32rem, 54%);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, currentColor 12%, transparent),
+    transparent 68%
+  );
+  transform: translate(-50%, -50%) scale(0.72);
+  animation: nd-ai-core-pulse var(--motion-loop-slow) ease-in-out infinite;
+}
+
+.home-section__reveal {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes nd-ai-core-pulse {
+  50% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+/* View timelines reveal the circuit board slowly as it enters; the fallback is
+   the complete static accelerator. 视图时间线让加速器电路随进入视口缓慢显现；
+   不支持时展示完整静态图形。 */
+@supports (animation-timeline: view()) {
+  .ai-compute__buses path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: nd-ai-bus-reveal linear both;
+    animation-range: entry 0% cover 72%;
+    animation-timeline: view();
+  }
+
+  .ai-compute__chip,
+  .ai-compute__memory,
+  .ai-compute__nodes {
+    animation: nd-ai-board-reveal linear both;
+    animation-range: entry 4% cover 66%;
+    animation-timeline: view();
+  }
+}
+
+@keyframes nd-ai-bus-reveal {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes nd-ai-board-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Homepage modules reveal as coordinated editorial groups rather than as many
+   unrelated item animations. 首页模块以成组出版节奏进入，避免逐项动画互相干扰。 */
+.home-section__reveal[data-animated-content] {
+  /* Card groups must paint on the first frame; the generic motion primitive
+     otherwise hides the entire section until IntersectionObserver responds.
+     卡片分组必须首帧绘制；否则通用动效会在 IntersectionObserver 响应前隐藏整个区段。 */
+  opacity: 1;
+  transform: translateY(1.5rem) scale(0.992);
+}
+
+.home-section__reveal[data-animated-content][data-visible="true"] {
+  transform: translateY(0) scale(1);
+  transition:
+    opacity var(--motion-expressive) var(--motion-ease-standard),
+    transform var(--motion-expressive) var(--motion-ease-emphasized);
+}
+
+.home-section__reveal > :is(.home-section__heading, div:first-child),
+.home-section__reveal > .home-community__actions {
+  opacity: 0;
+  transform: translateY(0.85rem);
+}
+
+/* Card collections stay readable while their parent settles into position,
+   eliminating the transparent-to-loaded flash during fast scrolling.
+   卡片集合在父级归位期间保持可读，消除快速滚动时从透明到加载完成的闪现。 */
+.home-section__reveal > :is(.chapter-grid, .capability-list) {
+  opacity: 1;
+  transform: translateY(0.45rem);
+}
+
+.home-section__reveal[data-visible="true"]
+  > :is(.home-section__heading, .chapter-grid, .capability-list, div:first-child),
+.home-section__reveal[data-visible="true"] > .home-community__actions {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-standard) var(--motion-ease-standard) 90ms,
+    transform var(--motion-standard) var(--motion-ease-emphasized) 90ms;
+}
+
+.home-section__reveal[data-visible="true"]
+  > :is(.chapter-grid, .capability-list, .home-community__actions) {
+  transition-delay: var(--motion-stagger);
+}
+
+.home-section__heading {
+  max-inline-size: 45rem;
+  margin-block-end: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.home-section__heading h2,
+.home-community h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 690;
+  font-size: clamp(2rem, 5vw, 3.7rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.home-section__heading > p:last-child,
+.home-section__heading--split > p,
+.home-community__layout > div > p:last-child {
+  margin: 1.2rem 0 0;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.home-section__heading--split {
+  display: grid;
+  max-inline-size: none;
+  grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.65fr);
+  gap: clamp(2rem, 8vw, 7rem);
+  align-items: end;
+}
+
+.home-section__heading--split > p {
+  margin-block-end: 0.35rem;
+}
+
+.home-section__heading--compact {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.home-section__heading--compact .home-eyebrow {
+  justify-content: center;
+}
+
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.chapter-card {
+  --bento-x: 50%;
+  --bento-y: 50%;
+  position: relative;
+  display: flex;
+  min-block-size: 19rem;
+  grid-column: span 4;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  color: var(--text-primary);
+  text-decoration: none;
+  background:
+    radial-gradient(circle at var(--bento-x) var(--bento-y), var(--accent-soft), transparent 42%),
+    var(--glass-refraction-fill), var(--home-map-card-surface);
+  box-shadow: var(--shadow-edge), var(--glass-shadow);
+  backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
+  /* Isolate layout/style recalc so hover transforms and bento cursor tracking
+     do not cascade into sibling cards. `paint` is omitted because backdrop-filter
+     samples the parent stacking context. */
+  /* 隔离 layout/style 重算，悬浮变换与 bento 光标追踪不会级联到兄弟卡片。
+     刻意不使用 `paint`，因为 backdrop-filter 需要采样父级 stacking context。 */
+  contain: layout style;
+  transition:
+    transform var(--motion-fast) var(--motion-ease-standard),
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard);
+}
+
+.chapter-card:first-child {
+  grid-column: span 7;
+}
+
+.chapter-card:nth-child(2) {
+  grid-column: span 5;
+}
+
+.chapter-card::before {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    15rem circle at var(--bento-x) var(--bento-y),
+    var(--accent-soft),
+    transparent 72%
+  );
+  content: "";
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+  pointer-events: none;
+}
+
+.chapter-card::after {
+  position: absolute;
+  inset: 0;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      9rem circle at var(--bento-x) var(--bento-y),
+      color-mix(in srgb, var(--accent-primary) 72%, var(--edge-light)),
+      transparent 72%
+    )
+    border-box,
+    conic-gradient(
+      from 130deg,
+      var(--glass-reflection-cool),
+      transparent 28%,
+      var(--glass-reflection-warm) 52%,
+      transparent 76%,
+      var(--glass-reflection-cool)
+    )
+    border-box;
+  content: "";
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.chapter-card__index {
+  position: relative;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+}
+
+.chapter-card__content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.chapter-card__content strong {
+  max-inline-size: 29rem;
+  font-weight: 680;
+  font-size: clamp(1.35rem, 3vw, 2.1rem);
+  line-height: 1.18;
+}
+
+.chapter-card__content > span {
+  max-inline-size: 30rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.chapter-card__action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent-primary);
+  font-weight: 650;
+  font-size: 0.85rem;
+}
+
+@media (hover: hover) {
+  .chapter-card:hover {
+    border-color: var(--border-interactive);
+    box-shadow: var(--shadow-edge), var(--shadow-interactive);
+    transform: translateY(-2px);
+  }
+
+  .chapter-card:hover::before {
+    opacity: 1;
+  }
+}
+
+.capability-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.capability-row {
+  display: grid;
+  grid-template-columns: 4rem minmax(10rem, 0.55fr) minmax(16rem, 1fr);
+  gap: 1rem;
+  align-items: baseline;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-md);
+  padding: 1.35rem 1.25rem;
+  background: var(--glass-refraction-fill), var(--home-map-card-surface);
+  box-shadow: var(--shadow-edge), var(--glass-shadow);
+  backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
+  transition:
+    border-color var(--motion-standard) var(--motion-ease-standard),
+    transform var(--motion-standard) var(--motion-ease-standard),
+    box-shadow var(--motion-standard) var(--motion-ease-standard);
+}
+
+@media (hover: hover) {
+  .capability-row:hover {
+    border-color: var(--border-interactive);
+    box-shadow: var(--shadow-edge), var(--glass-shadow-hover);
+    transform: translateX(0.35rem);
+  }
+}
+
+.capability-row > span {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.capability-row h3,
+.capability-row p {
+  margin: 0;
+}
+
+.capability-row h3 {
+  font-weight: 660;
+  font-size: 1.05rem;
+}
+
+.capability-row p {
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.home-community__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(2rem, 8vw, 7rem);
+  align-items: end;
+  /* Removed margin-block-end: the parent .home-section already provides
+     padding-block, so the extra gap pushed the footer too far down.
+     移除底部 margin：父级 .home-section 已有 padding-block，额外的
+     margin 会把 footer 推得过远，产生大量空白。 */
+  margin-block: 0;
+  padding: clamp(1.5rem, 5vw, 3.5rem);
+  background:
+    radial-gradient(circle at 85% 10%, var(--ambient-mint), transparent 18rem),
+    var(--home-community-surface);
+  -webkit-backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
+  border-radius: var(--radius-md);
+}
+
+.home-community__layout > div:first-child {
+  max-inline-size: 45rem;
+}
+
+.home-community__actions {
+  flex-wrap: nowrap;
+  margin: 0;
+}
+
+.rb-light-rays {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  opacity: 0.68;
+  pointer-events: none;
+}
+
+.rb-light-rays__beam {
+  position: absolute;
+  inset-block-start: -32%;
+  inset-inline-start: 50%;
+  inline-size: 82%;
+  block-size: 112%;
+  transform-origin: 50% 0;
+  animation: nd-ray-drift 24s ease-in-out infinite alternate;
+  background: linear-gradient(108deg, transparent 28%, var(--ambient-ice) 50%, transparent 72%);
+  filter: blur(18px);
+}
+
+.rb-light-rays__beam--wide {
+  transform: translateX(-65%) rotate(-18deg);
+}
+
+.rb-light-rays__beam--narrow {
+  inline-size: 48%;
+  opacity: 0.62;
+  transform: translateX(-18%) rotate(22deg);
+  animation-delay: -12s;
+  background: linear-gradient(110deg, transparent 35%, var(--ambient-mint) 52%, transparent 68%);
+}
+
+.rb-light-rays__network {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 48%, var(--accent-soft), transparent 36%);
+}
+
+@keyframes nd-ray-drift {
+  to {
+    translate: 2.5% 1.5%;
+    opacity: 0.78;
+  }
+}
+
+.home-footer {
+  inline-size: 100%;
+  margin-block-start: auto;
+  flex: none;
+  border-block-start: 1px solid var(--border-subtle);
+  padding: 1.5rem var(--page-gutter) 2rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: center;
+  background: var(--background-secondary);
+}
+
+.home-footer__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.home-footer__row {
+  margin: 0;
+}
+
+.home-footer__link {
+  color: var(--text-secondary);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.home-footer__commit {
+  font-family: var(--font-mono);
+}
+
+/* Homepage navigation controls share one refractive surface and border rhythm;
+   each control keeps its intrinsic dimensions so search, theme, and language
+   actions remain visually balanced without being forced into identical sizes.
+   首页搜索、主题与语言控件共享同一折射表面和描边节奏，同时保留各自内容尺寸。 */
+:is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"])
+  :is(#nd-nav, [data-nd-transition-source-id="nd-nav"])
+  :is(
+    button[data-search],
+    button[data-search-full],
+    button[data-theme-toggle],
+    button[aria-haspopup="dialog"]:has(> svg.lucide-languages),
+    button[aria-haspopup="menu"]:has(> svg.lucide-languages)
+  ) {
+  border: 1px solid var(--glass-border-hairline) !important;
+  border-radius: var(--radius-xs) !important;
+  background:
+    var(--glass-refraction-fill), color-mix(in srgb, var(--surface-glass) 72%, transparent) !important;
+  box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+}
+
+/* Header actions keep their original intrinsic dimensions; only their shared
+   glass material and compact control radius are synchronized.
+   标题栏操作保留原本的内容尺寸，仅统一玻璃材质与紧凑控件圆角。 */
+:is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"])
+  :is(#nd-nav, [data-nd-transition-source-id="nd-nav"])
+  :is(
+    button[data-search],
+    button[data-theme-toggle],
+    button[aria-haspopup="dialog"]:has(svg.lucide-languages),
+    button[aria-haspopup="menu"]:has(svg.lucide-languages)
+  ) {
+  flex: 0 0 auto !important;
+  inline-size: auto !important;
+  min-inline-size: 0;
+  align-self: center;
+}
+
+/* Mobile nav actions container (search trigger + menu toggle) ships without a
+   gap in fumadocs' default markup, so the two buttons touch or overlap when
+   browser zoom triggers the lg:hidden layout. The gap matches the desktop
+   actions container's gap-1.5 for consistent rhythm across breakpoints.
+   移动端导航操作容器（搜索触发器 + 菜单切换）在 fumadocs 默认结构中缺少 gap，
+   浏览器缩放触发 lg:hidden 布局时两个按钮会紧贴或重叠。
+   间距与桌面端操作容器的 gap-1.5 保持一致，确保跨断点节奏统一。 */
+:is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"])
+  :is(#nd-nav, [data-nd-transition-source-id="nd-nav"])
+  div:has(> button[data-search]) {
+  gap: 0.375rem;
+}
+
+@media (hover: hover) {
+  :is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"])
+    :is(#nd-nav, [data-nd-transition-source-id="nd-nav"])
+    :is(
+      button[data-search],
+      button[data-search-full],
+      button[data-theme-toggle],
+      button[aria-haspopup="dialog"]:has(> svg.lucide-languages),
+      button[aria-haspopup="menu"]:has(> svg.lucide-languages)
+    ):hover {
+    border-color: var(--border-interactive) !important;
+    background: var(--glass-refraction-fill), var(--glass-control-hover-tint) !important;
+    box-shadow: var(--shadow-edge), var(--glass-shadow-hover) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .chapter-card,
+  .chapter-card:first-child,
+  .chapter-card:nth-child(2) {
+    grid-column: span 6;
+  }
+
+  .home-section__heading--split,
+  .home-community__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .home-community__actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  :is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"]) {
+    --home-nav-height: 4.25rem;
+  }
+
+  :is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"])
+    :is(#nd-nav, [data-nd-transition-source-id="nd-nav"]) {
+    inline-size: calc(100% - 1rem);
+    padding-block-start: 0.5rem;
+  }
+
+  .home-hero {
+    min-block-size: 46rem;
+    padding-block-start: 7.5rem;
+  }
+
+  .home-hero__title {
+    font-size: clamp(1.85rem, 8.4vw, 3.4rem);
+    letter-spacing: 0.018em;
+  }
+
+  /* The mobile hero description uses a narrower reading measure so it
+     supports the brand title instead of competing with its visual width.
+     移动端主视觉说明使用更窄的阅读宽度，衬托品牌标题而不与其争夺横向视觉层级。 */
+  .home-hero__description {
+    max-inline-size: 17rem;
+  }
+
+  .home-hero__actions,
+  .home-community__actions {
+    inline-size: auto;
+    flex-direction: column;
+  }
+
+  /* Mobile homepage actions keep their labels comfortably padded without
+     stretching across the complete card or viewport width.
+     移动端主页操作保留舒适的文字内边距，但不再横向铺满卡片或视口。 */
+  .home-hero__actions {
+    align-items: center;
+  }
+
+  .home-community__actions {
+    align-items: center;
+  }
+
+  .home-hero__actions > *,
+  .home-primary-action,
+  .home-primary-action > *,
+  .home-community__actions > * {
+    inline-size: auto;
+  }
+
+  .home-hero__actions .control-surface,
+  .home-community__actions .control-surface {
+    padding-inline: 1rem;
+  }
+
+  .chapter-grid {
+    display: block;
+  }
+
+  .chapter-card {
+    min-block-size: 15rem;
+    margin-block-end: 0.75rem;
+  }
+
+  .chapter-card__index {
+    font-size: var(--home-chapter-index-mobile-size);
+  }
+
+  .capability-row {
+    grid-template-columns: 2.5rem 1fr;
+  }
+
+  .capability-row p {
+    grid-column: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-route-shell--enter,
+  .rb-light-rays__beam,
+  .home-page::before,
+  .home-hero__network,
+  .home-section::before,
+  .ai-compute__buses path,
+  .ai-compute__chip,
+  .ai-compute__memory,
+  .ai-compute__nodes,
+  .ai-compute__pulse {
+    animation: none;
+  }
+
+  .home-section__reveal,
+  .home-section__reveal > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .rb-magnet,
+  .chapter-card {
+    transform: none !important;
+  }
+
+  .chapter-card::before,
+  .chapter-card::after {
+    display: none;
+  }
+}

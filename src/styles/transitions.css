@@ -1,0 +1,203 @@
+/* Central route transition layer and destination entry animations.
+   集中式路由转场层与目标页面入场动画。 */
+
+@property --transition-radius {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+#nd-transition-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  background: var(--background-primary);
+  pointer-events: none;
+  contain: strict;
+}
+
+#nd-transition-layer[hidden] {
+  display: none;
+}
+
+#nd-transition-layer,
+#nd-transition-layer * {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+#nd-transition-layer * {
+  animation-play-state: paused !important;
+  caret-color: transparent !important;
+}
+
+.nd-transition-clone {
+  position: absolute;
+  inset: 0 auto auto 0;
+  min-block-size: 100vh;
+  overflow: hidden;
+  background: var(--background-primary);
+  /* Hint the compositor only for the clone's lifetime (it is removed via
+     layer.replaceChildren() after the transition ends). The element animates
+     opacity and translateY during the transition; hinting here avoids a
+     first-frame jank when the clone is mounted mid-animation. */
+  /* 仅在克隆元素存活期间提示合成层（过渡结束后通过 layer.replaceChildren() 移除）。
+     该元素在过渡期间动画 opacity 与 translateY，此处提示避免克隆在动画中段
+     挂载时的首帧卡顿。 */
+  will-change: transform, opacity;
+}
+
+#nd-transition-layer[data-transition="aperture"] {
+  --transition-radius: 0px;
+  --transition-feather: clamp(48px, 7vw, 140px);
+  mask-image: radial-gradient(
+    circle at var(--transition-origin-x) var(--transition-origin-y),
+    transparent calc(var(--transition-radius) - var(--transition-feather)),
+    black var(--transition-radius)
+  );
+}
+
+#nd-transition-layer[data-transition="aperture"][data-phase="revealing"] {
+  animation: nd-aperture-reveal var(--nd-duration-aperture) var(--motion-ease-emphasized) forwards;
+}
+
+@keyframes nd-aperture-reveal {
+  to {
+    --transition-radius: var(--transition-max-radius);
+  }
+}
+
+#nd-transition-layer[data-transition="overview"][data-phase="revealing"] {
+  animation: nd-layer-fade var(--nd-duration-overview) var(--motion-ease-standard) forwards;
+}
+
+#nd-transition-layer[data-transition="surface"][data-phase="revealing"] {
+  animation: nd-layer-fade var(--nd-duration-surface) var(--motion-ease-standard) forwards;
+}
+
+#nd-transition-layer[data-transition="crossfade"][data-phase="revealing"] {
+  animation: nd-layer-fade var(--nd-duration-crossfade) linear forwards;
+}
+
+@keyframes nd-layer-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+html[data-nd-route-transition="overview"] :is(.home-page, .special-page),
+html[data-nd-route-transition="surface"] :is(.home-page, .special-page),
+html[data-nd-route-transition="crossfade"] :is(.home-page, .special-page, #nd-page),
+html[data-nd-route-transition="content"] #nd-page {
+  animation: nd-route-target-enter var(--motion-standard) var(--motion-ease-standard) both;
+}
+
+/* Overview transition (docs → home): the clone layer fades out to reveal
+   the home page. If the home page also animates opacity 0→1 simultaneously,
+   the combined opacity dips and creates a visible flash. Instead, keep the
+   home page at full opacity and only apply a subtle positional settle —
+   the clone fade handles the visual transition, no flash.
+   Overview 转场（文档 → 主页）：克隆层淡出揭示主页。若主页同时做
+   opacity 0→1，两者叠加会产生亮度谷底、形成闪烁。改为主页保持满
+   不透明度，仅做微妙的位移收束 —— 视觉过渡由克隆层淡出承担，无闪烁。 */
+html[data-nd-route-transition="overview"] :is(.home-page, .special-page) {
+  animation: nd-route-overview-enter var(--motion-standard) var(--motion-ease-standard) both;
+}
+
+/* Aperture transition (home → docs): after the radial mask expands to
+   reveal the docs page, add a subtle scale-settle "land" so the page
+   doesn't just snap statically. No opacity change — the page is already
+   visible through the opened aperture; a scale 1.02→1 gives a gentle
+   depth settle that makes the transition feel complete.
+   Aperture 转场（主页 → 文档）：径向遮罩展开揭示文档页后，加入轻微的
+   缩放收束"落定"效果，避免页面静态突现。不改 opacity —— 页面已通过
+   光圈可见；scale 1.02→1 带来柔和的纵深收束，让转场更完整。 */
+html[data-nd-route-transition="aperture"] #nd-page {
+  animation: nd-aperture-land var(--nd-duration-aperture) var(--motion-ease-emphasized) both;
+}
+
+html[data-nd-route-transition="content"] #nd-page {
+  animation-duration: var(--nd-duration-content);
+}
+
+/* Returning from the guestbook must not transform the full homepage: its
+   fixed blurred ambience would become relative to the long page and trigger
+   an expensive full-page repaint. Keep the page stable and settle only the
+   lightweight hero content.
+   从留言板返回时禁止变换整张主页：固定模糊环境层会转而相对超长页面定位，
+   触发昂贵的整页重绘。主页本身保持稳定，仅让轻量主视觉内容柔和落定。 */
+html[data-nd-route-transition="surface"] .home-page {
+  animation: none;
+}
+
+html[data-nd-route-transition="surface"] .home-page .home-hero__content {
+  animation: nd-route-home-surface-enter var(--nd-duration-surface) var(--motion-ease-standard) both;
+}
+
+@keyframes nd-route-target-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.45rem) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes nd-route-home-surface-enter {
+  from {
+    opacity: 0.72;
+    transform: translateY(0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Overview enter: opacity stays at 1, only transform settles.
+   Overview 入场：opacity 保持 1，仅做位移收束。 */
+@keyframes nd-route-overview-enter {
+  from {
+    transform: translateY(0.45rem) scale(0.99);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Aperture land: gentle scale settle after the mask opens.
+   Aperture 落定：遮罩展开后的柔和缩放收束。 */
+@keyframes nd-aperture-land {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-transition-layer {
+    display: none !important;
+  }
+
+  html[data-nd-route-transition] :is(.home-page, .special-page, #nd-page) {
+    animation: none !important;
+  }
+
+  /* Cover overview-enter and aperture-land keyframes as well.
+     覆盖 overview-enter 与 aperture-land 动画。 */
+  html[data-nd-route-transition="overview"] :is(.home-page, .special-page),
+  html[data-nd-route-transition="aperture"] #nd-page {
+    animation: none !important;
+  }
+
+  /* The scoped homepage surface settle also respects reduced motion.
+     主页局部 surface 收束同样遵循减少动态效果偏好。 */
+  html[data-nd-route-transition="surface"] .home-page .home-hero__content {
+    animation: none !important;
+  }
+}

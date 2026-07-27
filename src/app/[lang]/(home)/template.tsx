@@ -5,26 +5,17 @@
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { releaseRouteLoadingHandoff } from '@/lib/route-loading-handoff';
-import { isCrossRouteGroupTransition, readTransitionSnapshot } from '@/lib/transition-snapshot';
 
 export default function Template({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  // Only skip the entry animation when arriving via a cross-route-group
-  // mask-reveal transition (e.g., docs → home). Within-group transitions
-  // (e.g., guestbook → home via BackLink) have a snapshot but should still
-  // play page-enter, not mask-reveal.
-  // 仅在通过跨路由组遮罩揭示过渡到达时（如文档 → 首页）跳过入场动画。
-  // 同路由组切换（如通过 BackLink 从留言板返回首页）虽有快照，但仍应播放
-  // page-enter，而非 mask-reveal。
-  const [skipEntry] = useState(() => {
-    const snapshot = readTransitionSnapshot();
-    if (!snapshot) return false;
-    return isCrossRouteGroupTransition(snapshot.sourcePath, pathname);
-  });
-
   const [restoreKey, setRestoreKey] = useState(0);
   const [isPageCacheRestore, setIsPageCacheRestore] = useState(false);
+  const [isManagedTransition] = useState(
+    () =>
+      typeof document !== 'undefined' &&
+      document.documentElement.hasAttribute('data-nd-route-transition-pending'),
+  );
   const restoreFrameRef = useRef<number | null>(null);
 
   // Release the cloned root loading screen after the home route has mounted,
@@ -70,12 +61,10 @@ export default function Template({ children }: { children: ReactNode }) {
   return (
     <div
       key={`${pathname}-${restoreKey}`}
-      // Skip the initial frame only during a mask-reveal transition to avoid
-      // the body background flashing through the transparent cutout area.
-      // 仅在遮罩揭示过渡期间跳过首帧，避免 body 背景透过透明镂空区闪烁。
-      className={`home-route-shell${
-        skipEntry || isPageCacheRestore ? '' : ' home-route-shell--enter'
-      }`}
+      // The global transition provider owns cross-route entry motion; this
+      // shell only handles direct loads and BFCache-safe remounting.
+      // 跨路由入场由全局转场 Provider 管理，本外壳仅处理直达加载与 BFCache 安全重挂载。
+      className={`home-route-shell${isPageCacheRestore || isManagedTransition ? '' : ' home-route-shell--enter'}`}
     >
       {children}
     </div>

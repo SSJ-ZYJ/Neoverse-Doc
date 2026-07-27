@@ -61,17 +61,15 @@ function AuthorAvatar({ name, src }: { name: string; src: string }) {
 
   if (error) {
     return (
-      <div className="size-5 rounded-md bg-fd-muted-foreground/20 flex items-center justify-center">
+      <div className="docs-author__avatar size-5 bg-fd-muted-foreground/20 flex items-center justify-center">
         <User size={12} className="text-fd-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <span className="relative inline-block size-5">
-      {!loaded && (
-        <span className="absolute inset-0 rounded-md bg-fd-muted-foreground/20 animate-pulse" />
-      )}
+    <span className="docs-author__avatar relative inline-block size-5">
+      {!loaded && <span className="absolute inset-0 bg-fd-muted-foreground/20 animate-pulse" />}
       <Image
         ref={imageRef}
         src={src}
@@ -82,7 +80,7 @@ function AuthorAvatar({ name, src }: { name: string; src: string }) {
         // sits behind it until onLoad/pageshow confirms completion.
         // 图片可见性不再依赖 React 加载状态；skeleton 位于其后，直到
         // onLoad/pageshow 确认加载完成。
-        className="relative rounded-md"
+        className="docs-author__avatar-image relative"
         onError={() => setError(true)}
         onLoad={() => setLoaded(true)}
       />

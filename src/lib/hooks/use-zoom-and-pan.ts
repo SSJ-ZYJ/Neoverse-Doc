@@ -11,6 +11,11 @@ export const SCALE_STEP = 0.25;
 export const DEFAULT_SCALE = 1;
 export const ORIGIN = { x: 0, y: 0 };
 
+export interface PanOffset {
+  x: number;
+  y: number;
+}
+
 interface DragState {
   pointerId: number;
   startClientX: number;
@@ -34,10 +39,13 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
     setScale((s) => Math.max(MIN_SCALE, +(s - SCALE_STEP).toFixed(2)));
   }, []);
 
-  const resetZoom = useCallback(() => {
-    setScale(initialScale);
+  // Reset accepts the active canvas fit instead of assuming 100%, so wide
+  // mobile diagrams return to a fully visible inline size after maximize.
+  // 重置接收当前画布适配比例，不再固定回到 100%，确保移动端宽图退出全屏后完整可见。
+  const resetZoomTo = useCallback((targetScale: number) => {
+    setScale(Math.min(MAX_SCALE, Math.max(MIN_SCALE, targetScale)));
     setPan(ORIGIN);
-  }, [initialScale]);
+  }, []);
 
   const handlePointerDown = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -85,22 +93,19 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
 
   const canZoomOut = scale > MIN_SCALE;
   const canZoomIn = scale < MAX_SCALE;
-  const canReset =
-    Math.abs(scale - initialScale) > 0.005 || pan.x !== ORIGIN.x || pan.y !== ORIGIN.y;
-
   return {
     scale,
     setScale,
     pan,
+    setPan,
     isDragging,
     zoomIn,
     zoomOut,
-    resetZoom,
+    resetZoomTo,
     handlePointerDown,
     handlePointerMove,
     endDrag,
     canZoomOut,
     canZoomIn,
-    canReset,
   };
 }

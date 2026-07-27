@@ -11,24 +11,149 @@
    shadow / ambient。所有玻璃表面共享同一套 token，悬浮反馈由
    .glass-interactive / .glass-interactive--chip 统一规范。 */
 
+/* ── Business Surfaces / 业务表面 ───────────────────────────────────── */
+/* Business controls now live beside the glass primitives so every card and
+   control resolves the same refraction, elevation, and timing tokens.
+   业务控件与玻璃基础集中维护，使所有卡片与控件复用同一套折射、层级和动效 Token。 */
+.surface-panel,
+.surface-elevated {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-md);
+  background: var(--glass-refraction-fill), var(--surface-glass);
+  box-shadow: var(--shadow-edge), var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  /* `contain: layout style` isolates each glass panel's layout and style recalc
+     scope. `paint` is intentionally omitted because backdrop-filter needs to
+     sample the parent stacking context. */
+  /* `contain: layout style` 隔离每个玻璃面板的 layout 与 style 重算范围。
+     刻意不使用 `paint`，因为 backdrop-filter 需要采样父级 stacking context。 */
+  contain: layout style;
+}
+
+.surface-elevated {
+  border-radius: var(--radius-md);
+  background: var(--glass-refraction-fill), var(--surface-elevated);
+}
+
+.control-surface {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  min-block-size: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-xs);
+  padding-inline: 1rem;
+  color: var(--text-primary);
+  font-weight: 650;
+  line-height: 1;
+  text-decoration: none;
+  background: var(--glass-refraction-fill), var(--glass-control-surface);
+  box-shadow: var(--shadow-edge), var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  transition:
+    color var(--motion-fast) var(--motion-ease-standard),
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-standard) var(--motion-ease-standard),
+    box-shadow var(--motion-standard) var(--motion-ease-standard);
+}
+
+.control-surface--primary {
+  color: var(--fd-primary-foreground);
+  border-color: color-mix(in srgb, var(--accent-primary) 68%, var(--edge-light));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--edge-light) 26%, transparent), transparent 48%),
+    linear-gradient(
+      120deg,
+      var(--accent-primary),
+      color-mix(in srgb, var(--accent-primary) 74%, var(--accent-tertiary))
+    );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 78%, transparent),
+    0 1rem 2.4rem -1.35rem var(--accent-primary);
+}
+
+@media (hover: hover) {
+  .control-surface:hover {
+    border-color: var(--border-interactive);
+    background-color: var(--glass-control-hover-tint);
+    box-shadow: var(--shadow-edge), var(--glass-shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  .control-surface--primary:hover {
+    color: var(--fd-primary-foreground);
+    background-color: transparent;
+  }
+}
+
+:where(a, button, input, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
 /* ── Surface Foundation / 表面基础 ───────────────────────────────────── */
 /* 所有玻璃表面共用同一套"描边 + 模糊 + 投影"三件套；
    取消原 inset -1px lowlight 与 0 0 0 1px outline 两层叠加 —— 它们与
    border 叠加产生"重影"。仅保留 border + 顶 1px sheen + 投影。
-   注：边缘折射系统已移除（用户反馈视觉冗余），仅保留顶部 sheen 高光。 */
+   单层折射描边与顶部 sheen 共用同一表面，避免重复硬边。 */
 .glass-panel,
 .glass-card,
 .glass-chip,
 .glass-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   border: 1px solid var(--glass-border-hairline);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  background-color: var(--glass-tint);
+  background: var(--glass-refraction-fill), var(--glass-tint);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
+}
+
+/* Panels/cards share one surface radius, while compact controls use the
+   smaller control radius from the same project scale.
+   面板与卡片统一使用表面圆角，紧凑控件使用同一尺度中的小圆角。 */
+.glass-panel,
+.glass-card {
+  border-radius: var(--radius-md);
+}
+
+.glass-chip,
+.glass-cta {
+  border-radius: var(--radius-xs);
+}
+
+/* A single refractive hairline gives glass a directional light response without
+   adding a second material system or a permanent cursor-following effect.
+   单层折射细线为玻璃建立有方向的光学响应，不引入第二套材质或持续跟随光标的效果。 */
+.glass-panel::before,
+.glass-card::before,
+.glass-chip::before,
+.glass-cta::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--glass-refraction-line);
+  content: "";
+  pointer-events: none;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
 }
 
 /* Large panels: nav / sidebar / subnav.
@@ -45,7 +170,7 @@
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  border-radius: 1rem;
+  border-radius: var(--radius-md);
 }
 
 /* Small elements: icon chip / buttons. Light blur + soft tint.
@@ -60,7 +185,7 @@
 
 /* Border + inner highlight decoration, no blur — for elements that already have a background.
    描边 + 内高光修饰，不带 blur，用于已有背景的元素。
-   注：折射层已移除，仅保留顶部 sheen。 */
+   折射层保持单层、低对比，避免与已有背景争夺层级。 */
 .glass-edge {
   border: 1px solid var(--glass-border-hairline);
   box-shadow: inset 0 1px 0 var(--glass-highlight);
@@ -71,12 +196,11 @@
    使用 --glass-tint（而非 tint-strong）以保证背景透出；
    顶部 sheen + 投影构成基础玻璃面。 */
 .glass-cta {
-  position: relative;
-  background-color: var(--glass-tint);
-  -webkit-backdrop-filter: blur(20px) saturate(var(--glass-saturate))
+  background: var(--glass-refraction-fill), var(--glass-tint);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(20px) saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
-    contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);

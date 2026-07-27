@@ -32,3 +32,20 @@ export const GISCUS_CONFIG = {
   category: 'Announcements',
   categoryId: 'DIC_kwDOSl2-Es4C9t6O',
 } as const;
+
+// Public custom-theme assets are resolved against the active site origin before
+// being sent to the cross-origin Giscus iframe.
+// 公共自定义主题资源会先基于当前站点来源解析，再传入跨域的 Giscus iframe。
+export const GISCUS_THEME_PATHS = {
+  light: '/giscus-light.css',
+  dark: '/giscus-dark.css',
+} as const;
+
+// Production themes use the repository's jsDelivr mirror so Giscus receives
+// CSS with cross-origin headers on every static hosting provider.
+// 生产主题使用仓库的 jsDelivr 镜像，确保 Giscus 在任意静态托管平台都能获得跨域 CSS 响应头。
+const GISCUS_THEME_CDN_BASE_URL = `https://cdn.jsdelivr.net/gh/${GISCUS_CONFIG.repo}@main/public`;
+export const GISCUS_THEME_URLS = {
+  light: `${GISCUS_THEME_CDN_BASE_URL}${GISCUS_THEME_PATHS.light}`,
+  dark: `${GISCUS_THEME_CDN_BASE_URL}${GISCUS_THEME_PATHS.dark}`,
+} as const;

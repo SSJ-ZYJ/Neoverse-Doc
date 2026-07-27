@@ -9,9 +9,11 @@ import type { Dictionary } from './index';
 
 export const zh = {
   siteTitle: 'Neoverse-Docs',
-  tagline: '面向 CSer 的一份文档',
+  tagline: '面向计算机学习者的开放知识网络',
   loading: '加载中…',
-  loadingMarquee: 'Loading...',
+  // Visual loading marquee label.
+  // 可视化加载跑马灯标签。
+  loadingMarquee: 'LOADING...',
   enterDocs: '进入文档',
   guestbookTitle: '留言板',
   guestbookDesc: '在这里留下你对 Neoverse-Docs 的建议与反馈',
@@ -20,13 +22,43 @@ export const zh = {
   primaryAuthorLabel: '主要编写者：',
   documentContributorsTitle: '本文档贡献者',
   backToDocs: '返回文档',
+  backToHome: '返回首页',
   errorTitle: '页面加载失败',
   errorDesc: '发生了意外错误，请尝试重新加载页面。',
   errorRetry: '重试',
   notFoundTitle: '页面未找到',
+  notFoundCode: '404',
   notFoundDesc: '你访问的页面可能已被移除、重命名或暂时不可用。',
   notFoundBack: '返回上一页',
   notFoundHome: '返回首页',
+  notFoundDocs: '进入文档',
+  // Homepage portal copy / 首页内容门户文案
+  home: {
+    eyebrow: '开放知识网络 · 持续生长',
+    heroDescription: '从计算机基础到算法实践，把零散经验连接成清晰、可检索、可共同维护的学习路径。',
+    scrollHint: '探索知识版图',
+    chaptersEyebrow: '知识坐标',
+    chaptersTitle: '从真实章节开始探索',
+    chaptersDescription: '入口直接来自当前文档树；内容更新时，首页会随之保持一致。',
+    chapterAction: '打开章节',
+    learningEyebrow: '学习导航',
+    learningTitle: '把专业学习拆成可抵达的下一步',
+    learningDescription:
+      '面向计算机科学及相关专业，从日常工具到工程实践，先建立可靠的学习与解决问题习惯。',
+    learningPaths: [
+      { title: '计算机基础', description: '从文件、系统和浏览器开始理解每天使用的计算环境。' },
+      { title: '开发工具', description: '逐步掌握终端、文本编辑与版本控制等基础工具。' },
+      { title: '工程起步', description: '把环境配置、容器与协作流程连接成可复用的方法。' },
+      { title: '表达与记录', description: '使用 Markdown、Mermaid 与代码示例沉淀清晰笔记。' },
+      { title: '问题求解', description: '练习检索、提问与验证，让卡点转化为可执行步骤。' },
+      { title: '共同学习', description: '在文档上下文中讨论、纠错，并把经验留给后来者。' },
+    ],
+    communityEyebrow: '共同维护',
+    communityTitle: '让知识网络继续生长',
+    communityDescription: '发现错误、缺失的路径或更好的解释？欢迎从讨论开始，也欢迎直接参与共建。',
+    communityPrimaryAction: '参与贡献',
+    communitySecondaryAction: '前往留言板',
+  },
   // Homepage footer labels / 首页 footer 标签
   homeFooterLabel: '项目页脚',
   homeFooterCode: '本项目代码',

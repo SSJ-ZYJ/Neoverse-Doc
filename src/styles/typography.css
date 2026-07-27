@@ -11,7 +11,7 @@ pre code {
 
 /* Glass code block surface: lets ambient page color show through while preserving syntax colors.
    玻璃态代码块表面：保留语法高亮颜色，同时让页面环境色透出。
-   顶部 sheen + 投影构成基础玻璃面（折射层已移除）。 */
+   顶部 sheen、单层折射描边与投影共同构成基础玻璃面。 */
 .glass-codeblock {
   background:
     linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%), var(--glass-tint-medium);
@@ -96,7 +96,7 @@ blockquote {
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   border: 1px solid var(--markdown-alert-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-md);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
@@ -229,7 +229,7 @@ blockquote {
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   border: 1px solid var(--glass-border-hairline);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-md);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
@@ -289,6 +289,37 @@ blockquote {
 
 :where(#nd-page) :where(.prose-no-margin):has(> table) > table tbody tr:hover {
   background-color: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent);
+}
+
+/* Dark mode table header redesign: replaces the near-invisible default tint with a
+   grounded elevated surface carrying a cool accent sheen. The gradient runs from a
+   more opaque accent-tinted top to a lighter glass bottom, giving the header clear
+   body over the transparent body rows while preserving the glass aesthetic.
+   深色模式表头重设计：用更扎实的抬升表面与冷色强调光替换原本近乎不可见的淡色。
+   渐变从更不透明的强调色顶部过渡到更通透的玻璃底部，让表头在透明表体之上
+   拥有清晰的体量感，同时保留玻璃质感。 */
+.dark :where(#nd-page) :where(.prose-no-margin):has(> table) {
+  --markdown-table-head-bg: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-primary) 22%, var(--surface-elevated)),
+    color-mix(in srgb, var(--accent-primary) 9%, var(--surface-glass))
+  );
+  --markdown-table-head-border: color-mix(
+    in srgb,
+    var(--accent-primary) 48%,
+    var(--glass-border-hairline)
+  );
+}
+
+/* Dark mode table header silhouette: adds a subtle top sheen alongside the stronger
+   accent-tinted bottom divider so the header reads as a distinct, crisp layer above
+   the body cells.
+   深色模式表头轮廓：在更强的强调色底部分隔之上叠加顶部微光，
+   让表头呈现为表体之上清晰、利落的独立层。 */
+.dark :where(#nd-page) :where(.prose-no-margin):has(> table) > table thead {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 22%, transparent),
+    inset 0 -1px 0 var(--markdown-table-head-border);
 }
 
 /* ────────────── Inline Code Enhancement / 行内代码增强 ────────────── */
@@ -351,7 +382,7 @@ blockquote {
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   border: 1px solid var(--markdown-details-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-md);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
@@ -480,7 +511,7 @@ blockquote {
 .markdown-details figure.shiki:not(.glass-codeblock) {
   border: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-md);
   margin: 0.5rem 0.5rem;
 }
 

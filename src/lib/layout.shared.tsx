@@ -19,18 +19,26 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { NavTitle } from '@/components/nav-title';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/lib/i18n';
-import { REPO_URL } from '@/lib/site-config';
 
 // Type-checked Chinese labels for fumadocs-ui's Fuma Translate keys.
 // The keys intentionally match fumadocs-ui labels, so built-in UI falls back to Chinese instead of English.
 // fumadocs-ui 的 Fuma Translate key 中文标签，带类型约束。
 // key 需与 fumadocs-ui 标签保持一致，确保内置 UI 使用中文而不是回退英文。
+// New keys added for fumadocs-ui 16.13.x:
+//   - Ask AI / Close Sidebar / Show Sidebar / Hide Sidebar: sidebar toggle & AI chat entry in glass/flux layouts
+//   - Layout Tab: layout switcher trigger in glass layout tabs
+// 为 fumadocs-ui 16.13.x 新增的 key：
+//   - Ask AI / Close Sidebar / Show Sidebar / Hide Sidebar：glass/flux 布局中的侧栏开关与 AI 聊天入口
+//   - Layout Tab：glass 布局中的布局切换触发器
 const zhUITranslations = {
+  'Ask AI(AI chat button)': '询问 AI',
   'Back to Home(404 page)': '返回首页',
   'Choose a language(language switcher)': '选择语言',
   'Choose a language(language switcher)(aria-label)': '选择语言',
   'Close Banner(banner)(aria-label)': '关闭横幅',
   'Close Search(search dialog)(aria-label)': '关闭搜索',
+  'Close Sidebar(aria-label)': '关闭侧栏',
+  'Close Sidebar(sidebar)(aria-label)': '关闭侧栏',
   'Collapse Sidebar(sidebar)(aria-label)': '折叠侧栏',
   'Copied Text(code block)(aria-label)': '已复制',
   'Copy Anchor Link(heading anchor)(aria-label)': '复制锚点链接',
@@ -40,7 +48,9 @@ const zhUITranslations = {
   'Dark(theme switcher)(aria-label)': '深色',
   'Default(type table)': '默认值',
   'Edit on GitHub(edit page)': '在 GitHub 上编辑',
+  'Hide Sidebar(sidebar)': '隐藏侧栏',
   'Last updated on(page footer)': '最后更新于',
+  'Layout Tab(layout tab trigger)': '布局选项卡',
   'Light(theme switcher)(aria-label)': '浅色',
   'Next Page(pagination)': '下一页',
   'No Headings(table of contents)': '无标题',
@@ -62,6 +72,7 @@ const zhUITranslations = {
   'Returns(type table)': '返回值',
   'Search(search dialog)': '搜索文档',
   'Search(search trigger)': '搜索',
+  'Show Sidebar(sidebar)': '显示侧栏',
   'System(theme switcher)(aria-label)': '跟随系统',
   'Table of Contents(inline table of contents)': '目录',
   'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.(404 page)':
@@ -93,11 +104,11 @@ export function baseOptions(locale: Locale = i18n.defaultLanguage): BaseLayoutPr
       title: <NavTitle />,
       url: `/${locale}`,
     },
-    githubUrl: REPO_URL,
     links: [
       {
         text: dict.guestbookTitle,
         url: `/${locale}/guestbook`,
+        active: 'nested-url',
       },
     ],
   };

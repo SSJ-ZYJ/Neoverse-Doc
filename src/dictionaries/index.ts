@@ -17,6 +17,8 @@ export interface Dictionary {
   siteTitle: string;
   tagline: string;
   loading: string;
+  // Visual loading marquee label.
+  // 可视化加载跑马灯标签。
   loadingMarquee: string;
   enterDocs: string;
   guestbookTitle: string;
@@ -26,13 +28,34 @@ export interface Dictionary {
   primaryAuthorLabel: string;
   documentContributorsTitle: string;
   backToDocs: string;
+  backToHome: string;
   errorTitle: string;
   errorDesc: string;
   errorRetry: string;
   notFoundTitle: string;
+  notFoundCode: string;
   notFoundDesc: string;
   notFoundBack: string;
   notFoundHome: string;
+  notFoundDocs: string;
+  home: {
+    eyebrow: string;
+    heroDescription: string;
+    scrollHint: string;
+    chaptersEyebrow: string;
+    chaptersTitle: string;
+    chaptersDescription: string;
+    chapterAction: string;
+    learningEyebrow: string;
+    learningTitle: string;
+    learningDescription: string;
+    learningPaths: ReadonlyArray<{ title: string; description: string }>;
+    communityEyebrow: string;
+    communityTitle: string;
+    communityDescription: string;
+    communityPrimaryAction: string;
+    communitySecondaryAction: string;
+  };
   // Homepage footer labels / 首页 footer 标签
   homeFooterLabel: string;
   homeFooterCode: string;

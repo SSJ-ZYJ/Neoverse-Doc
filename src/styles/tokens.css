@@ -1,0 +1,233 @@
+/* Semantic design tokens for color, geometry, elevation, spacing, and motion.
+   颜色、几何、层级、间距与动效的语义化设计 Token。 */
+
+:root,
+.light {
+  color-scheme: light;
+  --background-primary: #f4f9fc;
+  --background-secondary: #eaf3f8;
+  --surface-subtle: rgb(255 255 255 / 30%);
+  --surface-elevated: rgb(255 255 255 / 54%);
+  --surface-glass: rgb(244 250 255 / 34%);
+  --border-subtle: rgb(15 23 42 / 11%);
+  --border-interactive: rgb(14 165 233 / 42%);
+  --text-primary: #0f172a;
+  --text-secondary: #405467;
+  --text-muted: #6c7f90;
+  --accent-primary: #0ea5e9;
+  --accent-secondary: #34c99a;
+  --accent-tertiary: #7c6ee6;
+  --accent-soft: rgb(14 165 233 / 12%);
+  --focus-ring: rgb(14 165 233 / 52%);
+  --edge-light: rgb(255 255 255 / 94%);
+  --ambient-ice: rgb(56 189 248 / 18%);
+  --ambient-mint: rgb(52 211 153 / 10%);
+  --ambient-violet: rgb(124 110 230 / 9%);
+
+  --background: var(--background-primary);
+  --foreground: var(--text-primary);
+  --color-fd-background: var(--background-primary);
+  --color-fd-foreground: var(--text-primary);
+  --color-fd-card: var(--surface-elevated);
+  --color-fd-card-foreground: var(--text-primary);
+  --color-fd-secondary: var(--surface-subtle);
+  --color-fd-secondary-foreground: var(--text-primary);
+  --color-fd-muted: rgb(18 34 46 / 5%);
+  --color-fd-muted-foreground: var(--text-muted);
+  --color-fd-popover: var(--surface-elevated);
+  --color-fd-popover-foreground: var(--text-primary);
+  --color-fd-accent: var(--accent-soft);
+  --color-fd-accent-foreground: var(--text-primary);
+  --color-fd-border: var(--border-subtle);
+  --color-fd-ring: var(--focus-ring);
+  --color-fd-overlay: rgb(20 33 43 / 28%);
+  --fd-primary: var(--accent-primary);
+  --fd-primary-foreground: #ffffff;
+}
+
+.dark {
+  color-scheme: dark;
+  --background-primary: #060913;
+  --background-secondary: #0b1120;
+  --surface-subtle: rgb(15 23 42 / 24%);
+  --surface-elevated: rgb(17 25 45 / 46%);
+  --surface-glass: rgb(10 18 35 / 26%);
+  --border-subtle: rgb(226 232 240 / 13%);
+  --border-interactive: rgb(56 189 248 / 44%);
+  --text-primary: #f8fafc;
+  --text-secondary: #b5c3d1;
+  --text-muted: #8294a6;
+  --accent-primary: #38bdf8;
+  --accent-secondary: #4adea6;
+  --accent-tertiary: #9b8cff;
+  --accent-soft: rgb(56 189 248 / 13%);
+  --focus-ring: rgb(56 189 248 / 58%);
+  --edge-light: rgb(248 250 252 / 22%);
+  --ambient-ice: rgb(56 189 248 / 16%);
+  --ambient-mint: rgb(74 222 166 / 8%);
+  --ambient-violet: rgb(155 140 255 / 11%);
+
+  --background: var(--background-primary);
+  --foreground: var(--text-primary);
+  --color-fd-background: var(--background-primary);
+  --color-fd-foreground: var(--text-primary);
+  --color-fd-card: var(--surface-elevated);
+  --color-fd-card-foreground: var(--text-primary);
+  --color-fd-secondary: var(--surface-subtle);
+  --color-fd-secondary-foreground: var(--text-primary);
+  --color-fd-muted: rgb(231 246 250 / 6%);
+  --color-fd-muted-foreground: var(--text-muted);
+  --color-fd-popover: var(--surface-elevated);
+  --color-fd-popover-foreground: var(--text-primary);
+  --color-fd-accent: var(--accent-soft);
+  --color-fd-accent-foreground: var(--text-primary);
+  --color-fd-border: var(--border-subtle);
+  --color-fd-ring: var(--focus-ring);
+  --color-fd-overlay: rgb(0 0 0 / 56%);
+  --fd-primary: var(--accent-primary);
+  --fd-primary-foreground: #061015;
+}
+
+:root {
+  --radius-xs: 0.5rem;
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.125rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-pill: 999rem;
+
+  --shadow-float: 0 18px 50px -32px rgb(14 34 44 / 38%);
+  --shadow-popover: 0 24px 64px -28px rgb(5 16 23 / 42%);
+  --shadow-edge: inset 0 1px 0 var(--edge-light);
+  --shadow-interactive: 0 16px 44px -34px var(--accent-primary);
+
+  --content-max: 72rem;
+  --reading-max: 47rem;
+  --reading-wide-max: 54rem;
+  --page-gutter: clamp(1.125rem, 3vw, 2.5rem);
+  --section-gap: clamp(5rem, 10vw, 8.5rem);
+
+  --motion-instant: 0ms;
+  --motion-fast: 260ms;
+  --motion-standard: 520ms;
+  --motion-expressive: 1100ms;
+  --motion-scenic: 1800ms;
+  --motion-loop-slow: 12s;
+  --motion-loop-ambient: 32s;
+  --motion-particle-field: 2800ms;
+  --motion-stagger: 280ms;
+  --motion-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Compatibility aliases keep the existing glass implementation on the new palette.
+     兼容别名让现有玻璃体系复用新的配色。 */
+  --color-brand-start: var(--accent-primary);
+  --color-brand-end: var(--accent-secondary);
+  --color-home-accent: var(--accent-primary);
+  --glass-tint: var(--surface-glass);
+  --glass-tint-strong: var(--surface-elevated);
+  --glass-tint-medium: var(--surface-glass);
+  --glass-tint-soft: var(--surface-subtle);
+  --glass-tint-search: color-mix(in srgb, var(--surface-glass) 68%, transparent);
+  /* Mermaid toolbar surfaces reuse the project glass tint, while the maximized
+     variant stays airier over the already blurred fullscreen backdrop.
+     A dedicated blur token lets the toolbar soften the sample without the
+     heavy 18px strong blur used by larger glass panels.
+     Mermaid 工具栏复用项目玻璃底色，全屏变体在已模糊背景上使用更轻透
+     的表面。专属模糊 Token 让工具栏软化采样，不使用大玻璃面板的 18px
+     强模糊。 */
+  --mermaid-toolbar-tint: var(--surface-glass);
+  --mermaid-toolbar-tint-maximized: color-mix(in srgb, var(--surface-glass) 58%, transparent);
+  --mermaid-toolbar-blur: 10px;
+  --mermaid-toolbar-edge: color-mix(
+    in srgb,
+    var(--border-interactive) 34%,
+    var(--glass-border-hairline)
+  );
+  --mermaid-toolbar-shadow: var(--shadow-edge), var(--glass-shadow), var(--shadow-interactive);
+  --glass-border-hairline: var(--border-subtle);
+  --glass-highlight: var(--edge-light);
+  --glass-rim-glow: color-mix(in srgb, var(--accent-primary) 36%, transparent);
+  --glass-reflection-cool: color-mix(in srgb, var(--accent-primary) 34%, transparent);
+  --glass-reflection-warm: color-mix(in srgb, var(--accent-tertiary) 24%, transparent);
+  --glass-codeblock-sheen: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  --glass-control-surface: var(--surface-subtle);
+  --glass-control-active-tint: var(--accent-soft);
+  --glass-control-hover-tint: color-mix(in srgb, var(--surface-subtle) 78%, var(--accent-soft));
+  --glass-refraction-line: linear-gradient(
+    118deg,
+    color-mix(in srgb, var(--edge-light) 76%, transparent),
+    transparent 34%,
+    color-mix(in srgb, var(--accent-soft) 42%, transparent) 72%,
+    color-mix(in srgb, var(--edge-light) 32%, transparent)
+  );
+  --glass-refraction-fill: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--edge-light) 18%, transparent),
+    transparent 42%,
+    color-mix(in srgb, var(--accent-soft) 28%, transparent)
+  );
+  --glass-shadow: var(--shadow-float);
+  --glass-shadow-hover:
+    var(--shadow-interactive), 0 0 2.4rem -1.2rem var(--glass-reflection-cool),
+    0 0 2.8rem -1.5rem var(--glass-reflection-warm);
+  --glass-ambient-a: var(--ambient-ice);
+  --glass-ambient-b: var(--ambient-mint);
+  --glass-ambient-c: var(--ambient-violet);
+  --glass-blur: 14px;
+  --glass-blur-strong: 18px;
+  --glass-blur-soft: 8px;
+  --glass-blur-backdrop: 8px;
+  --glass-blur-search: 16px;
+  --glass-saturate: 132%;
+  --glass-brightness: 102%;
+  --glass-contrast: 101%;
+  --theme-transition-duration: var(--motion-standard);
+  --default-transition-duration: var(--motion-standard);
+  --nd-duration-page-enter: var(--motion-standard);
+  --nd-duration-aperture: 1200ms;
+  --nd-duration-overview: 560ms;
+  --nd-duration-surface: 480ms;
+  --nd-duration-content: 360ms;
+  --nd-duration-crossfade: 420ms;
+  --nd-duration-loading-release: 480ms;
+  --nd-duration-ai-caret-blink: 1200ms;
+  --nd-z-transition-hold: 9998;
+  --nd-z-transition-layer: 9999;
+
+  /* Semantic document accents live with the rest of the palette.
+     文档语义色与其余配色统一维护。 */
+  --color-alert-note: #3b82f6;
+  --color-alert-tip: #22c55e;
+  --color-alert-important: #8b5cf6;
+  --color-alert-warning: #eab308;
+  --color-alert-caution: #ef4444;
+  --color-alert-example: #f97316;
+  --color-alert-hint: #06b6d4;
+  --color-alert-ai: var(--fd-primary);
+  --alert-tint-pct: 8%;
+}
+
+.dark {
+  --alert-tint-pct: 12%;
+  /* Dark surfaces use luminous edge and ambient shadows only; black shadows
+     disappear against the navy canvas and are intentionally excluded.
+     深色表面仅使用明亮边缘与环境辉光，避免深色阴影在海军蓝画布上不可见。 */
+  --shadow-float:
+    0 0 0 1px color-mix(in srgb, var(--accent-primary) 12%, transparent),
+    0 1rem 2.8rem -1.6rem color-mix(in srgb, var(--accent-primary) 34%, transparent);
+  --shadow-popover:
+    0 0 0 1px color-mix(in srgb, var(--edge-light) 14%, transparent),
+    0 1.4rem 3.8rem -1.8rem color-mix(in srgb, var(--accent-tertiary) 28%, transparent);
+  /* Interactive surfaces use their real border as the only sharp contour;
+     ambient shadows stay soft so their radius cannot diverge from the host.
+     交互表面仅以真实边框作为锐利轮廓，环境阴影保持柔和，避免圆角与宿主边缘错位。 */
+  --shadow-interactive:
+    0 0 1.9rem -0.65rem color-mix(in srgb, var(--accent-primary) 58%, transparent),
+    0 0 3.2rem -1.2rem color-mix(in srgb, var(--accent-tertiary) 42%, transparent);
+  --glass-shadow: var(--shadow-float);
+  --glass-shadow-hover: var(--shadow-interactive);
+  --glass-control-hover-tint: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  --glass-rim-glow: color-mix(in srgb, var(--accent-primary) 64%, transparent);
+}

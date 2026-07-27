@@ -1,0 +1,40 @@
+/* Unified motion primitives and reduced-motion fallbacks.
+   统一动效基础与减弱动画降级。 */
+
+@keyframes nd-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.65rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-animated-content] {
+  opacity: 0;
+  transform: translateY(0.75rem);
+}
+
+[data-animated-content][data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-standard) var(--motion-ease-standard),
+    transform var(--motion-standard) var(--motion-ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  [data-animated-content] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

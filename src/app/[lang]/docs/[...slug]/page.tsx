@@ -13,6 +13,13 @@ import { Guestbook } from '@/components/guestbook';
 import { Tab, Tabs } from '@/components/mdx/code-tabs';
 import { CollapsibleDetails } from '@/components/mdx/collapsible-details';
 import { CustomCodeBlock } from '@/components/mdx/custom-codeblock';
+import {
+  DocCard,
+  DocGrid,
+  FeatureCard,
+  LearningPath,
+  ResourceLink,
+} from '@/components/mdx/doc-cards';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { Mermaid } from '@/components/mdx/mermaid';
 import { getPageDictionary } from '@/dictionaries';
@@ -48,6 +55,11 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
             pre: CustomCodeBlock,
             Tabs,
             Tab,
+            DocCard,
+            DocGrid,
+            FeatureCard,
+            LearningPath,
+            ResourceLink,
           }}
         />
       </DocsBody>
@@ -55,11 +67,14 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
         <DocsContributors contributors={contributors} title={dict.documentContributorsTitle} />
       )}
       <div className="order-last mt-16 border-t border-fd-border pt-10">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-lg glass-chip text-fd-accent-foreground">
+        {/* Community heading uses stable classes so icon/text alignment and the
+            compact project radius stay independent from Markdown heading rules.
+            讨论区标题使用稳定类名，避免图标/文字对齐与圆角受 Markdown 标题规则影响。 */}
+        <div className="docs-community__header mb-6 flex gap-3">
+          <div className="docs-community__icon flex size-9 items-center justify-center glass-chip text-fd-accent-foreground">
             <MessageSquareText size={18} />
           </div>
-          <div>
+          <div className="docs-community__copy">
             <h3 className="text-lg font-semibold text-fd-foreground">{dict.communityTitle}</h3>
             <p className="text-sm text-fd-muted-foreground">{dict.communityDesc}</p>
           </div>
