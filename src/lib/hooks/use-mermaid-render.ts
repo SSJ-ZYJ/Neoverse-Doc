@@ -1,24 +1,33 @@
-// Hook: renders a Mermaid chart to SVG on the client.
+// Hook: lazily loads Mermaid and renders a chart to SVG near the viewport.
 // Uses a request ID guard to prevent stale SVG from winning when the chart
 // source or theme changes rapidly (e.g., toggling theme back and forth).
-// 自定义 Hook：在客户端将 Mermaid 图表渲染为 SVG。
+// The module promise is shared so multiple diagrams never duplicate the package request.
+// 自定义 Hook：按需加载 Mermaid，并在图表接近视口时渲染 SVG。
 // 使用 request ID 守卫，防止图表源码或主题快速切换时旧 SVG 覆盖新结果。
+// 模块 Promise 在图表间共享，避免重复请求同一依赖。
 
 'use client';
 
-import mermaid from 'mermaid';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-let counter = 0;
+type MermaidApi = typeof import('mermaid')['default'];
 
-export function useMermaidRender(chart: string, theme: 'dark' | 'default') {
+let counter = 0;
+let mermaidPromise: Promise<MermaidApi> | undefined;
+
+function loadMermaid() {
+  mermaidPromise ??= import('mermaid').then((module) => module.default);
+  return mermaidPromise;
+}
+
+export function useMermaidRender(chart: string, theme: 'dark' | 'default', enabled = true) {
   const mountedRef = useRef(true);
   const requestIdRef = useRef(0);
   const [svgContent, setSvgContent] = useState<string | null>(null);
 
   const renderChart = useCallback(async () => {
     const code = chart?.trim();
-    if (!code || !mountedRef.current) return;
+    if (!enabled || !code || !mountedRef.current) return;
 
     const id = `mermaid-${++counter}`;
     // Track the latest request so stale renders can be discarded.
@@ -26,10 +35,14 @@ export function useMermaidRender(chart: string, theme: 'dark' | 'default') {
     const requestId = ++requestIdRef.current;
 
     try {
-      // Mermaid measures HTML labels during rendering. Wait for project fonts
-      // so its node sizes match the final glyph metrics and text is not clipped.
-      // Mermaid 会在渲染时测量 HTML 标签；等待项目字体就绪，避免最终字形超出节点。
-      await document.fonts?.ready;
+      // Load the package and project fonts concurrently. Final glyph metrics
+      // remain available before Mermaid measures HTML labels.
+      // 并行加载依赖与项目字体，同时确保 Mermaid 测量 HTML 标签前
+      // 已获得最终字形尺寸。
+      const [mermaid] = await Promise.all([
+        loadMermaid(),
+        document.fonts?.ready ?? Promise.resolve(),
+      ]);
 
       mermaid.initialize({
         startOnLoad: false,
@@ -60,7 +73,7 @@ export function useMermaidRender(chart: string, theme: 'dark' | 'default') {
       const leftover = document.getElementById(`d${id}`);
       if (leftover) leftover.remove();
     }
-  }, [chart, theme]);
+  }, [chart, enabled, theme]);
 
   useEffect(() => {
     mountedRef.current = true;

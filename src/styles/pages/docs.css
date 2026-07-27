@@ -230,6 +230,29 @@
   max-inline-size: var(--docs-reading-width);
 }
 
+/* Skip initial layout and paint for expensive off-screen MDX blocks while
+   keeping their DOM, accessibility tree, find-in-page, and anchor behavior.
+   Restricting containment to complex direct children avoids fragmenting every
+   paragraph into a separate containment context.
+   跳过离屏高成本 MDX 内容块的初始布局与绘制，同时保留 DOM、无障碍树、
+   页内查找和锚点行为。仅隔离复杂直属子元素，避免为每个段落建立独立
+   containment 上下文。 */
+@supports (content-visibility: auto) {
+  #nd-page [data-docs-body] > :is(figure, table, .mermaid-wrapper, [data-card="true"]) {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 16rem;
+  }
+}
+
+/* Printing must materialize every deferred block regardless of viewport state.
+   打印时无条件呈现所有延迟内容块，不受视口状态影响。 */
+@media print {
+  #nd-page [data-docs-body] > :is(figure, table, .mermaid-wrapper, [data-card="true"]) {
+    content-visibility: visible;
+    contain-intrinsic-block-size: none;
+  }
+}
+
 #nd-page h1 {
   font-weight: 720;
   letter-spacing: -0.035em;

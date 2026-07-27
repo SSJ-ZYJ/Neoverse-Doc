@@ -4,24 +4,13 @@
 // 动态文档页：从 fumadocs source 树渲染 MDX 内容，支持 Mermaid 图表，
 // 底部附带 Giscus 讨论区。元信息（标题/描述）从页面 frontmatter 生成。
 
-import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import { MessageSquareText } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Guestbook } from '@/components/guestbook';
-import { Tab, Tabs } from '@/components/mdx/code-tabs';
-import { CollapsibleDetails } from '@/components/mdx/collapsible-details';
-import { CustomCodeBlock } from '@/components/mdx/custom-codeblock';
-import {
-  DocCard,
-  DocGrid,
-  FeatureCard,
-  LearningPath,
-  ResourceLink,
-} from '@/components/mdx/doc-cards';
+import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
-import { Mermaid } from '@/components/mdx/mermaid';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
 import { source } from '@/lib/source';
@@ -45,23 +34,9 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       <DocsDescription>{page.data.description}</DocsDescription>
       {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
       <DocsBody>
-        {/* AI details renderer enables adaptive typewriter reveal for `[!DETAILS-AI]` blocks.
-            AI 折叠块渲染器为 `[!DETAILS-AI]` 块启用自适应打字机揭示效果。 */}
-        <MDX
-          components={{
-            ...defaultMdxComponents,
-            details: CollapsibleDetails,
-            Mermaid,
-            pre: CustomCodeBlock,
-            Tabs,
-            Tab,
-            DocCard,
-            DocGrid,
-            FeatureCard,
-            LearningPath,
-            ResourceLink,
-          }}
-        />
+        {/* Shared registry centralizes server/client boundaries for every MDX document.
+            共享注册表集中管理所有 MDX 文档的服务端与客户端边界。 */}
+        <MDX components={getMdxComponents()} />
       </DocsBody>
       {contributors && (
         <DocsContributors contributors={contributors} title={dict.documentContributorsTitle} />

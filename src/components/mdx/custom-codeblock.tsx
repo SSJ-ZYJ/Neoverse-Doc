@@ -3,24 +3,15 @@
  * - Language icon (from Shiki transformerIcon)
  * - File path (only when set via remark-code-title)
  * - Runtime fallback for stale MDX output that still contains a path comment
- * - Copy button
+ * - A minimal client-only copy button
  *
  * 自定义代码块，始终渲染顶部横条，包含：
  * - 编程语言图标（由 Shiki transformerIcon 设置）
  * - 文件路径（仅当通过 remark-code-title 设置时显示）
  * - 对仍保留路径注释的旧 MDX 输出做运行时兜底
- * - 复制按钮
+ * - 最小化客户端边界的复制按钮
  */
 
-'use client';
-
-// fumadocs-ui 16.11+ moved useTranslations to @fuma-translate/react and changed
-// its API from a keyed object to a callable translation function.
-// fumadocs-ui 16.11+ 将 useTranslations 迁移至 @fuma-translate/react，API 由对象改为可调用函数。
-import { useTranslations } from '@fuma-translate/react';
-import { Pre } from 'fumadocs-ui/components/codeblock';
-import { useCopyButton } from 'fumadocs-ui/utils/use-copy-button';
-import { Check, Clipboard } from 'lucide-react';
 import {
   Children,
   type ComponentProps,
@@ -28,8 +19,8 @@ import {
   isValidElement,
   type ReactElement,
   type ReactNode,
-  useRef,
 } from 'react';
+import { CodeCopyButton } from '@/components/mdx/code-copy-button';
 import { getFilePathFromCodeTitleLine } from '@/lib/code-title';
 import { getLanguageDisplayName } from '@/lib/language-mapping';
 
@@ -45,7 +36,7 @@ interface CodeBlockPreProps extends ComponentProps<'pre'> {
 
 export function CustomCodeBlock(props: CodeBlockPreProps) {
   const { children, title, icon, lang, className, ...rest } = props;
-  const areaRef = useRef<HTMLDivElement>(null);
+
   const fallbackTitle =
     typeof title === 'string' && title.length > 0 ? null : getFallbackTitle(children);
   const codeTitle = typeof title === 'string' && title.length > 0 ? title : fallbackTitle;
@@ -76,11 +67,10 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
         ) : (
           <span className="flex-1" />
         )}
-        <CopyButton containerRef={areaRef} />
+        <CodeCopyButton />
       </div>
       {/* biome-ignore lint/a11y/useSemanticElements: region role matches fumadocs CodeBlock */}
       <div
-        ref={areaRef}
         role="region"
         // biome-ignore lint/a11y/noNoninteractiveTabindex: matches fumadocs CodeBlock behavior
         tabIndex={0}
@@ -91,7 +81,11 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
             : undefined,
         }}
       >
-        <Pre>{codeChildren}</Pre>
+        {/* Fumadocs `Pre` only adds these layout classes but is a client component.
+            Rendering the equivalent native element keeps highlighted code on the server.
+            Fumadocs 的 `Pre` 只补充以下布局类，但自身是客户端组件；
+            使用等价原生元素可让高亮代码保留在服务端。 */}
+        <pre className="min-w-full w-max *:flex *:flex-col">{codeChildren}</pre>
       </div>
     </figure>
   );
@@ -166,39 +160,4 @@ function stripFirstLineChildren(children: ReactNode, state: { stripped: boolean 
   }
 
   return nextChildren;
-}
-
-function CopyButton({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
-  const t = useTranslations();
-  const [checked, onClick] = useCopyButton(() => {
-    const pre = containerRef.current?.getElementsByTagName('pre').item(0);
-    if (!pre) return;
-    const clone = pre.cloneNode(true) as HTMLElement;
-    clone.querySelectorAll('.nd-copy-ignore').forEach((node) => {
-      node.replaceWith('\n');
-    });
-    navigator.clipboard.writeText(clone.textContent ?? '');
-  });
-
-  return (
-    <button
-      type="button"
-      data-checked={checked || undefined}
-      // Copy button: aligned with the unified glass-interactive--chip hover spec
-      // (tint shift + soft glow, no lift). 已复制态保留绿色语义反馈。
-      // 复制按钮：沿用统一 chip 悬浮规范（tint 切换 + 柔辉光，不抬升）；
-      // 已复制态保留绿色语义反馈。
-      className="inline-flex items-center justify-center rounded-md p-1 text-fd-muted-foreground hover:text-fd-accent-foreground hover:bg-fd-accent/60 data-checked:text-green-600 data-checked:bg-green-500/10 dark:data-checked:text-green-400 dark:data-checked:bg-green-500/15 transition-all duration-200 cursor-pointer active:scale-95"
-      aria-label={
-        checked ? t('Copied Text(code block)(aria-label)') : t('Copy Text(code block)(aria-label)')
-      }
-      onClick={onClick}
-    >
-      {checked ? (
-        <Check className="size-3.5 animate-in zoom-in-50 duration-200" />
-      ) : (
-        <Clipboard className="size-3.5" />
-      )}
-    </button>
-  );
 }

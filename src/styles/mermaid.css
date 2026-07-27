@@ -451,6 +451,9 @@
    普通模式：z-index 低于 fumadocs 搜索弹窗 / popover（z-50），
    打开搜索时会盖住工具栏。 */
 .mermaid-toolbar[data-portaled="true"] {
+  /* The positioning Hook reveals the toolbar after its first measured frame.
+     定位 Hook 在完成首帧测量后再显示工具栏。 */
+  visibility: hidden;
   /* left/top set inline by component */
 }
 
