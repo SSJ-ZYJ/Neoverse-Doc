@@ -130,6 +130,31 @@
   --glass-tint-medium: var(--surface-glass);
   --glass-tint-soft: var(--surface-subtle);
   --glass-tint-search: color-mix(in srgb, var(--surface-glass) 68%, transparent);
+  /* Document-scene tokens keep the reading canvas, navigation surfaces, and
+     diagrams on one palette without coupling their rules to raw colors.
+     文档场景 Token 统一阅读画布、导航表面与图表配色，避免各自样式直接绑定原始颜色。 */
+  --docs-canvas-surface: var(--background-primary);
+  --docs-canvas-ambient-primary: var(--ambient-ice);
+  --docs-canvas-ambient-secondary: var(--ambient-mint);
+  --docs-circuit-node: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  --docs-circuit-line: color-mix(in srgb, var(--border-subtle) 58%, transparent);
+  --docs-surface-border: var(--border-subtle);
+  --docs-nav-background: color-mix(in srgb, var(--surface-glass) 62%, transparent);
+  --docs-nav-shadow: var(--shadow-edge), var(--glass-shadow);
+  --docs-sidebar-background: color-mix(in srgb, var(--surface-elevated) 68%, var(--surface-glass));
+  --docs-sidebar-shadow: var(--shadow-edge);
+  --docs-sidebar-hover-background: color-mix(in srgb, var(--accent-primary) 14%, transparent);
+  --docs-sidebar-active-background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  --docs-sidebar-active-foreground: var(--accent-primary);
+  --docs-page-background:
+    linear-gradient(145deg, color-mix(in srgb, var(--edge-light) 20%, transparent), transparent 32%),
+    color-mix(in srgb, var(--surface-glass) 46%, transparent);
+  --docs-page-shadow: var(--shadow-edge), var(--shadow-float);
+  --mermaid-surface-background: var(--glass-tint-medium);
+  --mermaid-surface-edge: var(--glass-border-hairline);
+  --mermaid-surface-shadow: var(--shadow-edge), var(--glass-shadow);
+  --mermaid-surface-hover-shadow: var(--shadow-edge), var(--glass-shadow-hover);
+  --mermaid-maximized-background: var(--glass-tint-medium);
   /* Mermaid toolbar surfaces reuse the project glass tint, while the maximized
      variant stays airier over the already blurred fullscreen backdrop.
      A dedicated blur token lets the toolbar soften the sample without the
@@ -230,4 +255,76 @@
   --glass-shadow-hover: var(--shadow-interactive);
   --glass-control-hover-tint: color-mix(in srgb, var(--accent-primary) 18%, transparent);
   --glass-rim-glow: color-mix(in srgb, var(--accent-primary) 64%, transparent);
+  /* Dark documentation shifts from saturated navy glows to quiet graphite glass.
+     Accent colors remain as low-opacity ambient cues instead of large color fields.
+     深色文档由高饱和海军蓝辉光转为安静的石墨玻璃，强调色仅作为低透明环境提示。 */
+  --docs-canvas-surface: color-mix(
+    in srgb,
+    var(--background-primary) 94%,
+    var(--text-secondary) 6%
+  );
+  --docs-canvas-ambient-primary: color-mix(in srgb, var(--accent-tertiary) 6%, transparent);
+  --docs-canvas-ambient-secondary: color-mix(in srgb, var(--accent-primary) 4%, transparent);
+  --docs-circuit-node: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  --docs-circuit-line: color-mix(in srgb, var(--text-muted) 7%, transparent);
+  --docs-surface-border: color-mix(in srgb, var(--text-secondary) 8%, var(--border-subtle));
+  --docs-nav-background:
+    linear-gradient(180deg, color-mix(in srgb, var(--edge-light) 4%, transparent), transparent 32%),
+    color-mix(in srgb, var(--docs-canvas-surface) 76%, transparent);
+  --docs-nav-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 30%, transparent),
+    0 1rem 3rem -2rem color-mix(in srgb, var(--text-muted) 20%, transparent);
+  --docs-sidebar-background:
+    linear-gradient(180deg, color-mix(in srgb, var(--edge-light) 5%, transparent), transparent 26%),
+    color-mix(in srgb, var(--docs-canvas-surface) 88%, transparent);
+  --docs-sidebar-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 28%, transparent),
+    inset -1px 0 0 color-mix(in srgb, var(--text-muted) 8%, transparent);
+  --docs-sidebar-hover-background: color-mix(in srgb, var(--text-secondary) 7%, transparent);
+  --docs-sidebar-active-background: color-mix(
+    in srgb,
+    var(--accent-primary) 8%,
+    var(--surface-subtle)
+  );
+  --docs-sidebar-active-foreground: color-mix(
+    in srgb,
+    var(--text-primary) 92%,
+    var(--accent-primary)
+  );
+  --docs-page-background:
+    linear-gradient(145deg, color-mix(in srgb, var(--edge-light) 8%, transparent), transparent 30%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--docs-canvas-surface) 58%, transparent),
+      color-mix(in srgb, var(--background-primary) 46%, transparent)
+    );
+  --docs-page-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 32%, transparent),
+    0 1.5rem 4rem -2.4rem color-mix(in srgb, var(--text-muted) 22%, transparent);
+  --mermaid-surface-background:
+    radial-gradient(
+      circle at 16% 0%,
+      color-mix(in srgb, var(--accent-tertiary) 5%, transparent),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 88% 18%,
+      color-mix(in srgb, var(--accent-primary) 4%, transparent),
+      transparent 42%
+    ),
+    color-mix(in srgb, var(--docs-canvas-surface) 82%, transparent);
+  --mermaid-surface-edge: color-mix(in srgb, var(--text-secondary) 10%, var(--border-subtle));
+  --mermaid-surface-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 28%, transparent),
+    0 1.25rem 3.2rem -2rem color-mix(in srgb, var(--text-muted) 20%, transparent);
+  --mermaid-surface-hover-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 38%, transparent),
+    0 1.4rem 3.5rem -2rem color-mix(in srgb, var(--text-muted) 28%, transparent);
+  --mermaid-maximized-background: color-mix(in srgb, var(--docs-canvas-surface) 84%, transparent);
+  --mermaid-toolbar-tint: color-mix(in srgb, var(--docs-canvas-surface) 82%, transparent);
+  --mermaid-toolbar-tint-maximized: color-mix(in srgb, var(--docs-canvas-surface) 66%, transparent);
+  --mermaid-toolbar-edge: color-mix(in srgb, var(--text-secondary) 14%, var(--border-subtle));
+  --mermaid-toolbar-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 34%, transparent),
+    0 1rem 2.6rem -1.6rem color-mix(in srgb, var(--text-muted) 24%, transparent);
 }

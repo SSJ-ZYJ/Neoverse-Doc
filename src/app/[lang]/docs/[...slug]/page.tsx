@@ -28,8 +28,11 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   // 贡献者 frontmatter 同时兼容单数与复数字段。
   const contributors = page.data.contributors ?? page.data.contributor;
 
+  // Use default TOC style which includes a scroll-tracking thumb that moves
+  // along the SVG path. The clerk style has no thumb element.
+  // 使用 default TOC 风格，内置沿 SVG 路径移动的滚动追踪指示点。clerk 风格没有 thumb 元素。
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full} tableOfContent={{ style: 'clerk' }}>
+    <DocsPage toc={page.data.toc} full={page.data.full} tableOfContent={{ style: 'normal' }}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}

@@ -9,14 +9,12 @@
 .mermaid-wrapper {
   --mermaid-scale: 1;
   position: relative;
-  border: 1px solid var(--glass-border-hairline);
+  border: 1px solid var(--mermaid-surface-edge);
   background-color: transparent;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   border-radius: var(--radius-md);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
+  box-shadow: var(--mermaid-surface-shadow);
   overflow: hidden;
   /* No z-index / isolation here on purpose. Any stacking context (z-index: 0,
      isolation: isolate, etc.) is a backdrop root per the Filter Effects spec.
@@ -49,13 +47,13 @@
     box-shadow var(--theme-transition-duration) ease;
 }
 
-/* Wrapper tint layer. A plain semi-transparent background (no backdrop-filter)
+/* Wrapper palette layer. A theme-aware semi-transparent background (no backdrop-filter)
    avoids forming a backdrop root that would prevent the floating toolbar from
    sampling the Mermaid SVG behind it. The wrapper still reads as a glass
    container through its border + shadow + tint; the toolbar carries the
    project's full glass-chip treatment (blur + tint + edge + refractive line)
    on its own element.
-   wrapper 底色层。仅使用半透明底色（不带 backdrop-filter），避免成为
+   wrapper 配色层。使用主题感知的半透明底色（不带 backdrop-filter），避免成为
    backdrop root 阻止悬浮工具栏采样后方的 Mermaid SVG。wrapper 仍通过
    描边 + 阴影 + 底色呈现为玻璃容器；工具栏则由自身元素承载项目完整的
    glass-chip 处理（模糊 + 底色 + 描边 + 折射细线）。 */
@@ -64,7 +62,7 @@
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background-color: var(--glass-tint-medium);
+  background: var(--mermaid-surface-background);
   content: "";
   pointer-events: none;
 }
@@ -73,9 +71,7 @@
    柔辉光，与 .markdown-alert / table 容器保持一致的悬浮层级反馈。 */
 @media (hover: hover) {
   .mermaid-wrapper:hover {
-    box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      var(--glass-shadow-hover);
+    box-shadow: var(--mermaid-surface-hover-shadow);
   }
 }
 
@@ -683,7 +679,7 @@
   position: fixed;
   inset: 0;
   z-index: 9998;
-  background-color: var(--glass-tint-medium);
+  background: var(--mermaid-maximized-background);
   -webkit-backdrop-filter: blur(var(--glass-blur-backdrop)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-backdrop)) saturate(var(--glass-saturate))

@@ -94,6 +94,17 @@
     box-shadow var(--theme-transition-duration) ease,
     transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+/* Dark mobile navigation follows the graphite documentation scene instead of
+   rebuilding the previous saturated navy tint inside each drawer.
+   深色移动导航复用石墨文档场景，避免在各层抽屉中重复叠加高饱和海军蓝。 */
+.dark {
+  --glass-mobile-header-tint: color-mix(in srgb, var(--docs-canvas-surface) 72%, transparent);
+  --glass-mobile-title-header-tint: color-mix(in srgb, var(--docs-canvas-surface) 68%, transparent);
+  --glass-sidebar-drawer-tint: color-mix(in srgb, var(--docs-canvas-surface) 88%, transparent);
+  --glass-sidebar-drawer-edge-shadow:
+    inset 1px 0 0 color-mix(in srgb, var(--edge-light) 24%, transparent),
+    -1rem 0 2.75rem -2.35rem color-mix(in srgb, var(--text-muted) 20%, transparent);
+}
 
 /* Light-mode navigation gives article links body-level contrast and section
    titles a darker brand tint, without changing active or hover states.
@@ -1324,9 +1335,9 @@ button[data-theme-toggle]:focus-visible {
     var(--glass-shadow);
 }
 
-/* TOC popover inner scrollable content: remove the extra edge so the clerk
+/* TOC popover inner scrollable content: remove the extra edge so the TOC
    progress line is the only vertical guide on the left.
-   TOC 弹层内部滚动内容：移除额外描边，让 clerk 进度线成为左侧唯一竖向引导线。 */
+   TOC 弹层内部滚动内容：移除额外描边，让 TOC 进度线成为左侧唯一竖向引导线。 */
 :where([data-toc-popover-content]) > div > div {
   border: 0 !important;
   border-radius: 0 !important;
