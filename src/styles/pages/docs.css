@@ -532,12 +532,14 @@
 
 #nd-toc a {
   color: var(--text-muted);
-  transition: color var(--motion-fast) var(--motion-ease-standard);
+  transition:
+    color var(--motion-standard) var(--motion-ease-standard),
+    font-weight var(--motion-standard) var(--motion-ease-standard);
 }
 
 #nd-toc a[data-active="true"],
 #nd-toc a[aria-current="true"] {
-  color: var(--accent-primary) !important;
+  color: var(--accent-primary);
   font-weight: 620;
 }
 
@@ -547,6 +549,26 @@
    表面上可见。 */
 #nd-toc [style*="offset-path"] {
   background: var(--color-fd-primary) !important;
+}
+
+/* Keep thumb and highlight track in sync during fast scrolling: fumadocs
+   applies separate transitions to the thumb (offset-distance) and the
+   highlight track (clip-path). Their differing interpolation rates cause
+   the thumb to detach from the track end during rapid scroll updates from
+   useTOCListener. Unify both transitions to the same duration + easing so
+   they interpolate at the same rate, staying aligned while remaining smooth.
+   保持指示点与高亮线条在快速滚动时同步且平滑：fumadocs 为 thumb
+   （offset-distance）和高亮线条（clip-path）分别应用了过渡，两者插值
+   速率不同，在 useTOCListener 快速更新时会导致指示点脱离高亮线条末端。
+   将两者过渡统一为相同时长 + 缓动函数，使插值速率一致，既同步又平滑。 */
+#nd-toc [style*="--track-bottom"] > svg {
+  transition: clip-path var(--motion-fast) var(--motion-ease-standard) !important;
+}
+
+#nd-toc [style*="offset-path"] {
+  transition:
+    offset-distance var(--motion-fast) var(--motion-ease-standard),
+    opacity var(--motion-fast) var(--motion-ease-standard) !important;
 }
 
 .mdx-doc-grid {
