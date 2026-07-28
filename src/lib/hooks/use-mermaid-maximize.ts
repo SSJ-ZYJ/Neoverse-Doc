@@ -61,13 +61,6 @@ export function useMermaidMaximize(
         preMaximizeScaleRef.current = scale;
         preMaximizePanRef.current = pan;
         const fitViewport = computeFitViewportScale();
-        // Always use fitViewport (not max(scale, fitViewport)) so the whole
-        // diagram fits in one screen with toolbar space reserved. The
-        // previous inline scale is preserved in preMaximizeScaleRef and
-        // restored on exit-maximize.
-        // 始终使用 fitViewport（不取 max(scale, fitViewport)），确保整个
-        // 图表在一屏内可见并预留工具栏空间。之前的行内比例保存在
-        // preMaximizeScaleRef，退出全屏时恢复。
         setScale(fitViewport);
         setPan(ORIGIN);
       }

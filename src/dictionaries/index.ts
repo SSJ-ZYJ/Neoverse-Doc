@@ -71,6 +71,11 @@ export interface Dictionary {
   mermaidMaximize: string;
   mermaidRestore: string;
   mermaidToolbar: string;
+  // Mermaid view mode toggle labels / Mermaid 视图模式切换标签
+  mermaidViewMode: string;
+  mermaidViewRender: string;
+  mermaidViewCode: string;
+  mermaidCodeEditor: string;
 }
 
 const dictionaries: Record<Locale, Dictionary> = { zh, en };

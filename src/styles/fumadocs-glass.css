@@ -64,6 +64,7 @@
      在保证顶部控件可读的同时让页面背景透出更多。 */
   --glass-mobile-header-tint: color-mix(in srgb, var(--glass-tint-search) 90%, transparent);
   --glass-mobile-title-header-tint: color-mix(in srgb, var(--glass-tint-search) 84%, transparent);
+  --glass-mobile-title-header-blur: var(--glass-blur);
   /* Mobile sidebar drawer keeps a moderate blur with a denser tint so text
      remains legible without losing the glass relationship to page content.
      移动端侧栏使用适中模糊与稍浓 tint，在保留玻璃透视关系的同时提升可读性。 */
@@ -99,7 +100,7 @@
    深色移动导航复用石墨文档场景，避免在各层抽屉中重复叠加高饱和海军蓝。 */
 .dark {
   --glass-mobile-header-tint: color-mix(in srgb, var(--docs-canvas-surface) 72%, transparent);
-  --glass-mobile-title-header-tint: color-mix(in srgb, var(--docs-canvas-surface) 68%, transparent);
+  --glass-mobile-title-header-tint: color-mix(in srgb, var(--docs-canvas-surface) 36%, transparent);
   --glass-sidebar-drawer-tint: color-mix(in srgb, var(--docs-canvas-surface) 88%, transparent);
   --glass-sidebar-drawer-edge-shadow:
     inset 1px 0 0 color-mix(in srgb, var(--edge-light) 24%, transparent),
@@ -295,9 +296,10 @@ button[data-theme-toggle],
 #nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm {
   overflow: hidden;
   background-color: var(--glass-mobile-title-header-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
+  -webkit-backdrop-filter: blur(var(--glass-mobile-title-header-blur))
+    saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-mobile-title-header-blur)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   border-color: var(--glass-border-hairline) !important;
   border-radius: var(--radius-md) !important;

@@ -150,6 +150,26 @@
     linear-gradient(145deg, color-mix(in srgb, var(--edge-light) 20%, transparent), transparent 32%),
     color-mix(in srgb, var(--surface-glass) 46%, transparent);
   --docs-page-shadow: var(--shadow-edge), var(--shadow-float);
+  /* Document quote tokens create a quiet editorial surface with a restrained
+     cyan-to-mint guide rail, keeping quoted prose distinct from alerts.
+     文档引用 Token 构建克制的编辑式玻璃表面，并使用青色到薄荷色引导线，
+     让普通引用与提示框保持清晰区分。 */
+  --docs-quote-background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent-primary) 7%, transparent),
+      transparent 46%
+    ),
+    color-mix(in srgb, var(--surface-glass) 58%, transparent);
+  --docs-quote-border: color-mix(in srgb, var(--border-interactive) 28%, var(--border-subtle));
+  --docs-quote-rail: linear-gradient(
+    to bottom,
+    var(--accent-primary),
+    color-mix(in srgb, var(--accent-secondary) 74%, var(--accent-primary))
+  );
+  --docs-quote-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 42%, transparent),
+    0 1.15rem 2.8rem -2.25rem color-mix(in srgb, var(--accent-primary) 34%, transparent);
   --mermaid-surface-background: var(--glass-tint-medium);
   --mermaid-surface-edge: var(--glass-border-hairline);
   --mermaid-surface-shadow: var(--shadow-edge), var(--glass-shadow);
@@ -301,28 +321,32 @@
   --docs-page-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--edge-light) 32%, transparent),
     0 1.5rem 4rem -2.4rem color-mix(in srgb, var(--text-muted) 22%, transparent);
+  /* Dark Mermaid surfaces use an airy graphite glass with a restrained cool
+     highlight instead of a dense navy slab.
+     深色 Mermaid 表面使用轻透石墨玻璃与克制冷色高光，替代厚重海军蓝色块。 */
   --mermaid-surface-background:
+    linear-gradient(145deg, color-mix(in srgb, var(--edge-light) 6%, transparent), transparent 30%),
     radial-gradient(
-      circle at 16% 0%,
-      color-mix(in srgb, var(--accent-tertiary) 5%, transparent),
-      transparent 38%
+      circle at 50% -18%,
+      color-mix(in srgb, var(--accent-primary) 8%, transparent),
+      transparent 54%
     ),
-    radial-gradient(
-      circle at 88% 18%,
-      color-mix(in srgb, var(--accent-primary) 4%, transparent),
-      transparent 42%
-    ),
-    color-mix(in srgb, var(--docs-canvas-surface) 82%, transparent);
-  --mermaid-surface-edge: color-mix(in srgb, var(--text-secondary) 10%, var(--border-subtle));
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-elevated) 58%, transparent),
+      color-mix(in srgb, var(--docs-canvas-surface) 34%, transparent)
+    );
+  --mermaid-surface-edge: color-mix(in srgb, var(--text-secondary) 14%, var(--border-subtle));
   --mermaid-surface-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 28%, transparent),
-    0 1.25rem 3.2rem -2rem color-mix(in srgb, var(--text-muted) 20%, transparent);
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 34%, transparent),
+    0 1.25rem 3.2rem -2rem color-mix(in srgb, var(--text-muted) 16%, transparent);
   --mermaid-surface-hover-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 38%, transparent),
-    0 1.4rem 3.5rem -2rem color-mix(in srgb, var(--text-muted) 28%, transparent);
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 42%, transparent),
+    0 1.4rem 3.5rem -2rem color-mix(in srgb, var(--accent-primary) 18%, transparent);
   --mermaid-maximized-background: color-mix(in srgb, var(--docs-canvas-surface) 84%, transparent);
-  --mermaid-toolbar-tint: color-mix(in srgb, var(--docs-canvas-surface) 82%, transparent);
-  --mermaid-toolbar-tint-maximized: color-mix(in srgb, var(--docs-canvas-surface) 66%, transparent);
+  --mermaid-toolbar-tint: color-mix(in srgb, var(--docs-canvas-surface) 42%, transparent);
+  --mermaid-toolbar-tint-maximized: color-mix(in srgb, var(--docs-canvas-surface) 36%, transparent);
+  --mermaid-toolbar-blur: calc(var(--glass-blur-soft) * 0.5);
   --mermaid-toolbar-edge: color-mix(in srgb, var(--text-secondary) 14%, var(--border-subtle));
   --mermaid-toolbar-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--edge-light) 34%, transparent),

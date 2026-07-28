@@ -75,6 +75,16 @@
   }
 }
 
+/* Focus ring for keyboard navigation: the wrapper is focusable (tabIndex=0)
+   so the 'v' shortcut can toggle views. A subtle ring indicates focus without
+   being as prominent as a full outline.
+   键盘导航焦点环：wrapper 可聚焦（tabIndex=0）以支持 'v' 快捷键。
+   细微的环指示焦点，不会像完整 outline 那样突兀。 */
+.mermaid-wrapper:focus-visible {
+  outline: 2px solid var(--fd-ring);
+  outline-offset: 2px;
+}
+
 /* Scrollable canvas: holds the zoom target. No `max-height` — the canvas
    grows to fit the diagram at the fit-to-view scale, so the whole figure
    is always visible without a vertical scrollbar. Pointer events on this
@@ -131,6 +141,21 @@
      fight the pan transform.
      拖动期间禁用原生滚动，避免与平移 transform 互相拉扯。 */
   touch-action: none;
+}
+
+/* Code view: the canvas hosts a textarea instead of the SVG. Drag-to-pan is
+   disabled, text selection is re-enabled, and the cursor reverts to default so
+   the editing experience feels natural. The bottom padding matches the render
+   view (3.5rem) so the floating toolbar never overlaps the last lines of code.
+   代码视图：画布承载文本域而非 SVG。禁用拖动平移、重新启用文本选择，
+   光标恢复默认使编辑体验自然。底部内边距与渲染视图一致（3.5rem），
+   悬浮工具栏不会遮挡最后一行代码。 */
+.mermaid-canvas[data-view="code"] {
+  cursor: default;
+  touch-action: auto;
+  user-select: text;
+  -webkit-user-select: text;
+  padding: 1.25rem 1rem 3.5rem;
 }
 
 /* Zoom target uses the initial fit-to-canvas dimensions as a stable frame.
@@ -254,6 +279,21 @@
   rx: 18px;
   ry: 18px;
   stroke-dasharray: 4 5;
+}
+
+/* Sequence diagrams replace Mermaid's default purple activation bars and
+   bright actor lifelines with the project's restrained graphite-blue system.
+   时序图使用克制的石墨蓝体系替换 Mermaid 默认紫色激活条与高亮角色生命线。 */
+.mermaid-svg-host :is(.activation0, .activation1, .activation2) {
+  fill: color-mix(in srgb, var(--docs-canvas-surface) 78%, var(--surface-elevated)) !important;
+  stroke: color-mix(in srgb, var(--text-secondary) 74%, var(--accent-primary)) !important;
+  stroke-width: 1px !important;
+}
+
+.mermaid-svg-host .actor-line {
+  stroke: color-mix(in srgb, var(--text-muted) 84%, var(--accent-primary)) !important;
+  stroke-width: 1.15px !important;
+  opacity: 0.58;
 }
 
 .mermaid-svg-host :is(.label, .nodeLabel, .cluster-label, .edgeLabel, .messageText, .noteText) {
@@ -384,6 +424,115 @@
   overflow: auto;
 }
 
+/* View fade-in: when switching between render and code, the newly-mounted view
+   fades in via a short CSS animation. Only the active view is rendered (no
+   cross-fade), which avoids the flicker caused by two overlapping semi-visible
+   layers during a transition.
+   视图淡入：渲染与代码切换时，新挂载的视图通过短 CSS 动画淡入。
+   仅渲染激活视图（无交叉淡入淡出），避免过渡期间两个半可见层重叠导致的闪烁。 */
+.mermaid-zoom-target,
+.mermaid-code-view {
+  animation: mermaid-view-fade-in var(--motion-fast) var(--motion-ease-standard);
+}
+
+@keyframes mermaid-view-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Code view: a scrollable container holding the editable textarea. It fills
+   the canvas width and grows with content up to a clear cap; shorter sources
+   show in full with no scrollbar, longer ones enable vertical scrolling.
+   代码视图：可滚动容器承载可编辑文本域。填满画布宽度，随内容增长至上限；
+   短源码完整展示无滚动条，长源码启用垂直滚动。 */
+.mermaid-code-view {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 8rem;
+  max-height: 28rem;
+  overflow: auto;
+  /* Immersive scrollbar: hidden by default (like code blocks), only revealed
+     on hover or while scrolling. Firefox via scrollbar-width; WebKit via the
+     ::-webkit-scrollbar rules below.
+     沉浸式滚动条：默认隐藏（与代码块一致），仅在悬停或滚动时显示。
+     Firefox 通过 scrollbar-width；WebKit 通过下方 ::-webkit-scrollbar 规则。 */
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+.mermaid-code-view:hover,
+.mermaid-code-view:focus-within {
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-scrollbar-thumb) transparent;
+}
+
+.mermaid-code-view::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.mermaid-code-view:hover::-webkit-scrollbar,
+.mermaid-code-view:focus-within::-webkit-scrollbar {
+  width: var(--glass-scrollbar-size);
+  height: var(--glass-scrollbar-size);
+}
+
+.mermaid-code-view:hover::-webkit-scrollbar-track,
+.mermaid-code-view:focus-within::-webkit-scrollbar-track {
+  background: var(--glass-scrollbar-track);
+  border-radius: var(--glass-scrollbar-radius);
+  margin-block: 0.25rem;
+}
+
+.mermaid-code-view:hover::-webkit-scrollbar-thumb,
+.mermaid-code-view:focus-within::-webkit-scrollbar-thumb {
+  background-color: var(--glass-scrollbar-thumb);
+  border-radius: var(--glass-scrollbar-radius);
+  border: none;
+}
+
+.mermaid-code-view:hover::-webkit-scrollbar-thumb:hover,
+.mermaid-code-view:focus-within::-webkit-scrollbar-thumb:hover {
+  background-color: var(--glass-scrollbar-thumb-hover);
+}
+
+.mermaid-code-editor {
+  display: block;
+  width: 100%;
+  min-height: 8rem;
+  height: 100%;
+  /* Disable the native resize handle — the code-view container manages its own
+     max-height and scroll. Allowing the user to drag-resize the textarea would
+     conflict with the canvas layout and the immersive scrollbar.
+     禁用原生拖拽手柄 —— code-view 容器自行管理 max-height 与滚动。
+     允许用户拖拽调整文本域尺寸会与画布布局和沉浸式滚动条冲突。 */
+  resize: none;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  tab-size: 2;
+  outline: none;
+  padding: 0;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mermaid-zoom-target,
+  .mermaid-code-view {
+    animation: none;
+  }
+}
+
 /* Floating toolbar: a pill-shaped glass chip anchored to the bottom-center of
    the wrapper. The full glass treatment (blur + tint + edge + shadow) lives
    directly on this element — identical to .glass-chip elsewhere in the project
@@ -427,12 +576,15 @@
 /* Portaled toolbar: rendered at document.body level. Both in-page and
    maximized modes portal the toolbar to body so it escapes wrapper stacking
    contexts and its backdrop-filter samples real viewport content.
-   - In-page mode: position calculated by JS (left/top set inline).
+   - In-page mode: position calculated by JS (left/top set inline). The
+     positioning hook clamps the horizontal position within the wrapper's
+     bounding rect so the toolbar never escapes the mermaid frame.
    - Maximized mode: fixed to viewport bottom-center via CSS.
    Portal 工具栏：渲染在 document.body 层级。普通与全屏模式都把工具栏
    Portal 到 body，使其脱离 wrapper 层叠上下文，backdrop-filter 能采样
    真实视口内容。
-   - 普通模式：由 JS 计算位置（left/top 内联设置）。
+   - 普通模式：由 JS 计算位置（left/top 内联设置）。定位 Hook 将水平位置
+     钳制在 wrapper 包围盒内，工具栏不会超出 mermaid 范围框。
    - 全屏模式：由 CSS 固定到视口底部居中。 */
 .mermaid-toolbar[data-portaled] {
   position: fixed;
@@ -440,6 +592,15 @@
   bottom: auto;
   z-index: 40;
   margin-inline: 0;
+  /* Cap the toolbar's width to the viewport (minus a small gutter) so on very
+     narrow viewports the controls wrap/shrink instead of overflowing off-screen.
+     The JS clamp in the positioning hook keeps it within the wrapper horizontally;
+     this is a backstop for the edge case where the wrapper itself is wider than
+     the viewport but the toolbar would still exceed the viewport.
+     将工具栏宽度限制在视口（减去小间距）内，在极窄视口下控件换行/收缩而非
+     溢出屏幕。定位 Hook 中的 JS 钳制已保证其在 wrapper 水平范围内；
+     这是对 wrapper 自身比视口宽但工具栏仍可能超出视口的边界情况的兜底。 */
+  max-width: calc(100vw - 1rem);
 }
 
 /* In-page mode: z-index sits below fumadocs' search dialog / popover (z-50)
@@ -574,6 +735,25 @@
   flex-shrink: 0;
 }
 
+/* View mode segmented toggle: two buttons (render / code) grouped at the
+   start of the toolbar. The active button gets a tinted background matching
+   the hover treatment, giving clear visual feedback of the current view.
+   视图模式分段切换：工具栏起始处的两个按钮（渲染 / 代码）。激活按钮
+   获得与悬浮一致的底色，明确指示当前视图模式。 */
+.mermaid-toolbar__view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+/* Active segment uses the same hover tint as other toolbar buttons so the
+   visual language stays consistent. / 激活段使用与其他工具栏按钮一致的悬浮
+   底色，保持统一的视觉语言。 */
+.mermaid-toolbar__view-btn[data-active] {
+  background-color: var(--glass-control-hover-tint);
+  color: var(--fd-accent-foreground);
+}
+
 /* In-page renderer: keep this wrapper in the docs DOM at all times so the
    diagram always occupies its layout slot — toggling maximize then just
    flips `visibility: hidden` here while a cloned wrapper is portaled to
@@ -665,16 +845,41 @@
   isolation: isolate;
 }
 
+/* In maximize + code view, switch the canvas to grid centering so the code-view
+   is reliably horizontally AND vertically centered. Flex centering with
+   width:100% + max-width left the code-view stuck at flex-start in some cases;
+   grid place-items: center guarantees centering regardless of the child's
+   width. / 全屏 + 代码视图下，将画布切换为 grid 居中，使代码视图可靠地
+   水平和垂直居中。flex 居中配合 width:100% + max-width 在某些情况下
+   仍停留在 flex-start；grid place-items: center 无论子元素宽度如何都能保证居中。 */
+.mermaid-wrapper[data-maximized] .mermaid-canvas[data-view="code"] {
+  display: grid;
+  place-items: center;
+}
+
+/* Constrain the code-view width and remove the max-height cap so the editor
+   fills the viewport height while staying horizontally centered by the grid.
+   / 约束代码视图宽度并移除最大高度限制，使编辑器填满视口高度，
+   同时由 grid 保证水平居中。 */
+.mermaid-wrapper[data-maximized] .mermaid-code-view {
+  max-height: none;
+  height: 100%;
+  width: min(100%, 60rem);
+}
+
 /* Dim + blur backdrop for maximize mode. Portaled to <body> by the
    component, sits at z-index 9998 so the wrapper (9999) renders on
    top. Uses the same 78% background tint + 20px blur as the previous
    in-wrapper treatment, so the dimming is identical — but the
    wrapper above is now free to be a transparent centered container
    instead of a viewport-sized frame.
+   Enter animation only (opacity fade-in); exit is instant to avoid
+   the delayed-unmount flicker that scale + opacity exit animations
+   caused on complex SVG content.
    放大模式的 dim + blur 背景。由组件 portal 到 <body>，z-index 9998，
    让 wrapper（9999）渲染在它之上。背景的 78% 透明度 + 20px blur 与
-   之前 wrapper 内实现完全一致 —— 只是把 dim 从 wrapper 身上搬到了
-   独立的 backdrop 上，wrapper 就能腾出来当透明居中容器。 */
+   之前 wrapper 内实现完全一致。仅进入动画（淡入）；退出即时，
+   避免缩放 + 透明度退出动画在复杂 SVG 内容上导致的延迟卸载闪烁。 */
 .mermaid-maximized-backdrop {
   position: fixed;
   inset: 0;
@@ -684,10 +889,30 @@
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-backdrop)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  animation: mermaid-maximize-in var(--motion-standard) var(--motion-ease-standard);
+  animation: mermaid-backdrop-in var(--motion-standard) var(--motion-ease-standard);
 }
 
-@keyframes mermaid-maximize-in {
+/* Maximized wrapper enter animation: opacity-only fade-in. Scale transforms
+   were removed because they caused repaint flicker on complex SVG + backdrop-
+   filter content. Exit is instant (no animation) to eliminate the delayed
+   unmount that previously caused perceived lag.
+   全屏 wrapper 进入动画：仅透明度淡入。移除了 scale 变换，因为它在
+   复杂 SVG + backdrop-filter 内容上导致重绘闪烁。退出即时（无动画），
+   消除此前延迟卸载导致的感知延迟。 */
+.mermaid-wrapper[data-maximized] {
+  animation: mermaid-wrapper-in var(--motion-standard) var(--motion-ease-standard);
+}
+
+@keyframes mermaid-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mermaid-wrapper-in {
   from {
     opacity: 0;
   }
@@ -697,7 +922,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mermaid-maximized-backdrop {
+  .mermaid-maximized-backdrop,
+  .mermaid-wrapper[data-maximized] {
     animation: none;
   }
 }

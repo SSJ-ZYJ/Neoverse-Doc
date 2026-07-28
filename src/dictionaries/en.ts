@@ -96,4 +96,9 @@ export const en = {
   mermaidMaximize: 'Maximize',
   mermaidRestore: 'Restore',
   mermaidToolbar: 'Diagram toolbar',
+  // Mermaid view mode toggle labels / Mermaid 视图模式切换标签
+  mermaidViewMode: 'Mermaid view mode',
+  mermaidViewRender: 'Rendered view',
+  mermaidViewCode: 'Code view',
+  mermaidCodeEditor: 'Mermaid code editor',
 } satisfies Dictionary;

@@ -25,5 +25,6 @@
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "css.lint.unknownAtRules": "ignore"
+  "css.lint.unknownAtRules": "ignore",
+  "mdx-preview.preview.enableScripts": true
 }

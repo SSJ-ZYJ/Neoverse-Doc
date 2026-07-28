@@ -74,4 +74,9 @@ export const zh = {
   mermaidMaximize: '放大查看',
   mermaidRestore: '还原',
   mermaidToolbar: '图表工具栏',
+  // Mermaid view mode toggle labels / Mermaid 视图模式切换标签
+  mermaidViewMode: 'Mermaid 视图模式',
+  mermaidViewRender: '渲染视图',
+  mermaidViewCode: '代码视图',
+  mermaidCodeEditor: 'Mermaid 代码编辑器',
 } satisfies Dictionary;
