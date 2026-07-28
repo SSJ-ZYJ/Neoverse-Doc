@@ -208,14 +208,17 @@ blockquote {
 /* Glass table surface: keeps Markdown tables visually aligned with code blocks, alerts, and details.
    玻璃态表格表面：让 Markdown 表格与代码块、提示框、折叠块保持统一视觉。 */
 :where(#nd-page) :where(.prose-no-margin):has(> table) {
-  /* Table header tint: a continuous neutral glass row, separated from code block's blue sheen.
-     表头色层：使用连续的中性玻璃行，并与代码块的蓝色斜光解耦。 */
+  /* Table palette keeps the header, dividers, and row hover on one theme-aware glass scale.
+     表格色板让表头、分隔线与行悬浮复用同一套主题感知玻璃层级。 */
   --markdown-table-head-bg: color-mix(in srgb, var(--color-fd-muted) 82%, var(--glass-tint-soft));
   --markdown-table-head-border: color-mix(
     in srgb,
     var(--color-fd-foreground) 9%,
     var(--glass-border-hairline)
   );
+  --markdown-table-head-color: var(--color-fd-foreground);
+  --markdown-table-cell-border: var(--glass-border-hairline);
+  --markdown-table-row-hover-bg: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent);
 
   background:
     linear-gradient(
@@ -273,13 +276,13 @@ blockquote {
 :where(#nd-page) :where(.prose-no-margin):has(> table) > table th,
 :where(#nd-page) :where(.prose-no-margin):has(> table) > table td {
   background-color: transparent;
-  border-color: var(--glass-border-hairline);
+  border-color: var(--markdown-table-cell-border);
 }
 
 :where(#nd-page) :where(.prose-no-margin):has(> table) > table thead th {
   background: transparent;
   border-bottom: 1px solid var(--markdown-table-head-border);
-  color: var(--color-fd-foreground);
+  color: var(--markdown-table-head-color);
   font-weight: 600;
 }
 
@@ -288,37 +291,49 @@ blockquote {
 }
 
 :where(#nd-page) :where(.prose-no-margin):has(> table) > table tbody tr:hover {
-  background-color: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent);
+  background-color: var(--markdown-table-row-hover-bg);
 }
 
-/* Dark mode table header redesign: replaces the near-invisible default tint with a
-   grounded elevated surface carrying a cool accent sheen. The gradient runs from a
-   more opaque accent-tinted top to a lighter glass bottom, giving the header clear
-   body over the transparent body rows while preserving the glass aesthetic.
-   深色模式表头重设计：用更扎实的抬升表面与冷色强调光替换原本近乎不可见的淡色。
-   渐变从更不透明的强调色顶部过渡到更通透的玻璃底部，让表头在透明表体之上
-   拥有清晰的体量感，同时保留玻璃质感。 */
+/* Dark tables use a graphite glass base with restrained violet-to-cyan ambient light.
+   Neutral dividers and a low-saturation hover replace the previous heavy cyan slab.
+   深色表格使用石墨玻璃底与克制的紫青环境光，以中性分隔线和低饱和悬浮色
+   替换原先厚重的整块青色表头。 */
 .dark :where(#nd-page) :where(.prose-no-margin):has(> table) {
-  --markdown-table-head-bg: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent-primary) 22%, var(--surface-elevated)),
-    color-mix(in srgb, var(--accent-primary) 9%, var(--surface-glass))
-  );
+  --markdown-table-head-bg:
+    linear-gradient(
+      112deg,
+      color-mix(in srgb, var(--accent-tertiary) 7%, transparent),
+      transparent 42%,
+      color-mix(in srgb, var(--accent-primary) 5%, transparent)
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-elevated) 88%, var(--color-fd-muted)),
+      color-mix(in srgb, var(--surface-glass) 90%, var(--color-fd-muted))
+    );
   --markdown-table-head-border: color-mix(
     in srgb,
-    var(--accent-primary) 48%,
+    var(--text-primary) 14%,
     var(--glass-border-hairline)
+  );
+  --markdown-table-head-color: color-mix(in srgb, var(--text-primary) 94%, var(--accent-primary));
+  --markdown-table-cell-border: color-mix(
+    in srgb,
+    var(--text-secondary) 10%,
+    var(--glass-border-hairline)
+  );
+  --markdown-table-row-hover-bg: color-mix(
+    in srgb,
+    var(--accent-primary) 5%,
+    var(--surface-subtle)
   );
 }
 
-/* Dark mode table header silhouette: adds a subtle top sheen alongside the stronger
-   accent-tinted bottom divider so the header reads as a distinct, crisp layer above
-   the body cells.
-   深色模式表头轮廓：在更强的强调色底部分隔之上叠加顶部微光，
-   让表头呈现为表体之上清晰、利落的独立层。 */
+/* Dark mode header silhouette uses a quiet highlight and neutral divider.
+   深色表头轮廓使用轻量顶部高光与中性底部分隔线。 */
 .dark :where(#nd-page) :where(.prose-no-margin):has(> table) > table thead {
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 22%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 38%, transparent),
     inset 0 -1px 0 var(--markdown-table-head-border);
 }
 
