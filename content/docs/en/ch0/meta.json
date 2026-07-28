@@ -1,6 +1,7 @@
 {
   "title": "Chapter 0: README | Where It All Begins",
   "description": "What? Why? How?",
+  "icon": "BookMarked",
   "pages": ["---Stage 0: Prologue---", "index"],
   "root": true
 }

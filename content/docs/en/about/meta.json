@@ -1,6 +1,7 @@
 {
   "title": "Afterword & Contributing",
   "description": "Learn about the structure, goals, and vision of this project, and join us in building it.",
+  "icon": "HeartHandshake",
   "pages": [
     "index",
     "---About---",

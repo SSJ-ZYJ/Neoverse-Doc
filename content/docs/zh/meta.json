@@ -1,4 +1,5 @@
 {
   "title": "文档",
+  "icon": "BookOpen",
   "pages": ["ch0", "ch1", "ch2", "about"]
 }

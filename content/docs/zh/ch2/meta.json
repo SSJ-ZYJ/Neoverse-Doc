@@ -1,6 +1,7 @@
 {
   "title": "Chapter 2",
   "description": "算法入门",
+  "icon": "Binary",
   "pages": ["index", "---Stage 1: 基础算法---", "2.1-High-Accuracy"],
   "root": true
 }
