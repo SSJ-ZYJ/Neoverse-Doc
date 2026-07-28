@@ -52,21 +52,13 @@
      不会困住 fixed 定位的背景层（paint 会），避免多层 backdrop-filter
      表面在每次滚动时把重绘级联到根。 */
   contain: layout style;
-  background-color: var(--background-primary);
+  background-color: var(--docs-canvas-surface);
   background-image:
-    radial-gradient(circle at 18% 12%, var(--ambient-ice), transparent 28rem),
-    radial-gradient(circle at 86% 68%, var(--ambient-mint), transparent 30rem),
-    radial-gradient(
-      circle at center,
-      color-mix(in srgb, var(--accent-primary) 20%, transparent) 0 1.5px,
-      transparent 2px
-    ),
-    linear-gradient(color-mix(in srgb, var(--border-subtle) 58%, transparent) 1px, transparent 1px),
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--border-subtle) 58%, transparent) 1px,
-      transparent 1px
-    );
+    radial-gradient(circle at 18% 12%, var(--docs-canvas-ambient-primary), transparent 28rem),
+    radial-gradient(circle at 86% 68%, var(--docs-canvas-ambient-secondary), transparent 30rem),
+    radial-gradient(circle at center, var(--docs-circuit-node) 0 1.5px, transparent 2px),
+    linear-gradient(var(--docs-circuit-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--docs-circuit-line) 1px, transparent 1px);
   background-attachment: fixed;
   background-position:
     center,
@@ -84,16 +76,16 @@
 
 #nd-docs-layout #nd-nav > div,
 #nd-docs-layout > header {
-  border-color: var(--border-subtle) !important;
-  background: color-mix(in srgb, var(--surface-glass) 62%, transparent) !important;
-  box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
+  border-color: var(--docs-surface-border) !important;
+  background: var(--docs-nav-background) !important;
+  box-shadow: var(--docs-nav-shadow) !important;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
 }
 
 #nd-sidebar:not([data-collapsed="true"]) {
-  border-inline-end: 1px solid var(--border-subtle) !important;
-  background: color-mix(in srgb, var(--surface-elevated) 68%, var(--surface-glass)) !important;
-  box-shadow: var(--shadow-edge) !important;
+  border-inline-end: 1px solid var(--docs-surface-border) !important;
+  background: var(--docs-sidebar-background) !important;
+  box-shadow: var(--docs-sidebar-shadow) !important;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
 }
 
@@ -121,7 +113,7 @@
 #nd-sidebar a:not([data-active="true"]):not(:has(.site-brand-title)):hover,
 #nd-sidebar-mobile a:not([data-active="true"]):not(:has(.site-brand-title)):hover {
   color: var(--text-primary) !important;
-  background: color-mix(in srgb, var(--accent-primary) 14%, transparent) !important;
+  background: var(--docs-sidebar-hover-background) !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -131,9 +123,9 @@
 #nd-sidebar-mobile a[data-active="true"],
 #nd-sidebar-mobile a[aria-current="page"] {
   position: relative;
-  color: var(--accent-primary) !important;
+  color: var(--docs-sidebar-active-foreground) !important;
   font-weight: 650;
-  background: color-mix(in srgb, var(--accent-primary) 18%, transparent) !important;
+  background: var(--docs-sidebar-active-background) !important;
 }
 
 /* Sidebar hover and active states share one inset accent rail instead of
@@ -215,13 +207,11 @@
   justify-self: center;
   margin-block: clamp(0.75rem, 2vw, 1.5rem) 2rem;
   margin-inline: auto;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--docs-surface-border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  background:
-    linear-gradient(145deg, color-mix(in srgb, var(--edge-light) 20%, transparent), transparent 32%),
-    color-mix(in srgb, var(--surface-glass) 46%, transparent);
-  box-shadow: var(--shadow-edge), var(--shadow-float);
+  background: var(--docs-page-background);
+  box-shadow: var(--docs-page-shadow);
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
 }
 
@@ -549,6 +539,14 @@
 #nd-toc a[aria-current="true"] {
   color: var(--accent-primary) !important;
   font-weight: 620;
+}
+
+/* TOC scroll-tracking thumb: match the highlight line color so the native
+   default-style thumb stays visible against the glass surface.
+   TOC 滚动追踪指示点：将默认 thumb 颜色与高亮线条对齐，确保在玻璃
+   表面上可见。 */
+#nd-toc [style*="offset-path"] {
+  background: var(--color-fd-primary) !important;
 }
 
 .mdx-doc-grid {
