@@ -195,7 +195,10 @@
   transform: translate(var(--mermaid-pan-x, 0px), var(--mermaid-pan-y, 0px));
   transform-origin: center center;
   transition: transform var(--motion-fast) var(--motion-ease-standard);
-  will-change: transform;
+  /* Transform transitions are promoted when active; reserving a compositor
+     layer for every idle diagram would retain unnecessary GPU memory.
+     transform 过渡会在活动时获得提升；为每个空闲图表常驻合成层会占用
+     不必要的 GPU 内存。 */
   /* `overflow: visible` so SVG filter outputs (drop shadows from
      mermaid's `<filter width="130%">`) that extend beyond the SVG's
      layout box are not clipped. The SVG itself already has
@@ -232,7 +235,6 @@
   transform: translate(-50%, -50%) scale(var(--mermaid-scale, 1));
   transform-origin: center;
   transition: transform var(--motion-standard) var(--motion-ease-standard);
-  will-change: transform;
 }
 
 /* The svg fills the (visually-scaled) svg-host, so the SVG's viewBox
@@ -397,6 +399,9 @@
 .mermaid-canvas[data-dragging] .mermaid-zoom-target,
 .mermaid-canvas[data-dragging] .mermaid-zoom-target > .mermaid-svg-host {
   transition: none;
+  /* Keep the compositor hint only for the active drag lifetime.
+     仅在拖动期间保留合成提示。 */
+  will-change: transform;
 }
 
 /* Respect reduced-motion: snap zoom transitions instead of easing.

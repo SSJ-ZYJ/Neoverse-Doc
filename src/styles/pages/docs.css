@@ -228,7 +228,17 @@
    页内查找和锚点行为。仅隔离复杂直属子元素，避免为每个段落建立独立
    containment 上下文。 */
 @supports (content-visibility: auto) {
-  #nd-page [data-docs-body] > :is(figure, table, .mermaid-wrapper, [data-card="true"]) {
+  #nd-page
+    [data-docs-body]
+    > :is(
+      figure,
+      .prose-no-margin:has(> table),
+      .mermaid-wrapper,
+      .markdown-alert,
+      .markdown-details,
+      blockquote,
+      [data-card="true"]
+    ) {
     content-visibility: auto;
     contain-intrinsic-block-size: auto 16rem;
   }
@@ -237,7 +247,17 @@
 /* Printing must materialize every deferred block regardless of viewport state.
    打印时无条件呈现所有延迟内容块，不受视口状态影响。 */
 @media print {
-  #nd-page [data-docs-body] > :is(figure, table, .mermaid-wrapper, [data-card="true"]) {
+  #nd-page
+    [data-docs-body]
+    > :is(
+      figure,
+      .prose-no-margin:has(> table),
+      .mermaid-wrapper,
+      .markdown-alert,
+      .markdown-details,
+      blockquote,
+      [data-card="true"]
+    ) {
     content-visibility: visible;
     contain-intrinsic-block-size: none;
   }
@@ -356,6 +376,14 @@
   background: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
+}
+
+/* The code block already samples the page backdrop; its nested copy control
+   keeps the same translucent fill without re-blurring that sampled surface.
+   代码块外层已采样页面背景；内部复制控件保留半透明填充，不再重复模糊同一表面。 */
+#nd-page .glass-codeblock button {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 #nd-page :is(h1, h2, h3, h4, h5, h6) > button:has(> .lucide-copy-check) {

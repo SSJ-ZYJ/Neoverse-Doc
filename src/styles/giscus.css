@@ -18,6 +18,19 @@
   backdrop-filter: none;
 }
 
+/* Disable host-level text selection without blocking pointer events inside the
+   embedded discussion, so links, inputs, reactions, and buttons stay interactive.
+   禁止选中评论宿主组件本身，但不拦截 iframe 内部指针事件，链接、输入框、
+   表情与按钮仍可正常交互。 */
+.giscus-shell,
+.giscus-shell > giscus-widget,
+.giscus-shell .giscus,
+.giscus-shell .giscus-frame,
+.giscus-shell giscus-widget::part(iframe) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .giscus-shell > giscus-widget,
 .giscus-shell .giscus,
 .giscus-shell .giscus-frame {

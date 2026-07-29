@@ -36,7 +36,9 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
-      <DocsBody>
+      {/* Stable body hook lets CSS defer only expensive off-screen MDX blocks.
+          稳定的正文标记让 CSS 仅延迟绘制离屏的高成本 MDX 内容块。 */}
+      <DocsBody data-docs-body="">
         {/* Shared registry centralizes server/client boundaries for every MDX document.
             共享注册表集中管理所有 MDX 文档的服务端与客户端边界。 */}
         <MDX components={getMdxComponents()} />

@@ -50,8 +50,11 @@ pre code {
 
 .glass-codeblock > div:first-child {
   background-color: var(--glass-tint-soft);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  /* The outer code block owns backdrop sampling; the header keeps its tint
+     without allocating another blur surface.
+     外层代码块统一采样背景；标题栏只保留色调，不再分配额外模糊表面。 */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 /* ── Blockquote & Alerts / 引用块与提示框 ─────────────────────────────── */
@@ -129,9 +132,11 @@ pre code {
 /* Nested quotes use a lighter inset treatment instead of stacking multiple
    full glass panels and shadows.
    嵌套引用使用更轻的内嵌层，避免多层玻璃面与投影重复堆叠。 */
-#nd-page blockquote blockquote {
+#nd-page [data-docs-body] blockquote blockquote {
   margin-block: 0.75rem 0.25rem;
   background: color-mix(in srgb, var(--surface-subtle) 64%, transparent);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 30%, transparent);
 }
 
@@ -151,6 +156,10 @@ pre code {
   }
 }
 
+/* Filtered surfaces already receive compositor isolation from backdrop-filter;
+   forcing an additional 3D layer on every block wastes GPU memory on long pages.
+   带滤镜的表面已由 backdrop-filter 获得合成隔离；为每个内容块额外强制
+   3D 图层会在长文章中浪费 GPU 内存。 */
 .markdown-alert {
   --markdown-alert-accent: var(--color-alert-note);
   --markdown-alert-border: color-mix(
@@ -179,7 +188,6 @@ pre code {
   position: relative;
   margin: 1rem 0;
   overflow: hidden;
-  transform: translateZ(0);
   transition:
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
@@ -312,7 +320,6 @@ pre code {
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
   overflow: auto;
-  transform: translateZ(0);
   transition:
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
@@ -343,8 +350,8 @@ pre code {
 
 :where(#nd-page) :where(.prose-no-margin):has(> table) > table thead {
   background: var(--markdown-table-head-bg);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   box-shadow: inset 0 -1px 0 var(--markdown-table-head-border);
 }
 
@@ -479,7 +486,6 @@ pre code {
   margin: 1rem 0;
   overflow: hidden;
   interpolate-size: allow-keywords;
-  transform: translateZ(0);
   transition:
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
@@ -520,8 +526,8 @@ pre code {
   list-style: none;
   color: var(--color-fd-foreground);
   background: var(--markdown-details-summary-bg);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   border-bottom: 1px solid transparent;
   transition:
     background-color var(--theme-transition-duration) ease,

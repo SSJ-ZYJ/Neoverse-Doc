@@ -91,6 +91,13 @@ interface ParticleGeometry {
   rect: ControlRect;
 }
 
+interface ParticleEmission {
+  count: number;
+  direction?: number;
+  originX: number;
+  originY: number;
+}
+
 interface ParticleSession {
   dragCount: number;
   emitDistance: number;
@@ -194,6 +201,12 @@ function distanceToEdge(x: number, y: number, angle: number, width: number, heig
 
 function getLayer(target: HTMLElement, rect: ControlRect, reset = false) {
   const existing = target.querySelector(PARTICLE_LAYER_SELECTOR);
+  // Drag frames reuse the bounds measured at pointer-down; returning before a
+  // new layout read prevents read/write thrashing across interpolated bursts.
+  // 拖动帧复用按下时测得的边界；在再次读取布局前返回，避免插值粒子批次
+  // 反复交错读写布局。
+  if (existing instanceof HTMLElement && !reset) return existing;
+
   const targetRect = target.getBoundingClientRect();
   const applyBounds = (layer: HTMLElement) => {
     layer.style.insetBlockStart = `${rect.top - targetRect.top}px`;
@@ -202,7 +215,7 @@ function getLayer(target: HTMLElement, rect: ControlRect, reset = false) {
     layer.style.insetInlineStart = `${rect.left - targetRect.left}px`;
   };
   if (existing instanceof HTMLElement) {
-    if (reset) existing.replaceChildren();
+    existing.replaceChildren();
     applyBounds(existing);
     return existing;
   }
@@ -248,18 +261,18 @@ function burstConfig(pointerType: string, target: HTMLElement) {
   };
 }
 
-function emitBurst(
+function emitBursts(
   target: HTMLElement,
   rect: ControlRect,
-  originX: number,
-  originY: number,
-  count: number,
-  direction?: number,
+  emissions: ParticleEmission[],
   reset = false,
 ) {
+  const lastEmission = emissions[emissions.length - 1];
+  if (!lastEmission) return;
+
   const layer = getLayer(target, rect, reset);
-  layer.style.setProperty('--immersive-x', `${originX}px`);
-  layer.style.setProperty('--immersive-y', `${originY}px`);
+  layer.style.setProperty('--immersive-x', `${lastEmission.originX}px`);
+  layer.style.setProperty('--immersive-y', `${lastEmission.originY}px`);
   const fragment = document.createDocumentFragment();
   const particles: HTMLElement[] = [];
   const shortestSide = Math.max(1, Math.min(rect.width, rect.height));
@@ -279,69 +292,78 @@ function emitBurst(
   const travelCap = clamp(shortestSide * 0.62, 24, 72);
   let cleanupDelay = 0;
 
-  for (let index = 0; index < count; index += 1) {
-    const particle = document.createElement('span');
-    // Initial clicks distribute particles around a compact ring immediately,
-    // preventing all dots from stacking into one bright point before scattering.
-    // 首次点击让粒子立即分布在小型环带上，避免所有圆点先叠成一个亮点再散开。
-    const initialAngle =
-      direction === undefined
-        ? (index / Math.max(1, count)) * PARTICLE_FULL_TURN + randomBetween(-0.22, 0.22)
-        : 0;
-    const initialDistance = direction === undefined ? initialSpread * randomBetween(0.48, 1) : 0;
-    const startX = clamp(
-      originX +
-        Math.cos(initialAngle) * initialDistance +
-        randomBetween(-PARTICLE_START_JITTER_PX, PARTICLE_START_JITTER_PX),
-      PARTICLE_SAFE_INSET_PX,
-      maxX,
-    );
-    const startY = clamp(
-      originY +
-        Math.sin(initialAngle) * initialDistance +
-        randomBetween(-PARTICLE_START_JITTER_PX, PARTICLE_START_JITTER_PX),
-      PARTICLE_SAFE_INSET_PX,
-      maxY,
-    );
-    const followsDrag = direction !== undefined && Math.random() < 0.28;
-    let angle = followsDrag
-      ? direction + randomBetween(-1.85, 1.85)
-      : randomBetween(0, PARTICLE_FULL_TURN);
-    let edgeDistance = distanceToEdge(startX, startY, angle, rect.width, rect.height);
-    if (edgeDistance < minTravel) {
-      angle = (angle + Math.PI + randomBetween(-0.46, 0.46)) % PARTICLE_FULL_TURN;
-      edgeDistance = distanceToEdge(startX, startY, angle, rect.width, rect.height);
+  // Interpolated pointer samples share one fragment, append, trim, and cleanup
+  // timer per animation frame while preserving every generated particle.
+  // 同一动画帧的插值指针采样共享一次 fragment、挂载、裁剪与清理计时，
+  // 同时保留原有的每一颗粒子。
+  for (const { originX, originY, count, direction } of emissions) {
+    for (let index = 0; index < count; index += 1) {
+      const particle = document.createElement('span');
+      // Initial clicks distribute particles around a compact ring immediately,
+      // preventing all dots from stacking into one bright point before scattering.
+      // 首次点击让粒子立即分布在小型环带上，避免所有圆点先叠成一个亮点再散开。
+      const initialAngle =
+        direction === undefined
+          ? (index / Math.max(1, count)) * PARTICLE_FULL_TURN + randomBetween(-0.22, 0.22)
+          : 0;
+      const initialDistance = direction === undefined ? initialSpread * randomBetween(0.48, 1) : 0;
+      const startX = clamp(
+        originX +
+          Math.cos(initialAngle) * initialDistance +
+          randomBetween(-PARTICLE_START_JITTER_PX, PARTICLE_START_JITTER_PX),
+        PARTICLE_SAFE_INSET_PX,
+        maxX,
+      );
+      const startY = clamp(
+        originY +
+          Math.sin(initialAngle) * initialDistance +
+          randomBetween(-PARTICLE_START_JITTER_PX, PARTICLE_START_JITTER_PX),
+        PARTICLE_SAFE_INSET_PX,
+        maxY,
+      );
+      const followsDrag = direction !== undefined && Math.random() < 0.28;
+      let angle = followsDrag
+        ? direction + randomBetween(-1.85, 1.85)
+        : randomBetween(0, PARTICLE_FULL_TURN);
+      let edgeDistance = distanceToEdge(startX, startY, angle, rect.width, rect.height);
+      if (edgeDistance < minTravel) {
+        angle = (angle + Math.PI + randomBetween(-0.46, 0.46)) % PARTICLE_FULL_TURN;
+        edgeDistance = distanceToEdge(startX, startY, angle, rect.width, rect.height);
+      }
+
+      const alignment =
+        rect.width >= rect.height ? Math.abs(Math.cos(angle)) : Math.abs(Math.sin(angle));
+      const edgeRatio = clamp(
+        randomBetween(0.7, 0.9) + alignment * (0.1 + longAxisBoost * 0.14),
+        0.72,
+        0.98,
+      );
+      const edgeTravel =
+        edgeDistance <= minTravel
+          ? edgeDistance * randomBetween(0.82, 0.98)
+          : edgeDistance * edgeRatio;
+      const travel = Math.min(edgeTravel, travelCap * randomBetween(0.72, 1.08));
+      const dx = Math.cos(angle) * travel;
+      const dy = Math.sin(angle) * travel;
+      const sway = randomBetween(-shortestSide * 0.12, shortestSide * 0.12);
+      const midX = clamp(startX + dx * 0.56 - Math.sin(angle) * sway, PARTICLE_SAFE_INSET_PX, maxX);
+      const midY = clamp(startY + dy * 0.56 + Math.cos(angle) * sway, PARTICLE_SAFE_INSET_PX, maxY);
+      const alpha = randomBetween(0.42, 0.82);
+      const delay = 0;
+      const duration = randomBetween(
+        MOTION_DURATION_MS.particleMin,
+        MOTION_DURATION_MS.particleMax,
+      );
+
+      particle.className = 'immersive-particle';
+      // Batch all CSS custom properties into a single style assignment to
+      // minimize style-recalc cost when many particles are emitted per frame.
+      // 将所有 CSS 自定义属性合并为单次 style 赋值，减少每帧大量粒子发射时的样式重算开销。
+      particle.style.cssText = `--particle-start-x:${startX}px;--particle-start-y:${startY}px;--particle-mid-x:${midX - startX}px;--particle-mid-y:${midY - startY}px;--particle-late-x:${dx * randomBetween(0.78, 0.9)}px;--particle-late-y:${dy * randomBetween(0.78, 0.9)}px;--particle-end-x:${dx}px;--particle-end-y:${dy}px;--particle-size:${randomBetween(sizeMin, sizeMax)}px;--particle-alpha:${alpha};--particle-fade-alpha:${alpha * randomBetween(0.26, 0.42)};--particle-delay:${delay}ms;--particle-duration:${duration}ms;`;
+      cleanupDelay = Math.max(cleanupDelay, delay + duration + 80);
+      particles.push(particle);
+      fragment.append(particle);
     }
-
-    const alignment =
-      rect.width >= rect.height ? Math.abs(Math.cos(angle)) : Math.abs(Math.sin(angle));
-    const edgeRatio = clamp(
-      randomBetween(0.7, 0.9) + alignment * (0.1 + longAxisBoost * 0.14),
-      0.72,
-      0.98,
-    );
-    const edgeTravel =
-      edgeDistance <= minTravel
-        ? edgeDistance * randomBetween(0.82, 0.98)
-        : edgeDistance * edgeRatio;
-    const travel = Math.min(edgeTravel, travelCap * randomBetween(0.72, 1.08));
-    const dx = Math.cos(angle) * travel;
-    const dy = Math.sin(angle) * travel;
-    const sway = randomBetween(-shortestSide * 0.12, shortestSide * 0.12);
-    const midX = clamp(startX + dx * 0.56 - Math.sin(angle) * sway, PARTICLE_SAFE_INSET_PX, maxX);
-    const midY = clamp(startY + dy * 0.56 + Math.cos(angle) * sway, PARTICLE_SAFE_INSET_PX, maxY);
-    const alpha = randomBetween(0.42, 0.82);
-    const delay = 0;
-    const duration = randomBetween(MOTION_DURATION_MS.particleMin, MOTION_DURATION_MS.particleMax);
-
-    particle.className = 'immersive-particle';
-    // Batch all CSS custom properties into a single style assignment to
-    // minimize style-recalc cost when many particles are emitted per frame.
-    // 将所有 CSS 自定义属性合并为单次 style 赋值，减少每帧大量粒子发射时的样式重算开销。
-    particle.style.cssText = `--particle-start-x:${startX}px;--particle-start-y:${startY}px;--particle-mid-x:${midX - startX}px;--particle-mid-y:${midY - startY}px;--particle-late-x:${dx * randomBetween(0.78, 0.9)}px;--particle-late-y:${dy * randomBetween(0.78, 0.9)}px;--particle-end-x:${dx}px;--particle-end-y:${dy}px;--particle-size:${randomBetween(sizeMin, sizeMax)}px;--particle-alpha:${alpha};--particle-fade-alpha:${alpha * randomBetween(0.26, 0.42)};--particle-delay:${delay}ms;--particle-duration:${duration}ms;`;
-    cleanupDelay = Math.max(cleanupDelay, delay + duration + 80);
-    particles.push(particle);
-    fragment.append(particle);
   }
 
   layer.append(fragment);
@@ -403,6 +425,8 @@ export function ImmersiveInteractionController() {
           Math.max(1, Math.floor(distance / session.emitDistance)),
         );
         if (!prefersReducedMotion()) {
+          const direction = Math.atan2(dy, dx);
+          const emissions: ParticleEmission[] = [];
           for (let step = 1; step <= steps; step += 1) {
             const ratio = step / steps;
             const point = localPoint(
@@ -410,15 +434,14 @@ export function ImmersiveInteractionController() {
               session.lastX + dx * ratio,
               session.lastY + dy * ratio,
             );
-            emitBurst(
-              session.target,
-              session.rect,
-              point.x,
-              point.y,
-              session.dragCount,
-              Math.atan2(dy, dx),
-            );
+            emissions.push({
+              count: session.dragCount,
+              direction,
+              originX: point.x,
+              originY: point.y,
+            });
           }
+          emitBursts(session.target, session.rect, emissions);
         }
         session.lastX = move.clientX;
         session.lastY = move.clientY;
@@ -459,7 +482,12 @@ export function ImmersiveInteractionController() {
       target.classList.add('immersive--tracking');
       target.style.setProperty('--immersive-radius', geometry.radius);
       if (!prefersReducedMotion()) {
-        emitBurst(target, rect, point.x, point.y, config.initialCount, undefined, true);
+        emitBursts(
+          target,
+          rect,
+          [{ count: config.initialCount, originX: point.x, originY: point.y }],
+          true,
+        );
       }
 
       sessions.set(event.pointerId, {

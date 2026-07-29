@@ -218,15 +218,29 @@
 }
 
 .home-hero__network {
+  --home-network-cell: clamp(3rem, 7vw, 6rem);
+
   position: absolute;
   inset: 10% 4% 8%;
   z-index: -1;
+  overflow: hidden;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 72%);
+}
+
+/* Move one oversized grid layer on the compositor instead of repainting a
+   large background-position surface on every animation frame.
+   通过合成器移动单个扩展网格层，避免每个动画帧都重绘大面积背景位置。 */
+.home-hero__network::before {
+  position: absolute;
+  inset: calc(-1 * var(--home-network-cell));
+  content: "";
   opacity: 0.32;
   background-image:
     linear-gradient(var(--border-subtle) 1px, transparent 1px),
     linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
-  background-size: clamp(3rem, 7vw, 6rem) clamp(3rem, 7vw, 6rem);
-  mask-image: radial-gradient(ellipse at center, black 0%, transparent 72%);
+  background-size: var(--home-network-cell) var(--home-network-cell);
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
   /* Subtle breathing pulse: the grid opacity gently oscillates to avoid
      feeling like a static decal. 18s period is slow enough to be ambient.
      微妙呼吸脉冲：网格透明度轻柔振荡，避免像静态贴纸。18s 周期
@@ -237,14 +251,18 @@
 @keyframes nd-network-pulse {
   0% {
     opacity: 0.26;
-    background-position: 0 0;
+    transform: translate3d(0, 0, 0);
   }
   50% {
     opacity: 0.38;
   }
   100% {
     opacity: 0.3;
-    background-position: clamp(1.5rem, 3.5vw, 3rem) clamp(1.5rem, 3.5vw, 3rem);
+    transform: translate3d(
+      calc(var(--home-network-cell) / 2),
+      calc(var(--home-network-cell) / 2),
+      0
+    );
   }
 }
 
@@ -319,28 +337,41 @@
 /* Primary CTA behaves like a refractive capsule with a slow spectral sweep.
    首页主 CTA 使用折射胶囊造型与缓慢光谱扫光。 */
 .home-cta {
+  position: relative;
+  overflow: hidden;
   min-block-size: 3rem;
   border-radius: var(--radius-xs);
   padding-inline: 1.55rem 1.25rem;
   font-size: 0.95rem;
   letter-spacing: 0.02em;
-  background:
-    linear-gradient(
-      110deg,
-      transparent 20%,
-      color-mix(in srgb, white 30%, transparent) 46%,
-      transparent 72%
-    )
-    200% 0 / 220% 100%,
-    linear-gradient(
-      118deg,
-      color-mix(in srgb, var(--accent-primary) 92%, white),
-      color-mix(in srgb, var(--accent-primary) 72%, var(--accent-tertiary))
-    );
+  background: linear-gradient(
+    118deg,
+    color-mix(in srgb, var(--accent-primary) 92%, white),
+    color-mix(in srgb, var(--accent-primary) 72%, var(--accent-tertiary))
+  );
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, white 72%, transparent),
     inset 0 -1px 0 color-mix(in srgb, var(--accent-tertiary) 28%, transparent),
     0 1.25rem 3rem -1.5rem var(--accent-primary);
+}
+
+/* The spectral sweep remains visually identical while its motion moves to a
+   composited pseudo-element instead of repainting background-position.
+   光谱扫光保持原有视觉效果，但改由合成伪元素移动，避免重绘背景位置。 */
+.home-cta::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    color-mix(in srgb, white 30%, transparent) 46%,
+    transparent 72%
+  );
+  content: "";
+  transform: translate3d(120%, 0, 0);
+  will-change: transform;
   animation: nd-cta-refraction var(--motion-loop-slow) ease-in-out infinite;
 }
 
@@ -362,9 +393,7 @@
 
 @keyframes nd-cta-refraction {
   50% {
-    background-position:
-      -60% 0,
-      0 0;
+    transform: translate3d(-120%, 0, 0);
   }
 }
 
@@ -389,6 +418,29 @@
   padding-block: var(--section-gap);
   scroll-margin-block-start: 6rem;
   flex-shrink: 0;
+}
+
+/* Preserve every section and its animations while deferring layout and paint
+   until the section approaches the viewport. Stable intrinsic sizes prevent
+   scroll jumps before real content is materialized.
+   保留所有区段及其动画，仅在区段接近视口时再进行布局与绘制；稳定的固有
+   尺寸会在真实内容呈现前避免滚动跳动。 */
+@supports (content-visibility: auto) {
+  .home-section {
+    content-visibility: auto;
+  }
+
+  .home-chapters {
+    contain-intrinsic-block-size: auto 66rem;
+  }
+
+  .home-learning {
+    contain-intrinsic-block-size: auto 58rem;
+  }
+
+  .home-community {
+    contain-intrinsic-block-size: auto 28rem;
+  }
 }
 
 /* The last section (community) sits right above the footer. Reduce its
@@ -1090,6 +1142,20 @@
     padding-block-start: 7.5rem;
   }
 
+  @supports (content-visibility: auto) {
+    .home-chapters {
+      contain-intrinsic-block-size: auto 86rem;
+    }
+
+    .home-learning {
+      contain-intrinsic-block-size: auto 83rem;
+    }
+
+    .home-community {
+      contain-intrinsic-block-size: auto 29rem;
+    }
+  }
+
   .home-hero__title {
     font-size: clamp(1.85rem, 8.4vw, 3.4rem);
     letter-spacing: 0.018em;
@@ -1157,7 +1223,8 @@
   .home-route-shell--enter,
   .rb-light-rays__beam,
   .home-page::before,
-  .home-hero__network,
+  .home-hero__network::before,
+  .home-cta::before,
   .home-section::before,
   .ai-compute__buses path,
   .ai-compute__chip,
@@ -1182,5 +1249,14 @@
   .chapter-card::before,
   .chapter-card::after {
     display: none;
+  }
+}
+
+/* Printing materializes deferred homepage sections in full.
+   打印时完整呈现所有延迟绘制的首页区段。 */
+@media print {
+  .home-section {
+    content-visibility: visible;
+    contain-intrinsic-block-size: none;
   }
 }
