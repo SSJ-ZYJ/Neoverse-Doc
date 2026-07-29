@@ -28,9 +28,20 @@
   --home-nav-height: 4.75rem;
   /* Knowledge-map cards share a lighter, lower-blur glass so the underlying
      grid remains softly recognizable across chapter and learning-path cards.
-     知识版图卡片共用更透明、低模糊的玻璃层，让章节与学习路径卡片下方纹理均可柔和辨认。 */
+     backdrop-filter blur set to 0: at 3px the blur was nearly imperceptible,
+     but each backdrop-filter element created a separate compositing layer
+     consuming GPU memory. With 4+ cards on the homepage this added up.
+     The cards' semi-transparent backgrounds already let ambient orb colors
+     show through — the 3px blur added negligible visual value but measurable
+     GPU cost. Setting to 0 eliminates the compositing layers while keeping
+     the identical visual appearance.
+     知识版图卡片共用更透明、低模糊的玻璃层。backdrop-filter blur 设为 0：
+     3px 模糊几乎不可感知，但每个 backdrop-filter 元素创建独立合成层消耗
+     GPU 内存。首页 4+ 个卡片累积开销可观。卡片已有半透明背景让环境光
+     球色透过 —— 3px 模糊视觉增益可忽略但 GPU 开销可测量。设为 0 消除
+     合成层同时保持完全相同的视觉外观。 */
   --home-map-card-surface: color-mix(in srgb, var(--surface-glass) 56%, transparent);
-  --home-map-card-blur: 3px;
+  --home-map-card-blur: 0px;
   /* The community callout uses a low-fill, low-blur surface so the
      knowledge-network backdrop remains clearly visible behind its content.
      共建卡片使用低填充、低模糊表面，让知识网络背景可清晰透过内容区域。 */
@@ -142,17 +153,19 @@
       color-mix(in srgb, var(--ambient-mint) 55%, transparent),
       transparent 34rem
     );
-  /* blur reduced from 40px to 20px: the four radial-gradients already use
-     large radius transitions (28-34rem) so their edges are naturally soft.
-     The 40px blur mainly smoothed the overlap zones between gradients, but
-     20px achieves the same visual blending at half the GPU cost. Combined
-     with body::before being hidden on the homepage (see glass.css), this
-     eliminates the layered double-blur that was the top static GPU cost.
-     blur 从 40px 降至 20px：四个 radial-gradient 已使用大半径过渡
-     （28-34rem），边缘自然柔和。40px blur 主要平滑渐变间的重叠区域，
-     但 20px 以一半的 GPU 开销实现相同的视觉混合。结合 glass.css 中
-     主页隐藏 body::before，消除了此前最大的静态 GPU 开销 —— 叠加双层模糊。 */
-  filter: blur(20px);
+  /* filter: blur() removed entirely. The four radial-gradients already use
+     large radius transitions (28-34rem) which produce naturally soft edges.
+     The 20px blur (already reduced from the original 40px) only marginally
+     smoothed gradient overlap zones, but still forced the browser to
+     re-rasterize a viewport-sized element on every animation frame since
+     filter is not compositor-accelerated. Removing it lets the transform
+     animation run entirely on the compositor. The gradient transitions
+     are visually equivalent to the blurred result.
+     filter: blur() 完全移除。四个 radial-gradient 已使用大半径过渡
+     （28-34rem），边缘自然柔和。20px blur（已从原始 40px 降低）仅微弱
+     平滑渐变重叠区域，但仍强制浏览器在每帧动画时重新光栅化视口尺寸元素
+     （filter 不被合成器加速）。移除后 transform 动画完全在合成器上运行。
+     渐变过渡在视觉上等同于模糊结果。 */
   opacity: 0.85;
   animation: nd-ambient-drift var(--motion-loop-ambient) ease-in-out infinite alternate;
   will-change: transform;
@@ -444,10 +457,6 @@
     contain-intrinsic-block-size: auto 66rem;
   }
 
-  .home-learning {
-    contain-intrinsic-block-size: auto 58rem;
-  }
-
   .home-community {
     contain-intrinsic-block-size: auto 28rem;
   }
@@ -461,47 +470,19 @@
   padding-block-end: calc(var(--section-gap) * 0.45);
 }
 
-/* Subtle section-level backdrop: a very faint glass tint plus a soft top
-   sheen line gives each scroll section its own readable surface without
-   breaking the airy homepage aesthetic. The pseudo-element stays behind
-   content (z-index: -1) and inherits the ambient orb color through the
-   transparent tint.
-   Note: no backdrop-filter here on purpose. .home-section has
-   `isolation: isolate` (making it a backdrop root per the Filter Effects
-   spec), so a backdrop-filter on this ::before could only sample
-   .home-section's own (transparent) subtree — blurring nothing. The
-   ambient orbs live on .home-page::before, outside this backdrop root,
-   and would be excluded from the sample. The transparent background
-   below already lets the orb color show through via plain alpha
-   compositing, so the section reads as a readable surface without
-   needing backdrop-filter.
-   微妙的区段级背景：极淡的玻璃色 + 顶部柔光线条，让每个滚动区段拥有
-   独立的可读表面，同时保持首页通透感。伪元素位于内容后方，透明 tint
-   让环境光球色透过来。
-   注意：此处刻意不设 backdrop-filter。.home-section 设了
-   `isolation: isolate`（按 Filter Effects 规范使其成为 backdrop root），
-   若在 ::before 上设 backdrop-filter，只能采样 .home-section 自身
-   （透明）的子树——什么都模糊不到。环境光球位于 .home-page::before，
-   在此 backdrop root 之外，会被排除在采样范围外。下方透明 background
-   已通过普通 alpha 合成让光球色透过来，区段无需 backdrop-filter 即可
-   呈现为可读表面。 */
-.home-section::before {
-  content: "";
-  position: absolute;
-  inset: calc(var(--section-gap) * 0.35) calc(-1 * var(--page-gutter))
-    calc(var(--section-gap) * 0.35);
-  z-index: -1;
-  border-radius: var(--radius-xl);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--glass-highlight) 18%, transparent),
-      transparent 12%
-    ),
-    color-mix(in srgb, var(--surface-subtle) 42%, transparent);
-  opacity: 0.6;
-  pointer-events: none;
-}
+/* Section-level backdrop removed: the previous semi-transparent ::before
+   with border-radius created visible rectangular regions on the homepage,
+   especially in dark mode where --surface-subtle (rgb(15 23 42 / 24%))
+   mixed at 42% opacity produced a noticeable rectangle around each section.
+   The ambient orb layer (.home-page::before) already provides visual
+   separation between sections through its drifting color gradients — no
+   additional section-level surface is needed. Removing this eliminates
+   both the visible rectangle issue and the per-section background paint.
+   区段级背景移除：此前带 border-radius 的半透明 ::before 在首页产生可见
+   矩形区域，深色模式下尤为明显（--surface-subtle rgb(15 23 42 / 24%) 以
+   42% 混合后产生可察觉的矩形）。环境光球层（.home-page::before）已通过
+   漂移色彩渐变为 section 间提供视觉分隔 —— 无需额外的区段级表面。
+   移除后同时消除可见矩形问题和每 section 的背景绘制开销。 */
 
 /* Lower sections use a restrained AI accelerator board: a visible processor,
    compute cores, memory banks, and orthogonal buses replace the former web of
@@ -512,13 +493,6 @@
     radial-gradient(circle at 14% 28%, var(--ambient-ice), transparent 22rem),
     radial-gradient(circle at 82% 70%, var(--ambient-violet), transparent 24rem),
     color-mix(in srgb, var(--surface-glass) 62%, transparent);
-}
-
-.home-learning::before {
-  background:
-    radial-gradient(circle at 86% 36%, var(--ambient-mint), transparent 24rem),
-    radial-gradient(circle at 18% 72%, var(--ambient-ice), transparent 22rem),
-    color-mix(in srgb, var(--surface-glass) 58%, transparent);
 }
 
 .ai-compute {
@@ -540,10 +514,6 @@
   contain: layout style paint;
 }
 
-.ai-compute--learning {
-  color: color-mix(in srgb, var(--accent-primary) 62%, var(--accent-tertiary));
-}
-
 .ai-compute--community {
   inset: 0;
   color: var(--accent-tertiary);
@@ -555,7 +525,16 @@
   inset: 0;
   inline-size: 100%;
   block-size: 100%;
-  filter: drop-shadow(0 0 1rem color-mix(in srgb, currentColor 22%, transparent));
+  /* filter: drop-shadow() removed. The drop-shadow on the SVG board was a
+     static GPU cost on all three homepage sections (knowledge, community).
+     The SVG's stroke-based design already provides visual depth through
+     stroke-width and color-mix fills; the shadow was barely perceptible
+     at the section's low opacity (0.24 / 0.13) but still forced the
+     browser to maintain filter caches for the SVG subtree.
+     filter: drop-shadow() 移除。SVG 板上的 drop-shadow 在三个首页 section
+     （知识、社区）上都是静态 GPU 开销。SVG 的描边设计已通过 stroke-width
+     和 color-mix 填充提供视觉纵深；在 section 的低透明度（0.24 / 0.13）
+     下阴影几乎不可感知，但仍强制浏览器为 SVG 子树维护滤镜缓存。 */
 }
 
 .ai-compute__buses {
@@ -690,13 +669,13 @@
 /* Card collections stay readable while their parent settles into position,
    eliminating the transparent-to-loaded flash during fast scrolling.
    卡片集合在父级归位期间保持可读，消除快速滚动时从透明到加载完成的闪现。 */
-.home-section__reveal > :is(.chapter-grid, .capability-list) {
+.home-section__reveal > .chapter-grid {
   opacity: 1;
   transform: translateY(0.45rem);
 }
 
 .home-section__reveal[data-visible="true"]
-  > :is(.home-section__heading, .chapter-grid, .capability-list, div:first-child),
+  > :is(.home-section__heading, .chapter-grid, div:first-child),
 .home-section__reveal[data-visible="true"] > .home-community__actions {
   opacity: 1;
   transform: translateY(0);
@@ -705,8 +684,7 @@
     transform var(--motion-standard) var(--motion-ease-emphasized) 90ms;
 }
 
-.home-section__reveal[data-visible="true"]
-  > :is(.chapter-grid, .capability-list, .home-community__actions) {
+.home-section__reveal[data-visible="true"] > :is(.chapter-grid, .home-community__actions) {
   transition-delay: var(--motion-stagger);
 }
 
@@ -727,23 +705,10 @@
 }
 
 .home-section__heading > p:last-child,
-.home-section__heading--split > p,
 .home-community__layout > div > p:last-child {
   margin: 1.2rem 0 0;
   color: var(--text-secondary);
   line-height: 1.75;
-}
-
-.home-section__heading--split {
-  display: grid;
-  max-inline-size: none;
-  grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.65fr);
-  gap: clamp(2rem, 8vw, 7rem);
-  align-items: end;
-}
-
-.home-section__heading--split > p {
-  margin-block-end: 0.35rem;
 }
 
 .home-section__heading--compact {
@@ -780,7 +745,13 @@
     radial-gradient(circle at var(--bento-x) var(--bento-y), var(--accent-soft), transparent 42%),
     var(--glass-refraction-fill), var(--home-map-card-surface);
   box-shadow: var(--shadow-edge), var(--glass-shadow);
-  backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
+  /* backdrop-filter removed: with --home-map-card-blur set to 0px, the
+     backdrop-filter had no visual effect but still created a compositing
+     layer per card. The card's semi-transparent background already lets
+     the ambient orb colors show through via plain alpha compositing.
+     backdrop-filter 移除：--home-map-card-blur 设为 0px 后 backdrop-filter
+     无视觉效果但仍为每张卡片创建合成层。卡片的半透明背景已通过普通
+     alpha 合成让环境光球色透过。 */
   /* Isolate layout/style recalc so hover transforms and bento cursor tracking
      do not cascade into sibling cards. `paint` is omitted because backdrop-filter
      samples the parent stacking context. */
@@ -894,57 +865,6 @@
   }
 }
 
-.capability-list {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.capability-row {
-  display: grid;
-  grid-template-columns: 4rem minmax(10rem, 0.55fr) minmax(16rem, 1fr);
-  gap: 1rem;
-  align-items: baseline;
-  border: 1px solid var(--glass-border-hairline);
-  border-radius: var(--radius-md);
-  padding: 1.35rem 1.25rem;
-  background: var(--glass-refraction-fill), var(--home-map-card-surface);
-  box-shadow: var(--shadow-edge), var(--glass-shadow);
-  backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
-  transition:
-    border-color var(--motion-standard) var(--motion-ease-standard),
-    transform var(--motion-standard) var(--motion-ease-standard),
-    box-shadow var(--motion-standard) var(--motion-ease-standard);
-}
-
-@media (hover: hover) {
-  .capability-row:hover {
-    border-color: var(--border-interactive);
-    box-shadow: var(--shadow-edge), var(--glass-shadow-hover);
-    transform: translateX(0.35rem);
-  }
-}
-
-.capability-row > span {
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-}
-
-.capability-row h3,
-.capability-row p {
-  margin: 0;
-}
-
-.capability-row h3 {
-  font-weight: 660;
-  font-size: 1.05rem;
-}
-
-.capability-row p {
-  color: var(--text-secondary);
-  line-height: 1.65;
-}
-
 .home-community__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -959,9 +879,21 @@
   background:
     radial-gradient(circle at 85% 10%, var(--ambient-mint), transparent 18rem),
     var(--home-community-surface);
-  -webkit-backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
   border-radius: var(--radius-md);
+  /* Restored rounded card mask: use inset box-shadow to reproduce the
+     card's rounded-rectangle silhouette without a hard 1px border line
+     (which was too prominent in dark mode). The edge-light + ambient
+     orb surface already provided the visual definition; adding the
+     inset shadow gives the soft border edge back at lower GPU cost
+     than backdrop-filter.
+     还原圆角卡片遮罩：使用 inset box-shadow 重现卡片的圆角矩形轮廓，
+     避免硬 1px border 线条（在深色模式下过于明显）。edge-light + 环境
+     光球表面已提供视觉定义；inset shadow 以低于 backdrop-filter 的
+     GPU 开销恢复柔和的边框边缘。 */
+  box-shadow:
+    inset 0 0 0 1px var(--glass-highlight),
+    var(--shadow-edge),
+    var(--glass-shadow);
 }
 
 .home-community__layout > div:first-child {
@@ -1254,7 +1186,6 @@
     grid-column: span 6;
   }
 
-  .home-section__heading--split,
   .home-community__layout {
     grid-template-columns: 1fr;
   }
@@ -1283,10 +1214,6 @@
   @supports (content-visibility: auto) {
     .home-chapters {
       contain-intrinsic-block-size: auto 86rem;
-    }
-
-    .home-learning {
-      contain-intrinsic-block-size: auto 83rem;
     }
 
     .home-community {
@@ -1369,14 +1296,6 @@
 
   .chapter-card__index {
     font-size: var(--home-chapter-index-mobile-size);
-  }
-
-  .capability-row {
-    grid-template-columns: 2.5rem 1fr;
-  }
-
-  .capability-row p {
-    grid-column: 2;
   }
 }
 

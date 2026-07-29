@@ -43,18 +43,6 @@ export const zh = {
     chaptersTitle: '从真实章节开始探索',
     chaptersDescription: '入口直接来自当前文档树；内容更新时，首页会随之保持一致。',
     chapterAction: '打开章节',
-    learningEyebrow: '学习导航',
-    learningTitle: '把专业学习拆成可抵达的下一步',
-    learningDescription:
-      '面向计算机科学及相关专业，从日常工具到工程实践，先建立可靠的学习与解决问题习惯。',
-    learningPaths: [
-      { title: '计算机基础', description: '从文件、系统和浏览器开始理解每天使用的计算环境。' },
-      { title: '开发工具', description: '逐步掌握终端、文本编辑与版本控制等基础工具。' },
-      { title: '工程起步', description: '把环境配置、容器与协作流程连接成可复用的方法。' },
-      { title: '表达与记录', description: '使用 Markdown、Mermaid 与代码示例沉淀清晰笔记。' },
-      { title: '问题求解', description: '练习检索、提问与验证，让卡点转化为可执行步骤。' },
-      { title: '共同学习', description: '在文档上下文中讨论、纠错，并把经验留给后来者。' },
-    ],
     communityEyebrow: '共同维护',
     communityTitle: '让知识网络继续生长',
     communityDescription: '发现错误、缺失的路径或更好的解释？欢迎从讨论开始，也欢迎直接参与共建。',

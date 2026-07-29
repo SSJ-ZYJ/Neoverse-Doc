@@ -33,7 +33,6 @@
   .control-surface,
   .chapter-card,
   .mdx-doc-card,
-  .capability-row,
   [data-card="true"],
   .surface-panel,
   .glass-interactive,
@@ -77,7 +76,6 @@
   .control-surface,
   .chapter-card,
   .mdx-doc-card,
-  .capability-row,
   [data-card="true"],
   .surface-panel,
   .glass-interactive,
@@ -260,7 +258,6 @@
     .control-surface,
     .chapter-card,
     .mdx-doc-card,
-    .capability-row,
     [data-card="true"],
     #nd-nav button,
     #nd-sidebar button

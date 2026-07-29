@@ -3,7 +3,7 @@
 // 结构化 AI 加速器背景由中央处理器、存储单元、正交总线与计算核心组成。
 
 interface AiComputeBackdropProps {
-  variant: 'knowledge' | 'learning' | 'community';
+  variant: 'knowledge' | 'community';
 }
 
 export function AiComputeBackdrop({ variant }: AiComputeBackdropProps) {

@@ -60,31 +60,9 @@ export function HomePortal({ chapters, dict, locale }: HomePortalProps) {
         </AnimatedContent>
       </section>
 
-      <section className="home-section home-learning" aria-labelledby="learning-title">
-        <AiComputeBackdrop variant="learning" />
-        <AnimatedContent className="home-section__reveal">
-          <div className="home-section__heading home-section__heading--split">
-            <div>
-              <p className="home-eyebrow">{dict.home.learningEyebrow}</p>
-              <h2 id="learning-title">{dict.home.learningTitle}</h2>
-            </div>
-            <p>{dict.home.learningDescription}</p>
-          </div>
-          <div className="capability-list">
-            {dict.home.learningPaths.map((feature, index) => (
-              <article className="capability-row" key={feature.title}>
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
-              </article>
-            ))}
-          </div>
-        </AnimatedContent>
-      </section>
-
       <section className="home-section home-community" aria-labelledby="community-title">
         <AiComputeBackdrop variant="community" />
-        <AnimatedContent className="home-community__layout home-section__reveal surface-panel">
+        <AnimatedContent className="home-community__layout home-section__reveal">
           <div>
             <p className="home-eyebrow">{dict.home.communityEyebrow}</p>
             <h2 id="community-title">{dict.home.communityTitle}</h2>

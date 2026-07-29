@@ -48,10 +48,6 @@ export interface Dictionary {
     chaptersTitle: string;
     chaptersDescription: string;
     chapterAction: string;
-    learningEyebrow: string;
-    learningTitle: string;
-    learningDescription: string;
-    learningPaths: ReadonlyArray<{ title: string; description: string }>;
     communityEyebrow: string;
     communityTitle: string;
     communityDescription: string;

@@ -46,36 +46,6 @@ export const en = {
     chaptersDescription:
       'These entries come directly from the current documentation tree and evolve with it.',
     chapterAction: 'Open chapter',
-    learningEyebrow: 'Learning navigator',
-    learningTitle: 'Turn a broad major into reachable next steps',
-    learningDescription:
-      'For computer science and related majors, build reliable study and problem-solving habits from daily tools to engineering practice.',
-    learningPaths: [
-      {
-        title: 'Computing foundations',
-        description: 'Understand everyday computing through files, systems, and browsers.',
-      },
-      {
-        title: 'Development tools',
-        description: 'Build confidence with terminals, text editing, and version control.',
-      },
-      {
-        title: 'Engineering first steps',
-        description: 'Connect environments, containers, and collaboration into reusable methods.',
-      },
-      {
-        title: 'Clear expression',
-        description: 'Use Markdown, Mermaid, and code examples to keep useful notes.',
-      },
-      {
-        title: 'Problem solving',
-        description: 'Practice searching, asking, and validating to turn blockers into actions.',
-      },
-      {
-        title: 'Learning together',
-        description: 'Discuss, correct, and preserve experience beside the relevant guide.',
-      },
-    ],
     communityEyebrow: 'Built together',
     communityTitle: 'Help the knowledge network grow',
     communityDescription:

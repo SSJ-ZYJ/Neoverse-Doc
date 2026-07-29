@@ -44,7 +44,6 @@ const MOBILE_TITLE_PARTICLE_HOST_SELECTOR =
 
 const SURFACE_SELECTOR = [
   '.surface-panel',
-  '.capability-row',
   '.guestbook-page__surface',
   '.glass-codeblock',
   '.mermaid-wrapper:not([data-maximized])',
