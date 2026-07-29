@@ -46,48 +46,55 @@ export function HomeFooter({ locale }: HomeFooterProps) {
       <div className="home-footer__inner">
         {/* Reference-style footer rows mirror compact centered project metadata.
             参考图样式的 footer 信息行：紧凑居中展示项目元信息。 */}
-        <p className="home-footer__row">
+        <p className="home-footer__row home-footer__row--copyright">
           <span aria-hidden="true">© </span>
           <span>{years} </span>
-          <a
-            className="home-footer__link"
-            href={AUTHOR_GITHUB_URL}
-            rel="noreferrer"
-            target="_blank"
-          >
-            {AUTHOR_NAME}
-          </a>
-          <span> &amp; </span>
-          <a
-            className="home-footer__link"
-            href={CO_AUTHOR_GITHUB_URL}
-            rel="noreferrer"
-            target="_blank"
-          >
-            {CO_AUTHOR_NAME}
-          </a>
+          {/* Author links form one spaced semantic group instead of relying on
+              trailing whitespace between flex items.
+              作者链接使用带间距的语义分组，不依赖 flex 子项末尾空格。 */}
+          <span className="home-footer__authors">
+            <a
+              className="home-footer__link"
+              href={AUTHOR_GITHUB_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {AUTHOR_NAME}
+            </a>
+            <span aria-hidden="true"> &amp; </span>
+            <a
+              className="home-footer__link"
+              href={CO_AUTHOR_GITHUB_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {CO_AUTHOR_NAME}
+            </a>
+          </span>
         </p>
-        <p className="home-footer__row">
-          <span>{dict.homeFooterCode} </span>
-          <a className="home-footer__link" href={REPO_URL} rel="noreferrer" target="_blank">
-            {dict.homeFooterOpenSource}
-          </a>
-          <span> (</span>
-          <a
-            className="home-footer__link home-footer__commit"
-            href={commitHref}
-            rel="noreferrer"
-            target="_blank"
-          >
-            {gitInfo.commitId ?? dict.homeFooterUnavailable}
-          </a>
-          <span> @ </span>
-          {gitInfo.commitDateIso ? (
-            <time dateTime={gitInfo.commitDateIso}>{commitDate}</time>
-          ) : (
-            commitDate
-          )}
-          <span>)</span>
+        <p className="home-footer__row home-footer__row--project">
+          <span className="home-footer__project-state">
+            <span>{dict.homeFooterCode} </span>
+            <a className="home-footer__link" href={REPO_URL} rel="noreferrer" target="_blank">
+              {dict.homeFooterOpenSource}{' '}
+            </a>
+          </span>
+          <span className="home-footer__revision">
+            <a
+              className="home-footer__link home-footer__commit"
+              href={commitHref}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {gitInfo.commitId ?? dict.homeFooterUnavailable}
+            </a>
+            <span aria-hidden="true"> @ </span>
+            {gitInfo.commitDateIso ? (
+              <time dateTime={gitInfo.commitDateIso}>{commitDate}</time>
+            ) : (
+              commitDate
+            )}
+          </span>
         </p>
       </div>
     </footer>
