@@ -53,7 +53,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang={i18n.defaultLanguage} suppressHydrationWarning>
       <body className={`antialiased min-h-screen ${orbitron.variable} ${notoSansSC.variable}`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        {/* Disable CSS transitions only while next-themes updates the root class.
+            This prevents long documents from animating every theme-sensitive code block.
+            仅在 next-themes 更新根主题类时暂停 CSS 过渡，
+            避免长文档中的主题相关代码块同时参与动画。 */}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          disableTransitionOnChange
+          enableSystem
+        >
           {/* Scoped light and particles provide activation feedback without page-level cursor tracking.
               局部光感与粒子提供激活反馈，不进行页面级光标跟踪。 */}
           <ImmersiveInteractionController />
