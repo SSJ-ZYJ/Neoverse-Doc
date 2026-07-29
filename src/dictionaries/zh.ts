@@ -23,7 +23,9 @@ export const zh = {
   documentContributorsTitle: '本文档贡献者',
   backToDocs: '返回文档',
   backToHome: '返回首页',
+  // Route error recovery copy / 路由错误恢复文案
   errorTitle: '页面加载失败',
+  errorCode: '500',
   errorDesc: '发生了意外错误，请尝试重新加载页面。',
   errorRetry: '重试',
   notFoundTitle: '页面未找到',

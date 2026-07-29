@@ -3,9 +3,11 @@
 
 'use client';
 
-import { RotateCw } from 'lucide-react';
+import { Home, RotateCw } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { StatusCodeDisplay } from '@/components/status-code-display';
+import { TransitionLink } from '@/components/transition/transition-link';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocaleFromRouteContext } from '@/lib/route-locale';
 
@@ -21,6 +23,7 @@ export function LocalizedError({ variant = 'default', reset, retry }: LocalizedE
   const routeErrorPathname = pathname ?? '';
   const locale = resolveLocaleFromRouteContext(params?.lang, pathname);
   const dict = getPageDictionary(locale);
+  const homeHref = `/${locale}`;
   const [isRetrying, setIsRetrying] = useState(false);
 
   const handleRetry = () => {
@@ -39,23 +42,40 @@ export function LocalizedError({ variant = 'default', reset, retry }: LocalizedE
     <main
       data-route-error-fallback="true"
       data-route-error-pathname={routeErrorPathname}
-      className={`special-fallback${variant === 'docs' ? ' pointer-events-auto relative z-10 [grid-area:main]' : ''}`}
+      aria-labelledby="route-error-title"
+      aria-describedby="route-error-description"
+      className={`special-fallback special-fallback--error${variant === 'docs' ? ' special-fallback--docs pointer-events-auto relative z-10 [grid-area:main]' : ''}`}
     >
-      <div className="flex size-12 items-center justify-center rounded-xl glass-chip text-fd-muted-foreground">
-        <RotateCw className={isRetrying ? 'animate-spin' : undefined} size={24} />
+      {/* Reuse the status hierarchy from the not-found page so every route
+          fallback shares one recognizable recovery pattern.
+          复用未找到页面的状态层级，让所有路由回退保持一致、可识别的恢复模式。 */}
+      <div className="special-fallback__panel">
+        <StatusCodeDisplay code={dict.errorCode} />
+        <div className="special-fallback__copy">
+          <h1 className="special-fallback__title" id="route-error-title">
+            {dict.errorTitle}
+          </h1>
+          <p className="special-fallback__description" id="route-error-description">
+            {dict.errorDesc}
+          </p>
+        </div>
+        <div className="special-fallback__actions">
+          <button
+            type="button"
+            onClick={handleRetry}
+            disabled={isRetrying}
+            aria-busy={isRetrying}
+            className="control-surface control-surface--primary pointer-events-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            <RotateCw className={isRetrying ? 'animate-spin' : undefined} size={16} />
+            {dict.errorRetry}
+          </button>
+          <TransitionLink href={homeHref} className="control-surface">
+            <Home size={16} />
+            {dict.backToHome}
+          </TransitionLink>
+        </div>
       </div>
-      <h1 className="text-2xl font-semibold text-fd-foreground">{dict.errorTitle}</h1>
-      <p className="max-w-md text-sm text-fd-muted-foreground">{dict.errorDesc}</p>
-      <button
-        type="button"
-        onClick={handleRetry}
-        disabled={isRetrying}
-        aria-busy={isRetrying}
-        className="control-surface control-surface--primary pointer-events-auto mt-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        <RotateCw className={isRetrying ? 'animate-spin' : undefined} size={16} />
-        {dict.errorRetry}
-      </button>
     </main>
   );
 }

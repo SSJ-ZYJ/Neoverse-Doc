@@ -29,7 +29,9 @@ export interface Dictionary {
   documentContributorsTitle: string;
   backToDocs: string;
   backToHome: string;
+  // Route error recovery copy / 路由错误恢复文案
   errorTitle: string;
+  errorCode: string;
   errorDesc: string;
   errorRetry: string;
   notFoundTitle: string;

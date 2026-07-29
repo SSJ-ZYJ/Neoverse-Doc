@@ -75,6 +75,33 @@
     var(--background-primary);
 }
 
+/* Route errors reuse the documentation circuit field so recovery screens feel
+   connected to the same knowledge-space scene instead of becoming a generic
+   full-screen gradient.
+   路由错误页复用文档电路场，使恢复界面延续同一知识空间场景，
+   避免退化为普通的全屏渐变。 */
+.special-fallback--error {
+  background-color: var(--docs-canvas-surface);
+  background-image:
+    radial-gradient(circle at 20% 18%, var(--docs-canvas-ambient-primary), transparent 28rem),
+    radial-gradient(circle at 82% 76%, var(--docs-canvas-ambient-secondary), transparent 30rem),
+    radial-gradient(circle at center, var(--docs-circuit-node) 0 1.5px, transparent 2px),
+    linear-gradient(var(--docs-circuit-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--docs-circuit-line) 1px, transparent 1px);
+  background-position:
+    center,
+    center,
+    1.75rem 1.75rem,
+    center,
+    center;
+  background-size:
+    auto,
+    auto,
+    7rem 7rem,
+    3.5rem 3.5rem,
+    3.5rem 3.5rem;
+}
+
 /* Docs fallbacks subtract the Fumadocs header row from its viewport-height
    layout token, so their content centers inside the real main grid area.
    文档回退页从 Fumadocs 视口高度 Token 中减去标题栏行，

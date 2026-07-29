@@ -23,7 +23,9 @@ export const en = {
   documentContributorsTitle: 'Document contributors',
   backToDocs: 'Back to Docs',
   backToHome: 'Back to Home',
+  // Route error recovery copy / 路由错误恢复文案
   errorTitle: 'Page Failed to Load',
+  errorCode: '500',
   errorDesc: 'An unexpected error occurred. Please try reloading the page.',
   errorRetry: 'Retry',
   notFoundTitle: 'Page Not Found',
