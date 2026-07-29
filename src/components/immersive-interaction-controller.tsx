@@ -530,9 +530,14 @@ export function ImmersiveInteractionController() {
 
     // Pause RAF work while the tab is hidden so background pages do not keep
     // accumulating particle move events or scheduling frames. Sessions are
-    // preserved so an in-flight drag resumes cleanly on focus.
+    // preserved so an in-flight drag resumes cleanly on focus. The data-page-hidden
+    // attribute also pauses pure-CSS infinite animations (home ambient drift,
+    // network pulse, CTA refraction) via [data-page-hidden] selectors in CSS,
+    // since those are compositor-driven and not covered by RAF pausing.
     // 标签页隐藏时暂停 RAF，避免后台页面持续累积移动事件与帧调度。
-    // 会话保留以便拖拽中断后焦点恢复时继续。
+    // 会话保留以便拖拽中断后焦点恢复时继续。data-page-hidden 属性还通过
+    // CSS 中的 [data-page-hidden] 选择器暂停纯 CSS 无限动画（主页环境光
+    // 漂移、网格脉冲、CTA 折射），因为它们由合成器驱动，RAF 暂停不覆盖。
     const handleVisibilityChange = () => {
       if (document.hidden) {
         if (frameId) {
@@ -540,6 +545,9 @@ export function ImmersiveInteractionController() {
           frameId = 0;
         }
         pendingMoves.clear();
+        document.documentElement.dataset.pageHidden = '';
+      } else {
+        delete document.documentElement.dataset.pageHidden;
       }
     };
 
@@ -578,6 +586,9 @@ export function ImmersiveInteractionController() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pagehide', handlePageHide);
       if (frameId) window.cancelAnimationFrame(frameId);
+      // Ensure data-page-hidden is cleared if the component unmounts while hidden.
+      // 确保组件在隐藏状态下卸载时清除 data-page-hidden。
+      delete document.documentElement.dataset.pageHidden;
     };
   }, []);
 

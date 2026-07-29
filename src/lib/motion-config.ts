@@ -29,6 +29,13 @@ export const MOTION_EASING = {
   softSpring: [0.2, 0.8, 0.2, 1] as [number, number, number, number],
 } as const;
 
+// Shared frame-rate budgets keep continuous ambient motion smooth without
+// coupling GPU work to high-refresh display rates.
+// 共享帧率预算在保持环境动效流畅的同时，避免 GPU 开销随高刷屏刷新率增长。
+export const MOTION_FRAME_RATE = {
+  homepageAmbient: 60,
+} as const;
+
 export const TRANSITION_DURATION_MS = {
   aperture: MOTION_DURATION_MS.aperture,
   overview: MOTION_DURATION_MS.overview,

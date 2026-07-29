@@ -15,6 +15,7 @@
   "dependencies": {
     "@fuma-translate/react": "^1.0.2",
     "@giscus/react": "^3.1.0",
+    "@mogeko/maple-mono-cn": "^7.9.0",
     "@orama/tokenizers": "^3.1.18",
     "framer-motion": "^12.42.2",
     "fumadocs-core": "^16.13.0",

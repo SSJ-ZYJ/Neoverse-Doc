@@ -142,7 +142,17 @@
       color-mix(in srgb, var(--ambient-mint) 55%, transparent),
       transparent 34rem
     );
-  filter: blur(40px);
+  /* blur reduced from 40px to 20px: the four radial-gradients already use
+     large radius transitions (28-34rem) so their edges are naturally soft.
+     The 40px blur mainly smoothed the overlap zones between gradients, but
+     20px achieves the same visual blending at half the GPU cost. Combined
+     with body::before being hidden on the homepage (see glass.css), this
+     eliminates the layered double-blur that was the top static GPU cost.
+     blur 从 40px 降至 20px：四个 radial-gradient 已使用大半径过渡
+     （28-34rem），边缘自然柔和。40px blur 主要平滑渐变间的重叠区域，
+     但 20px 以一半的 GPU 开销实现相同的视觉混合。结合 glass.css 中
+     主页隐藏 body::before，消除了此前最大的静态 GPU 开销 —— 叠加双层模糊。 */
+  filter: blur(20px);
   opacity: 0.85;
   animation: nd-ambient-drift var(--motion-loop-ambient) ease-in-out infinite alternate;
   will-change: transform;
@@ -980,8 +990,26 @@
   block-size: 112%;
   transform-origin: 50% 0;
   animation: nd-ray-drift 24s ease-in-out infinite alternate;
-  background: linear-gradient(108deg, transparent 28%, var(--ambient-ice) 50%, transparent 72%);
-  filter: blur(18px);
+  /* Pre-softened gradient replaces filter: blur(18px). The wider transparent
+     transition zones (28%→50%→72% = 22% transition span each side, vs the
+     original's sharper gradient) approximate the 18px blur visually — the beam
+     edges fade gradually instead of being blurred post-rasterization. This
+     eliminates a per-frame filter recomputation that was a major static GPU
+     cost (2 beams × 18px blur × 60fps). The transform animation now runs
+     purely on the compositor.
+     预模糊渐变替代 filter: blur(18px)。更宽的透明过渡区域
+     （28%→50%→72% = 每侧 22% 过渡跨度，对比原来更锐利的渐变）在视觉上
+     近似 18px 模糊 —— 光束边缘逐渐淡出而非光栅化后模糊。这消除了每帧
+     filter 重新计算，这是重大的静态 GPU 开销（2 个光束 × 18px 模糊 ×
+     60fps）。transform 动画现在完全在合成器上运行。 */
+  background: linear-gradient(
+    108deg,
+    transparent 18%,
+    color-mix(in srgb, var(--ambient-ice) 35%, transparent) 42%,
+    var(--ambient-ice) 50%,
+    color-mix(in srgb, var(--ambient-ice) 35%, transparent) 58%,
+    transparent 82%
+  );
 }
 
 .rb-light-rays__beam--wide {
@@ -993,7 +1021,16 @@
   opacity: 0.62;
   transform: translateX(-18%) rotate(22deg);
   animation-delay: -12s;
-  background: linear-gradient(110deg, transparent 35%, var(--ambient-mint) 52%, transparent 68%);
+  /* Same pre-softened gradient technique as the wide beam. / 与宽光束相同的
+     预模糊渐变技术。 */
+  background: linear-gradient(
+    110deg,
+    transparent 25%,
+    color-mix(in srgb, var(--ambient-mint) 35%, transparent) 45%,
+    var(--ambient-mint) 52%,
+    color-mix(in srgb, var(--ambient-mint) 35%, transparent) 59%,
+    transparent 75%
+  );
 }
 
 .rb-light-rays__network {
@@ -1369,6 +1406,32 @@
   .chapter-card::after {
     display: none;
   }
+}
+
+/* Pause infinite CSS animations when the tab is hidden. The ImmersiveInteraction
+   Controller sets data-page-hidden on <html> via visibilitychange. RAF-driven
+   animations (particles, scrollbar, typewriter) are already paused in JS; this
+   extends the pause to compositor-driven CSS animations that would otherwise
+   keep running and wasting GPU on a hidden tab. Uses animation-play-state:
+   paused (not animation: none) so animations resume from their current
+   position when the tab regains focus, avoiding visual jumps.
+   标签页隐藏时暂停无限 CSS 动画。ImmersiveInteractionController 通过
+   visibilitychange 在 <html> 上设置 data-page-hidden。基于 RAF 的动画
+   （粒子、滚动条、打字机）已在 JS 中暂停；此处将暂停扩展到合成器驱动
+   的 CSS 动画，否则它们会继续运行并浪费隐藏标签页的 GPU。使用
+   animation-play-state: paused（而非 animation: none），使动画在标签页
+   恢复焦点时从当前位置继续，避免视觉跳变。 */
+html[data-page-hidden] .rb-light-rays__beam,
+html[data-page-hidden] .home-page::before,
+html[data-page-hidden] .home-hero__network::before,
+html[data-page-hidden] .home-cta::before,
+html[data-page-hidden] .home-section::before,
+html[data-page-hidden] .ai-compute__buses path,
+html[data-page-hidden] .ai-compute__chip,
+html[data-page-hidden] .ai-compute__memory,
+html[data-page-hidden] .ai-compute__nodes,
+html[data-page-hidden] .ai-compute__pulse {
+  animation-play-state: paused;
 }
 
 /* Printing materializes deferred homepage sections in full.

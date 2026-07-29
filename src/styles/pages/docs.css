@@ -709,3 +709,46 @@
     box-shadow: none !important;
   }
 }
+
+/* Mobile performance downgrade: real-time backdrop-filter on viewport-sized
+   elements (#nd-page, nav) is the primary cause of mobile scroll jank. iOS
+   Safari also struggles with background-attachment: fixed (forces repaint on
+   scroll). These rules replace real-time blur with static translucent backgrounds
+   that preserve the glass visual language while eliminating continuous GPU
+   sampling. Desktop retains the original real-time backdrop-filter.
+   移动端性能降级：视口尺寸元素（#nd-page、nav）的实时 backdrop-filter 是
+   移动端滚动卡顿的主因。iOS Safari 对 background-attachment: fixed 支持
+   不佳（滚动时强制重绘）。这些规则用静态半透明背景替代实时模糊，
+   保留玻璃视觉语言同时消除持续 GPU 采样。桌面端保留原始实时 backdrop-filter。 */
+@media (max-width: 768px) {
+  /* background-attachment: fixed forces iOS Safari to repaint the background
+     on every scroll frame. Switching to scroll lets the background scroll
+     with content (visually indistinguishable for the ambient gradients) and
+     eliminates the repaint cost.
+     background-attachment: fixed 强制 iOS Safari 在每帧滚动时重绘背景。
+     改为 scroll 让背景随内容滚动（对环境光渐变视觉无差异）并消除重绘开销。 */
+  #nd-docs-layout {
+    background-attachment: scroll !important;
+  }
+
+  /* #nd-page spans nearly the full viewport; real-time backdrop-filter here is
+     the single largest mobile GPU cost. Replace with a static translucent
+     background that matches the glass tint. The ambient refraction from
+     body::before still shows through the semi-transparent fill.
+     #nd-page 几乎占满整个视口；此处的实时 backdrop-filter 是移动端最大的
+     GPU 开销。用匹配玻璃色调的静态半透明背景替代。body::before 的环境光
+     折射仍可透过半透明填充显现。 */
+  #nd-page {
+    backdrop-filter: none !important;
+  }
+
+  /* Top nav glass surface: same trade-off as #nd-page. The nav background
+     variable already carries translucency, so removing the blur keeps the
+     frosted look without the sampling cost.
+     顶部导航玻璃面：与 #nd-page 同样的权衡。导航背景变量已自带半透明，
+     移除模糊保留磨砂外观而不产生采样开销。 */
+  #nd-docs-layout #nd-nav > div,
+  #nd-docs-layout > header {
+    backdrop-filter: none !important;
+  }
+}

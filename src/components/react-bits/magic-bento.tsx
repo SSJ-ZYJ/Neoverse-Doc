@@ -3,7 +3,7 @@
 // React Bits Magic Bento 与 Border Glow 的本地化改造：仅保留边缘光与轻微光斑，并提供静态降级。
 'use client';
 
-import { type PointerEvent, type ReactNode, useRef } from 'react';
+import { type PointerEvent, type ReactNode, useEffect, useRef } from 'react';
 
 interface MagicBentoProps {
   children: ReactNode;
@@ -30,6 +30,17 @@ export function MagicBento({ children, className = '' }: MagicBentoProps) {
       card.style.setProperty('--bento-y', `${event.clientY - rect.top}px`);
     });
   };
+
+  // Cancel any pending RAF frame when the component unmounts. Pointer events
+  // stop firing after unmount, but a frame scheduled just before navigation
+  // could otherwise fire on a detached node.
+  // 组件卸载时取消待处理的 RAF 帧。卸载后 pointer 事件不再触发，
+  // 但导航前刚调度的帧可能在不存在的节点上执行。
+  useEffect(() => {
+    return () => {
+      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
+    };
+  }, []);
 
   return (
     <div className={`rb-magic-bento ${className}`} onPointerMove={handlePointerMove}>

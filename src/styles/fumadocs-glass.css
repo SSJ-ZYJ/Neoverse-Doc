@@ -360,13 +360,22 @@ button[data-theme-toggle],
   border-inline-start: 1px solid var(--glass-border-hairline) !important;
   box-shadow: var(--glass-sidebar-drawer-edge-shadow), var(--glass-shadow) !important;
   backface-visibility: hidden;
-  contain: paint;
+  /* `layout paint style` isolates the drawer's internal layout, paint and style
+     recalculation. `paint` alone only isolates painting; upgrading to include
+     `layout` and `style` prevents the drawer's nav items (transitions, hover
+     states) from cascading layout/style recalc to siblings. The drawer is its
+     own stacking context (backdrop-filter creates one), so paint containment
+     does not break the backdrop sampling.
+     `layout paint style` 隔离抽屉内部的布局、绘制与样式重算。单独 `paint`
+     仅隔离绘制；升级为包含 `layout` 与 `style` 防止抽屉导航项（过渡、悬浮
+     状态）将布局/样式重算级联到兄弟节点。抽屉自身是独立 stacking context
+     （backdrop-filter 创建），故 paint 隔离不破坏 backdrop 采样。 */
+  contain: layout paint style;
   opacity: 1 !important;
   transform: translate3d(0, 0, 0);
   transition:
     background-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease !important;
-  will-change: transform;
 }
 
 /* Mobile drawer closing keeps the same glass layer while it slides out, so
@@ -381,6 +390,16 @@ button[data-theme-toggle],
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   box-shadow: var(--glass-sidebar-drawer-edge-shadow), var(--glass-shadow) !important;
   opacity: 1 !important;
+  /* `will-change: transform` is scoped to animation states only (open/closed).
+     The browser promotes the drawer to its own compositing layer, caching the
+     backdrop-filter sample so each transform frame re-composites rather than
+     re-samples. After the close animation completes, fumadocs sets the drawer
+     to display: none, which releases the compositing layer and GPU memory.
+     `will-change: transform` 仅限动画状态（open/closed）。浏览器将抽屉提升
+     为独立合成层，缓存 backdrop-filter 采样结果，使每帧 transform 变化
+     重新合成而非重新采样。关闭动画结束后，fumadocs 将抽屉设为 display: none，
+     释放合成层与 GPU 内存。 */
+  will-change: transform;
 }
 
 :where(#nd-sidebar-mobile)[data-state="closed"] {

@@ -15,7 +15,7 @@
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { Code2, Eye, Maximize, Minimize, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { type CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { getPageDictionary } from '@/dictionaries';
 import { useAnchoredToolbarPosition } from '@/lib/hooks/use-anchored-toolbar-position';
@@ -38,6 +38,19 @@ export function Mermaid({ chart }: { chart: string }) {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+
+  // Unique id for the shared SVG drop-shadow filter. Defined once per Mermaid
+  // instance so all .node elements in the same diagram reference a single
+  // filter definition instead of each node running its own CSS drop-shadow.
+  // The browser caches the filter result and reuses it across nodes,
+  // dramatically reducing repaint cost on complex diagrams (dozens of nodes).
+  // Colons from useId() are stripped because they need escaping in url(#id).
+  // 共享 SVG drop-shadow 滤镜的唯一 id。每个 Mermaid 实例定义一次，
+  // 使同一图表中所有 .node 元素引用单一滤镜定义，而非每个节点各自运行
+  // CSS drop-shadow。浏览器缓存滤镜结果并在节点间复用，显著降低复杂图
+  // （几十节点）的重绘成本。useId() 返回的冒号被移除，因为在 url(#id) 中
+  // 需要转义。
+  const filterId = `mermaid-shadow-${useId().replace(/:/g, '')}`;
 
   // View mode toggle: 'render' (SVG) or 'code' (editable source). The
   // preference is persisted to localStorage via the hook so the last-used
@@ -139,6 +152,11 @@ export function Mermaid({ chart }: { chart: string }) {
     '--mermaid-scale': scale,
     '--mermaid-pan-x': `${pan.x}px`,
     '--mermaid-pan-y': `${pan.y}px`,
+    // Pass the instance-scoped filter id to CSS so .node elements can reference
+    // the shared SVG filter via var(--mermaid-node-shadow-filter).
+    // 将实例作用域的滤镜 id 传给 CSS，使 .node 元素可通过
+    // var(--mermaid-node-shadow-filter) 引用共享 SVG 滤镜。
+    '--mermaid-node-shadow-filter': `url(#${filterId})`,
   } as CSSProperties;
 
   // The toolbar is visible whenever there is rendered SVG OR the user is in
@@ -272,6 +290,23 @@ export function Mermaid({ chart }: { chart: string }) {
          避免两个视图层同时可见时交叉淡入淡出的闪烁。 */}
       {viewMode === 'render' ? (
         <div className="mermaid-zoom-target" style={zoomStyle}>
+          {/* Shared SVG drop-shadow filter definition. All .node elements in
+             this diagram reference it via var(--mermaid-node-shadow-filter),
+             so the browser caches the filter result once and reuses it
+             across every node — a major repaint saving on complex diagrams
+             with dozens of nodes. The <svg> itself is invisible (no width/
+             height) and only hosts the <defs>. / 共享 SVG drop-shadow 滤镜
+            定义。本图表中所有 .node 元素通过 var(--mermaid-node-shadow-filter)
+            引用它，浏览器缓存一次滤镜结果并在所有节点间复用 —— 对含几十
+            个节点的复杂图是重大重绘节省。<svg> 自身不可见（无宽高），仅
+            承载 <defs>。 */}
+          <svg className="mermaid-defs" aria-hidden="true" focusable="false">
+            <defs>
+              <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="0.4rem" stdDeviation="0.75rem" />
+              </filter>
+            </defs>
+          </svg>
           {svgContent ? (
             <div
               className="mermaid-svg-host"

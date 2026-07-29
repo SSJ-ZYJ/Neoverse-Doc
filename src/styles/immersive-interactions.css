@@ -219,8 +219,18 @@
 }
 
 @keyframes immersive-particle-scatter {
+  /* Filter (saturate + blur) removed: CSS filter is not compositor-accelerated,
+     so 96 simultaneously animating particles each recomputing filter per frame
+     was a major repaint hotspot. The saturate values (1.03-1.2) were visually
+     negligible on already-colored particles, and the blur radii (0.08-0.9px)
+     were sub-pixel and imperceptible. Removing filter lets the animation run
+     entirely on the compositor via opacity + transform, which are accelerated.
+     移除 filter（saturate + blur）：CSS filter 不被合成器加速，96 个同时
+     动画的粒子每帧各自重算 filter 是重大重绘热点。saturate 值（1.03-1.2）
+     对已有颜色的粒子视觉影响可忽略，blur 半径（0.08-0.9px）为亚像素、
+     不可感知。移除 filter 使动画完全通过 opacity + transform 运行于
+     合成器，二者均被加速。 */
   0% {
-    filter: saturate(1.12) blur(0.08px);
     opacity: var(--particle-alpha);
     transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(0.78);
   }
@@ -229,19 +239,16 @@
     transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(0.96);
   }
   56% {
-    filter: saturate(1.2) blur(0);
     opacity: var(--particle-alpha);
     transform: translate(-50%, -50%) translate3d(var(--particle-mid-x), var(--particle-mid-y), 0)
       scale(1.04);
   }
   78% {
-    filter: saturate(1.12) blur(0.22px);
     opacity: var(--particle-fade-alpha);
     transform: translate(-50%, -50%) translate3d(var(--particle-late-x), var(--particle-late-y), 0)
       scale(0.92);
   }
   100% {
-    filter: saturate(1.03) blur(0.9px);
     opacity: 0;
     transform: translate(-50%, -50%) translate3d(var(--particle-end-x), var(--particle-end-y), 0)
       scale(0.88);

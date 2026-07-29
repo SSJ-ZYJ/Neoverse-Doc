@@ -34,6 +34,19 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
     document.documentElement.removeAttribute('data-nd-route-transition-pending');
     const layer = layerRef.current;
     if (!layer) return;
+    // Explicitly reset will-change on clones before removing them. This ensures
+    // the browser releases the compositing layer immediately, rather than
+    // relying on implicit cleanup after replaceChildren. Important edge cases:
+    // if cleanup runs while the tab is hidden (setTimeout may be throttled),
+    // the clone could retain its compositing layer longer than necessary.
+    // 在移除克隆前显式重置 will-change，确保浏览器立即释放合成层，
+    // 而非依赖 replaceChildren 后的隐式清理。重要边界情况：若 cleanup
+    // 在标签页隐藏时运行（setTimeout 可能被节流），克隆可能不必要地
+    // 保留合成层更长时间。
+    const clones = layer.querySelectorAll<HTMLElement>('.nd-transition-clone');
+    clones.forEach((clone) => {
+      clone.style.willChange = 'auto';
+    });
     layer.replaceChildren();
     layer.hidden = true;
     layer.dataset.phase = 'idle';

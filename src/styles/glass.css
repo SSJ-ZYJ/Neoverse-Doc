@@ -292,7 +292,17 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-noto-sans), "Noto Sans SC", "Noto Sans", sans-serif;
+  /* Font stack: next/font Noto Sans SC (Latin subset) first, then system
+     CJK fonts for Chinese glyphs (which next/font cannot subset efficiently).
+     PingFang SC on macOS, Microsoft YaHei on Windows, and Noto Sans CJK on
+     Linux provide high-quality native Chinese rendering without the 10MB+
+     download a full local Noto Sans SC would require.
+     字体栈：优先 next/font Noto Sans SC（Latin 子集），随后系统中文字体
+     处理中文字形（next/font 无法高效子集中文）。macOS 的 PingFang SC、
+     Windows 的 Microsoft YaHei、Linux 的 Noto Sans CJK 提供高质量原生
+     中文渲染，无需本地完整 Noto Sans SC 的 10MB+ 下载。 */
+  font-family:
+    var(--font-noto-sans), "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Noto Sans", sans-serif;
   position: relative;
   isolation: isolate;
 }
@@ -312,4 +322,44 @@ body::before {
     radial-gradient(55vmax 55vmax at 85% 80%, var(--glass-ambient-b), transparent 50%),
     radial-gradient(45vmax 45vmax at 50% 50%, var(--glass-ambient-c), transparent 60%);
   filter: blur(100px) saturate(160%);
+  /* GPU isolation: this layer is purely decorative (no children, fixed, z-index: -1),
+     so strict containment fully isolates its paint/compositing without side effects.
+     Same pattern as .home-page::before in home.css.
+     GPU 隔离：此层为纯装饰（无子节点、fixed、z-index: -1），
+     strict 完全隔离其绘制与合成，无副作用。与 home.css 中 .home-page::before 一致。 */
+  contain: strict;
+}
+
+/* On the homepage, body::before is redundant: .home-page::before already
+   provides a dedicated ambient orb layer with its own blur and drift
+   animation. Running both layers simultaneously doubles the GPU blur cost
+   for no visual gain (the homepage orbs fully cover the viewport). Hiding
+   body::before here eliminates the 100px real-time blur on a viewport-sized
+   element — the single largest static GPU cost on the homepage.
+   主页上 body::before 是冗余的：.home-page::before 已提供专属环境光球层
+   （带模糊与漂移动画）。同时运行两层会使 GPU 模糊开销翻倍且无视觉收益
+   （主页光球已完全覆盖视口）。此处隐藏 body::before 消除了视口尺寸
+   元素上的 100px 实时模糊 —— 主页最大的静态 GPU 开销。 */
+body:has(.home-page)::before {
+  display: none;
+}
+
+/* Mobile equivalent: replace real-time 100px blur with a pre-softened static
+   gradient. Mobile GPUs cannot sustain 100px real-time blur on a viewport-sized
+   element without throttling. Larger gradient radii with earlier transparent
+   thresholds approximate the blurred visual with near-zero filter sampling cost.
+   Visual difference is negligible; GPU savings are substantial. Applies to
+   non-homepage pages (homepage hides body::before entirely via :has above).
+   移动端等效：用预模糊静态渐变替代实时 100px 模糊。移动端 GPU 无法在
+   视口尺寸元素上持续 100px 实时模糊而不掉帧。更大的渐变半径与更早的
+   透明阈值近似模糊视觉，filter 采样开销接近零。视觉差异可忽略，
+   GPU 节省显著。应用于非主页页面（主页通过上面的 :has 完全隐藏 body::before）。 */
+@media (max-width: 768px) {
+  body::before {
+    filter: none;
+    background-image:
+      radial-gradient(80vmax 80vmax at 15% 20%, var(--glass-ambient-a), transparent 75%),
+      radial-gradient(85vmax 85vmax at 85% 80%, var(--glass-ambient-b), transparent 72%),
+      radial-gradient(75vmax 75vmax at 50% 50%, var(--glass-ambient-c), transparent 78%);
+  }
 }

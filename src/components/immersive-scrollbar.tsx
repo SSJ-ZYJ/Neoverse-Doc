@@ -86,13 +86,48 @@ export default function ImmersiveScrollbar() {
       );
     }
 
+    // Cache of top chrome elements to avoid re-running querySelectorAll on every
+    // scroll frame. Invalidated by a MutationObserver when the DOM changes
+    // (route navigation, sidebar toggle, etc.). Stale entries (disconnected
+    // nodes) are filtered out lazily on the next update.
+    // 顶部控件元素缓存，避免每次滚动帧都重新执行 querySelectorAll。
+    // 由 MutationObserver 在 DOM 变化时（路由导航、侧栏切换等）失效。
+    // 过期条目（已断开连接的节点）在下一次更新时惰性过滤。
+    let topChromeElements: HTMLElement[] = [];
+    let topChromeCacheDirty = true;
+
+    function refreshTopChromeCache() {
+      topChromeElements = Array.from(
+        document.querySelectorAll<HTMLElement>(TOP_CHROME_SELECTOR),
+      ).filter((el) => el.isConnected);
+      topChromeCacheDirty = false;
+    }
+
     function updateChromeOffset() {
+      if (topChromeCacheDirty) {
+        refreshTopChromeCache();
+      }
+
       let topChromeBottom = 0;
 
-      for (const element of document.querySelectorAll<HTMLElement>(TOP_CHROME_SELECTOR)) {
+      for (const element of topChromeElements) {
+        // Lazily detect disconnected nodes (e.g. after a route change that
+        // the MutationObserver hasn't fired for yet) and mark the cache dirty.
+        // 惰性检测已断开连接的节点（如 MutationObserver 尚未触发的路由变化），
+        // 标记缓存为脏。
+        if (!element.isConnected) {
+          topChromeCacheDirty = true;
+          continue;
+        }
         if (!isVisibleTopChrome(element)) continue;
 
         topChromeBottom = Math.max(topChromeBottom, element.getBoundingClientRect().bottom);
+      }
+
+      // If we filtered out stale entries, refresh now so the next frame has a clean cache.
+      // 如果过滤了过期条目，立即刷新以便下一帧使用干净缓存。
+      if (topChromeCacheDirty) {
+        refreshTopChromeCache();
       }
 
       const topInset =
@@ -223,6 +258,16 @@ export default function ImmersiveScrollbar() {
     resizeObserver.observe(root);
     resizeObserver.observe(document.body);
 
+    // Invalidate the top chrome cache when the DOM changes (route navigation,
+    // sidebar toggle, TOC popover mount/unmount). childList only — attribute
+    // changes (class, style) don't affect which elements match the selector.
+    // DOM 变化时（路由导航、侧栏切换、TOC 弹层挂载/卸载）失效顶部控件缓存。
+    // 仅监听 childList —— 属性变化（class、style）不影响选择器匹配的元素集合。
+    const chromeMutationObserver = new MutationObserver(() => {
+      topChromeCacheDirty = true;
+    });
+    chromeMutationObserver.observe(document.body, { childList: true, subtree: true });
+
     window.addEventListener('scroll', scheduleApplyMetrics, { passive: true });
     window.addEventListener('resize', scheduleApplyMetrics);
     trackElement.addEventListener('pointerdown', handlePointerDown);
@@ -253,6 +298,7 @@ export default function ImmersiveScrollbar() {
       }
 
       resizeObserver.disconnect();
+      chromeMutationObserver.disconnect();
       window.removeEventListener('scroll', scheduleApplyMetrics);
       window.removeEventListener('resize', scheduleApplyMetrics);
       trackElement.removeEventListener('pointerdown', handlePointerDown);

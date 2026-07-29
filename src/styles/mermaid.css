@@ -268,7 +268,36 @@
 }
 
 .mermaid-svg-host .node {
-  filter: drop-shadow(0 0.4rem 0.75rem color-mix(in srgb, var(--accent-primary) 14%, transparent));
+  /* Reference the shared SVG filter defined once per Mermaid instance.
+     Falls back to CSS drop-shadow() if the SVG filter is unavailable
+     (e.g. before the defs svg mounts). The browser caches the SVG filter
+     result and reuses it across all .node elements, avoiding per-node
+     filter recomputation on complex diagrams.
+     引用每个 Mermaid 实例定义一次的共享 SVG 滤镜。SVG 滤镜不可用时
+     （如 defs svg 挂载前）回退到 CSS drop-shadow()。浏览器缓存 SVG
+     滤镜结果并在所有 .node 元素间复用，避免复杂图中每节点重新计算滤镜。 */
+  filter: var(
+    --mermaid-node-shadow-filter,
+    drop-shadow(0 0.4rem 0.75rem color-mix(in srgb, var(--accent-primary) 14%, transparent))
+  );
+}
+
+/* Shared SVG filter host: invisible, no layout impact, only carries <defs>.
+   共享 SVG 滤镜宿主：不可见，无布局影响，仅承载 <defs>。 */
+.mermaid-defs {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+}
+
+/* feDropShadow flood color matches the previous CSS drop-shadow tint.
+   Set via CSS so the filter follows theme variables (accent-primary).
+   feDropShadow 洪水色匹配之前的 CSS drop-shadow 色调。
+   通过 CSS 设置使滤镜跟随主题变量（accent-primary）。 */
+.mermaid-defs feDropShadow {
+  flood-color: var(--accent-primary);
+  flood-opacity: 0.14;
 }
 
 .mermaid-svg-host :is(.cluster rect, .actor, .note, .labelBox) {

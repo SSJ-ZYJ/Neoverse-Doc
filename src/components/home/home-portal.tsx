@@ -11,6 +11,7 @@ import type { HomeChapter } from '@/lib/home-sections';
 import type { Locale } from '@/lib/i18n';
 import { REPO_URL } from '@/lib/site-config';
 import { AiComputeBackdrop } from './ai-compute-backdrop';
+import { AmbientMotionController } from './ambient-motion-controller';
 import { ChapterGrid } from './chapter-grid';
 import { HeroTitle } from './hero-title';
 import { PrimaryAction } from './primary-action';
@@ -25,7 +26,7 @@ export function HomePortal({ chapters, dict, locale }: HomePortalProps) {
   const docsHref = chapters[0]?.href ?? `/${locale}/docs/ch0`;
 
   return (
-    <>
+    <AmbientMotionController>
       <section className="home-hero" aria-labelledby="home-title">
         <LightRays />
         <div className="home-hero__network" aria-hidden="true" />
@@ -110,6 +111,6 @@ export function HomePortal({ chapters, dict, locale }: HomePortalProps) {
           </div>
         </AnimatedContent>
       </section>
-    </>
+    </AmbientMotionController>
   );
 }
