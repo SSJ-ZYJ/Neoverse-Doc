@@ -990,6 +990,11 @@
   block-size: 112%;
   transform-origin: 50% 0;
   animation: nd-ray-drift 24s ease-in-out infinite alternate;
+  /* Feather the beam along its length so the rotated layer ends naturally
+     instead of exposing its rectangular bottom edge as a diagonal triangle.
+     沿光束长度方向羽化末端，避免旋转图层的矩形底边形成斜向三角隔阂。 */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 68%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 68%, transparent 100%);
   /* Pre-softened gradient replaces filter: blur(18px). The wider transparent
      transition zones (28%→50%→72% = 22% transition span each side, vs the
      original's sharper gradient) approximate the 18px blur visually — the beam
