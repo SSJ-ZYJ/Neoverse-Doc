@@ -28,20 +28,14 @@
   --home-nav-height: 4.75rem;
   /* Knowledge-map cards share a lighter, lower-blur glass so the underlying
      grid remains softly recognizable across chapter and learning-path cards.
-     backdrop-filter blur set to 0: at 3px the blur was nearly imperceptible,
-     but each backdrop-filter element created a separate compositing layer
-     consuming GPU memory. With 4+ cards on the homepage this added up.
-     The cards' semi-transparent backgrounds already let ambient orb colors
-     show through — the 3px blur added negligible visual value but measurable
-     GPU cost. Setting to 0 eliminates the compositing layers while keeping
-     the identical visual appearance.
-     知识版图卡片共用更透明、低模糊的玻璃层。backdrop-filter blur 设为 0：
-     3px 模糊几乎不可感知，但每个 backdrop-filter 元素创建独立合成层消耗
-     GPU 内存。首页 4+ 个卡片累积开销可观。卡片已有半透明背景让环境光
-     球色透过 —— 3px 模糊视觉增益可忽略但 GPU 开销可测量。设为 0 消除
-     合成层同时保持完全相同的视觉外观。 */
+     backdrop-filter blur set to 8px for a visible glass effect. Each card
+     creates a compositing layer, but the visual glass quality is worth the
+     cost on desktop. Mobile falls back via the media query below.
+     知识版图卡片共用更透明、低模糊的玻璃层。backdrop-filter blur 设为
+     8px 以呈现明显的玻璃质感。每张卡片创建独立合成层，但桌面端玻璃
+     视觉值得此开销。移动端通过下方媒体查询降级。 */
   --home-map-card-surface: color-mix(in srgb, var(--surface-glass) 56%, transparent);
-  --home-map-card-blur: 0px;
+  --home-map-card-blur: 8px;
   /* The community callout uses a low-fill, low-blur surface so the
      knowledge-network backdrop remains clearly visible behind its content.
      共建卡片使用低填充、低模糊表面，让知识网络背景可清晰透过内容区域。 */
@@ -669,6 +663,12 @@
 /* Card collections stay readable while their parent settles into position,
    eliminating the transparent-to-loaded flash during fast scrolling.
    卡片集合在父级归位期间保持可读，消除快速滚动时从透明到加载完成的闪现。 */
+:where(.chapter-grid) {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
+}
+
 .home-section__reveal > .chapter-grid {
   opacity: 1;
   transform: translateY(0.45rem);
@@ -720,12 +720,6 @@
   justify-content: center;
 }
 
-.chapter-grid {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 1rem;
-}
-
 .chapter-card {
   --bento-x: 50%;
   --bento-y: 50%;
@@ -745,13 +739,7 @@
     radial-gradient(circle at var(--bento-x) var(--bento-y), var(--accent-soft), transparent 42%),
     var(--glass-refraction-fill), var(--home-map-card-surface);
   box-shadow: var(--shadow-edge), var(--glass-shadow);
-  /* backdrop-filter removed: with --home-map-card-blur set to 0px, the
-     backdrop-filter had no visual effect but still created a compositing
-     layer per card. The card's semi-transparent background already lets
-     the ambient orb colors show through via plain alpha compositing.
-     backdrop-filter 移除：--home-map-card-blur 设为 0px 后 backdrop-filter
-     无视觉效果但仍为每张卡片创建合成层。卡片的半透明背景已通过普通
-     alpha 合成让环境光球色透过。 */
+  backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
   /* Isolate layout/style recalc so hover transforms and bento cursor tracking
      do not cascade into sibling cards. `paint` is omitted because backdrop-filter
      samples the parent stacking context. */
@@ -866,10 +854,14 @@
 }
 
 .home-community__layout {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: clamp(2rem, 8vw, 7rem);
   align-items: end;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   /* Removed margin-block-end: the parent .home-section already provides
      padding-block, so the extra gap pushed the footer too far down.
      移除底部 margin：父级 .home-section 已有 padding-block，额外的
@@ -878,22 +870,43 @@
   padding: clamp(1.5rem, 5vw, 3.5rem);
   background:
     radial-gradient(circle at 85% 10%, var(--ambient-mint), transparent 18rem),
-    var(--home-community-surface);
-  border-radius: var(--radius-md);
-  /* Restored rounded card mask: use inset box-shadow to reproduce the
-     card's rounded-rectangle silhouette without a hard 1px border line
-     (which was too prominent in dark mode). The edge-light + ambient
-     orb surface already provided the visual definition; adding the
-     inset shadow gives the soft border edge back at lower GPU cost
-     than backdrop-filter.
-     还原圆角卡片遮罩：使用 inset box-shadow 重现卡片的圆角矩形轮廓，
-     避免硬 1px border 线条（在深色模式下过于明显）。edge-light + 环境
-     光球表面已提供视觉定义；inset shadow 以低于 backdrop-filter 的
-     GPU 开销恢复柔和的边框边缘。 */
-  box-shadow:
-    inset 0 0 0 1px var(--glass-highlight),
-    var(--shadow-edge),
-    var(--glass-shadow);
+    var(--glass-refraction-fill), var(--home-community-surface);
+  box-shadow: var(--shadow-edge), var(--glass-shadow);
+  backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
+  /* Glass edge now matches .chapter-card: border + ::after conic-gradient
+     reflection + glass-refraction-fill background layer provide the same
+     glass-quality edge as the chapter cards above.
+     玻璃边缘现与 .chapter-card 一致：border + ::after conic-gradient
+     反射 + glass-refraction-fill 背景层提供与上方章节卡片相同的玻璃质感边缘。 */
+}
+
+/* Glass reflection edge for the community card — mirrors .chapter-card::after
+   so the community layout shares the same conic-gradient glass border as the
+   chapter cards. Uses static position (no bento cursor tracking) since the
+   community card is not interactive.
+   社区卡片玻璃反射边缘 —— 镜像 .chapter-card::after，使社区布局与章节卡片
+   共享相同的 conic-gradient 玻璃边框。使用静态位置（无 bento 光标追踪），
+   因为社区卡片非交互式。 */
+.home-community__layout::after {
+  position: absolute;
+  inset: 0;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  background: conic-gradient(
+      from 130deg,
+      var(--glass-reflection-cool),
+      transparent 28%,
+      var(--glass-reflection-warm) 52%,
+      transparent 76%,
+      var(--glass-reflection-cool)
+    )
+    border-box;
+  content: "";
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .home-community__layout > div:first-child {
@@ -1193,6 +1206,15 @@
   .home-community__actions {
     justify-content: flex-start;
   }
+
+  /* Mobile GPU fallback: reduce backdrop-filter blur to lower GPU pressure
+     on mobile devices. The glass effect is still visible at 4px but with
+     significantly less compositing cost.
+     移动端 GPU 降级：降低 backdrop-filter blur 以减轻移动端 GPU 压力。
+     4px 下玻璃效果仍可见但合成开销显著降低。 */
+  :is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"]) {
+    --home-map-card-blur: 4px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1285,7 +1307,7 @@
     padding-inline: 1rem;
   }
 
-  .chapter-grid {
+  :where(.chapter-grid) {
     display: block;
   }
 
