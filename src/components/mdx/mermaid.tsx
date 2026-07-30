@@ -38,6 +38,10 @@ import { resolveLocale } from '@/lib/i18n';
 // Start diagram work before it enters the viewport so scrolling never exposes an unloaded canvas.
 // 图表进入视口前提前启动渲染，避免滚动时暴露尚未加载的画布。
 const MERMAID_RENDER_ROOT_MARGIN = '600px 0px';
+// Keep wheel transforms transition-free until the input burst settles so the
+// pointer anchor remains exact throughout continuous zooming.
+// 连续滚轮输入结束前保持变换无过渡，确保整个缩放过程中指针锚点始终精确。
+const WHEEL_ZOOM_SETTLE_DELAY = 120;
 
 type MermaidCodeViewProps = {
   chart: string;
@@ -225,6 +229,7 @@ export function Mermaid({ chart }: { chart: string }) {
     isDragging,
     zoomIn,
     zoomOut,
+    zoomAtPoint,
     resetZoom,
     handlePointerDown,
     handlePointerMove,
@@ -288,6 +293,46 @@ export function Mermaid({ chart }: { chart: string }) {
     [toggleViewMode],
   );
 
+  // Install a non-passive wheel listener only on the maximized render canvas.
+  // Inline diagrams retain normal page scrolling, while maximized code view
+  // keeps its native editor scrolling. The hook compensates pan against the
+  // pointer position so zooming is anchored beneath the cursor.
+  // 仅在全屏渲染画布上安装非被动滚轮监听。页面内图表保留正常页面滚动，
+  // 全屏代码视图保留编辑器原生滚动；Hook 会依据指针位置补偿平移量，使缩放
+  // 锚定在光标下方。
+  useEffect(() => {
+    if (!isMaximized || viewMode !== 'render') return;
+
+    const canvas = wrapperRef.current?.querySelector<HTMLElement>('.mermaid-canvas');
+    const zoomTarget = canvas?.querySelector<HTMLElement>('.mermaid-zoom-target');
+    if (!canvas || !zoomTarget) return;
+
+    let settleTimer: ReturnType<typeof setTimeout> | undefined;
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      canvas.dataset.wheelZooming = 'true';
+      zoomAtPoint({
+        clientX: event.clientX,
+        clientY: event.clientY,
+        deltaY: event.deltaY,
+        deltaMode: event.deltaMode,
+        target: zoomTarget,
+      });
+
+      if (settleTimer) clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => {
+        delete canvas.dataset.wheelZooming;
+      }, WHEEL_ZOOM_SETTLE_DELAY);
+    };
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel);
+      if (settleTimer) clearTimeout(settleTimer);
+      delete canvas.dataset.wheelZooming;
+    };
+  }, [isMaximized, viewMode, zoomAtPoint]);
+
   // Imperative positioning avoids a React state update for every scroll event.
   // 命令式定位避免每次滚动事件都触发 React 状态更新。
   useAnchoredToolbarPosition(inPageWrapperRef, toolbarRef, toolbarVisible, isMaximized);
@@ -334,46 +379,52 @@ export function Mermaid({ chart }: { chart: string }) {
             <Code2 className="size-4" />
           </button>
         </div>
-        <span aria-hidden="true" className="mermaid-toolbar__divider" />
-        <button
-          type="button"
-          onClick={zoomOut}
-          disabled={!canZoomOut || viewMode === 'code'}
-          aria-label={labels.mermaidZoomOut}
-          className="mermaid-toolbar__btn"
-        >
-          <ZoomOut className="size-4" />
-        </button>
-        <span aria-live="polite" className="mermaid-toolbar__scale tabular-nums">
-          {Math.round(scale * 100)}%
-        </span>
-        <button
-          type="button"
-          onClick={zoomIn}
-          disabled={!canZoomIn || viewMode === 'code'}
-          aria-label={labels.mermaidZoomIn}
-          className="mermaid-toolbar__btn"
-        >
-          <ZoomIn className="size-4" />
-        </button>
-        <span aria-hidden="true" className="mermaid-toolbar__divider" />
-        <button
-          type="button"
-          onClick={resetZoom}
-          disabled={!canResetZoom || viewMode === 'code'}
-          aria-label={labels.mermaidReset}
-          className="mermaid-toolbar__btn"
-        >
-          <RotateCcw className="size-4" />
-        </button>
-        <button
-          type="button"
-          onClick={toggleMaximize}
-          aria-label={isMaximized ? labels.mermaidRestore : labels.mermaidMaximize}
-          className="mermaid-toolbar__btn"
-        >
-          {isMaximized ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
-        </button>
+        {/* Zoom controls share one segmented surface with the percentage readout.
+           缩放按钮与比例读数共用一个分段表面。 */}
+        <div className="mermaid-toolbar__group mermaid-toolbar__zoom-controls">
+          <button
+            type="button"
+            onClick={zoomOut}
+            disabled={!canZoomOut || viewMode === 'code'}
+            aria-label={labels.mermaidZoomOut}
+            className="mermaid-toolbar__btn"
+          >
+            <ZoomOut className="size-4" />
+          </button>
+          <span aria-live="polite" className="mermaid-toolbar__scale tabular-nums">
+            {Math.round(scale * 100)}%
+          </span>
+          <button
+            type="button"
+            onClick={zoomIn}
+            disabled={!canZoomIn || viewMode === 'code'}
+            aria-label={labels.mermaidZoomIn}
+            className="mermaid-toolbar__btn"
+          >
+            <ZoomIn className="size-4" />
+          </button>
+        </div>
+        {/* Canvas-level actions form the final compact segment.
+           画布级操作组成末尾的紧凑分段。 */}
+        <div className="mermaid-toolbar__group mermaid-toolbar__canvas-actions">
+          <button
+            type="button"
+            onClick={resetZoom}
+            disabled={!canResetZoom || viewMode === 'code'}
+            aria-label={labels.mermaidReset}
+            className="mermaid-toolbar__btn"
+          >
+            <RotateCcw className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={toggleMaximize}
+            aria-label={isMaximized ? labels.mermaidRestore : labels.mermaidMaximize}
+            className="mermaid-toolbar__btn"
+          >
+            {isMaximized ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
+          </button>
+        </div>
       </div>
     </div>
   );

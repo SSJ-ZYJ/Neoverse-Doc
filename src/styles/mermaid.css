@@ -538,11 +538,16 @@
    拖动期间同时关掉两个 transform 缓动，使平移与指针 1:1 跟随、无
    滞后；如果用户拖动时残留的 scale 值变化，也不会出现一帧缓动。
    `data-dragging` 移除后过渡自动恢复。 */
-.mermaid-canvas[data-dragging] .mermaid-zoom-target,
-.mermaid-canvas[data-dragging] .mermaid-zoom-target > .mermaid-svg-host {
+/* Dragging and pointer-anchored wheel zoom both require synchronous transforms:
+   easing either pan or scale independently would make the content slip away
+   from the active pointer before settling.
+   拖动与指针锚定滚轮缩放都需要同步变换：若平移或缩放单独缓动，内容会在
+   动画结束前短暂偏离当前指针。 */
+.mermaid-canvas:is([data-dragging], [data-wheel-zooming]) .mermaid-zoom-target,
+.mermaid-canvas:is([data-dragging], [data-wheel-zooming]) .mermaid-zoom-target > .mermaid-svg-host {
   transition: none;
-  /* Keep the compositor hint only for the active drag lifetime.
-     仅在拖动期间保留合成提示。 */
+  /* Keep the compositor hint only for the active interaction lifetime.
+     仅在活跃交互期间保留合成提示。 */
   will-change: transform;
 }
 
@@ -683,7 +688,7 @@
   }
 }
 
-/* Floating toolbar: a pill-shaped glass chip anchored to the bottom-center of
+/* Floating toolbar: a compact segmented glass bar anchored to the bottom-center of
    the wrapper. The full glass treatment (blur + tint + edge + shadow) lives
    directly on this element — identical to .glass-chip elsewhere in the project
    — so the toolbar reads as a single cohesive glass surface.
@@ -693,7 +698,7 @@
    intermediate stacking contexts like #nd-page. In maximized mode it stays
    inside the wrapper (position: absolute) since the maximized wrapper itself
    is already portaled to body.
-   悬浮工具栏：胶囊形玻璃 chip 锚定在 wrapper 底部居中。完整玻璃处理
+   悬浮工具栏：紧凑分段玻璃条锚定在 wrapper 底部居中。完整玻璃处理
    （模糊 + 底色 + 描边 + 阴影）直接落在本元素上，与项目中 .glass-chip
    一致，使工具栏呈现为单一完整的玻璃表面。
    非全屏模式下工具栏通过 Portal 挂到 document.body（position: fixed），
@@ -709,10 +714,10 @@
   display: grid;
   width: max-content;
   margin-inline: auto;
-  padding: 0.3125rem;
+  padding: 0.25rem;
   overflow: hidden;
   border: 1px solid var(--mermaid-toolbar-edge);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   background: var(--glass-refraction-fill), var(--mermaid-toolbar-tint);
   box-shadow: var(--mermaid-toolbar-shadow);
   -webkit-backdrop-filter: blur(var(--mermaid-toolbar-blur)) saturate(var(--glass-saturate))
@@ -810,7 +815,7 @@
   z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: 0.125rem;
+  gap: 0.25rem;
   transition:
     background-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease;
@@ -820,9 +825,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 9999px;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: var(--radius-xs);
   border: none;
   background: transparent;
   color: var(--fd-muted-foreground);
@@ -836,17 +841,19 @@
     transform var(--theme-transition-duration) cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.mermaid-toolbar__btn:hover:not(:disabled) {
-  background-color: var(--glass-control-hover-tint);
-  color: var(--fd-accent-foreground);
+@media (hover: hover) {
+  .mermaid-toolbar__btn:hover:not(:disabled) {
+    background-color: var(--mermaid-toolbar-control-hover-tint);
+    color: var(--fd-accent-foreground);
+  }
 }
 
 .mermaid-toolbar__btn:active:not(:disabled) {
-  transform: scale(0.92);
+  transform: scale(0.97);
 }
 
 .mermaid-toolbar__btn:disabled {
-  opacity: 0.4;
+  opacity: 0.34;
   cursor: not-allowed;
 }
 
@@ -868,21 +875,32 @@
 }
 
 .mermaid-toolbar__scale {
-  min-width: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.875rem;
+  height: 1.875rem;
   text-align: center;
   font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--fd-muted-foreground);
+  font-weight: 600;
+  color: var(--text-secondary);
   user-select: none;
-  padding-inline: 0.25rem;
+  padding-inline: 0.375rem;
 }
 
-.mermaid-toolbar__divider {
-  width: 1px;
-  height: 1.1rem;
-  background-color: var(--glass-border-hairline);
-  margin-inline: 0.25rem;
-  flex-shrink: 0;
+/* Every functional region uses the same borderless inset surface and compact
+   radius. The toolbar keeps one outer hairline instead of nested outlines.
+   每个功能区共用一致的无边框内嵌表面与紧凑圆角；工具栏仅保留最外层
+   发丝边，避免多级描边嵌套。 */
+.mermaid-toolbar__group,
+.mermaid-toolbar__view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 0.125rem;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background-color: var(--mermaid-toolbar-group-surface);
 }
 
 /* View mode segmented toggle: two buttons (render / code) grouped at the
@@ -891,17 +909,47 @@
    视图模式分段切换：工具栏起始处的两个按钮（渲染 / 代码）。激活按钮
    获得与悬浮一致的底色，明确指示当前视图模式。 */
 .mermaid-toolbar__view-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.125rem;
+  flex-shrink: 0;
 }
 
-/* Active segment uses the same hover tint as other toolbar buttons so the
-   visual language stays consistent. / 激活段使用与其他工具栏按钮一致的悬浮
-   底色，保持统一的视觉语言。 */
+/* Active and active-hover segments use progressively denser toolbar tokens so
+   the selected view remains clear on translucent light and dark surfaces.
+   激活与激活悬浮段使用逐级加深的工具栏 Token，使当前视图在深浅半透明
+   表面上都保持清晰。 */
 .mermaid-toolbar__view-btn[data-active] {
-  background-color: var(--glass-control-hover-tint);
+  background-color: var(--mermaid-toolbar-control-active-tint);
   color: var(--fd-accent-foreground);
+  box-shadow: var(--mermaid-toolbar-control-active-shadow);
+}
+
+@media (hover: hover) {
+  .mermaid-toolbar__view-btn[data-active]:hover:not(:disabled) {
+    background-color: var(--mermaid-toolbar-control-active-hover-tint);
+  }
+}
+
+/* Preserve the 40px touch targets on narrow screens while tightening only the
+   group padding, gaps, and percentage readout so the three segments still fit.
+   窄屏继续保留 40px 触控目标，仅收紧分组内边距、间距与比例读数，
+   确保三个分段仍可完整显示。 */
+@media (pointer: coarse) and (max-width: 24rem) {
+  .mermaid-toolbar {
+    padding: 0.1875rem;
+  }
+
+  .mermaid-toolbar__controls {
+    gap: 0.125rem;
+  }
+
+  .mermaid-toolbar__group,
+  .mermaid-toolbar__view-toggle {
+    padding: 0.0625rem;
+  }
+
+  .mermaid-toolbar__scale {
+    min-width: 2.25rem;
+    padding-inline: 0.125rem;
+  }
 }
 
 /* In-page renderer: keep this wrapper in the docs DOM at all times so the

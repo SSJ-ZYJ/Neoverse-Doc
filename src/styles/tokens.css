@@ -201,6 +201,28 @@
   --mermaid-toolbar-tint: var(--surface-glass);
   --mermaid-toolbar-tint-maximized: color-mix(in srgb, var(--surface-glass) 58%, transparent);
   --mermaid-toolbar-blur: 10px;
+  /* Translucent Mermaid control states keep the diagram visible beneath the
+     toolbar, with progressively denser accent layers for hover, active, and
+     active-hover feedback.
+     Mermaid 控件状态使用半透明底色，使工具栏下方图表仍然可见；悬浮、
+     激活与激活悬浮反馈按层级逐步提高强调色密度。 */
+  --mermaid-toolbar-control-hover-tint: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--accent-primary) 10%, var(--background-secondary)) 64%,
+    transparent
+  );
+  --mermaid-toolbar-control-active-tint: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--accent-primary) 16%, var(--background-secondary)) 68%,
+    transparent
+  );
+  --mermaid-toolbar-control-active-hover-tint: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--accent-primary) 22%, var(--background-secondary)) 72%,
+    transparent
+  );
+  --mermaid-toolbar-group-surface: var(--glass-control-surface);
+  --mermaid-toolbar-control-active-shadow: inset 0 1px 0 var(--glass-highlight);
   --mermaid-toolbar-edge: color-mix(
     in srgb,
     var(--border-interactive) 34%,
