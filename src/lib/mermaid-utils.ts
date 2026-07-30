@@ -8,6 +8,98 @@ export interface ExpandedViewBox {
 }
 
 const DEFAULT_BBOX_PADDING = 16;
+const GIT_BRANCH_LABEL_ALIGNMENT_TOLERANCE = 0.25;
+
+interface SvgPoint {
+  x: number;
+  y: number;
+}
+
+function transformPoint(matrix: DOMMatrix, x: number, y: number): SvgPoint {
+  return {
+    x: matrix.a * x + matrix.c * y + matrix.e,
+    y: matrix.b * x + matrix.d * y + matrix.f,
+  };
+}
+
+function getTransformedCenter(
+  element: SVGGraphicsElement,
+): { centerX: number; centerY: number } | null {
+  try {
+    const bounds = element.getBBox();
+    const matrix = element.getCTM();
+    if (!matrix) return null;
+
+    const corners = [
+      transformPoint(matrix, bounds.x, bounds.y),
+      transformPoint(matrix, bounds.x + bounds.width, bounds.y),
+      transformPoint(matrix, bounds.x, bounds.y + bounds.height),
+      transformPoint(matrix, bounds.x + bounds.width, bounds.y + bounds.height),
+    ];
+    const xValues = corners.map((point) => point.x);
+    const yValues = corners.map((point) => point.y);
+    const minX = Math.min(...xValues);
+    const maxX = Math.max(...xValues);
+    const minY = Math.min(...yValues);
+    const maxY = Math.max(...yValues);
+    if (![minX, maxX, minY, maxY].every(Number.isFinite)) return null;
+
+    return {
+      centerX: (minX + maxX) / 2,
+      centerY: (minY + maxY) / 2,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Mermaid gitGraph positions branch text and its background from the text
+ * height but ignores the glyph box's vertical origin. Re-center each generated
+ * label from its measured SVG bounds so every font and writing system remains
+ * aligned without a font-specific pixel offset.
+ *
+ * Mermaid gitGraph 仅依据文字高度定位分支文字与背景，却忽略字形边界的纵向
+ * 起点。根据实际 SVG 边界重新居中每个生成标签，避免为特定字体写死像素偏移，
+ * 并让不同字体与书写系统均保持对齐。
+ */
+export function alignGitBranchLabels(svg: SVGSVGElement): void {
+  const backgrounds = svg.querySelectorAll<SVGRectElement>('rect.branchLabelBkg');
+  const labels = svg.querySelectorAll<SVGGElement>('.branchLabel > .label');
+  const pairCount = Math.min(backgrounds.length, labels.length);
+
+  for (let index = 0; index < pairCount; index += 1) {
+    const background = backgrounds[index];
+    const label = labels[index];
+    if (!background || !label || label.dataset.mermaidTextAligned === 'true') continue;
+
+    const backgroundCenter = getTransformedCenter(background);
+    const labelCenter = getTransformedCenter(label);
+    const parent = label.parentNode;
+    const parentMatrix = parent instanceof SVGGraphicsElement ? parent.getCTM() : null;
+    const ownMatrix = label.transform.baseVal.consolidate()?.matrix;
+    if (!backgroundCenter || !labelCenter || !parentMatrix || !ownMatrix) continue;
+
+    const rootDeltaX = backgroundCenter.centerX - labelCenter.centerX;
+    const rootDeltaY = backgroundCenter.centerY - labelCenter.centerY;
+    const determinant = parentMatrix.a * parentMatrix.d - parentMatrix.b * parentMatrix.c;
+    if (!Number.isFinite(determinant) || Math.abs(determinant) < Number.EPSILON) continue;
+
+    const parentDeltaX = (parentMatrix.d * rootDeltaX - parentMatrix.c * rootDeltaY) / determinant;
+    const parentDeltaY = (-parentMatrix.b * rootDeltaX + parentMatrix.a * rootDeltaY) / determinant;
+
+    if (
+      Math.abs(parentDeltaX) > GIT_BRANCH_LABEL_ALIGNMENT_TOLERANCE ||
+      Math.abs(parentDeltaY) > GIT_BRANCH_LABEL_ALIGNMENT_TOLERANCE
+    ) {
+      label.setAttribute(
+        'transform',
+        `matrix(${ownMatrix.a} ${ownMatrix.b} ${ownMatrix.c} ${ownMatrix.d} ${ownMatrix.e + parentDeltaX} ${ownMatrix.f + parentDeltaY})`,
+      );
+    }
+    label.dataset.mermaidTextAligned = 'true';
+  }
+}
 
 /**
  * Preserve Mermaid's diagram-specific viewBox and expand it only when the
@@ -19,6 +111,7 @@ export function computeExpandedViewBox(
   svg: SVGSVGElement,
   padding = DEFAULT_BBOX_PADDING,
 ): ExpandedViewBox | null {
+  alignGitBranchLabels(svg);
   const vb = svg.viewBox.baseVal;
   const hasViewBox =
     [vb.x, vb.y, vb.width, vb.height].every(Number.isFinite) && vb.width > 0 && vb.height > 0;
@@ -68,6 +161,7 @@ export function computeExpandedViewBox(
  * responsive SVG), so the shared host always normalizes both axes to 100%.
  */
 export function applySvgFixes(svg: SVGSVGElement, viewBox: string): void {
+  alignGitBranchLabels(svg);
   if (svg.getAttribute('viewBox') !== viewBox) {
     svg.setAttribute('viewBox', viewBox);
   }

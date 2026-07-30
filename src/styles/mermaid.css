@@ -340,13 +340,11 @@
 .mermaid-svg-host :is(.label, .nodeLabel, .cluster-label, .edgeLabel, .messageText, .noteText) {
   color: var(--text-primary) !important;
   fill: var(--text-primary) !important;
-  font-family: var(--font-noto-sans), sans-serif !important;
 }
 
 .mermaid-svg-host :is(.cluster-label, .titleText, .sectionTitle) {
   color: var(--accent-primary) !important;
   fill: var(--accent-primary) !important;
-  font-weight: 680 !important;
 }
 
 .mermaid-svg-host :is(.edgeLabel rect, .labelBkg) {
@@ -385,7 +383,6 @@
 .mermaid-svg-host foreignObject div {
   color: var(--text-primary) !important;
   background: transparent !important;
-  line-height: 1.2 !important;
 }
 
 /* Transition labels remain readable without Mermaid's opaque purple blocks.
@@ -496,7 +493,6 @@
 .mermaid-svg-host :is(.branchLabel text, .branchLabel tspan) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
-  font-family: var(--font-noto-sans), sans-serif !important;
 }
 
 .mermaid-svg-host rect.commit-label-bkg {
@@ -525,14 +521,14 @@
   fill: var(--accent-primary) !important;
 }
 
-/* Mermaid measures node labels before SVG insertion; keep the measured label
-   box free of decorative overflow clipping and late line-height expansion.
-   Mermaid 在插入 SVG 前测量节点标签；避免裁剪和后置行高变化造成文字显示不全。 */
-.mermaid-svg-host .node foreignObject,
+/* Mermaid measures HTML labels before SVG insertion. Metric-sensitive styles
+   are supplied through Mermaid's themeCSS during that measurement; the host
+   only keeps every generated foreignObject and label overflow visible.
+   Mermaid 在插入 SVG 前测量 HTML 标签。影响度量的样式通过 themeCSS 在测量
+   阶段提供；宿主样式仅确保所有生成的 foreignObject 与标签溢出保持可见。 */
+.mermaid-svg-host foreignObject,
 .mermaid-svg-host :is(.nodeLabel, .nodeLabel p) {
   overflow: visible !important;
-  margin: 0 !important;
-  line-height: 1.2 !important;
 }
 
 /* While dragging, skip the easing transition on BOTH transforms so the

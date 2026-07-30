@@ -15,6 +15,30 @@ type MermaidApi = typeof import('mermaid')['default'];
 let counter = 0;
 let mermaidPromise: Promise<MermaidApi> | undefined;
 
+// Metric-sensitive label styles must be present while Mermaid measures its
+// temporary SVG. Applying them only after injection can shift baselines or make
+// an already-measured foreignObject clip its text.
+// 影响文字度量的标签样式必须在 Mermaid 测量临时 SVG 时就已生效；若仅在注入后
+// 应用，会导致基线偏移，或使已完成测量的 foreignObject 裁剪文字。
+const MERMAID_METRIC_THEME_CSS = `
+  .cluster-label {
+    font-weight: 680;
+  }
+
+  foreignObject,
+  .node foreignObject {
+    overflow: visible;
+  }
+
+  foreignObject div,
+  .nodeLabel,
+  .nodeLabel p {
+    line-height: 1.2;
+    margin: 0;
+    overflow: visible;
+  }
+`;
+
 function loadMermaid() {
   mermaidPromise ??= import('mermaid').then((module) => module.default);
   return mermaidPromise;
@@ -48,6 +72,7 @@ export function useMermaidRender(chart: string, theme: 'dark' | 'default', enabl
         startOnLoad: false,
         theme: 'base',
         fontFamily: 'inherit',
+        themeCSS: MERMAID_METRIC_THEME_CSS,
         flowchart: {
           htmlLabels: true,
           useMaxWidth: false,
