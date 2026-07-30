@@ -57,6 +57,16 @@
     box-shadow var(--motion-fast, 260ms) var(--motion-ease-standard, ease);
 }
 
+/* File rows keep a quiet neutral outline at rest, so hover strengthens an
+   existing surface instead of introducing a frame abruptly.
+   文件行在默认状态保留克制的中性细框，使悬浮反馈只增强已有表面而非突然出现外框。 */
+.mdx-files__file,
+#nd-page .mdx-files__file {
+  border-color: var(--glass-border-hairline, rgb(148 163 184 / 20%));
+  background: var(--glass-control-surface, rgb(148 163 184 / 8%));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light, white) 18%, transparent);
+}
+
 .mdx-files__trigger {
   width: 100%;
   font-family: inherit;

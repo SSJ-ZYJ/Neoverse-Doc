@@ -28,6 +28,7 @@ import { Noto_Sans_SC, Orbitron } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { ImmersiveInteractionController } from '@/components/immersive-interaction-controller';
 import ImmersiveScrollbar from '@/components/immersive-scrollbar';
+import { InlineCodeWrapController } from '@/components/inline-code-wrap-controller';
 import { i18n } from '@/lib/i18n';
 import '@/app/globals.css';
 // Route loading styles are imported at the root CSS entry for Turbopack tracking.
@@ -76,6 +77,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Scoped light and particles provide activation feedback without page-level cursor tracking.
               局部光感与粒子提供激活反馈，不进行页面级光标跟踪。 */}
           <ImmersiveInteractionController />
+          {/* Responsive inline-code detection distinguishes wrapped continuation fragments.
+              响应式行内代码检测用于区分发生换行的续接片段。 */}
+          <InlineCodeWrapController />
           {/* Custom viewport scrollbar removes the browser's default white gutter.
               自定义视口滚动条移除浏览器默认白色滚动槽。 */}
           <ImmersiveScrollbar />
