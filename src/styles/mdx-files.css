@@ -1,0 +1,188 @@
+/**
+ * File hierarchy styling follows the documentation glass surfaces and motion tokens.
+ * 文件层级样式复用文档页的玻璃表面与动效令牌。
+ */
+
+.mdx-files {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 0.25rem;
+  overflow: hidden;
+  margin-block: 1.25rem;
+  padding: 0.625rem;
+  border: 1px solid var(--glass-border-hairline, rgb(148 163 184 / 20%));
+  border-radius: var(--radius-md, 0.875rem);
+  background:
+    var(--glass-refraction-fill, linear-gradient(145deg, rgb(255 255 255 / 8%), transparent)),
+    var(--glass-tint, rgb(15 23 42 / 48%));
+  box-shadow:
+    var(--shadow-edge, inset 0 1px 0 rgb(255 255 255 / 8%)),
+    var(--glass-shadow, 0 18px 50px -32px rgb(14 34 44 / 38%));
+  backdrop-filter: blur(var(--glass-blur-soft, 8px)) saturate(var(--glass-saturate, 132%));
+  transition:
+    border-color var(--theme-transition-duration, 520ms) ease,
+    background-color var(--theme-transition-duration, 520ms) ease,
+    box-shadow var(--theme-transition-duration, 520ms) ease;
+}
+
+.mdx-files__folder,
+.mdx-files__children {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.mdx-files__item,
+#nd-page .mdx-files__item {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr) 0.875rem;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+  margin: 0;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 0.625rem);
+  color: var(--text-secondary, #64748b);
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  text-align: start;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  transition:
+    color var(--motion-fast, 260ms) var(--motion-ease-standard, ease),
+    border-color var(--motion-fast, 260ms) var(--motion-ease-standard, ease),
+    background-color var(--motion-fast, 260ms) var(--motion-ease-standard, ease),
+    box-shadow var(--motion-fast, 260ms) var(--motion-ease-standard, ease);
+}
+
+.mdx-files__trigger {
+  width: 100%;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.mdx-files__trigger:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.mdx-files__icon,
+.mdx-files__indicator {
+  display: inline-grid;
+  place-items: center;
+  color: var(--text-muted, #94a3b8);
+  transition:
+    color var(--motion-fast, 260ms) var(--motion-ease-standard, ease),
+    transform var(--motion-fast, 260ms) var(--motion-ease-standard, ease);
+}
+
+.mdx-files__icon svg,
+.mdx-files__indicator svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  stroke-width: 1.8;
+}
+
+.mdx-files__label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mdx-files__content {
+  overflow: hidden;
+}
+
+.mdx-files__children {
+  position: relative;
+  margin-inline-start: 0.575rem;
+  padding-block: 0.0625rem;
+  padding-inline-start: 0.8rem;
+}
+
+.mdx-files__children::before {
+  position: absolute;
+  inset-block: 0.25rem;
+  inset-inline-start: 0;
+  width: 1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--accent-primary, #38bdf8) 55%, transparent),
+    var(--border-subtle, rgb(148 163 184 / 20%)) 55%,
+    transparent
+  );
+  content: "";
+}
+
+.mdx-files__folder[data-state="open"] > .mdx-files__trigger,
+#nd-page .mdx-files__folder[data-state="open"] > .mdx-files__trigger {
+  border-color: color-mix(
+    in srgb,
+    var(--border-interactive, rgb(56 189 248 / 44%)) 72%,
+    transparent
+  );
+  color: var(--text-primary, #f8fafc);
+  background: color-mix(in srgb, var(--accent-primary, #38bdf8) 10%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light, white) 28%, transparent);
+}
+
+.mdx-files__folder[data-state="open"] > .mdx-files__trigger .mdx-files__icon {
+  color: var(--accent-primary, #38bdf8);
+}
+
+.mdx-files__folder[data-state="open"] > .mdx-files__trigger .mdx-files__indicator {
+  color: var(--accent-primary, #38bdf8);
+  transform: rotate(90deg);
+}
+
+.mdx-files__item:focus-visible {
+  outline: 2px solid var(--focus-ring, var(--accent-primary, #38bdf8));
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* The outer file-tree card mirrors code blocks with a stronger glass shadow and no lift.
+     文件树最外层卡片与代码块一致，仅增强玻璃阴影而不发生位移。 */
+  .mdx-files:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--border-interactive, rgb(56 189 248 / 44%)) 38%,
+      var(--glass-border-hairline, rgb(148 163 184 / 20%))
+    );
+    box-shadow:
+      var(--shadow-edge, inset 0 1px 0 rgb(255 255 255 / 8%)),
+      var(--glass-shadow-hover, 0 16px 44px -34px var(--accent-primary, #38bdf8));
+  }
+
+  .mdx-files__item:hover,
+  #nd-page .mdx-files__item:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--border-interactive, rgb(56 189 248 / 44%)) 52%,
+      transparent
+    );
+    color: var(--text-primary, #f8fafc);
+    background: var(
+      --glass-control-hover-tint,
+      color-mix(in srgb, var(--accent-primary, #38bdf8) 12%, transparent)
+    );
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--edge-light, white) 24%, transparent),
+      0 0.75rem 2rem -1.5rem var(--accent-primary, #38bdf8);
+  }
+
+  .mdx-files__item:hover .mdx-files__icon,
+  .mdx-files__item:hover .mdx-files__indicator {
+    color: var(--accent-primary, #38bdf8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mdx-files__item,
+  .mdx-files__icon,
+  .mdx-files__indicator {
+    transition: none;
+  }
+}

@@ -752,3 +752,22 @@
     backdrop-filter: none !important;
   }
 }
+
+/* Code block language icons: PowerShell and CMD/Batch ship fixed brand colors
+   (#5391FE / #424242) that wash out or vanish against dark surfaces. In dark
+   mode, override the injected SVG path fill with lighter variants that keep the
+   brand hue while restoring contrast. The attribute selector matches the exact
+   fill value emitted by transformer-icon so CSS `fill` (higher priority than
+   the presentation attribute) takes over in dark contexts only.
+   代码块语言图标：PowerShell 与 CMD/Batch 使用固定品牌色
+   (#5391FE / #424242)，在深色表面上会褪色或几乎不可见。深色模式下覆盖
+   注入的 SVG path fill 为更浅的变体，保留品牌色相并恢复对比度。属性
+   选择器精确匹配 transformer-icon 输出的 fill 值，使 CSS fill（优先级
+   高于 presentation attribute）仅在深色上下文生效。 */
+.dark .shiki path[fill="#5391FE"] {
+  fill: #7ba8fc;
+}
+
+.dark .shiki path[fill="#424242"] {
+  fill: #9ca3af;
+}

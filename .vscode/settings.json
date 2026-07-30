@@ -26,5 +26,7 @@
     "editor.defaultFormatter": "biomejs.biome"
   },
   "css.lint.unknownAtRules": "ignore",
-  "mdx-preview.preview.enableScripts": true
+  "mdx-preview.preview.enableScripts": true,
+  "mdx-preview.framework": "nextjs",
+  "mdx-preview.preview.customCss": "./src/styles/mdx-files.css"
 }

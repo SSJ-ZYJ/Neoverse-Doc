@@ -1,0 +1,7 @@
+{
+  "components": {
+    "File": "./src/components/mdx/mdx-preview-shims.tsx",
+    "Files": "./src/components/mdx/mdx-preview-shims.tsx",
+    "Folder": "./src/components/mdx/mdx-preview-shims.tsx"
+  }
+}

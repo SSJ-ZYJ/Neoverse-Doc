@@ -18,6 +18,7 @@ import {
   LearningPath,
   ResourceLink,
 } from '@/components/mdx/doc-cards';
+import { File, Files, Folder } from '@/components/mdx/files';
 import { Mermaid } from '@/components/mdx/mermaid';
 
 const projectMdxComponents = {
@@ -32,6 +33,11 @@ const projectMdxComponents = {
   FeatureCard,
   LearningPath,
   ResourceLink,
+  // Fumadocs file hierarchy components replace character-drawn directory trees in documents.
+  // Fumadocs 文件层级组件用于替代文档中以字符绘制的目录树。
+  File,
+  Files,
+  Folder,
 } satisfies MDXComponents;
 
 export function getMdxComponents(overrides?: MDXComponents): MDXComponents {
