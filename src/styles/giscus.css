@@ -43,6 +43,63 @@
   min-inline-size: 0;
 }
 
+/* Theme-switch fade for giscus iframe. The cross-origin iframe swaps its
+   theme stylesheet when the `theme` prop changes, briefly showing unstyled
+   colors (visible on the comment input box) before the new CSS loads.
+   //
+   // Strategy: hide the iframe INSTANTLY (transition: none) the moment
+   // `data-switching` is set, keep it hidden for 400ms while giscus swaps its
+   // CSS via postMessage, then fade it back in smoothly (240ms transition).
+   //
+   // Why no fade-out transition? A fade-out takes time (even 80ms), during
+   // which the iframe is partially visible. If giscus's CSS swap happens
+   // within that window, the user sees a partial flash — the "click moment
+   // flicker". With `transition: none`, `opacity:0` applies in the same
+   // frame the attribute is set, so the iframe is fully hidden before the
+   // browser paints the unstyled state.
+   //
+   // `useLayoutEffect` (in guestbook.tsx) sets `data-switching` synchronously
+   // after React commit, before paint — combined with `transition: none`,
+   // this guarantees the iframe is invisible before the user can see the
+   // CSS swap.
+   //
+   // 主题切换时渐隐 giscus iframe。`theme` prop 变化时，跨域 iframe 会
+   // 切换主题样式表，在新 CSS 加载完成前短暂显示未样式化的颜色
+   // （在评论输入框上尤为可见）。
+   //
+   // 策略：`data-switching` 激活的瞬间**立即**隐藏 iframe（transition:
+   // none），保持隐藏 400ms 让 giscus 通过 postMessage 完成 CSS 切换，
+   // 然后平滑渐显回来（240ms transition）。
+   //
+   // 为什么渐隐不用 transition？渐隐需要时间（哪怕 80ms），期间 iframe
+   // 部分可见。若 giscus 的 CSS 切换恰好发生在这个窗口内，用户就会
+   // 看到部分闪烁——即"点击瞬间"的闪烁。使用 `transition: none`，
+   // `opacity:0` 在 attribute 设置的同一帧立即生效，iframe 在浏览器
+   // paint 未样式化状态前就已完全隐藏。
+   //
+   // `useLayoutEffect`（guestbook.tsx）在 React commit 后、paint 前
+   // 同步设置 `data-switching`，配合 `transition: none`，确保 iframe
+   // 在用户能看到 CSS 切换前就已不可见。 */
+.giscus-shell > giscus-widget,
+.giscus-shell .giscus,
+.giscus-shell .giscus-frame {
+  /* Fade-in only: applied when `data-switching` is removed. */
+  /* 仅渐显：在 `data-switching` 移除时生效。 */
+  transition: opacity 240ms var(--motion-ease-standard);
+}
+
+.giscus-shell[data-switching] > giscus-widget,
+.giscus-shell[data-switching] .giscus,
+.giscus-shell[data-switching] .giscus-frame {
+  opacity: 0;
+  /* Instant hide — no fade-out. Ensures the iframe is fully invisible in the
+     same frame `data-switching` is set, before the browser can paint the
+     unstyled state during giscus's CSS swap. */
+  /* 立即隐藏——无渐隐。确保 iframe 在 `data-switching` 设置的同一帧就
+     完全不可见，先于浏览器在 giscus CSS 切换期间 paint 未样式化状态。 */
+  transition: none;
+}
+
 /* Newer giscus-component releases expose the iframe as a shadow part; the
    legacy class selector above remains as a harmless compatibility fallback.
    新版 giscus-component 通过 shadow part 暴露 iframe；上方旧类名选择器保留为兼容回退。 */
