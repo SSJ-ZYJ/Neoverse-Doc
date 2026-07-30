@@ -9,6 +9,12 @@
   --surface-subtle: rgb(255 255 255 / 30%);
   --surface-elevated: rgb(255 255 255 / 54%);
   --surface-glass: rgb(244 250 255 / 34%);
+  /* Light language controls use a denser base, neutral hairline, and lifted
+     shadows to remain visibly refractive without an accent-colored outline.
+     浅色语言控件使用更有密度的底板、中性细边与抬升阴影，在保持折射感的同时避免强调色描边。 */
+  --glass-language-popover-surface: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+  --glass-language-popover-border: var(--glass-border-hairline);
+  --glass-language-popover-shadow: var(--shadow-edge), var(--shadow-popover);
   --border-subtle: rgb(15 23 42 / 11%);
   --border-interactive: rgb(14 165 233 / 42%);
   --text-primary: #0f172a;
@@ -52,6 +58,12 @@
   --surface-subtle: rgb(15 23 42 / 24%);
   --surface-elevated: rgb(17 25 45 / 46%);
   --surface-glass: rgb(10 18 35 / 26%);
+  /* Dark language controls preserve the established graphite surface, quiet
+     hairline, and luminous ambient depth.
+     深色语言控件保留现有石墨表面、克制细边与明亮环境层次。 */
+  --glass-language-popover-surface: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+  --glass-language-popover-border: var(--glass-border-hairline);
+  --glass-language-popover-shadow: var(--shadow-edge), var(--glass-shadow);
   --border-subtle: rgb(226 232 240 / 13%);
   --border-interactive: rgb(56 189 248 / 44%);
   --text-primary: #f8fafc;
@@ -130,6 +142,10 @@
   --glass-tint-medium: var(--surface-glass);
   --glass-tint-soft: var(--surface-subtle);
   --glass-tint-search: color-mix(in srgb, var(--surface-glass) 68%, transparent);
+  /* Header actions share the search trigger's refractive surface while keeping
+     their component-specific dimensions and interactions.
+     标题栏操作统一复用搜索按钮的折射表面，同时保留各自尺寸与交互。 */
+  --glass-nav-control-surface: color-mix(in srgb, var(--surface-glass) 72%, transparent);
   /* Document-scene tokens keep the reading canvas, navigation surfaces, and
      diagrams on one palette without coupling their rules to raw colors.
      文档场景 Token 统一阅读画布、导航表面与图表配色，避免各自样式直接绑定原始颜色。 */

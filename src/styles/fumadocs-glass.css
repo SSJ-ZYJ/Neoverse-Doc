@@ -1882,12 +1882,10 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
   max-width: min(12rem, calc(100vw - 1rem)) !important;
   gap: 0.25rem !important;
   padding: 0.25rem !important;
+  border-color: var(--glass-language-popover-border) !important;
   border-radius: var(--radius-sm) !important;
-  background:
-    var(--glass-refraction-fill), color-mix(in srgb, var(--glass-tint-strong) 82%, transparent) !important;
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow) !important;
+  background: var(--glass-refraction-fill), var(--glass-language-popover-surface) !important;
+  box-shadow: var(--glass-language-popover-shadow) !important;
 }
 
 /* Language popover header: keep the localized label available to assistive tech
@@ -2015,7 +2013,7 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
    四边折射，与主题切换、语言按钮完全一致。 */
 #nd-nav button[data-search],
 #nd-nav button[data-search-full] {
-  background-color: var(--glass-tint-soft) !important;
+  background: var(--glass-refraction-fill), var(--glass-nav-control-surface) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
@@ -2083,7 +2081,7 @@ button:has(
 #nd-home-layout
   #nd-nav
   button[aria-expanded]:not([data-theme-toggle]):not([data-search]):not([data-search-full]) {
-  background-color: var(--glass-tint-soft) !important;
+  background: var(--glass-refraction-fill), var(--glass-nav-control-surface) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
@@ -2129,7 +2127,7 @@ button:has(
    结构匹配。这里用属性选择器匹配 fumadocs 内置的 popover trigger。 */
 #nd-nav button[aria-haspopup="menu"]:has(svg.lucide-languages),
 #nd-nav button:has(> svg.lucide-languages) {
-  background-color: var(--glass-tint-soft) !important;
+  background: var(--glass-refraction-fill), var(--glass-nav-control-surface) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))

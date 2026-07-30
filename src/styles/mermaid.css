@@ -230,6 +230,16 @@
   inset-block-start: 50%;
   inset-inline-start: 50%;
   display: block;
+  /* Semantic Git Graph branch palette shared by normal and maximized hosts.
+     普通与放大态 SVG 宿主共用的 Git Graph 语义分支色板。 */
+  --mermaid-git-branch-0: var(--accent-primary);
+  --mermaid-git-branch-1: var(--accent-tertiary);
+  --mermaid-git-branch-2: var(--accent-secondary);
+  --mermaid-git-branch-3: color-mix(in srgb, var(--accent-primary) 52%, var(--accent-tertiary));
+  --mermaid-git-branch-4: color-mix(in srgb, var(--accent-secondary) 58%, var(--accent-tertiary));
+  --mermaid-git-branch-5: color-mix(in srgb, var(--accent-primary) 54%, var(--accent-secondary));
+  --mermaid-git-branch-6: color-mix(in srgb, var(--text-secondary) 35%, var(--accent-tertiary));
+  --mermaid-git-branch-7: color-mix(in srgb, var(--accent-primary) 34%, var(--accent-secondary));
   width: var(--svg-w, 0px);
   height: var(--svg-h, 0px);
   transform: translate(-50%, -50%) scale(var(--mermaid-scale, 1));
@@ -408,6 +418,113 @@
   stroke-width: 1.75px !important;
 }
 
+/* Git Graph uses diagram-specific branch, commit, label, and arrow classes
+   instead of the generic Mermaid node classes. Map all eight supported branch
+   slots to semantic project colors so Mermaid's base-theme dark-mode
+   lightening cannot collapse every branch to white. Commit and branch labels
+   use theme-aware surfaces and text for readable contrast in both themes.
+   Git Graph 使用图型专属的分支、提交、标签和连线 class，而非通用 Mermaid
+   节点 class。将其支持的八个分支槽映射到项目语义色，避免 Mermaid base
+   主题的深色提亮把所有分支压成白色；提交与分支标签使用主题感知表面和文字，
+   在深浅主题下均保持可读对比度。 */
+.mermaid-svg-host :is(.commit0, .commit-highlight0, .arrow0, .branch0, .label0, .branch-label0) {
+  --mermaid-git-branch-color: var(--mermaid-git-branch-0);
+}
+
+.mermaid-svg-host :is(.commit1, .commit-highlight1, .arrow1, .branch1, .label1, .branch-label1) {
+  --mermaid-git-branch-color: var(--mermaid-git-branch-1);
+}
+
+.mermaid-svg-host :is(.commit2, .commit-highlight2, .arrow2, .branch2, .label2, .branch-label2) {
+  --mermaid-git-branch-color: var(--mermaid-git-branch-2);
+}
+
+.mermaid-svg-host :is(.commit3, .commit-highlight3, .arrow3, .branch3, .label3, .branch-label3) {
+  --mermaid-git-branch-color: var(--mermaid-git-branch-3);
+}
+
+.mermaid-svg-host :is(.commit4, .commit-highlight4, .arrow4, .branch4, .label4, .branch-label4) {
+  --mermaid-git-branch-color: var(--mermaid-git-branch-4);
+}
+
+.mermaid-svg-host :is(.commit5, .commit-highlight5, .arrow5, .branch5, .label5, .branch-label5) {
+  --mermaid-git-branch-color: var(--mermaid-git-branch-5);
+}
+
+.mermaid-svg-host :is(.commit6, .commit-highlight6, .arrow6, .branch6, .label6, .branch-label6) {
+  --mermaid-git-branch-color: var(--mermaid-git-branch-6);
+}
+
+.mermaid-svg-host :is(.commit7, .commit-highlight7, .arrow7, .branch7, .label7, .branch-label7) {
+  --mermaid-git-branch-color: var(--mermaid-git-branch-7);
+}
+
+.mermaid-svg-host path.arrow {
+  stroke: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
+}
+
+.mermaid-svg-host .commit {
+  fill: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
+  stroke: color-mix(
+    in srgb,
+    var(--mermaid-git-branch-color, var(--accent-primary)) 78%,
+    var(--edge-light)
+  ) !important;
+  stroke-width: 1.25px !important;
+}
+
+.mermaid-svg-host :is(.commit-merge, .commit-reverse, .commit-highlight-inner) {
+  fill: var(--docs-canvas-surface) !important;
+  stroke: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-svg-host rect.branchLabelBkg {
+  fill: color-mix(
+    in srgb,
+    var(--mermaid-git-branch-color, var(--accent-primary)) 24%,
+    var(--surface-elevated)
+  ) !important;
+  stroke: color-mix(
+    in srgb,
+    var(--mermaid-git-branch-color, var(--accent-primary)) 72%,
+    var(--edge-light)
+  ) !important;
+  stroke-width: 1px !important;
+}
+
+.mermaid-svg-host :is(.branchLabel text, .branchLabel tspan) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-noto-sans), sans-serif !important;
+}
+
+.mermaid-svg-host rect.commit-label-bkg {
+  fill: color-mix(in srgb, var(--surface-elevated) 86%, var(--accent-soft)) !important;
+  stroke: var(--border-subtle) !important;
+  stroke-width: 0.75px !important;
+  opacity: 1 !important;
+}
+
+.mermaid-svg-host text.commit-label {
+  fill: var(--text-secondary) !important;
+  color: var(--text-secondary) !important;
+}
+
+.mermaid-svg-host .tag-label-bkg {
+  fill: color-mix(in srgb, var(--surface-elevated) 84%, var(--accent-soft)) !important;
+  stroke: var(--border-interactive) !important;
+}
+
+.mermaid-svg-host :is(.tag-label, .gitTitleText) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.mermaid-svg-host .tag-hole {
+  fill: var(--accent-primary) !important;
+}
+
 /* Mermaid measures node labels before SVG insertion; keep the measured label
    box free of decorative overflow clipping and late line-height expansion.
    Mermaid 在插入 SVG 前测量节点标签；避免裁剪和后置行高变化造成文字显示不全。 */
@@ -478,17 +595,19 @@
   }
 }
 
-/* Code view: a scrollable container holding the editable textarea. It fills
-   the canvas width and grows with content up to a clear cap; shorter sources
-   show in full with no scrollbar, longer ones enable vertical scrolling.
-   代码视图：可滚动容器承载可编辑文本域。填满画布宽度，随内容增长至上限；
-   短源码完整展示无滚动条，长源码启用垂直滚动。 */
+/* Code view: a scrollable container holding the editable textarea. It uses the
+   same available width as the render canvas. Its natural content height is
+   capped by the fitted rendered-diagram height; the fixed values remain only
+   as a first-render fallback before measurement is available.
+   代码视图：可滚动容器承载可编辑文本域，使用与渲染画布相同的可用宽度。
+   自然内容高度以适配后的渲染图高度为上限；固定值仅在测量完成前作为首帧兜底。 */
 .mermaid-code-view {
   position: relative;
   z-index: 1;
   width: 100%;
-  min-height: 8rem;
-  max-height: 28rem;
+  min-height: 0;
+  height: var(--mermaid-code-content-height, 8rem);
+  max-height: var(--mermaid-code-render-height, 28rem);
   overflow: auto;
   /* Immersive scrollbar: hidden by default (like code blocks), only revealed
      on hover or while scrolling. Firefox via scrollbar-width; WebKit via the
@@ -538,8 +657,9 @@
 .mermaid-code-editor {
   display: block;
   width: 100%;
-  min-height: 8rem;
-  height: 100%;
+  min-height: 0;
+  height: var(--mermaid-code-content-height, 8rem);
+  overflow: hidden;
   /* Disable the native resize handle — the code-view container manages its own
      max-height and scroll. Allowing the user to drag-resize the textarea would
      conflict with the canvas layout and the immersive scrollbar.
@@ -879,26 +999,24 @@
   isolation: isolate;
 }
 
-/* In maximize + code view, switch the canvas to grid centering so the code-view
-   is reliably horizontally AND vertically centered. Flex centering with
-   width:100% + max-width left the code-view stuck at flex-start in some cases;
-   grid place-items: center guarantees centering regardless of the child's
-   width. / 全屏 + 代码视图下，将画布切换为 grid 居中，使代码视图可靠地
-   水平和垂直居中。flex 居中配合 width:100% + max-width 在某些情况下
-   仍停留在 flex-start；grid place-items: center 无论子元素宽度如何都能保证居中。 */
+/* In maximize + code view, use an explicit full-width grid track. The editor
+   stretches across the same canvas content box as the render view while
+   remaining vertically centered.
+   / 全屏 + 代码视图下使用显式的全宽网格轨道。编辑器拉伸到与渲染视图相同的
+   画布内容区域，同时保持垂直居中。 */
 .mermaid-wrapper[data-maximized] .mermaid-canvas[data-view="code"] {
   display: grid;
-  place-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  justify-items: stretch;
 }
 
-/* Constrain the code-view width and remove the max-height cap so the editor
-   fills the viewport height while staying horizontally centered by the grid.
-   / 约束代码视图宽度并移除最大高度限制，使编辑器填满视口高度，
-   同时由 grid 保证水平居中。 */
+/* Maximized code uses the full render-canvas width. Its shared dynamic height
+   rules still shrink short sources and cap long sources at the fitted diagram
+   height. / 放大态代码使用完整渲染画布宽度；共享的动态高度规则仍让短源码
+   按自身收缩，并将长源码限制在适配后的图表高度内。 */
 .mermaid-wrapper[data-maximized] .mermaid-code-view {
-  max-height: none;
-  height: 100%;
-  width: min(100%, 60rem);
+  width: 100%;
 }
 
 /* Dim + blur backdrop for maximize mode. Portaled to <body> by the

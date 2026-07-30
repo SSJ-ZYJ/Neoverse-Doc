@@ -39,11 +39,13 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
     setScale((s) => Math.max(MIN_SCALE, +(s - SCALE_STEP).toFixed(2)));
   }, []);
 
-  // Reset accepts the active canvas fit instead of assuming 100%, so wide
-  // mobile diagrams return to a fully visible inline size after maximize.
-  // 重置接收当前画布适配比例，不再固定回到 100%，确保移动端宽图退出全屏后完整可见。
-  const resetZoomTo = useCallback((targetScale: number) => {
-    setScale(Math.min(MAX_SCALE, Math.max(MIN_SCALE, targetScale)));
+  // Reset restores the logical 100% zoom. The separate fit scale keeps an
+  // oversized diagram fully visible without leaking its physical ratio into
+  // the toolbar percentage.
+  // 重置恢复逻辑 100% 缩放；独立适配比例继续保证超大图完整可见，且不会把
+  // 物理适配比例泄漏到工具栏百分比中。
+  const resetZoom = useCallback(() => {
+    setScale(DEFAULT_SCALE);
     setPan(ORIGIN);
   }, []);
 
@@ -101,7 +103,7 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
     isDragging,
     zoomIn,
     zoomOut,
-    resetZoomTo,
+    resetZoom,
     handlePointerDown,
     handlePointerMove,
     endDrag,

@@ -52,6 +52,14 @@ export function useMermaidRender(chart: string, theme: 'dark' | 'default', enabl
           htmlLabels: true,
           useMaxWidth: false,
         },
+        // gitGraph otherwise emits a width-only responsive SVG. The shared
+        // renderer normalizes both axes, and fixed intrinsic output prevents
+        // the Git-specific layout from being measured against a transient 0px host.
+        // gitGraph 默认输出仅含宽度的响应式 SVG；共享渲染器会统一归一化宽高，
+        // 固有尺寸输出可避免 Git 专用布局在临时 0px 宿主中被错误测量。
+        gitGraph: {
+          useMaxWidth: false,
+        },
         sequence: {
           useMaxWidth: false,
         },

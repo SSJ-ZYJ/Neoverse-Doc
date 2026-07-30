@@ -1,72 +1,79 @@
-// Hook: computes the largest scale at which the diagram fits inside the
-// current canvas without overflow and applies it on initial inline render.
-// 自定义 Hook：计算图表在当前画布内不溢出的最大缩放，并在行内初次渲染时应用。
+// Hook: computes the non-interactive base scale that keeps every Mermaid
+// diagram inside the active canvas and viewport without changing the user's
+// logical zoom level.
+// 自定义 Hook：计算 Mermaid 图表在当前画布与视口内完整显示所需的非交互基础
+// 比例，且不改变用户看到的逻辑缩放级别。
 
 'use client';
 
-import {
-  type Dispatch,
-  type RefObject,
-  type SetStateAction,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
-import { MAX_SCALE } from './use-zoom-and-pan';
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useState } from 'react';
 
-const INLINE_FIT_RATIO = 0.96;
+// Leave a small block-axis gutter so a tall inline diagram and its frame can
+// remain visible inside one browser viewport.
+// 在块轴保留小幅安全间距，使纵向长图及其外框能在一个浏览器视口内完整显示。
+const INLINE_VIEWPORT_GUTTER = 32;
+const DEFAULT_FIT_SCALE = 1;
+const SCALE_EPSILON = 0.0005;
 
 export function useFitCanvasScale(
   svgNatural: { width: number; height: number },
   canvasRef: RefObject<HTMLDivElement | null>,
   isMaximized: boolean,
-  setScale: Dispatch<SetStateAction<number>>,
 ) {
-  const fitCanvasScaleRef = useRef(MAX_SCALE);
-  const [fitCanvasScale, setFitCanvasScale] = useState(1);
+  const [fitCanvasScale, setFitCanvasScale] = useState(DEFAULT_FIT_SCALE);
 
   const recomputeFitCanvasScale = useCallback(() => {
     const svgW = svgNatural.width;
     const svgH = svgNatural.height;
-    if (svgW <= 0 || svgH <= 0) {
-      fitCanvasScaleRef.current = MAX_SCALE;
-      return MAX_SCALE;
-    }
+    if (svgW <= 0 || svgH <= 0) return DEFAULT_FIT_SCALE;
+
     const canvas = canvasRef.current;
-    if (!canvas) {
-      fitCanvasScaleRef.current = MAX_SCALE;
-      return MAX_SCALE;
-    }
+    if (!canvas) return DEFAULT_FIT_SCALE;
+
     const cs = window.getComputedStyle(canvas);
     const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
     const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
     const availW = canvas.clientWidth - padX;
-    const availH = canvas.clientHeight - padY;
-    if (availW <= 0 || availH <= 0) {
-      fitCanvasScaleRef.current = MAX_SCALE;
-      return MAX_SCALE;
-    }
-    fitCanvasScaleRef.current = Math.min(MAX_SCALE, (availW / svgW) * INLINE_FIT_RATIO);
-    // Small diagrams keep their natural content size; only oversized diagrams
-    // are reduced to the available reading width. This content-derived scale
-    // becomes the stable frame used after initial render.
-    // 小图保持内容自然尺寸，仅将超出阅读宽度的大图缩小；该内容适配比例随后锁定画布框。
-    setFitCanvasScale(Math.min(1, fitCanvasScaleRef.current));
-    return fitCanvasScaleRef.current;
-  }, [svgNatural.width, svgNatural.height, canvasRef]);
+    const viewportH = window.visualViewport?.height ?? window.innerHeight;
+    const availH = isMaximized
+      ? canvas.clientHeight - padY
+      : viewportH - INLINE_VIEWPORT_GUTTER - padY;
+    if (availW <= 0 || availH <= 0) return DEFAULT_FIT_SCALE;
+
+    // The base scale never enlarges small diagrams. Oversized diagrams use the
+    // stricter width/height ratio, so horizontal, vertical, and mixed Mermaid
+    // formats stay fully visible at the logical 100% zoom level.
+    // 基础比例不放大小图；超大图采用宽高约束中更严格的一项，使横向、纵向及
+    // 混合 Mermaid 图型均能在逻辑 100% 缩放下完整显示。
+    const nextScale = Math.min(DEFAULT_FIT_SCALE, availW / svgW, availH / svgH);
+    setFitCanvasScale((currentScale) =>
+      Math.abs(currentScale - nextScale) <= SCALE_EPSILON ? currentScale : nextScale,
+    );
+    return nextScale;
+  }, [svgNatural.width, svgNatural.height, canvasRef, isMaximized]);
 
   useLayoutEffect(() => {
-    const fitScale = recomputeFitCanvasScale();
-    if (!isMaximized) setScale(Math.min(1, fitScale));
-  }, [recomputeFitCanvasScale, isMaximized, setScale]);
+    recomputeFitCanvasScale();
+  }, [recomputeFitCanvasScale]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    const canvas = canvasRef.current;
+    const observer =
+      canvas && typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(recomputeFitCanvasScale)
+        : null;
+    if (canvas) observer?.observe(canvas);
     window.addEventListener('resize', recomputeFitCanvasScale);
-    return () => window.removeEventListener('resize', recomputeFitCanvasScale);
-  }, [recomputeFitCanvasScale]);
+    window.visualViewport?.addEventListener('resize', recomputeFitCanvasScale);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', recomputeFitCanvasScale);
+      window.visualViewport?.removeEventListener('resize', recomputeFitCanvasScale);
+    };
+  }, [canvasRef, recomputeFitCanvasScale]);
 
   return fitCanvasScale;
 }

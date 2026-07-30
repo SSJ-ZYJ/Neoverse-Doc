@@ -843,7 +843,9 @@
 
 @media (hover: hover) {
   .chapter-card:hover {
-    border-color: var(--border-interactive);
+    /* Removed: border-color: var(--border-interactive) —— 蓝色描边在 hover 时
+       出现于卡片最外侧，与下方 ::after conic-gradient 玻璃反射边框叠加产生
+       "重影"。仅保留阴影与抬升反馈，让玻璃反射边框独占边缘表达。 */
     box-shadow: var(--shadow-edge), var(--shadow-interactive);
     transform: translateY(-2px);
   }
@@ -1140,8 +1142,7 @@
   ) {
   border: 1px solid var(--glass-border-hairline) !important;
   border-radius: var(--radius-xs) !important;
-  background:
-    var(--glass-refraction-fill), color-mix(in srgb, var(--surface-glass) 72%, transparent) !important;
+  background: var(--glass-refraction-fill), var(--glass-nav-control-surface) !important;
   box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
 }
@@ -1186,7 +1187,9 @@
       button[aria-haspopup="dialog"]:has(> svg.lucide-languages),
       button[aria-haspopup="menu"]:has(> svg.lucide-languages)
     ):hover {
-    border-color: var(--border-interactive) !important;
+    /* Removed: border-color: var(--border-interactive) —— 悬浮时按钮外缘出现
+       蓝色高亮描边。仅保留背景 tint 与玻璃辉光投影，避免与默认 hairline
+       border 叠加产生"重影"。 */
     background: var(--glass-refraction-fill), var(--glass-control-hover-tint) !important;
     box-shadow: var(--shadow-edge), var(--glass-shadow-hover) !important;
   }

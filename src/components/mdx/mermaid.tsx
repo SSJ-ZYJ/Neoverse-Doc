@@ -15,7 +15,15 @@
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { Code2, Eye, Maximize, Minimize, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { type CSSProperties, useCallback, useEffect, useId, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { getPageDictionary } from '@/dictionaries';
 import { useAnchoredToolbarPosition } from '@/lib/hooks/use-anchored-toolbar-position';
@@ -30,6 +38,103 @@ import { resolveLocale } from '@/lib/i18n';
 // Start diagram work before it enters the viewport so scrolling never exposes an unloaded canvas.
 // 图表进入视口前提前启动渲染，避免滚动时暴露尚未加载的画布。
 const MERMAID_RENDER_ROOT_MARGIN = '600px 0px';
+
+type MermaidCodeViewProps = {
+  chart: string;
+  editorLabel: string;
+  renderedDiagramHeight: number;
+  onChartChange: (chart: string) => void;
+};
+
+// Measure the editable source at its current width so short Mermaid code uses
+// only its natural height, while longer code scrolls within the rendered
+// diagram's height. Each mounted view owns its refs because maximize mode keeps
+// both an in-page placeholder and a portaled copy in the DOM.
+// 按当前宽度测量可编辑源码，使较短 Mermaid 代码仅占自身自然高度，较长代码
+// 则在渲染图高度内滚动。每个已挂载视图独立持有 ref，因为放大模式会同时在
+// DOM 中保留文档内占位副本和 Portal 副本。
+function MermaidCodeView({
+  chart,
+  editorLabel,
+  renderedDiagramHeight,
+  onChartChange,
+}: MermaidCodeViewProps) {
+  const codeViewRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const [contentHeight, setContentHeight] = useState(0);
+
+  const measureContentHeight = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const previousHeight = editor.style.height;
+    editor.style.height = '0px';
+    const nextHeight = editor.scrollHeight;
+    editor.style.height = previousHeight;
+    setContentHeight((currentHeight) =>
+      currentHeight === nextHeight ? currentHeight : nextHeight,
+    );
+  }, []);
+
+  useLayoutEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || editor.value !== chart.replace(/\r\n/g, '\n')) return;
+
+    measureContentHeight();
+
+    const codeView = codeViewRef.current;
+    if (!codeView || typeof ResizeObserver === 'undefined') return;
+
+    let measuredWidth = codeView.getBoundingClientRect().width;
+    const observer = new ResizeObserver(([entry]) => {
+      const nextWidth = entry?.contentRect.width ?? measuredWidth;
+      if (Math.abs(nextWidth - measuredWidth) < 0.5) return;
+      measuredWidth = nextWidth;
+      measureContentHeight();
+    });
+    observer.observe(codeView);
+
+    return () => observer.disconnect();
+  }, [chart, measureContentHeight]);
+
+  // CSS keeps the previous fixed limits as first-render fallbacks. Once both
+  // measurements exist, content height controls the editor and the rendered
+  // diagram height caps only the scrollable viewport.
+  // CSS 保留原固定限制作为首帧兜底；两项测量完成后，内容高度控制编辑器，
+  // 渲染图高度仅限制可滚动视口。
+  const codeViewStyle = {
+    ...(contentHeight > 0 ? { '--mermaid-code-content-height': `${contentHeight}px` } : undefined),
+    ...(renderedDiagramHeight > 0
+      ? { '--mermaid-code-render-height': `${renderedDiagramHeight}px` }
+      : undefined),
+  } as CSSProperties;
+
+  return (
+    <div ref={codeViewRef} className="mermaid-code-view" style={codeViewStyle}>
+      <textarea
+        ref={editorRef}
+        className="mermaid-code-editor"
+        value={chart}
+        onChange={(event) => onChartChange(event.target.value)}
+        spellCheck={false}
+        aria-label={editorLabel}
+        onKeyDown={(event) => {
+          if (event.key !== 'Tab') return;
+
+          event.preventDefault();
+          const target = event.currentTarget;
+          const start = target.selectionStart;
+          const end = target.selectionEnd;
+          const newValue = `${target.value.slice(0, start)}  ${target.value.slice(end)}`;
+          onChartChange(newValue);
+          requestAnimationFrame(() => {
+            target.selectionStart = target.selectionEnd = start + 2;
+          });
+        }}
+      />
+    </div>
+  );
+}
 
 export function Mermaid({ chart }: { chart: string }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -120,7 +225,7 @@ export function Mermaid({ chart }: { chart: string }) {
     isDragging,
     zoomIn,
     zoomOut,
-    resetZoomTo,
+    resetZoom,
     handlePointerDown,
     handlePointerMove,
     endDrag,
@@ -128,28 +233,29 @@ export function Mermaid({ chart }: { chart: string }) {
     canZoomIn,
   } = useZoomAndPan();
   const { svgNatural } = useSvgViewBoxExpander(svgContent, inPageWrapperRef, wrapperRef);
-  const { isMaximized, toggleMaximize } = useMermaidMaximize(
-    scale,
-    setScale,
-    pan,
-    setPan,
-    svgNatural,
-  );
-  const fitCanvasScale = useFitCanvasScale(svgNatural, canvasRef, isMaximized, setScale);
-  // Reset targets the measured fit for whichever canvas is active; this also
-  // keeps the disabled state accurate when a wide inline diagram is already fitted.
-  // 重置以当前画布实测适配比例为目标；宽图已正确适配时，按钮禁用状态也保持准确。
-  const canResetToFit = Math.abs(scale - fitCanvasScale) > 0.005 || pan.x !== 0 || pan.y !== 0;
+  const { isMaximized, toggleMaximize } = useMermaidMaximize(scale, setScale, pan, setPan);
+  const fitCanvasScale = useFitCanvasScale(svgNatural, canvasRef, isMaximized);
+  // Reuse the rendered diagram's fitted block size as the code viewport cap.
+  // The code component still shrinks below this value when its content is shorter.
+  // 复用渲染图适配后的块轴尺寸作为代码视口上限；代码内容更短时仍会收缩。
+  const renderedDiagramHeight = svgNatural.height * fitCanvasScale;
+  // Reset concerns only the user's logical zoom and pan. Automatic fitting is
+  // a separate base transform, so every diagram starts and resets to 100%.
+  // 重置只处理用户的逻辑缩放与平移；自动适配是独立基础变换，因此每张图
+  // 的初始与重置比例始终为 100%。
+  const canResetZoom = Math.abs(scale - 1) > 0.005 || pan.x !== 0 || pan.y !== 0;
 
-  // The fit scale locks the canvas layout frame; interactive scale is applied
-  // only to the centered SVG host so toolbar zoom never resizes the canvas.
-  // 适配比例锁定画布布局框；交互缩放仅作用于居中的 SVG，工具栏缩放不会改变画布尺寸。
+  // The fit scale locks the canvas layout frame and combines with the logical
+  // user scale only for painting. Toolbar zoom never resizes the canvas, while
+  // its percentage remains relative to the fitted 100% baseline.
+  // 适配比例锁定画布布局框，仅在绘制时与用户逻辑比例相乘；工具栏缩放不会
+  // 改变画布尺寸，其百分比始终相对于适配后的 100% 基线。
   const zoomStyle = {
     '--svg-w': `${svgNatural.width}px`,
     '--svg-h': `${svgNatural.height}px`,
     '--svg-frame-w': `${svgNatural.width * fitCanvasScale}px`,
     '--svg-frame-h': `${svgNatural.height * fitCanvasScale}px`,
-    '--mermaid-scale': scale,
+    '--mermaid-scale': fitCanvasScale * scale,
     '--mermaid-pan-x': `${pan.x}px`,
     '--mermaid-pan-y': `${pan.y}px`,
     // Pass the instance-scoped filter id to CSS so .node elements can reference
@@ -253,8 +359,8 @@ export function Mermaid({ chart }: { chart: string }) {
         <span aria-hidden="true" className="mermaid-toolbar__divider" />
         <button
           type="button"
-          onClick={() => resetZoomTo(fitCanvasScale)}
-          disabled={!canResetToFit || viewMode === 'code'}
+          onClick={resetZoom}
+          disabled={!canResetZoom || viewMode === 'code'}
           aria-label={labels.mermaidReset}
           className="mermaid-toolbar__btn"
         >
@@ -318,28 +424,12 @@ export function Mermaid({ chart }: { chart: string }) {
           )}
         </div>
       ) : (
-        <div className="mermaid-code-view">
-          <textarea
-            className="mermaid-code-editor"
-            value={editedChart}
-            onChange={(e) => setEditedChart(e.target.value)}
-            spellCheck={false}
-            aria-label={labels.mermaidCodeEditor}
-            onKeyDown={(e) => {
-              if (e.key === 'Tab') {
-                e.preventDefault();
-                const target = e.currentTarget;
-                const start = target.selectionStart;
-                const end = target.selectionEnd;
-                const newValue = `${target.value.slice(0, start)}  ${target.value.slice(end)}`;
-                setEditedChart(newValue);
-                requestAnimationFrame(() => {
-                  target.selectionStart = target.selectionEnd = start + 2;
-                });
-              }
-            }}
-          />
-        </div>
+        <MermaidCodeView
+          chart={editedChart}
+          editorLabel={labels.mermaidCodeEditor}
+          renderedDiagramHeight={renderedDiagramHeight}
+          onChartChange={setEditedChart}
+        />
       )}
     </div>
   );

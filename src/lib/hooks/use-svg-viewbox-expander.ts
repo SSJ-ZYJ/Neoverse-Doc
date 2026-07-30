@@ -21,7 +21,14 @@ export function useSvgViewBoxExpander(
 
   // Compute and apply the expanded viewBox once the SVG content is injected.
   useLayoutEffect(() => {
-    if (!svgContent) return;
+    // Clear the previous chart measurement before handling a newly rendered
+    // diagram so switching diagram types can never reuse a stale viewBox.
+    // 处理新图表前清除旧测量，避免切换图型时复用过期 viewBox。
+    expandedViewBoxRef.current = null;
+    if (!svgContent) {
+      setSvgNatural({ width: 0, height: 0 });
+      return;
+    }
     const wrapper = inPageWrapperRef.current;
     if (!wrapper) return;
     const svg = wrapper.querySelector<SVGSVGElement>('.mermaid-svg-host > svg');
@@ -38,10 +45,12 @@ export function useSvgViewBoxExpander(
   // Re-apply the expanded viewBox after every commit. React replaces the SVG
   // element on each parent re-render, so the [svgContent]-scoped effect above
   // is not enough: any setState (zoom, pan, maximize, theme) would reset it.
-  // A guard skips the DOM write when the viewBox is already correct.
+  // applySvgFixes guards each attribute independently: some Mermaid renderers
+  // can restore their original width/height while keeping the same viewBox.
   // 每次 commit 后重新应用扩展 viewBox。React 在父组件重渲染时会替换 SVG
   // 节点，仅依赖 [svgContent] 的上方的 effect 不够：任何 setState（缩放、
-  // 平移、最大化、主题）都会重置它。加 guard 跳过 viewBox 已正确时的 DOM 写入。
+  // 平移、最大化、主题）都会重置它。applySvgFixes 会分别检查各属性，因为
+  // 部分 Mermaid 渲染器会保留 viewBox 却恢复其原始宽高。
   useLayoutEffect(() => {
     const stored = expandedViewBoxRef.current;
     if (!stored) return;
@@ -51,7 +60,6 @@ export function useSvgViewBoxExpander(
       if (!wrapper) continue;
       const svg = wrapper.querySelector<SVGSVGElement>('.mermaid-svg-host > svg');
       if (!svg) continue;
-      if (svg.getAttribute('viewBox') === stored.viewBox) continue;
       applySvgFixes(svg, stored.viewBox);
     }
   });
