@@ -71,10 +71,23 @@ function MermaidCodeView({
     const editor = editorRef.current;
     if (!editor) return;
 
+    // Preserve scroll position across the height collapse below. Temporarily
+    // shrinking the textarea to 0px makes the scroll container's content
+    // shorter than its viewport, which clamps scrollTop to 0 in the browser
+    // and is never restored — leaving the code view jumped back to the top.
+    // 测量前保存滚动位置。下方将 textarea 高度临时塌缩为 0px 会使滚动
+    // 容器内容短于视口，浏览器会把 scrollTop 钳制为 0 且不会自动还原，
+    // 导致代码视图跳回顶部。
+    const codeView = codeViewRef.current;
+    const savedScrollTop = codeView?.scrollTop ?? 0;
+
     const previousHeight = editor.style.height;
     editor.style.height = '0px';
     const nextHeight = editor.scrollHeight;
     editor.style.height = previousHeight;
+
+    if (codeView) codeView.scrollTop = savedScrollTop;
+
     setContentHeight((currentHeight) =>
       currentHeight === nextHeight ? currentHeight : nextHeight,
     );

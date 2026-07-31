@@ -27,6 +27,6 @@
   },
   "css.lint.unknownAtRules": "ignore",
   "mdx-preview.preview.enableScripts": true,
-  "mdx-preview.framework": "nextjs",
+  "mdx-preview.framework": "auto",
   "mdx-preview.preview.customCss": "./src/styles/mdx-files.css"
 }
