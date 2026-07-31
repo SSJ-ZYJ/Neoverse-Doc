@@ -38,10 +38,13 @@ import { resolveLocale } from '@/lib/i18n';
 // Start diagram work before it enters the viewport so scrolling never exposes an unloaded canvas.
 // 图表进入视口前提前启动渲染，避免滚动时暴露尚未加载的画布。
 const MERMAID_RENDER_ROOT_MARGIN = '600px 0px';
-// Keep wheel transforms transition-free until the input burst settles so the
-// pointer anchor remains exact throughout continuous zooming.
-// 连续滚轮输入结束前保持变换无过渡，确保整个缩放过程中指针锚点始终精确。
-const WHEEL_ZOOM_SETTLE_DELAY = 120;
+// Keep the wheel-zoom transition active briefly after the last wheel event so
+// the final 140ms glide can finish before the default (longer) transitions
+// resume. Without this buffer, switching transition durations mid-flight
+// would cause a visible hitch at the end of a zoom burst.
+// 最后一次滚轮事件后短暂保留滚轮过渡，使最后的 140ms 滑行能在默认（更长）
+// 过渡恢复前完成。否则过渡时长在飞行中切换会在缩放 bursts 末尾造成可见顿挫。
+const WHEEL_ZOOM_SETTLE_DELAY = 180;
 
 type MermaidCodeViewProps = {
   chart: string;

@@ -538,16 +538,25 @@
    拖动期间同时关掉两个 transform 缓动，使平移与指针 1:1 跟随、无
    滞后；如果用户拖动时残留的 scale 值变化，也不会出现一帧缓动。
    `data-dragging` 移除后过渡自动恢复。 */
-/* Dragging and pointer-anchored wheel zoom both require synchronous transforms:
-   easing either pan or scale independently would make the content slip away
-   from the active pointer before settling.
-   拖动与指针锚定滚轮缩放都需要同步变换：若平移或缩放单独缓动，内容会在
-   动画结束前短暂偏离当前指针。 */
-.mermaid-canvas:is([data-dragging], [data-wheel-zooming]) .mermaid-zoom-target,
-.mermaid-canvas:is([data-dragging], [data-wheel-zooming]) .mermaid-zoom-target > .mermaid-svg-host {
+.mermaid-canvas[data-dragging] .mermaid-zoom-target,
+.mermaid-canvas[data-dragging] .mermaid-zoom-target > .mermaid-svg-host {
   transition: none;
-  /* Keep the compositor hint only for the active interaction lifetime.
-     仅在活跃交互期间保留合成提示。 */
+  will-change: transform;
+}
+
+/* Wheel zoom uses a synchronized short transition on BOTH pan and scale so
+   each tick glides smoothly instead of snapping. Giving pan and scale the
+   same duration and easing keeps the pointer anchor locked — both transforms
+   reach the new state at the same instant, so content never slips away from
+   the cursor. Consecutive wheel events re-target the running transition
+   naturally, producing a continuous glide.
+   滚轮缩放给平移与缩放使用相同的短过渡，使每次滚轮平滑滑动而非瞬切。
+   pan 与 scale 使用相同时长与缓动确保指针锚点锁定 —— 两个变换同时到达
+   目标，内容不会偏离光标。连续滚轮事件会自然地重新定向正在进行的过渡，
+   产生连续滑行效果。 */
+.mermaid-canvas[data-wheel-zooming] .mermaid-zoom-target,
+.mermaid-canvas[data-wheel-zooming] .mermaid-zoom-target > .mermaid-svg-host {
+  transition: transform 140ms var(--motion-ease-standard);
   will-change: transform;
 }
 
