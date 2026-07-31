@@ -196,3 +196,32 @@
     transition: none;
   }
 }
+
+/* When the file tree is nested inside a markdown-details collapsible block,
+   strip its own glass card surface (border, shadow, backdrop, background) so
+   it visually merges into the details container instead of producing a doubled
+   glass border that looks visually heavy.
+   .markdown-details > *:not(summary) already overrides padding/margin.
+   当文件树嵌套在 markdown-details 折叠块内时，移除其自身的玻璃卡片表面
+   (边框、阴影、背景、backdrop)，使其融入 details 容器，避免双层玻璃边框
+   叠加造成的视觉厚重感。
+   .markdown-details > *:not(summary) 已覆盖 padding/margin。 */
+.markdown-details .mdx-files {
+  border: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* Suppress the outer card hover border/shadow for nested Files so the
+     doubled glass border does not reappear on hover. Inner item hover
+     feedback remains intact via .mdx-files__item:hover rules above.
+     抑制嵌套 Files 外层卡片的悬浮边框/阴影，避免悬浮时双层玻璃边框
+     重新出现。内部 item 的悬浮反馈仍由 .mdx-files__item:hover 控制。 */
+  .markdown-details .mdx-files:hover {
+    border-color: transparent;
+    box-shadow: none;
+  }
+}

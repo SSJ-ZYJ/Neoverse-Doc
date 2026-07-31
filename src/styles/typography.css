@@ -613,6 +613,19 @@ figure.shiki .line > span:empty::before {
   display: none;
 }
 
+/* MDX parses text inside a JSX <summary> as a <p> element, which inherits UA
+   default margins and inflates the summary height. GFM Alert-rendered
+   summaries keep their text as phrasing content (no <p> wrapper), so they
+   are not affected. Strip the paragraph margin to keep the example summary
+   visually consistent with the GFM Alert variant.
+   MDX 会将 JSX <summary> 内的文本解析为 <p> 元素，其继承的 UA 默认 margin
+   会撑高 summary 高度。GFM Alert 渲染的 summary 文本保持为短语内容
+   (无 <p> 包裹)，不受影响。移除段落 margin 以使示例 summary 与
+   GFM Alert 变体视觉一致。 */
+.markdown-details-summary > p {
+  margin: 0;
+}
+
 /* Default icon for plain DETAILS / 普通 DETAILS 默认图标 */
 .markdown-details-type-details::before {
   content: "";
