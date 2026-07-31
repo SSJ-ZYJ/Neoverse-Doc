@@ -12,6 +12,15 @@ export const REPO_URL = 'https://github.com/SSJ-ZYJ/Neoverse-Doc';
 // 首页 footer 项目元信息。
 export const PROJECT_START_YEAR = 2026;
 
+// Open-source license references — code uses the MIT License at /LICENSE,
+// documentation content is licensed under CC BY-NC-SA 4.0.
+// 开源协议引用：代码遵循 /LICENSE 中的 MIT 协议，
+// 文档内容遵循 CC BY-NC-SA 4.0 协议。
+export const CODE_LICENSE_NAME = 'MIT';
+export const CODE_LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
+export const DOCS_LICENSE_NAME = 'CC BY-NC-SA 4.0';
+export const DOCS_LICENSE_URL = 'https://creativecommons.org/licenses/by-nc-sa/4.0/';
+
 // Primary author (Shenshijun)
 // 主要作者（Shenshijun）
 export const AUTHOR_NAME = 'Shenshijun';

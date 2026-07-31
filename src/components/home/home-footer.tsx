@@ -9,6 +9,10 @@ import {
   AUTHOR_NAME,
   CO_AUTHOR_GITHUB_URL,
   CO_AUTHOR_NAME,
+  CODE_LICENSE_NAME,
+  CODE_LICENSE_URL,
+  DOCS_LICENSE_NAME,
+  DOCS_LICENSE_URL,
   PROJECT_START_YEAR,
   REPO_URL,
 } from '@/lib/site-config';
@@ -80,20 +84,43 @@ export function HomeFooter({ locale }: HomeFooterProps) {
             </a>
           </span>
           <span className="home-footer__revision">
-            <a
-              className="home-footer__link home-footer__commit"
-              href={commitHref}
-              rel="noreferrer"
-              target="_blank"
-            >
+            <span aria-hidden="true">(</span>
+            <a className="home-footer__link" href={commitHref} rel="noreferrer" target="_blank">
               {gitInfo.commitId ?? dict.homeFooterUnavailable}
             </a>
-            <span aria-hidden="true"> @ </span>
+            <span aria-hidden="true">{` @ `}</span>
             {gitInfo.commitDateIso ? (
               <time dateTime={gitInfo.commitDateIso}>{commitDate}</time>
             ) : (
               commitDate
             )}
+            <span aria-hidden="true">)</span>
+          </span>
+        </p>
+        {/* Open-source license row: code is MIT, documentation is CC BY-NC-SA 4.0.
+            开源协议行：代码遵循 MIT，文档内容遵循 CC BY-NC-SA 4.0。 */}
+        <p className="home-footer__row home-footer__row--license">
+          <span className="home-footer__license-item">
+            <span>{dict.homeFooterCodeLicenseLabel}: </span>
+            <a
+              className="home-footer__link"
+              href={CODE_LICENSE_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {CODE_LICENSE_NAME}
+            </a>
+          </span>
+          <span className="home-footer__license-item">
+            <span>{dict.homeFooterDocsLicenseLabel}: </span>
+            <a
+              className="home-footer__link"
+              href={DOCS_LICENSE_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {DOCS_LICENSE_NAME}
+            </a>
           </span>
         </p>
       </div>

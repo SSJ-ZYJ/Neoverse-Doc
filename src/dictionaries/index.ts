@@ -62,6 +62,9 @@ export interface Dictionary {
   homeFooterLastCommit: string;
   homeFooterAuthor: string;
   homeFooterUnavailable: string;
+  // Homepage footer license labels / 首页 footer 协议标签
+  homeFooterCodeLicenseLabel: string;
+  homeFooterDocsLicenseLabel: string;
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: string;
   mermaidZoomIn: string;

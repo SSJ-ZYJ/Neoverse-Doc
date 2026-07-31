@@ -57,6 +57,9 @@ export const zh = {
   homeFooterLastCommit: '最后提交',
   homeFooterAuthor: '作者',
   homeFooterUnavailable: '未知',
+  // Homepage footer license labels / 首页 footer 协议标签
+  homeFooterCodeLicenseLabel: '项目源码协议',
+  homeFooterDocsLicenseLabel: '文档协议',
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: '缩小图表',
   mermaidZoomIn: '放大图表',

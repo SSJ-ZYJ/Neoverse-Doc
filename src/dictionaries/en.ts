@@ -61,6 +61,9 @@ export const en = {
   homeFooterLastCommit: 'Last commit',
   homeFooterAuthor: 'Author',
   homeFooterUnavailable: 'Unknown',
+  // Homepage footer license labels / 首页 footer 协议标签
+  homeFooterCodeLicenseLabel: 'Source code license',
+  homeFooterDocsLicenseLabel: 'Docs license',
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: 'Zoom out',
   mermaidZoomIn: 'Zoom in',

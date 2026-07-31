@@ -1075,7 +1075,8 @@
 
 .home-footer__authors,
 .home-footer__project-state,
-.home-footer__revision {
+.home-footer__revision,
+.home-footer__license-item {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -1083,8 +1084,31 @@
   gap: 0.3rem;
 }
 
+/* Revision row collapses its gap so the wrapping parentheses sit flush
+   against the commit id and date; the " @ " separator carries its own
+   spacing via its inner spaces.
+   修订行折叠间距，使括号紧贴 commit id 与日期；"@ " 分隔符的空格由
+   其文本节点自行承载。 */
+.home-footer__revision {
+  gap: 0;
+  /* Flex items are blockified, which trims leading/trailing whitespace inside
+     each child span. Preserve spaces in " @ " so the commit id and date stay
+     separated from the @ separator.
+     flex item 会被块化，导致每个子 span 首尾空白被裁剪。保留 " @ " 中的
+     空格，使 commit id 与日期与 @ 分隔符之间保持间距。 */
+  white-space: pre-wrap;
+}
+
 .home-footer__row--project {
   column-gap: 0.65rem;
+}
+
+/* License row uses the same centered flex rhythm as the project row, with a
+   slightly wider gap so the two license groups (code / docs) read as pairs.
+   协议行复用项目行的居中 flex 节奏，略宽的间距使两组协议（代码 / 文档）
+   作为成对单元更易阅读。 */
+.home-footer__row--license {
+  column-gap: 0.85rem;
 }
 
 .home-footer__link {
@@ -1094,13 +1118,12 @@
   transition: color var(--motion-fast) var(--motion-ease-standard);
 }
 
-.home-footer__commit {
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, var(--border-subtle));
-  border-radius: var(--radius-xs);
-  padding-inline: 0.35rem;
-  color: var(--accent-primary);
-  font-family: var(--font-mono);
-  background: color-mix(in srgb, var(--accent-soft) 72%, transparent);
+/* The commit id link inherits the surrounding text color but uses a heavier
+   weight so it stands out as the revision identifier within the sentence.
+   commit id 链接继承周围文本颜色，但字重加粗，突出作为修订标识。 */
+.home-footer__revision .home-footer__link {
+  color: inherit;
+  font-weight: 700;
 }
 
 /* Dark mode keeps the footer quiet and graphite-based while preserving the
