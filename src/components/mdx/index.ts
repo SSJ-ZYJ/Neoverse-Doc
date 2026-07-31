@@ -20,10 +20,14 @@ import {
 } from '@/components/mdx/doc-cards';
 import { File, Files, Folder } from '@/components/mdx/files';
 import { Mermaid } from '@/components/mdx/mermaid';
+import { MdxListItem } from '@/components/mdx/task-list-item';
 
 const projectMdxComponents = {
   ...defaultMdxComponents,
   details: CollapsibleDetailsRenderer,
+  // GFM task-list items become interactive while ordinary list items stay native.
+  // GFM 任务列表项获得交互能力，普通列表项仍保持原生渲染。
+  li: MdxListItem,
   Mermaid,
   pre: CustomCodeBlock,
   Tabs,

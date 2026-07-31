@@ -64,6 +64,10 @@ export const en = {
   // Homepage footer license labels / 首页 footer 协议标签
   homeFooterCodeLicenseLabel: 'Source code license',
   homeFooterDocsLicenseLabel: 'Docs license',
+  // Interactive Markdown task-list labels / 可交互 Markdown 任务清单标签
+  taskListComplete: 'Mark “{title}” as completed',
+  taskListReopen: 'Move “{title}” back to active',
+  taskListItem: 'Task item',
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: 'Zoom out',
   mermaidZoomIn: 'Zoom in',

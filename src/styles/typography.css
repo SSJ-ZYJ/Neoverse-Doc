@@ -1,5 +1,120 @@
-/* Typography styles: code blocks, blockquotes, alerts, and inline code.
-   排版样式：代码块、引用块、提示框、行内代码。 */
+/* Typography styles: task lists, code blocks, blockquotes, alerts, and inline code.
+   排版样式：任务清单、代码块、引用块、提示框、行内代码。 */
+
+/* ── Interactive Task Lists / 可交互任务清单 ─────────────────────────── */
+
+/* Standard GFM `- [ ]` lists become compact glass rows without changing the
+   authoring syntax. Normal unordered lists keep their existing typography.
+   标准 GFM `- [ ]` 清单以紧凑玻璃行呈现，不改变文档编写语法；
+   普通无序列表继续沿用现有排版。 */
+#nd-page ul.contains-task-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-block: 1.25rem;
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+#nd-page li.mdx-task-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--glass-border-hairline) 82%, transparent);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--edge-light) 9%, transparent), transparent 34%),
+    color-mix(in srgb, var(--surface-subtle) 58%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 52%, transparent);
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard),
+    opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+#nd-page li.mdx-task-item::marker {
+  content: "";
+}
+
+@media (hover: hover) {
+  #nd-page li.mdx-task-item:hover {
+    border-color: var(--border-interactive);
+    background-color: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+}
+
+.mdx-task-item__checkbox {
+  display: inline-grid;
+  inline-size: 1.35rem;
+  block-size: 1.35rem;
+  place-content: center;
+  margin: 0.2rem 0 0;
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--text-muted) 48%, transparent);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  color: transparent;
+  background: color-mix(in srgb, var(--surface-subtle) 72%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 48%, transparent);
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-fast) var(--motion-ease-emphasized);
+}
+
+.mdx-task-item__checkbox::before {
+  inline-size: 0.34rem;
+  block-size: 0.64rem;
+  border: solid currentColor;
+  border-width: 0 0.13rem 0.13rem 0;
+  content: "";
+  transform: translateY(-0.05rem) rotate(45deg) scale(0);
+  transition: transform var(--motion-fast) var(--motion-ease-emphasized);
+}
+
+.mdx-task-item__checkbox:checked {
+  border-color: color-mix(in srgb, var(--accent-secondary) 72%, var(--border-subtle));
+  color: var(--fd-primary-foreground);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 68%, transparent),
+    0 0 1rem -0.4rem color-mix(in srgb, var(--accent-primary) 58%, transparent);
+  transform: scale(1.04);
+}
+
+.mdx-task-item__checkbox:checked::before {
+  transform: translateY(-0.05rem) rotate(45deg) scale(1);
+}
+
+.mdx-task-item__checkbox:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 2px;
+}
+
+.mdx-task-item__content {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  transition:
+    color var(--motion-fast) var(--motion-ease-standard),
+    opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+#nd-page li.mdx-task-item[data-task-checked="true"] {
+  opacity: 0.72;
+}
+
+#nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__content {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--text-muted) 68%, transparent);
+}
 
 /* ── Code Blocks & Inline Code / 代码块与行内代码 ─────────────────────────── */
 
