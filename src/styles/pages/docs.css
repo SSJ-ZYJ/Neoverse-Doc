@@ -44,14 +44,12 @@
   /* Layered circuit grid and ambient nodes enrich the reading canvas while
      keeping Fumadocs' stable layout grid untouched.
      分层电路网格与环境节点丰富阅读画布，同时不改变 Fumadocs 的稳定布局网格。 */
-  /* `contain: layout style` isolates the docs layout's layout and style recalc
-     scope without trapping fixed-position backdrops (which `paint` would do).
-     This keeps multi-layered backdrop-filter surfaces from cascading repaints
-     to the root on every scroll. */
-  /* `contain: layout style` 隔离文档布局的 layout 与 style 重算范围，
-     不会困住 fixed 定位的背景层（paint 会），避免多层 backdrop-filter
-     表面在每次滚动时把重绘级联到根。 */
-  contain: layout style;
+  /* Style containment keeps selector invalidation local without creating the
+     fixed-position containing block produced by layout containment. This lets
+     Fumadocs' collapsed sidebar actions remain anchored to the viewport.
+     样式隔离可限制选择器失效范围，同时避免 layout 隔离创建 fixed 定位包含块，
+     让 Fumadocs 折叠侧栏操作始终相对视口固定。 */
+  contain: style;
   background-color: var(--docs-canvas-surface);
   background-image:
     radial-gradient(circle at 18% 12%, var(--docs-canvas-ambient-primary), transparent 28rem),
@@ -455,9 +453,11 @@
   margin-block-start: 0.2rem;
 }
 
-/* Both compact floating actions remain individually unboxed while their shared
-   parent keeps the large glass frame.
-   两个悬浮小按钮各自保持无背景无描边，仅保留父级的大玻璃框。 */
+/* Both compact floating actions stay individually unboxed at rest while their
+   shared parent keeps the large glass frame. On hover, each action reuses the
+   theme glyph's rounded tint and inset highlight as a clear local mask.
+   两个悬浮小按钮静止时各自保持无背景无描边，仅保留父级的大玻璃框；
+   悬浮时复用主题图标的圆角 tint 与内高光，形成清晰的局部遮罩反馈。 */
 #nd-docs-layout
   > div.fixed.flex:has(> button[data-search]):has(
     > button.inline-flex.items-center
@@ -480,9 +480,27 @@
     )
     > button.inline-flex.items-center:hover {
     border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    color: var(--color-fd-accent-foreground) !important;
+    background: var(--glass-control-hover-tint) !important;
+    box-shadow: inset 0 1px 0 var(--glass-highlight) !important;
     transform: none;
+  }
+
+  /* Light docs glass needs the same opaque-enough tint and fine contrast rim
+     used by inactive sun/moon glyphs, otherwise the hover mask blends into the canvas.
+     浅色文档玻璃复用未激活日月图标的清晰 tint 与细对比边界，
+     避免悬浮遮罩融入浅色画布。 */
+  :root:not(.dark)
+    #nd-docs-layout
+    > div.fixed.flex:has(> button[data-search]):has(
+      > button.inline-flex.items-center
+        > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
+    )
+    > button.inline-flex.items-center:hover {
+    background: var(--glass-light-control-hover-tint) !important;
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      0 0 0 1px color-mix(in srgb, var(--foreground) 8%, transparent) !important;
   }
 }
 
