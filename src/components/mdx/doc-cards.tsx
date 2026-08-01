@@ -2,9 +2,10 @@
 // underlying surface and edge response remain implementation details.
 // 项目自有 MDX 导航卡片：API 面向内容，底层表面与边缘响应保持为实现细节。
 
-import { ArrowRight, ArrowUpRight, FileText, Globe } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, FileText } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { TransitionLink } from '@/components/transition/transition-link';
+import { DocCardSiteIcon } from './doc-card-site-icon';
 
 interface DocCardProps {
   children?: ReactNode;
@@ -24,21 +25,16 @@ export function DocGrid({ children }: DocGridProps) {
 export function DocCard({ children, description, href, title }: DocCardProps) {
   const isExternal = /^https?:\/\//.test(href);
   const destination = getExternalDestination(href);
-  const ContextIcon = isExternal ? Globe : FileText;
   const ActionIcon = isExternal ? ArrowUpRight : ArrowRight;
-
-  return (
-    <TransitionLink
-      className="mdx-doc-card"
-      data-card="true"
-      data-external={isExternal ? 'true' : undefined}
-      href={href}
-    >
+  const cardContent = (
+    <>
       {/* Compact semantic icon and action affordance make destination type
-          scannable without adding localized UI copy.
-          紧凑语义图标与跳转反馈无需新增本地化文案即可快速区分目标类型。 */}
+          scannable without adding localized UI copy. External destinations
+          progressively replace the fallback with the site's official SVG icon.
+          紧凑语义图标与跳转反馈无需新增本地化文案即可快速区分目标类型；
+          外部目标会渐进地以官网 SVG 图标替换默认图标。 */}
       <span className="mdx-doc-card__icon" aria-hidden="true">
-        <ContextIcon size={18} strokeWidth={1.8} />
+        {isExternal ? <DocCardSiteIcon href={href} /> : <FileText size={18} strokeWidth={1.8} />}
       </span>
       <span className="mdx-doc-card__header">
         <strong>{title}</strong>
@@ -50,6 +46,29 @@ export function DocCard({ children, description, href, title }: DocCardProps) {
         <span className="mdx-doc-card__description">{description ?? children}</span>
       )}
       {destination && <span className="mdx-doc-card__destination">{destination}</span>}
+    </>
+  );
+
+  if (isExternal) {
+    return (
+      // External resources use native navigation so they never enter the site's transition pipeline.
+      // 外部资源使用原生导航，确保不会进入站内转场流程，并始终在新标签页打开。
+      <a
+        className="mdx-doc-card"
+        data-card="true"
+        data-external="true"
+        href={href}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        {cardContent}
+      </a>
+    );
+  }
+
+  return (
+    <TransitionLink className="mdx-doc-card" data-card="true" href={href}>
+      {cardContent}
     </TransitionLink>
   );
 }

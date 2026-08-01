@@ -698,6 +698,57 @@
     transform var(--motion-standard) var(--motion-ease-emphasized);
 }
 
+/* Official SVG favicons and their fallback share one fixed canvas, preventing
+   broken-image chrome and layout movement while remote assets resolve.
+   官网 SVG favicon 与默认图标共用固定画布，远程资源解析期间不会出现破图或布局位移。 */
+.mdx-doc-card__site-icon {
+  display: inline-grid;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  overflow: hidden;
+  place-items: center;
+  position: relative;
+}
+
+.mdx-doc-card__site-icon-fallback,
+.mdx-doc-card__site-icon-brand {
+  inline-size: 100%;
+  block-size: 100%;
+  grid-area: 1 / 1;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+.mdx-doc-card__site-icon-fallback {
+  z-index: 0;
+}
+
+.mdx-doc-card__site-icon-brand {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 0 0.5px color-mix(in srgb, var(--text-primary) 52%, transparent));
+}
+
+.mdx-doc-card__site-icon-loader {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+  background: transparent;
+}
+
+.mdx-doc-card__site-icon[data-loaded="true"] .mdx-doc-card__site-icon-fallback {
+  opacity: 0;
+}
+
+.mdx-doc-card__site-icon[data-loaded="true"] .mdx-doc-card__site-icon-brand {
+  opacity: 1;
+}
+
 .mdx-doc-card__header {
   display: flex;
   min-inline-size: 0;
@@ -783,6 +834,8 @@
   .mdx-doc-card,
   .mdx-doc-card::before,
   .mdx-doc-card__icon,
+  .mdx-doc-card__site-icon-fallback,
+  .mdx-doc-card__site-icon-brand,
   .mdx-doc-card__action {
     transition-duration: 1ms;
   }
