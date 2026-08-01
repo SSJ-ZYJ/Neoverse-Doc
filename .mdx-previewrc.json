@@ -1,7 +1,12 @@
 {
   "components": {
+    "DocCard": "./src/components/mdx/mdx-preview-shims.tsx",
+    "DocGrid": "./src/components/mdx/mdx-preview-shims.tsx",
+    "FeatureCard": "./src/components/mdx/mdx-preview-shims.tsx",
     "File": "./src/components/mdx/mdx-preview-shims.tsx",
     "Files": "./src/components/mdx/mdx-preview-shims.tsx",
-    "Folder": "./src/components/mdx/mdx-preview-shims.tsx"
+    "Folder": "./src/components/mdx/mdx-preview-shims.tsx",
+    "LearningPath": "./src/components/mdx/mdx-preview-shims.tsx",
+    "ResourceLink": "./src/components/mdx/mdx-preview-shims.tsx"
   }
 }

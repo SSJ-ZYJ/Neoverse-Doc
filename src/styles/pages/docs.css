@@ -613,27 +613,31 @@
 
 .mdx-doc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-  gap: 0.85rem;
-  margin-block: 1.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.75rem;
+  margin-block: 1.5rem;
 }
 
 .mdx-doc-card {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  display: flex;
-  min-block-size: 9rem;
-  flex-direction: column;
-  gap: 0.65rem;
+  display: grid;
+  min-block-size: 7.25rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  align-content: start;
+  gap: 0.35rem 0.8rem;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 1.15rem;
+  padding: 1rem;
   color: var(--text-primary);
   text-decoration: none;
-  background: var(--glass-refraction-fill), var(--surface-glass);
+  background:
+    linear-gradient(132deg, color-mix(in srgb, var(--edge-light) 10%, transparent), transparent 38%),
+    var(--surface-glass);
   box-shadow: var(--shadow-edge), var(--glass-shadow);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   /* Isolate layout/style recalc so hover transforms and ::before sheen
      animations do not cascade into sibling cards. `paint` is omitted because
      backdrop-filter samples the parent stacking context. */
@@ -651,7 +655,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.55;
+  opacity: 0.42;
   background:
     radial-gradient(circle at 8% 0%, var(--ambient-ice), transparent 44%),
     radial-gradient(circle at 96% 100%, var(--ambient-violet), transparent 42%);
@@ -661,27 +665,132 @@
 
 .mdx-doc-card:hover {
   border-color: var(--border-interactive);
-  background: var(--glass-refraction-fill), var(--surface-glass);
+  background:
+    linear-gradient(
+      132deg,
+      color-mix(in srgb, var(--accent-primary) 12%, transparent),
+      transparent 44%
+    ),
+    var(--surface-glass);
   box-shadow: var(--shadow-edge), var(--glass-shadow-hover);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 .mdx-doc-card:hover::before {
-  opacity: 1;
+  opacity: 0.78;
 }
 
-.mdx-doc-card strong {
-  font-size: 1.02rem;
+.mdx-doc-card__icon {
+  display: inline-grid;
+  inline-size: 2.35rem;
+  block-size: 2.35rem;
+  grid-row: 1 / span 3;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--border-interactive) 68%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-soft) 76%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 52%, transparent);
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-standard) var(--motion-ease-emphasized);
 }
 
-.mdx-doc-card span {
+.mdx-doc-card__header {
+  display: flex;
+  min-inline-size: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.mdx-doc-card__header strong {
+  min-inline-size: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 680;
+  letter-spacing: -0.015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mdx-doc-card__action {
+  display: inline-grid;
+  inline-size: 1.8rem;
+  block-size: 1.8rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--surface-subtle) 58%, transparent);
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-standard) var(--motion-ease-emphasized);
+}
+
+.mdx-doc-card__description {
   color: var(--text-secondary);
-  line-height: 1.6;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.mdx-doc-card__destination {
+  inline-size: fit-content;
+  align-self: end;
+  margin-block-start: 0.2rem;
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 72%, transparent);
+  border-radius: var(--radius-pill);
+  padding: 0.08rem 0.42rem;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--surface-subtle) 54%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+@media (hover: hover) {
+  .mdx-doc-card:hover .mdx-doc-card__icon {
+    border-color: var(--border-interactive);
+    color: var(--accent-secondary);
+    background-color: color-mix(in srgb, var(--accent-soft) 92%, transparent);
+    transform: translateY(-1px) scale(1.03);
+  }
+
+  .mdx-doc-card:hover .mdx-doc-card__action {
+    border-color: color-mix(in srgb, var(--border-interactive) 68%, transparent);
+    color: var(--accent-primary);
+    background-color: var(--glass-control-hover-tint);
+    transform: translate(0.1rem, -0.1rem);
+  }
+}
+
+.mdx-doc-card:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   #nd-page :is(h1, h2, h3, h4, h5, h6) > button > .lucide-copy-check {
     animation: none;
+  }
+
+  .mdx-doc-card,
+  .mdx-doc-card::before,
+  .mdx-doc-card__icon,
+  .mdx-doc-card__action {
+    transition-duration: 1ms;
+  }
+
+  .mdx-doc-card:hover,
+  .mdx-doc-card:hover .mdx-doc-card__icon,
+  .mdx-doc-card:hover .mdx-doc-card__action {
+    transform: none;
   }
 
   #nd-sidebar,
@@ -725,6 +834,25 @@
     outline: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
+  }
+
+  /* Resource cards use a denser static glass tier on mobile to avoid allocating
+     one live backdrop-filter surface per link while scrolling.
+     移动端资源卡片使用更紧凑的静态玻璃层，避免滚动时为每个链接分配实时模糊表面。 */
+  .mdx-doc-grid {
+    gap: 0.65rem;
+    margin-block: 1.25rem;
+  }
+
+  .mdx-doc-card {
+    min-block-size: 6.75rem;
+    padding: 0.9rem;
+    backdrop-filter: none;
+  }
+
+  .mdx-doc-card__icon {
+    inline-size: 2.2rem;
+    block-size: 2.2rem;
   }
 }
 

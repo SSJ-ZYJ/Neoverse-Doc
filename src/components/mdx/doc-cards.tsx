@@ -2,6 +2,7 @@
 // underlying surface and edge response remain implementation details.
 // 项目自有 MDX 导航卡片：API 面向内容，底层表面与边缘响应保持为实现细节。
 
+import { ArrowRight, ArrowUpRight, FileText, Globe } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { TransitionLink } from '@/components/transition/transition-link';
 
@@ -21,12 +22,46 @@ export function DocGrid({ children }: DocGridProps) {
 }
 
 export function DocCard({ children, description, href, title }: DocCardProps) {
+  const isExternal = /^https?:\/\//.test(href);
+  const destination = getExternalDestination(href);
+  const ContextIcon = isExternal ? Globe : FileText;
+  const ActionIcon = isExternal ? ArrowUpRight : ArrowRight;
+
   return (
-    <TransitionLink className="mdx-doc-card" href={href}>
-      <strong>{title}</strong>
-      {(description || children) && <span>{description ?? children}</span>}
+    <TransitionLink
+      className="mdx-doc-card"
+      data-card="true"
+      data-external={isExternal ? 'true' : undefined}
+      href={href}
+    >
+      {/* Compact semantic icon and action affordance make destination type
+          scannable without adding localized UI copy.
+          紧凑语义图标与跳转反馈无需新增本地化文案即可快速区分目标类型。 */}
+      <span className="mdx-doc-card__icon" aria-hidden="true">
+        <ContextIcon size={18} strokeWidth={1.8} />
+      </span>
+      <span className="mdx-doc-card__header">
+        <strong>{title}</strong>
+        <span className="mdx-doc-card__action" aria-hidden="true">
+          <ActionIcon size={15} strokeWidth={2} />
+        </span>
+      </span>
+      {(description || children) && (
+        <span className="mdx-doc-card__description">{description ?? children}</span>
+      )}
+      {destination && <span className="mdx-doc-card__destination">{destination}</span>}
     </TransitionLink>
   );
+}
+
+function getExternalDestination(href: string) {
+  if (!/^https?:\/\//.test(href)) return null;
+
+  try {
+    return new URL(href).hostname.replace(/^www\./, '');
+  } catch {
+    return null;
+  }
 }
 
 // Semantic aliases of DocCard kept for MDX content compatibility. They allow
