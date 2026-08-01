@@ -22,6 +22,11 @@ interface InteractiveTaskListItemProps {
 
 const TASK_STORAGE_PREFIX = 'neoverse-mdx-task-state:v1';
 
+// Page-level progress widgets listen for this event instead of coupling task
+// items through a global state library.
+// 页面级进度组件监听此事件，避免为了任务清单额外引入全局状态库。
+export const TASK_STATE_CHANGE_EVENT = 'neoverse:task-state-change';
+
 function getStoredTaskState(storageKey: string): Record<string, boolean> {
   try {
     const rawState = localStorage.getItem(storageKey);
@@ -75,6 +80,10 @@ export function InteractiveTaskListItem({
       Object.hasOwn(storedState, taskKey) ? Boolean(storedState[taskKey]) : initialChecked,
     );
   }, [initialChecked, storageKey, taskKey]);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(TASK_STATE_CHANGE_EVENT, { detail: checked }));
+  }, [checked]);
 
   function handleCheckedChange(nextChecked: boolean) {
     setChecked(nextChecked);

@@ -7,6 +7,91 @@
    authoring syntax. Normal unordered lists keep their existing typography.
    标准 GFM `- [ ]` 清单以紧凑玻璃行呈现，不改变文档编写语法；
    普通无序列表继续沿用现有排版。 */
+.mdx-task-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem 1.25rem;
+  margin-block: 1.25rem 1.5rem;
+  padding: 0.85rem 1rem;
+}
+
+.mdx-task-progress__heading,
+.mdx-task-progress__stats,
+.mdx-task-progress__stats > span {
+  display: flex;
+  align-items: center;
+}
+
+.mdx-task-progress__heading {
+  gap: 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--fd-foreground);
+}
+
+.mdx-task-progress__icon {
+  display: inline-grid;
+  inline-size: 2rem;
+  block-size: 2rem;
+  place-items: center;
+  border: 1px solid var(--border-interactive);
+  border-radius: var(--radius-xs);
+  color: var(--fd-accent-foreground);
+  background: var(--glass-control-hover-tint);
+}
+
+.mdx-task-progress__stats {
+  gap: 1rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.mdx-task-progress__stats > span {
+  gap: 0.35rem;
+}
+
+.mdx-task-progress__stats strong {
+  color: var(--fd-foreground);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.mdx-task-progress__bar {
+  grid-column: 1 / -1;
+  inline-size: 100%;
+  block-size: 0.3rem;
+  overflow: hidden;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 16%, transparent);
+}
+
+.mdx-task-progress__bar::-webkit-progress-bar {
+  border-radius: inherit;
+  background: transparent;
+}
+
+.mdx-task-progress__bar::-webkit-progress-value,
+.mdx-task-progress__bar::-moz-progress-bar {
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+
+@media (max-width: 32rem) {
+  .mdx-task-progress {
+    grid-template-columns: 1fr;
+  }
+
+  .mdx-task-progress__stats {
+    justify-content: space-between;
+  }
+
+  .mdx-task-progress__bar {
+    grid-column: 1;
+  }
+}
+
 #nd-page ul.contains-task-list {
   display: grid;
   gap: 0.55rem;

@@ -64,6 +64,10 @@ export const zh = {
   taskListComplete: '将“{title}”标记为已完成',
   taskListReopen: '将“{title}”恢复为待完成',
   taskListItem: '任务项',
+  taskListProgressTitle: 'TODO 进度',
+  taskListProgressLabel: 'TODO 进度：已完成 {completed} 项，共 {total} 项',
+  taskListCompletedCount: '已完成',
+  taskListTotalCount: '总计',
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: '缩小图表',
   mermaidZoomIn: '放大图表',

@@ -20,6 +20,9 @@ export const docs = defineDocs({
       author: personFieldSchema.optional(),
       contributor: personFieldSchema.optional(),
       contributors: personFieldSchema.optional(),
+      // Per-page switch for the interactive TODO progress card.
+      // 控制单篇文档是否显示可交互 TODO 进度卡片。
+      todoProgress: z.boolean().default(false),
     }),
   },
 });

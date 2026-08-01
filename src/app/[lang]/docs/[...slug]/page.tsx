@@ -11,6 +11,7 @@ import { notFound } from 'next/navigation';
 import { Guestbook } from '@/components/guestbook';
 import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
+import { TaskListProgress } from '@/components/mdx/task-list-progress';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
 import { source } from '@/lib/source';
@@ -36,6 +37,9 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
+      {/* Frontmatter opts individual documents into the persisted GFM task summary.
+          由 frontmatter 决定单篇文档是否显示持久化 GFM 任务进度。 */}
+      {page.data.todoProgress && <TaskListProgress />}
       {/* Stable body hook lets CSS defer only expensive off-screen MDX blocks.
           稳定的正文标记让 CSS 仅延迟绘制离屏的高成本 MDX 内容块。 */}
       <DocsBody data-docs-body="">

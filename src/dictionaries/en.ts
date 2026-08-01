@@ -68,6 +68,10 @@ export const en = {
   taskListComplete: 'Mark “{title}” as completed',
   taskListReopen: 'Move “{title}” back to active',
   taskListItem: 'Task item',
+  taskListProgressTitle: 'TODO progress',
+  taskListProgressLabel: 'TODO progress: {completed} of {total} completed',
+  taskListCompletedCount: 'Completed',
+  taskListTotalCount: 'Total',
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: 'Zoom out',
   mermaidZoomIn: 'Zoom in',
