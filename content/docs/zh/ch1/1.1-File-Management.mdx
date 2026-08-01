@@ -1,0 +1,447 @@
+---
+title: 1.1 文件管理
+description: 认识 Windows 文件系统、文件命名规范、文件管理、常见文件扩展名、文件查找与压缩操作
+todoProgress: true
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+> [!DETAILS-AI] 本节 AI 摘要：
+> 本节介绍 Windows 文件系统的盘符与目录树结构、用户目录、绝对路径与相对路径，文件命名规范与推荐命名模板，按用途分层、区分工作区与归档区的文件夹组织方法，扩展名显示与常见类型速查，资源管理器搜索与 Everything 全盘搜索，以及 7-Zip、Bandizip 的压缩与解压操作。学完能规范地组织自己的学习资料与代码项目。
+
+> [!INFO]
+> Windows 作为当前市占率最高，适用范围最广的操作系统，故我们先从 Windows 上手，从 Windows 文件管理开始，逐步了解我们面前的计算机。
+
+> [!CAUTION]
+> <br/>
+> <div className="text-center text-xl"> ***数据无价，操作需谨慎！***</div>
+> <br/>
+> <div className="text-center text-xl"> ***数据无价，操作需谨慎！***</div>
+> <br/>
+> <div className="text-center text-xl"> ***数据无价，操作需谨慎！***</div>
+
+## 一、Windows 文件系统
+
+### 1.1.1 盘符与目录结构
+
+Windows 用字母表示磁盘分区，最常见的是 `C:`（系统盘）和 `D:`、`E:` 等数据盘。每个盘下面是一棵目录树，目录中用反斜杠 `\` 分隔。
+
+下面是系统盘常见的目录结构（鼠标悬浮在文件夹上，可查看具体用途）：
+
+<Files>
+  <Folder name="C:" defaultOpen>
+    <Folder name="Program Files" disabled title="64 位软件默认安装位置" />
+    <Folder name="Program Files (x86)" disabled title="32 位软件默认安装位置" />
+    <Folder name="ProgramData" disabled title="程序共享数据目录" />
+    <Folder name="Windows" disabled title="Windows 系统文件目录" />
+    <Folder name="Users (用户)" defaultOpen>
+      <Folder name="你的用户名" disabled title="用户目录" />
+    </Folder>
+  </Folder>
+</Files>
+
+> [!INFO] 盘符与分区的关系：
+>
+> `C:` 一定是系统盘，但 `D:` 不一定是第二块硬盘 —— 它可能只是同一块硬盘上的另一个分区。
+
+> [!TIP] 关于分区：
+>
+> 新电脑建议至少分两个区，把系统和数据分开存放。
+> 
+> 对于总容量 `≤ 2TB` 的硬盘，分两个区（系统盘与数据盘）足矣。过多分区会降低空间利用率，且给管理增麻烦。
+>
+> 根据总磁盘空间大小，系统盘一般分 `200GB - 500GB` 足矣，将剩余的空间留给数据盘。
+
+### 1.1.2 用户目录
+
+打开 `此电脑`，进入 `C:` 盘，双击 `Users (用户)` 文件夹，选择你的用户名，进入用户目录。
+
+通常来讲，它会默认包含几个系统预设的子目录（鼠标悬浮在文件夹上，可查看具体用途）：
+
+<Files>
+  <Folder name="C:" defaultOpen>
+    <Folder name="..." disabled title="..." />
+    <Folder name="Users (用户)" defaultOpen>
+      <Folder name="你的用户名" defaultOpen title="用户目录">
+        <Folder name="Desktop" disabled title="桌面" />
+        <Folder name="Documents" disabled title="文档" />
+        <Folder name="Downloads" disabled title="下载" />
+        <Folder name="Pictures" disabled title="图片" />
+        <Folder name="Musics" disabled title="音乐" />
+        <Folder name="Videos" disabled title="视频" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+| 文件夹 | 用途 |
+| :--- | :--- |
+| `桌面` | 临时放正在处理的文件与各类程序的快捷方式 |
+| `文档` | 存放文档、笔记、聊天记录默认位置 |
+| `下载` | 浏览器下载的默认位置 |
+| `图片` | 截图、图片素材 |
+| `音乐`、`视频` | 媒体文件 |
+
+> [!WARNING] 注意：
+> 桌面等文件夹本质上是 `C:\Users\你的用户名\Desktop`（以桌面为例） 这个文件夹，它在系统盘 `C:` 里。
+> 一旦系统崩溃需要重装，桌面文件很容易丢失。重要文件请放到数据盘，创建相应文件夹的快捷方式。
+
+> [!NOTE] 获取当前用户目录路径：
+>
+> ```cmd
+> echo %USERPROFILE%  & REM 输出当前用户目录，例如：C:\Users\Shenshijun
+> ```
+>
+> > `&`：用于在单行中执行多个命令（如上述的 `echo` 回显与 `REM` 注释）。
+> >
+> > `REM`：用于对命令行代码进行注释，无实效性作用。
+
+> [!TIP] 更改桌面文件夹存储位置：
+>
+> 可以通过右键文件资源管理器侧栏中的 `桌面` 文件夹，选择 `属性`，在顶部 `位置` 选项卡内更改桌面文件夹的存储位置。
+> 
+> 同理其他几个系统分类文件夹（如 `文档`、`下载`、`图片`、`音乐`、`视频` 等）也可进行更改。
+
+### 1.1.3 路径：绝对路径与相对路径
+
+<Files>
+  <Folder name="C:" defaultOpen>
+    <Folder name="..." disabled title="..." />
+    <Folder name="Users（用户）" defaultOpen>
+      <Folder name="你的用户名" defaultOpen title="用户目录">
+        <Folder name="Documents" defaultOpen>
+          <Folder name="CS" defaultOpen title="课程目录">
+            <Folder name="Data-Structure" defaultOpen title="数据结构目录">
+              <File name="Notes.md" disabled title="笔记" />
+            </Folder>
+            <Folder name="Algorithms" defaultOpen title="算法目录">
+              <File name="template.md" disabled title="模板" />
+            </Folder>
+          </Folder>
+        </Folder>
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+**绝对路径**是从盘符开始的完整地址，能在任何地方精确定位一个文件，如：
+
+```text
+C:\Users\Shenshijun\Documents\CS\data-structures\notes.md
+```
+
+**相对路径**是从当前位置出发的地址。假设你在 `CS` 文件夹里，想引用 `数据结构` 文件夹里的 `notes.md`，只需写：
+
+```text
+data-structures\notes.md
+```
+
+> [!TIP] 两个特殊符号
+> `.` 表示当前目录，`..` 表示上一级目录。
+> 例如从 `data-structures` 引用 `算法` 文件夹里的 `template.md` 文件，可写作 `..\Algorithms\template.md`。
+> 这两个符号在命令行和代码里极其常用。
+
+## 二、文件命名规范
+
+### 1.2.1 命名原则
+
+好的命名可做到“看名知意”，应避免出现 `新建文件夹`、`新建文件夹(2)`、`新建 Microsoft Word 文档(3).docx`、`final final v2` 这类名称。
+以下是一些建议：
+
+| 建议 | 说明 | 示例 |
+| :--- | :--- | :--- |
+| 见名知意 | 名字能反映文件内容 | `2026秋-数据结构-实验报告1.md` |
+| 避免特殊字符 | 不用 `\ / : * ? " < > \|` | 这些字符在 Windows 中有特殊含义 |
+| 慎用空格和中文 | 命令行里需要额外加引号 | 英文文件名用连字符或下划线分隔 |
+| 版本管理用数字 | 用 `v1`、`v2` 或日期 | 不要堆“最终版”“真的最终版” |
+
+> [!CAUTION] 禁用字符清单：
+> Windows 文件名中 **绝对不能** 出现这些字符：`\ / : * ? " < > |`。包含它们会导致重命名失败或文件无法打开。
+>
+> 空格虽然合法，但在命令行和编程中容易引发问题，建议用 `-` 或 `_` 替代（`Program Files` 等系统约定俗成的目录除外）。
+
+> [!TIP] 关于中文字符命名：
+> 中文字符在 Windows 中支持，但在对文件夹进行命名时建议避免使用，因其在命令行、编程与部分程序的安装中可能会遇到问题。
+>
+> 如著名 ~~手脑结合型益智竞技~~ 娱乐程序服务平台 `Steam`，就不支持安装到路径中含有中文字符的目录下。
+
+### 1.2.2 推荐命名模板
+
+不同场景套用不同模板，供参考：
+
+```text
+# 课程资料
+{学年}-{学期}-{课程名}-{资料类型}.{扩展名}
+示例: 2026秋-数据结构-笔记.tex
+
+# 实验报告
+{课程名}-实验{编号}-{你的姓名}.{扩展名}
+示例: 数据结构-实验3-张三.tex
+
+# 项目代码（全小写英文，连字符或下划线分隔）
+示例: student-management-system.cpp
+```
+
+> [!DETAILS-FAQ] 为什么代码项目要用英文命名？
+> 很多开发工具对中文路径支持并不完善，路径越短在终端里切换越方便。
+> 例如代码项目建议放在 `D:\Projects\my-first-app`，而不是 `C:\Users\SSSJ\桌面\我的文件\新建文件夹\my first app`。
+
+## 三、文件夹组织方法
+
+### 1.3.1 按用途分层
+
+建议按 `学年 → 学期 → 课程 → 类型` 层级组织学习资料，顺着清晰路径就能快速定位。
+
+<details className="markdown-details markdown-details-example">
+  <summary className="markdown-details-summary markdown-details-type-example">
+    按学年分层的目录结构示例：
+  </summary>
+
+  以下示例展示如何按 `学年 → 学期 → 课程 → 类型` 组织 `Documents` 目录：
+
+  <Files>
+    <Folder name="Documents" defaultOpen>
+      <Folder name="CS" defaultOpen title="计算机相关资料根目录">
+        <Folder name="2026春" defaultOpen>
+          <Folder name="CPP-程序设计" defaultOpen>
+            <Folder name="课件" disabled />
+            <Folder name="作业" disabled />
+            <Folder name="实验报告" disabled />
+            <Folder name="笔记" disabled />
+          </Folder>
+          <Folder name="高等数学" disabled />
+          <Folder name="大学英语" disabled />
+        </Folder>
+        <Folder name="2026秋" defaultOpen>
+          <Folder name="操作系统" disabled />
+          <Folder name="计算机网络" disabled />
+        </Folder>
+      </Folder>
+      <Folder name="Projects" defaultOpen title="个人项目">
+        <Folder name="Blog" disabled />
+        <Folder name="Algorithms" disabled />
+      </Folder>
+      <Folder name="Archive" defaultOpen title="归档，放不再活跃但需保留的内容">
+        <Folder name="2025秋" disabled />
+      </Folder>
+    </Folder>
+  </Files>
+</details>
+
+### 1.3.2 区分工作区与归档区
+
+每学期结束后，把上一学期的资料整体移到 `Archive` 文件夹里。这样工作区永远只放当前正在用的东西，不会越积越多。
+
+> [!TIP] *~~那一天的归档，归档起来！~~* 归档时机：
+> 学期开学前花 10 分钟做一次归档：新建本学期的课程文件夹结构，将上学期内容移入 `Archive` 文件夹。
+> 让工作区常年保持清爽。
+
+### 1.3.3 代码项目单独管理
+
+代码项目建议放在专门的 `Projects` 文件夹下，路径尽量短、全英文、无空格。
+
+```text
+# 推荐的代码存放路径
+D:\Projects\my-first-app
+
+# 不推荐的路径
+C:\Users\张三\桌面\我的文件\新建文件夹\my first app
+```
+
+## 四、文件扩展名与类型
+
+### 1.4.1 显示扩展名
+
+Windows 默认隐藏已知文件扩展名，这会带来两个麻烦：
+
+一是无法快速判断文件类型;
+
+二是容易给恶意程序可乘之机（例如 `病毒.exe` 伪装成 `报告.pdf.exe`，隐藏扩展名后看起来就是 `报告.pdf`）。
+
+#### 方法一：资源管理器设置（适用于 Windows 10 及以上版本的操作系统）
+
+Windows 10：打开任意文件夹 → 切换到顶部 `查看` 选项卡 → 勾选 `文件扩展名`。
+
+Windows 11：打开任意文件夹 → 在顶部快捷栏依次点击 `查看` → `显示` → `文件扩展名`。
+
+#### 方法二：文件夹选项
+
+`Win + R` → 输入 `control folders` → 切换到顶部 `查看` 选项卡 → 在下方高级设置中 **取消勾选** `隐藏已知文件类型的扩展名`。
+
+> [!IMPORTANT]
+> 扩展名显示是防范伪装病毒的第一道防线。看到 `报告.pdf.exe` 这类双扩展名文件，有概率为恶意程序。
+>
+> 来路不明的 `.exe` 可执行文件，也应谨慎处理。
+> 
+> 与此同时，显示文件扩展名，也可以帮助识别文件类型。对我们了解文件内容，也有一定帮助。
+
+### 1.4.2 常见扩展名速查
+
+| 扩展名 | 类型 | 说明 |
+| :--- | :--- | :--- |
+| `.txt` | 纯文本 | 任何编辑器都能打开 |
+| `.md` | Markdown | 轻量标记语言，写笔记首选 |
+| `.docx` | Word 文档 | 实验报告常用 |
+| `.tex` | LaTeX 文档 | 论文报告常用 |
+| `.pdf` | PDF | 课件、论文、电子书 |
+| `.zip` / `.7z` / `.rar` | 压缩包 | 传输多个文件时压缩与打包 |
+| `.exe` | 可执行程序 | 双击运行，来源不明的应谨慎点击 |
+
+与计算机开发相关的文件扩展名类型：
+
+| 扩展名 | 类型 |
+| :--- | :--- |
+| `.c` / `.cpp` / `.h` / `.hpp` | C / C++ 源代码、头文件 |
+| `.java` / `.class` / `.jar` | Java 源代码、类文件、JAR 包 |
+| `.py` | Python 源代码 |
+| `.rs` / `.cargo`| Rust 源代码、包管理文件 |
+| `.html` | HTML 文档、网页文件 |
+| `.css` | CSS 样式表，用于网页布局、颜色等 |
+| `.js` | JavaScript 交互脚本，用于网页动态效果 |
+| `.json` | JSON 数据档，用于存储和交换数据 |
+| `.xml` | XML 文档，用于存储和交换数据 |
+| `.sql` | SQL 数据库文件 |
+| `.db` | 数据库文件 |
+| `.log` | 日志文件 |
+| `.csv` | CSV 文档，用于存储表格数据 |
+
+## 五、文件查找与搜索
+
+### 1.5.1 资源管理器搜索
+
+在资源管理器右上角的搜索框输入关键词，可以在当前文件夹及其子文件夹中查找。支持的搜索语法：
+
+| 语法 | 作用 | 示例 |
+| :--- | :--- | :--- |
+| `关键词` | 按文件名搜索 | `实验` |
+| `ext:.扩展名` | 按扩展名过滤 | `ext:.pdf` |
+| `datemodified:日期` | 按修改时间过滤 | `datemodified:今天` |
+| `size:>大小` | 按文件大小过滤 | `size:>50MB` |
+
+> [!NOTE] 搜索范围
+> 资源管理器搜索只覆盖当前文件夹及其子文件夹。、
+> 要全盘搜索，需要在 “此电脑” 或在 `Everything` 程序中进行搜索。
+
+### 1.5.2 Everything：全盘搜索工具
+
+Windows 自带的搜索速度较慢，推荐安装免费工具 [Everything](https://www.voidtools.com/zh-cn/)。它能瞬间扫描全盘文件，输入关键词立刻显示结果。
+
+#### 方法一：关键词搜索
+
+```text
+输入 "实验报告 pdf"   # 立刻列出所有名字含 "实验报告" 的 PDF 文件
+```
+
+#### 方法二：路径限定搜索
+
+```text
+path:"D:\Projects" ext:cpp   # 在指定项目目录中查找 C++ 源文件
+```
+
+> [!TIP] 为 Everything 设置全局热键
+> `Win + S` 打开的是 Windows 搜索，并不会默认唤起 Everything。
+>
+> 要希望随时打开 Everything，可在 `工具` → `选项` → `快捷键` 中设置“显示窗口”或“切换窗口”热键；
+>
+> 热键生效时，Everything 需要在后台运行。
+
+## 六、文件压缩与解压
+
+### 1.6.1 何时需要压缩
+
+| 场景 | 作用 |
+| :--- | :--- |
+| 传输多个文件 | 把一整个文件夹打包成一个文件，方便发送 |
+| 减小体积 | 压缩后通常能减小 30% 到 70% 的体积 |
+| 备份归档 | 把不常用的资料压缩后存档，节省空间 |
+
+### 1.6.2 常见压缩格式
+
+| 格式 | 特点 | 推荐场景 |
+| :--- | :--- | :--- |
+| `.zip` | 兼容性最好，Windows 自带支持 | 交作业、传资料 |
+| `.7z` | 压缩率高 | 大文件备份 |
+| `.rar` | 较常见，需要 WinRAR | 解压别人发的包 |
+
+### 1.6.3 安装与使用 7-Zip
+
+[7-Zip](https://www.7-zip.org/)，是一款免费、开源、无广告的压缩工具，能解压几乎所有的常见格式。
+
+**操作步骤：**
+
+1. 访问 [7-zip.org](https://www.7-zip.org/) 下载对应版本（64 位系统选 `.exe` 64-bit）
+2. 双击安装包，按提示完成安装
+3. 右键任意文件 → 看到 `7-Zip` 菜单项即安装成功
+
+> [!TIP] 压缩与解压操作
+>
+> - **压缩**：右键文件 → `7-Zip` → `添加到压缩包` → 选择格式（建议 `.zip` 兼容性最好）
+> - **解压**：右键压缩包 → `7-Zip` → `提取到当前位置`，或双击压缩包打开后拖出文件
+
+> [!IMPORTANT] 解压前先看内容
+> 解压前先双击打开压缩包，确认里面的文件是你期望的，避免解压出大量乱七八糟的文件污染当前目录。
+> 尤其是不明来源的压缩包，可能含恶意脚本。
+
+### 1.6.4 安装与使用 Bandizip（主观推荐）
+
+[Bandizip](https://www.bandisoft.com/bandizip/)，虽然对比 `7-Zip` 其在 “评估版本” 中有少量广告，但其功能较多，UI 界面更加现代化、美观。
+
+SSJ 认为其更适合刚接触计算机的用户上手，且其评估版本的广告，在日常的压缩与解压操作时，并不会遇到。
+
+**操作步骤：**
+
+1. 访问 [Bandizip](https://www.bandisoft.com/bandizip/) 进行下载
+2. 双击安装包，选择 “评估版”，按提示完成安装
+3. 右键任意文件 → 看到 `Bandizip` 选项卡即安装成功
+
+> [!TIP] 压缩与解压操作
+>
+> - **压缩**：右键文件 → `Bandizip` → `压缩为 xxx .zip` / `压缩为 xxx .7z`
+> - **解压**：右键压缩包 → `Bandizip` → `智能解压到此处`
+>
+> 关于其 **智能解压** 功能：
+>
+> 能根据压缩包内容自动创建文件夹结构，如若含多个文件，会自动创建一个与压缩包名相同的文件夹
+>
+> 防止解压到此处，大量乱七八糟的文件污染当前目录。
+
+## 七、TODO 清单
+
+- [ ] 能区分绝对路径与相对路径
+- [ ] 已开启文件扩展名显示
+- [ ] 能用一致、可搜索的规则命名文件
+- [ ] 拥有良好的文件管理习惯，如对旧文件进行归档，重要文件进行备份等
+- [ ] 能用资源管理器或 `Everything` 程序按名称与扩展名定位文件
+- [ ] 解压前会检查压缩包来源与目录结构
+- [ ] 可熟练进行文件的压缩与解压操作
+- [ ] 尝试使用 [格式工厂](https://www.pcgeshi.com/) 或其他音频格式转换工具，将任意 `.flac` 文件转换为 `.mp3` 文件或其他音频格式转化
+- [ ] 尝试使用 [格式工厂](https://www.pcgeshi.com/) 或其他视频格式转换工具，将任意 `.mkv` 文件转换为 `.mp4` 文件或其他视频格式转化
+
+## 八、值得我们思考的问题
+
+> [!DETAILS-FAQ] 改扩展名能直接转换文件格式吗？
+> 不能。
+> 
+> 扩展名主要用于提示系统使用什么程序打开文件；
+> 把 `report.txt` 改成 `report.pdf` 不会把文本转换为 PDF。
+> 需要使用对应程序的相应转换功能才可完成格式转换。
+
+> [!DETAILS-FAQ] 为何部分音频、视频、图片更改扩展名后又能正常打开预览？
+> 之所以有些媒体文件改了扩展名还能正常打开，是因为很多软件并不是只相信扩展名，而是会识别文件内部的数据格式（Magic Number / 文件头）。
+> 
+> 例如，对于一张 `png` 格式（拓展名）的图片文件，其文件头通常为 `89 50 4E 47 (HEX)`。
+> 
+> 即使你将文件拓展名改为 `jpg`（其文件头实际通常为 `FF D8 FF (HEX)`），
+> 大多数的图片查看器会根据文件头，识别出这不是 `jpg` 格式的图片，而是 `png` 格式的图片。
+> 从而正常打开预览。
+
+> [!DETAILS-FAQ] 不慎误删了重要文件，该怎么办？
+> 1. 立即停止操作，避免数据被覆盖。
+> 2. 检查回收站，若未被清理，可直接恢复。
+> 3. 若回收站也未显示，说明已被永久删除，需使用专业数据恢复软件进行恢复。
+>
+> - 对于 Office 文档（如 `.docx`、`.xlsx`、`.pptx` 等），若误删，可在程序 `自动保存` 功能的目录下查找最近的备份文件。
+> 
+>   - 在 WPS Office 中，可到左上角 `文件` -> `备份与恢复` -> `备份中心` 中查看最近的备份文件。
+> 
+>   - 在 Microsoft Office 中，可到 `C:\Users\Shenshijun\AppData\Roaming\Microsoft\` 目录下，
+> `Word`, `Excel`, `PowerPoint` 等子文件夹内，寻找最近的缓存（拓展名为`.tmp` ）文件，改为对应的格式（如 `.docx`、`.xlsx`、`.pptx` 等）即可打开预览。
