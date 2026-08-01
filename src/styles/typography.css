@@ -923,6 +923,7 @@ figure.shiki .line > span:empty::before {
 /* ── Collapsible Details / 可折叠块 ─────────────────────────────── */
 
 .markdown-details {
+  --markdown-details-content-inline: 1rem;
   --markdown-details-accent: var(--color-fd-muted-foreground);
   --markdown-details-border: var(--glass-border-hairline);
   --markdown-details-summary-bg: var(--glass-tint-soft);
@@ -984,7 +985,7 @@ figure.shiki .line > span:empty::before {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem var(--markdown-details-content-inline);
   font-weight: 600;
   cursor: pointer;
   user-select: none;
@@ -1069,13 +1070,20 @@ figure.shiki .line > span:empty::before {
 }
 
 .markdown-details > *:not(summary) {
-  padding: 0 1rem 0.75rem;
+  padding: 0 var(--markdown-details-content-inline) 0.75rem;
   margin: 0;
   color: var(--color-fd-muted-foreground);
 }
 
 .markdown-details > *:not(summary):first-of-type {
   padding-top: 0.25rem;
+}
+
+/* Direct ordered-list markers align with the surrounding paragraph edge.
+   Nested lists retain their normal indentation hierarchy.
+   直属有序列表的序号与相邻正文左边缘对齐，嵌套列表继续保留正常层级缩进。 */
+.markdown-details > ol {
+  margin-inline-start: var(--markdown-details-content-inline);
 }
 
 /* Nested code blocks inside details (non-glass only).
@@ -1086,11 +1094,15 @@ figure.shiki .line > span:empty::before {
   border: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
   border-radius: var(--radius-md);
-  margin: 0.5rem 0.5rem;
+  margin-block: 0.5rem;
+  margin-inline: var(--markdown-details-content-inline);
 }
 
-/* Remove extra padding from nested code blocks / 去除嵌套代码块的额外内边距 */
+/* Direct code blocks use the same horizontal safe area as paragraphs while
+   retaining their own rounded surface and internal scrolling.
+   直属代码块与正文共用横向安全区，同时保留自身圆角表面与内部滚动。 */
 .markdown-details > figure.shiki {
+  margin-inline: var(--markdown-details-content-inline);
   padding: 0;
 }
 

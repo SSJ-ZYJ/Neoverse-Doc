@@ -23,6 +23,7 @@ export const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
   clojure: 'Clojure',
   cpp: 'C++',
   cs: 'C#',
+  css: 'CSS',
   csharp: 'C#',
   cxx: 'C++',
   dart: 'Dart',
