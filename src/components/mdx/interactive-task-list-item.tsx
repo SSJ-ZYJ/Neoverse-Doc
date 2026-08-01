@@ -22,6 +22,19 @@ interface InteractiveTaskListItemProps {
 
 type TaskAnimation = 'complete' | 'reopen';
 
+// The animation flag is cleared once the longest keyframe has finished so the
+// data-task-animation attribute never lingers on the node and the next
+// interaction always starts from a clean undefined → value transition.
+// Resting checked/unchecked styles come from :checked and data-task-checked,
+// so removing the attribute causes no visual regression. 560ms is the longest
+// task keyframe (mdx-task-row-sheen); the buffer guarantees every animation
+// has settled before the attribute is removed.
+// 动画标记在最长关键帧结束后清除，使 data-task-animation 属性不会残留在节点上，
+// 且下次交互始终从 undefined → 具体值的干净切换开始。勾选/未勾选的静态样式由
+// :checked 与 data-task-checked 提供，移除属性不会造成视觉回退。560ms 为最长
+// 关键帧（mdx-task-row-sheen），缓冲确保移除属性前所有动画均已结束。
+const TASK_ANIMATION_RESET_DELAY = 600;
+
 const TASK_STORAGE_PREFIX = 'neoverse-mdx-task-state:v1';
 
 // Page-level progress widgets listen for this event instead of coupling task
@@ -90,6 +103,15 @@ export function InteractiveTaskListItem({
   useEffect(() => {
     window.dispatchEvent(new CustomEvent(TASK_STATE_CHANGE_EVENT, { detail: checked }));
   }, [checked]);
+
+  // Reset the animation flag once the keyframes finish so the next interaction
+  // starts from a clean state instead of reusing a lingering attribute value.
+  // 动画关键帧结束后重置标记，使下次交互从干净状态开始，而非复用残留的属性值。
+  useEffect(() => {
+    if (!animation) return;
+    const timer = setTimeout(() => setAnimation(undefined), TASK_ANIMATION_RESET_DELAY);
+    return () => clearTimeout(timer);
+  }, [animation]);
 
   function handleCheckedChange(nextChecked: boolean) {
     setChecked(nextChecked);
