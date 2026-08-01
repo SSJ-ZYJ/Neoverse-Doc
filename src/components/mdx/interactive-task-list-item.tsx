@@ -20,6 +20,8 @@ interface InteractiveTaskListItemProps {
   taskLabel: string;
 }
 
+type TaskAnimation = 'complete' | 'reopen';
+
 const TASK_STORAGE_PREFIX = 'neoverse-mdx-task-state:v1';
 
 // Page-level progress widgets listen for this event instead of coupling task
@@ -73,6 +75,10 @@ export function InteractiveTaskListItem({
   const storageKey = `${TASK_STORAGE_PREFIX}:${pathname}`;
   const taskKey = hashTaskLabel(normalizedLabel);
   const [checked, setChecked] = useState(initialChecked);
+  // Animation intent is set only by direct interaction, so restoring persisted
+  // tasks never launches a burst across the page during hydration.
+  // 动画意图仅由直接交互设置，恢复持久化任务时不会在 hydration 阶段触发整页粒子效果。
+  const [animation, setAnimation] = useState<TaskAnimation>();
 
   useEffect(() => {
     const storedState = getStoredTaskState(storageKey);
@@ -87,6 +93,7 @@ export function InteractiveTaskListItem({
 
   function handleCheckedChange(nextChecked: boolean) {
     setChecked(nextChecked);
+    setAnimation(nextChecked ? 'complete' : 'reopen');
     const storedState = getStoredTaskState(storageKey);
     localStorage.setItem(
       storageKey,
@@ -105,6 +112,7 @@ export function InteractiveTaskListItem({
   return (
     <li
       className={[className, 'mdx-task-item'].filter(Boolean).join(' ')}
+      data-task-animation={animation}
       data-task-checked={checked}
     >
       <input

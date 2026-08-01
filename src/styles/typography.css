@@ -101,6 +101,9 @@
 }
 
 #nd-page li.mdx-task-item {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
@@ -120,6 +123,26 @@
     opacity var(--motion-fast) var(--motion-ease-standard);
 }
 
+/* A single composited sheen crosses the row only after a direct completion.
+   It uses no extra DOM and never runs as an ambient animation.
+   单层合成扫光仅在用户直接完成任务后经过卡片，不增加 DOM，也不会常驻运行。 */
+#nd-page li.mdx-task-item::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 14%,
+    color-mix(in srgb, var(--accent-primary) 16%, transparent) 42%,
+    color-mix(in srgb, var(--edge-light) 24%, transparent) 50%,
+    transparent 72%
+  );
+  content: "";
+  pointer-events: none;
+  transform: translate3d(-112%, 0, 0);
+}
+
 #nd-page li.mdx-task-item::marker {
   content: "";
 }
@@ -135,6 +158,8 @@
 }
 
 .mdx-task-item__checkbox {
+  position: relative;
+  z-index: 1;
   display: inline-grid;
   inline-size: 1.35rem;
   block-size: 1.35rem;
@@ -147,11 +172,38 @@
   color: transparent;
   background: color-mix(in srgb, var(--surface-subtle) 72%, transparent);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 48%, transparent);
+  transform: scale(1);
   transition:
     border-color var(--motion-fast) var(--motion-ease-standard),
     background-color var(--motion-fast) var(--motion-ease-standard),
     box-shadow var(--motion-fast) var(--motion-ease-standard),
     transform var(--motion-fast) var(--motion-ease-emphasized);
+}
+
+/* The checkbox owns a six-photon burst rendered by one pseudo-element. Only
+   transform and opacity animate, keeping the feedback compositor-friendly.
+   勾选框通过单个伪元素绘制六点光子爆发，仅动画化 transform 与 opacity。 */
+.mdx-task-item__checkbox::after {
+  position: absolute;
+  inset: -0.72rem;
+  border-radius: 50%;
+  opacity: 0;
+  background:
+    radial-gradient(circle, var(--edge-light) 0 28%, transparent 34%) 50% 0 / 0.3rem 0.3rem
+    no-repeat,
+    radial-gradient(circle, var(--accent-primary) 0 28%, transparent 34%) 100% 28% / 0.26rem 0.26rem
+    no-repeat,
+    radial-gradient(circle, var(--accent-secondary) 0 28%, transparent 34%) 88% 88% / 0.3rem 0.3rem
+    no-repeat,
+    radial-gradient(circle, var(--edge-light) 0 28%, transparent 34%) 18% 100% / 0.24rem 0.24rem
+    no-repeat,
+    radial-gradient(circle, var(--accent-secondary) 0 28%, transparent 34%) 0 48% / 0.28rem 0.28rem
+    no-repeat,
+    radial-gradient(circle, var(--accent-primary) 0 28%, transparent 34%) 18% 10% / 0.22rem 0.22rem
+    no-repeat;
+  content: "";
+  pointer-events: none;
+  transform: scale(0.45) rotate(-18deg);
 }
 
 .mdx-task-item__checkbox::before {
@@ -184,6 +236,8 @@
 }
 
 .mdx-task-item__content {
+  position: relative;
+  z-index: 1;
   min-inline-size: 0;
   overflow-wrap: anywhere;
   transition:
@@ -199,6 +253,158 @@
   color: var(--text-muted);
   text-decoration: line-through;
   text-decoration-color: color-mix(in srgb, var(--text-muted) 68%, transparent);
+}
+
+/* Completion feedback mirrors the project's restrained photon language while
+   reopen feedback stays shorter and quieter.
+   完成反馈沿用项目克制的光子语言，恢复待办则采用更短、更轻的回弹。 */
+#nd-page li.mdx-task-item[data-task-animation="complete"]::after {
+  animation: mdx-task-row-sheen 560ms var(--motion-ease-standard) both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__checkbox {
+  animation: mdx-task-checkbox-complete 420ms var(--motion-ease-emphasized) both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__checkbox::before {
+  animation: mdx-task-check-draw 320ms var(--motion-ease-emphasized) 70ms both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__checkbox::after {
+  animation: mdx-task-photon-burst 480ms var(--motion-ease-standard) 40ms both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__content {
+  animation: mdx-task-content-complete 440ms var(--motion-ease-standard) both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="reopen"] .mdx-task-item__checkbox {
+  animation: mdx-task-checkbox-reopen 240ms var(--motion-ease-emphasized) both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="reopen"] .mdx-task-item__content {
+  animation: mdx-task-content-reopen 260ms var(--motion-ease-standard) both;
+}
+
+@keyframes mdx-task-checkbox-complete {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  36% {
+    transform: scale(0.76) rotate(-7deg);
+  }
+  72% {
+    transform: scale(1.18) rotate(3deg);
+  }
+  100% {
+    transform: scale(1.04) rotate(0deg);
+  }
+}
+
+@keyframes mdx-task-check-draw {
+  0% {
+    opacity: 0;
+    transform: translateY(0.12rem) rotate(35deg) scale(0);
+  }
+  64% {
+    opacity: 1;
+    transform: translateY(-0.08rem) rotate(47deg) scale(1.18);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-0.05rem) rotate(45deg) scale(1);
+  }
+}
+
+@keyframes mdx-task-photon-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.45) rotate(-18deg);
+  }
+  28% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18) rotate(12deg);
+  }
+}
+
+@keyframes mdx-task-row-sheen {
+  0% {
+    opacity: 0;
+    transform: translate3d(-112%, 0, 0);
+  }
+  24% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(112%, 0, 0);
+  }
+}
+
+@keyframes mdx-task-content-complete {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  45% {
+    opacity: 0.72;
+    transform: translate3d(0.18rem, 0, 0);
+  }
+}
+
+@keyframes mdx-task-checkbox-reopen {
+  0% {
+    transform: scale(1.04);
+  }
+  48% {
+    transform: scale(0.84);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes mdx-task-content-reopen {
+  0% {
+    opacity: 0.72;
+    transform: translate3d(0.12rem, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Coarse pointers skip the wide row sweep and photon burst. The remaining
+   checkbox response is short, local, and compositor-only for mobile GPUs.
+   粗指针设备关闭整行扫光与光子爆发，仅保留短促、局部、合成层友好的勾选反馈。 */
+@media (hover: none), (pointer: coarse) {
+  #nd-page li.mdx-task-item[data-task-animation]::after,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__checkbox::after,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__content {
+    animation: none;
+  }
+
+  #nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__checkbox {
+    animation-duration: 260ms;
+  }
+
+  #nd-page li.mdx-task-item[data-task-animation="reopen"] .mdx-task-item__checkbox {
+    animation-duration: 180ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-page li.mdx-task-item[data-task-animation]::after,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__checkbox,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__checkbox::before,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__checkbox::after,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__content {
+    animation: none;
+  }
 }
 
 /* ── Code Blocks & Inline Code / 代码块与行内代码 ─────────────────────────── */
