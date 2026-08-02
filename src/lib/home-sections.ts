@@ -32,3 +32,16 @@ export function getHomeChapters(locale: Locale): HomeChapter[] {
       return [{ title, description: nodeText(folder.description), href: page.url }];
     });
 }
+
+// Search scope tags reuse the same locale page tree as the homepage and the first
+// source slug as the server-side index tag, keeping chapter filters in sync with content.
+// 搜索范围标签复用首页的本地化页面树，并以内容源首段 slug 对齐服务端索引标签，
+// 确保章节增删或改名后筛选项自动同步。
+export function getSearchChapterTags(locale: Locale): { name: string; value: string }[] {
+  const pagesByUrl = new Map(source.getPages(locale).map((page) => [page.url, page]));
+
+  return getHomeChapters(locale).flatMap((chapter) => {
+    const tag = pagesByUrl.get(chapter.href)?.slugs[0];
+    return tag ? [{ name: chapter.title, value: tag }] : [];
+  });
+}

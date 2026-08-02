@@ -29,6 +29,9 @@ export interface Dictionary {
   documentContributorsTitle: string;
   backToDocs: string;
   backToHome: string;
+  // Search scope labels / 搜索范围标签
+  searchScopeLabel: string;
+  searchAllChapters: string;
   // Route error recovery copy / 路由错误恢复文案
   errorTitle: string;
   errorCode: string;

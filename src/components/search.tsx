@@ -6,10 +6,12 @@
 
 import { create } from '@orama/orama';
 import { useDocsSearch } from 'fumadocs-core/search/client';
+import { oramaStaticClient } from 'fumadocs-core/search/client/orama-static';
 import {
   SearchDialog,
   SearchDialogClose,
   SearchDialogContent,
+  SearchDialogFooter,
   SearchDialogHeader,
   SearchDialogIcon,
   SearchDialogInput,
@@ -17,8 +19,24 @@ import {
   SearchDialogOverlay,
   type SharedProps,
 } from 'fumadocs-ui/components/dialog/search';
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTrigger,
+} from 'fumadocs-ui/components/ui/popover';
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
+import type { TagItem } from 'fumadocs-ui/contexts/search';
+import { Check, ChevronDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { getPageDictionary } from '@/dictionaries';
+import { resolveLocale } from '@/lib/i18n';
 import { createMixedTokenizer } from '@/lib/search-tokenizer';
+
+interface DefaultSearchDialogProps extends SharedProps {
+  defaultTag?: string;
+  tags?: TagItem[];
+}
 
 function initOrama(locale?: string) {
   if (locale === 'zh') {
@@ -36,12 +54,28 @@ function initOrama(locale?: string) {
   });
 }
 
-export default function DefaultSearchDialog(props: SharedProps) {
+export default function DefaultSearchDialog({
+  defaultTag,
+  tags = [],
+  ...props
+}: DefaultSearchDialogProps) {
   const { locale } = useI18n();
+  const [tag, setTag] = useState(defaultTag);
+  const labels = getPageDictionary(resolveLocale(locale));
+  const selectedScope = tags.find((scope) => scope.value === (tag ?? '')) ?? tags[0];
+
+  // Reset the selected chapter when locale-aware dialog options change.
+  // 当本地化弹窗选项变化时重置已选章节，避免语言切换后沿用无效标签。
+  useEffect(() => {
+    setTag(defaultTag);
+  }, [defaultTag]);
+
   const { search, setSearch, query } = useDocsSearch({
-    type: 'static',
-    initOrama,
-    locale,
+    client: oramaStaticClient({
+      initOrama,
+      locale,
+      tag: tag || undefined,
+    }),
   });
 
   return (
@@ -54,6 +88,56 @@ export default function DefaultSearchDialog(props: SharedProps) {
           <SearchDialogClose />
         </SearchDialogHeader>
         <SearchDialogList items={query.data !== 'empty' ? query.data : null} />
+        {/* A lightweight trigger keeps chapter filtering secondary to search, while
+            the themed popover remains scrollable and follows the light/dark tokens.
+            轻量触发器让章节筛选保持次要层级，主题化 Popover 则支持滚动并跟随深浅色 Token。 */}
+        {tags.length > 0 && (
+          <SearchDialogFooter className="search-dialog__scope-footer">
+            <span className="search-dialog__scope-label">{labels.searchScopeLabel}</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  aria-label={labels.searchScopeLabel}
+                  className="search-dialog__scope-trigger"
+                  data-filtered={tag ? 'true' : 'false'}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="search-dialog__scope-indicator" />
+                  <span className="search-dialog__scope-value">{selectedScope?.name}</span>
+                  <ChevronDown aria-hidden="true" className="search-dialog__scope-chevron" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                aria-label={labels.searchScopeLabel}
+                className="search-dialog__scope-menu"
+                role="listbox"
+                sideOffset={6}
+              >
+                {tags.map((scope) => {
+                  const selected = scope.value === (tag ?? '');
+
+                  return (
+                    <PopoverClose asChild key={scope.value}>
+                      <button
+                        aria-selected={selected}
+                        className="search-dialog__scope-option"
+                        onClick={() => setTag(scope.value)}
+                        role="option"
+                        type="button"
+                      >
+                        <span className="search-dialog__scope-check" aria-hidden="true">
+                          {selected && <Check />}
+                        </span>
+                        <span>{scope.name}</span>
+                      </button>
+                    </PopoverClose>
+                  );
+                })}
+              </PopoverContent>
+            </Popover>
+          </SearchDialogFooter>
+        )}
       </SearchDialogContent>
     </SearchDialog>
   );

@@ -23,6 +23,9 @@ export const zh = {
   documentContributorsTitle: '本文档贡献者',
   backToDocs: '返回文档',
   backToHome: '返回首页',
+  // Search scope labels / 搜索范围标签
+  searchScopeLabel: '搜索范围',
+  searchAllChapters: '全部章节',
   // Route error recovery copy / 路由错误恢复文案
   errorTitle: '页面加载失败',
   errorCode: '500',

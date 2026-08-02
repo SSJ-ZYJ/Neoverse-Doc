@@ -10,6 +10,20 @@ import { source } from '@/lib/source';
 export const dynamic = 'force-static';
 
 const { staticGET } = createFromSource(source, {
+  // Index the top-level content slug as a Fumadocs tag so clients can limit
+  // results to one chapter without maintaining a separate chapter map.
+  // 将内容首级 slug 写入 Fumadocs 标签，使客户端可限定单章搜索，
+  // 同时避免额外维护章节映射。
+  buildIndex(page) {
+    return {
+      id: page.url,
+      title: page.data.title,
+      description: page.data.description,
+      url: page.url,
+      structuredData: page.data.structuredData,
+      tag: page.slugs[0],
+    };
+  },
   localeMap: {
     zh: {
       components: {

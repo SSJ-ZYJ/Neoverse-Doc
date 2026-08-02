@@ -9,6 +9,7 @@ import type { Metadata } from 'next';
 import DefaultSearchDialog from '@/components/search';
 import { TransitionProvider } from '@/components/transition/transition-provider';
 import { getPageDictionary } from '@/dictionaries';
+import { getSearchChapterTags } from '@/lib/home-sections';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 import { i18nProvider, i18nUI } from '@/lib/layout.shared';
 
@@ -28,11 +29,21 @@ export async function generateMetadata(props: LayoutProps<'/[lang]'>): Promise<M
 export default async function LangLayout({ params, children }: LayoutProps<'/[lang]'>) {
   const { lang } = await params;
   const locale = resolveLocale(lang);
+  const dict = getPageDictionary(locale);
+
+  // Search scopes come from the localized Fumadocs page tree; the empty tag keeps
+  // the initial scope on all chapters while the remaining tags select one chapter.
+  // 搜索范围来自本地化 Fumadocs 页面树；空标签默认搜索全部章节，其余标签限定单章。
+  const searchTags = [{ name: dict.searchAllChapters, value: '' }, ...getSearchChapterTags(locale)];
 
   return (
     <RootProvider
       search={{
         SearchDialog: DefaultSearchDialog,
+        options: {
+          defaultTag: '',
+          tags: searchTags,
+        },
       }}
       theme={{ enabled: false }}
       i18n={i18nProvider(i18nUI, locale)}

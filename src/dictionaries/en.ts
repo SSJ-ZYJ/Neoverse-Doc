@@ -23,6 +23,9 @@ export const en = {
   documentContributorsTitle: 'Document contributors',
   backToDocs: 'Back to Docs',
   backToHome: 'Back to Home',
+  // Search scope labels / 搜索范围标签
+  searchScopeLabel: 'Search scope',
+  searchAllChapters: 'All chapters',
   // Route error recovery copy / 路由错误恢复文案
   errorTitle: 'Page Failed to Load',
   errorCode: '500',
