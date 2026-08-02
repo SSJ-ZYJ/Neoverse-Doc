@@ -77,21 +77,24 @@ bun dev
 
 ## 项目结构
 
-```text
-Neoverse-Doc/
-├── content/docs/              # 文档内容（MDX），按语言子目录组织
-│   ├── zh/                    # 中文文档
-│   └── en/                    # 英文文档
-├── src/
-│   ├── app/                   # Next.js App Router 页面
-│   ├── components/            # React 组件
-│   ├── dictionaries/          # i18n 语言包
-│   └── lib/                   # 工具函数和配置
-├── source.config.ts           # fumadocs-mdx 配置
-├── next.config.ts             # Next.js 配置
-├── biome.json                 # Biome 格式化与 Lint 规则
-└── tsconfig.json              # TypeScript 配置
-```
+<Files>
+  <Folder name="Neoverse-Doc" defaultOpen>
+    <Folder name="content/docs" defaultOpen title="文档内容（MDX），按语言子目录组织">
+      <Folder name="zh" disabled title="中文文档" />
+      <Folder name="en" disabled title="英文文档" />
+    </Folder>
+    <Folder name="src" defaultOpen>
+      <Folder name="app" disabled title="Next.js App Router 页面" />
+      <Folder name="components" disabled title="React 组件" />
+      <Folder name="dictionaries" disabled title="i18n 语言包" />
+      <Folder name="lib" disabled title="工具函数和配置" />
+    </Folder>
+    <File name="source.config.ts" title="fumadocs-mdx 配置" />
+    <File name="next.config.ts" title="Next.js 配置" />
+    <File name="biome.json" title="Biome 格式化与 Lint 规则" />
+    <File name="tsconfig.json" title="TypeScript 配置" />
+  </Folder>
+</Files>
 
 ## 代码规范
 

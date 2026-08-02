@@ -12,9 +12,9 @@ author:
 | 分类 | 语法能力 | 适用场景 |
 | :--- | :--- | :--- |
 | [基础 Markdown](#1-基础-markdown) | [标题与段落](#11-标题与段落)、[文本强调](#12-文本强调与换行)、[列表](#14-列表)、[链接与图片](#15-链接图片与分隔线)、[行内代码](#13-行内代码)、[分隔线](#15-链接图片与分隔线) | 普通正文结构 |
-| [GFM 扩展](#2-github-flavored-markdown) | [任务列表](#21-任务列表)、[表格](#22-表格)、[删除线](#23-删除线与自动链接)、[自动链接](#23-删除线与自动链接)、[引用](#24-引用) | 协作说明与结构化信息 |
+| [GFM 扩展](#2-github-flavored-markdown) | [任务列表](#21-任务列表)、[表格](#22-表格)、[删除线](#23-删除线)、[引用](#24-引用) | 协作说明与结构化信息 |
 | [项目增强](#3-项目增强语法) | [GitHub Alert 提示框](#31-github-alert-提示框)、[基础可折叠块](#32-基础可折叠块)、[语义可折叠块](#33-语义可折叠块) | 提示、补充说明、摘要内容 |
-| [代码块](#4-代码块) | [语法高亮](#41-基础代码块)、[文件路径标题栏](#42-文件路径标题栏)、[无路径代码块](#43-无文件路径代码块)、复制按钮 | 代码示例与配置片段 |
+| [代码块与文件层级](#4-代码块与文件层级) | [语法高亮](#41-基础代码块)、[文件路径标题栏](#42-文件路径标题栏)、[无路径代码块](#43-无文件路径代码块)、[文件层级](#44-文件层级)、复制按钮 | 代码示例、配置片段与目录结构 |
 | [数学与图表](#5-latex-公式) | [LaTeX 公式](#5-latex-公式)、[Mermaid 流程图](#61-流程图)、[时序图](#62-时序图)、[状态图](#63-状态图) | 公式、流程图、时序图、状态图 |
 
 ## 1. 基础 Markdown
@@ -113,15 +113,12 @@ author:
 | 表格 | 完整 | 支持左、中、右对齐 |
 ```
 
-### 2.3 删除线与自动链接
+### 2.3 删除线
 
 这是一段 ~~被删除的文本~~。
-
-自动链接示例：<https://blog.shenshijun.space/>
 
 ```md
 这是一段 ~~被删除的文本~~。
-自动链接示例：<https://blog.shenshijun.space/>
 ```
 
 ### 2.4 引用
@@ -237,7 +234,7 @@ AI 摘要折叠块适合放置 AI 生成的摘要内容。展开后，正文会�
 > 这里填写 AI 生成的摘要正文。
 ```
 
-## 4. 代码块
+## 4. 代码块与文件层级
 
 ### 4.1 基础代码块
 
@@ -292,6 +289,34 @@ export function Button({ label }: ButtonProps) {
   justify-content: center;
   padding: 20px;
 }
+```
+
+### 4.4 文件层级
+
+使用 `Files`、`Folder` 和 `File` 组件展示目录结构，避免用字符手动画树形层级。需要默认展开的目录添加 `defaultOpen`，没有子项的目录添加 `disabled`。
+
+<Files>
+  <Folder name="app" defaultOpen>
+    <Folder name="api" defaultOpen>
+      <File name="route.ts" />
+    </Folder>
+    <File name="layout.tsx" />
+    <File name="page.tsx" />
+  </Folder>
+  <File name="package.json" />
+</Files>
+
+```mdx
+<Files>
+  <Folder name="app" defaultOpen>
+    <Folder name="api" defaultOpen>
+      <File name="route.ts" />
+    </Folder>
+    <File name="layout.tsx" />
+    <File name="page.tsx" />
+  </Folder>
+  <File name="package.json" />
+</Files>
 ```
 
 ## 5. LaTeX 公式
