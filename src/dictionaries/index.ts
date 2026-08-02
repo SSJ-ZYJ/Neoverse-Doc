@@ -32,6 +32,9 @@ export interface Dictionary {
   // Search scope labels / 搜索范围标签
   searchScopeLabel: string;
   searchAllChapters: string;
+  // Cross-document reading return labels / 跨文档阅读返回标签
+  readingReturnAction: string;
+  readingReturnAriaLabel: string;
   // Route error recovery copy / 路由错误恢复文案
   errorTitle: string;
   errorCode: string;

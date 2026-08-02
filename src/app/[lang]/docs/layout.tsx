@@ -8,8 +8,10 @@
 
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { Sidebar, SidebarTrigger, useSidebar } from 'fumadocs-ui/layouts/docs/slots/sidebar';
+import { DocsReadingReturn } from '@/components/docs-reading-return';
 import { DocsSidebarSeparator } from '@/components/docs-sidebar-separator';
 import { SidebarProvider } from '@/components/sidebar-provider';
+import { getPageDictionary } from '@/dictionaries';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 import { baseOptions } from '@/lib/layout.shared';
 import { REPO_URL } from '@/lib/site-config';
@@ -20,6 +22,7 @@ export const generateStaticParams = generateLocaleStaticParams;
 export default async function Layout({ params, children }: LayoutProps<'/[lang]/docs'>) {
   const { lang } = await params;
   const locale = resolveLocale(lang);
+  const dict = getPageDictionary(locale);
 
   return (
     <DocsLayout
@@ -45,6 +48,12 @@ export default async function Layout({ params, children }: LayoutProps<'/[lang]/
       }}
     >
       {children}
+      {/* The persistent docs layout tracks body-link return points across page changes.
+          持久化文档布局负责在页面切换间追踪正文链接的阅读返回点。 */}
+      <DocsReadingReturn
+        actionLabel={dict.readingReturnAction}
+        ariaLabelTemplate={dict.readingReturnAriaLabel}
+      />
     </DocsLayout>
   );
 }

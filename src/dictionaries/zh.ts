@@ -26,6 +26,9 @@ export const zh = {
   // Search scope labels / 搜索范围标签
   searchScopeLabel: '搜索范围',
   searchAllChapters: '全部章节',
+  // Cross-document reading return labels / 跨文档阅读返回标签
+  readingReturnAction: '返回阅读位置',
+  readingReturnAriaLabel: '返回“{title}”的阅读位置',
   // Route error recovery copy / 路由错误恢复文案
   errorTitle: '页面加载失败',
   errorCode: '500',

@@ -34,7 +34,9 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   // 使用 default TOC 风格，内置沿 SVG 路径移动的滚动追踪指示点。clerk 风格没有 thumb 元素。
   return (
     <DocsPage toc={page.data.toc} full={page.data.full} tableOfContent={{ style: 'normal' }}>
-      <DocsTitle>{page.data.title}</DocsTitle>
+      {/* Stable title metadata lets the client-side reading return action name its source page.
+          稳定的标题元数据让客户端阅读返回操作能够标明来源文章。 */}
+      <DocsTitle data-docs-title="">{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
       {/* Frontmatter opts individual documents into the persisted GFM task summary.
