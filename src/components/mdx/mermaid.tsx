@@ -16,6 +16,7 @@ import { Code2, Eye, Maximize, Minimize, RotateCcw, ZoomIn, ZoomOut } from 'luci
 import { useTheme } from 'next-themes';
 import {
   type CSSProperties,
+  type RefObject,
   useCallback,
   useEffect,
   useId,
@@ -157,7 +158,8 @@ function MermaidCodeView({
 export function Mermaid({ chart }: { chart: string }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inPageWrapperRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const inPageCanvasRef = useRef<HTMLDivElement>(null);
+  const maximizedCanvasRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
@@ -252,16 +254,24 @@ export function Mermaid({ chart }: { chart: string }) {
   } = useZoomAndPan();
   const { svgNatural } = useSvgViewBoxExpander(svgContent, inPageWrapperRef, wrapperRef);
   const { isMaximized, toggleMaximize } = useMermaidMaximize(scale, setScale, pan, setPan);
-  const fitCanvasScale = useFitCanvasScale(svgNatural, canvasRef, isMaximized);
+  const { fitCanvasScale, recomputeFitCanvasScale } = useFitCanvasScale(
+    svgNatural,
+    inPageCanvasRef,
+    maximizedCanvasRef,
+    isMaximized,
+  );
   // Reuse the rendered diagram's fitted block size as the code viewport cap.
   // The code component still shrinks below this value when its content is shorter.
   // 复用渲染图适配后的块轴尺寸作为代码视口上限；代码内容更短时仍会收缩。
   const renderedDiagramHeight = svgNatural.height * fitCanvasScale;
-  // Reset concerns only the user's logical zoom and pan. Automatic fitting is
-  // a separate base transform, so every diagram starts and resets to 100%.
-  // 重置只处理用户的逻辑缩放与平移；自动适配是独立基础变换，因此每张图
-  // 的初始与重置比例始终为 100%。
-  const canResetZoom = Math.abs(scale - 1) > 0.005 || pan.x !== 0 || pan.y !== 0;
+  // Reset restores logical zoom/pan and remeasures the active canvas. Keeping
+  // it available at 100% also provides a recovery path after viewport changes.
+  // 重置同时恢复逻辑缩放、平移并重新测量当前画布；即使显示为 100%，也保留
+  // 操作入口，以便在视口变化后主动恢复适配。
+  const handleResetZoom = useCallback(() => {
+    resetZoom();
+    recomputeFitCanvasScale();
+  }, [recomputeFitCanvasScale, resetZoom]);
 
   // The fit scale locks the canvas layout frame and combines with the logical
   // user scale only for painting. Toolbar zoom never resizes the canvas, while
@@ -417,8 +427,8 @@ export function Mermaid({ chart }: { chart: string }) {
         <div className="mermaid-toolbar__group mermaid-toolbar__canvas-actions">
           <button
             type="button"
-            onClick={resetZoom}
-            disabled={!canResetZoom || viewMode === 'code'}
+            onClick={handleResetZoom}
+            disabled={viewMode === 'code'}
             aria-label={labels.mermaidReset}
             className="mermaid-toolbar__btn"
           >
@@ -437,9 +447,9 @@ export function Mermaid({ chart }: { chart: string }) {
     </div>
   );
 
-  const canvasOnly = (
+  const renderCanvas = (activeCanvasRef: RefObject<HTMLDivElement | null>) => (
     <div
-      ref={canvasRef}
+      ref={activeCanvasRef}
       className="mermaid-canvas"
       data-view={viewMode}
       data-dragging={isDragging || undefined}
@@ -506,7 +516,7 @@ export function Mermaid({ chart }: { chart: string }) {
       tabIndex={isMaximized ? -1 : 0}
       onKeyDown={handleKeyDown}
     >
-      {canvasOnly}
+      {renderCanvas(inPageCanvasRef)}
       {toolbarVisible && !isMaximized ? toolbar : null}
     </div>
   );
@@ -520,7 +530,7 @@ export function Mermaid({ chart }: { chart: string }) {
       tabIndex={isMaximized ? 0 : -1}
       onKeyDown={handleKeyDown}
     >
-      {canvasOnly}
+      {renderCanvas(maximizedCanvasRef)}
     </div>
   );
 

@@ -347,12 +347,32 @@
   fill: var(--accent-primary) !important;
 }
 
-.mermaid-svg-host :is(.edgeLabel rect, .labelBkg) {
+.mermaid-svg-host .edgeLabel rect {
   fill: transparent !important;
   stroke: transparent !important;
   opacity: 0 !important;
   rx: 8px;
   ry: 8px;
+}
+
+/* HTML edge-label backgrounds contain the transition text itself, so keep the
+   container visible and replace Mermaid's nested purple fills with one surface.
+   HTML 边标签背景同时承载转换文字，因此保留容器，并以单层表面替换 Mermaid
+   嵌套注入的紫色背景。 */
+.mermaid-svg-host .edgeLabel foreignObject .labelBkg {
+  opacity: 1 !important;
+  box-sizing: content-box;
+  padding: 0.125rem 0.3125rem;
+  border-radius: var(--radius-xs);
+  color: color-mix(in srgb, var(--text-primary) 88%, var(--accent-primary)) !important;
+  background: color-mix(
+    in srgb,
+    var(--surface-elevated) 88%,
+    var(--docs-canvas-surface)
+  ) !important;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--accent-primary) 26%, var(--border-subtle));
+  transform: translate(-0.3125rem, -0.125rem);
 }
 
 .mermaid-svg-host
@@ -385,16 +405,25 @@
   background: transparent !important;
 }
 
-/* Transition labels remain readable without Mermaid's opaque purple blocks.
-   State start/end markers and connectors use one restrained cyan system.
-   转移标签移除 Mermaid 原始紫色块；状态起止点和连线统一使用克制的青色体系。 */
+/* Transition labels use quiet neutral glass chips while state start/end markers
+   and connectors retain the project's cyan accent hierarchy.
+   转移标签使用克制的中性玻璃标签，状态起止点与连线保留项目青色强调层级。 */
 .mermaid-svg-host :is(.edgeLabel, .edgeLabel p, .edgeLabel span, .edgeLabel div) {
-  color: var(--accent-secondary) !important;
+  color: color-mix(in srgb, var(--text-primary) 88%, var(--accent-primary)) !important;
+}
+
+.mermaid-svg-host
+  :is(g.edgeLabel, .edgeLabel foreignObject span.edgeLabel, .edgeLabel foreignObject p) {
   background: transparent !important;
 }
 
+.mermaid-svg-host .edgeLabel p {
+  margin: 0 !important;
+  line-height: 1.5 !important;
+}
+
 .mermaid-svg-host .edgeLabel text {
-  fill: var(--accent-secondary) !important;
+  fill: color-mix(in srgb, var(--text-primary) 88%, var(--accent-primary)) !important;
 }
 
 .mermaid-svg-host :is(.statediagram-state .divider, .node .fork-join) {
@@ -413,6 +442,34 @@
   fill: var(--surface-elevated) !important;
   stroke: var(--accent-primary) !important;
   stroke-width: 1.75px !important;
+}
+
+/* Mermaid 11 renders state-diagram end markers as layered paths inside
+   `.outer-path` instead of the legacy `.state-end` circle. Map both rings to
+   the project cyan palette with an opaque canvas center for theme contrast.
+   Mermaid 11 将状态图结束节点渲染为 `.outer-path` 内的多层路径，而非旧版
+   `.state-end` 圆形；这里将双环映射到项目青色体系，并用画布底色保证主题对比。 */
+.mermaid-svg-host .node > .outer-path > path:first-of-type {
+  fill: var(--docs-canvas-surface) !important;
+  stroke: var(--accent-primary) !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid-svg-host .node > .outer-path > path:nth-of-type(2) {
+  fill: none !important;
+  stroke: color-mix(in srgb, var(--accent-primary) 72%, var(--text-primary)) !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid-svg-host .node > .outer-path > g > path:first-of-type {
+  fill: var(--accent-primary) !important;
+  stroke: none !important;
+}
+
+.mermaid-svg-host .node > .outer-path > g > path:nth-of-type(2) {
+  fill: none !important;
+  stroke: color-mix(in srgb, var(--edge-light) 64%, var(--accent-primary)) !important;
+  stroke-width: 1px !important;
 }
 
 /* Git Graph uses diagram-specific branch, commit, label, and arrow classes

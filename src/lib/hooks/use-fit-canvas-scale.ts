@@ -17,7 +17,8 @@ const SCALE_EPSILON = 0.0005;
 
 export function useFitCanvasScale(
   svgNatural: { width: number; height: number },
-  canvasRef: RefObject<HTMLDivElement | null>,
+  inPageCanvasRef: RefObject<HTMLDivElement | null>,
+  maximizedCanvasRef: RefObject<HTMLDivElement | null>,
   isMaximized: boolean,
 ) {
   const [fitCanvasScale, setFitCanvasScale] = useState(DEFAULT_FIT_SCALE);
@@ -27,7 +28,12 @@ export function useFitCanvasScale(
     const svgH = svgNatural.height;
     if (svgW <= 0 || svgH <= 0) return DEFAULT_FIT_SCALE;
 
-    const canvas = canvasRef.current;
+    // The in-page placeholder and the portaled maximized diagram coexist while
+    // maximized. Separate refs prevent the portal unmount from clearing the
+    // in-page canvas ref before the exit fit is measured.
+    // 最大化期间页面占位图与 Portal 图会同时存在。拆分 ref 可避免 Portal
+    // 卸载时清空页面画布引用，导致退出后的适配测量回退为 1。
+    const canvas = isMaximized ? maximizedCanvasRef.current : inPageCanvasRef.current;
     if (!canvas) return DEFAULT_FIT_SCALE;
 
     const cs = window.getComputedStyle(canvas);
@@ -50,7 +56,13 @@ export function useFitCanvasScale(
       Math.abs(currentScale - nextScale) <= SCALE_EPSILON ? currentScale : nextScale,
     );
     return nextScale;
-  }, [svgNatural.width, svgNatural.height, canvasRef, isMaximized]);
+  }, [
+    svgNatural.width,
+    svgNatural.height,
+    inPageCanvasRef,
+    maximizedCanvasRef,
+    isMaximized,
+  ]);
 
   useLayoutEffect(() => {
     recomputeFitCanvasScale();
@@ -59,7 +71,7 @@ export function useFitCanvasScale(
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const canvas = canvasRef.current;
+    const canvas = isMaximized ? maximizedCanvasRef.current : inPageCanvasRef.current;
     const observer =
       canvas && typeof ResizeObserver !== 'undefined'
         ? new ResizeObserver(recomputeFitCanvasScale)
@@ -73,7 +85,7 @@ export function useFitCanvasScale(
       window.removeEventListener('resize', recomputeFitCanvasScale);
       window.visualViewport?.removeEventListener('resize', recomputeFitCanvasScale);
     };
-  }, [canvasRef, recomputeFitCanvasScale]);
+  }, [inPageCanvasRef, maximizedCanvasRef, isMaximized, recomputeFitCanvasScale]);
 
-  return fitCanvasScale;
+  return { fitCanvasScale, recomputeFitCanvasScale };
 }
