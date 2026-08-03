@@ -54,9 +54,7 @@ export function InlineCodeWrapController() {
       const edgeOffset = MARKER_EDGE_OFFSET_REM * rem;
       const bottomOffset = MARKER_BOTTOM_OFFSET_REM * rem;
 
-      const currentBodies = new Set(
-        document.querySelectorAll<HTMLElement>(DOCS_BODY_SELECTOR),
-      );
+      const currentBodies = new Set(document.querySelectorAll<HTMLElement>(DOCS_BODY_SELECTOR));
       for (const body of observedBodies) {
         if (currentBodies.has(body)) continue;
         resizeObserver.unobserve(body);

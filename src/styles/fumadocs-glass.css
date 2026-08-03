@@ -159,6 +159,38 @@
   hyphens: auto;
 }
 
+/* The desktop TOC keeps native wheel and touch scrolling but hides its visual
+   scrollbar. Soft edge masks communicate overflow, while matching end padding
+   lets the final item scroll completely above the bottom fade.
+   桌面端 TOC 保留滚轮与触控滚动，但隐藏可见滚动条；柔和边缘渐隐提示仍有
+   内容可滚动，并通过等量底部留白确保最后一项可完整越过渐隐区域。 */
+:where(#nd-toc > #toc-title + div) {
+  padding-block-end: 3rem !important;
+  scrollbar-width: none !important;
+  scrollbar-gutter: auto !important;
+  -ms-overflow-style: none !important;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 0.75rem,
+    black calc(100% - 3rem),
+    transparent
+  ) !important;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 0.75rem,
+    black calc(100% - 3rem),
+    transparent
+  ) !important;
+}
+
+:where(#nd-toc > #toc-title + div)::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 /* Below xl: force-hide right TOC (consistent with official max-xl:hidden, as a fallback defense).
    不足 xl 时强制隐藏右侧 TOC（与官方默认 max-xl:hidden 一致，作为兜底防御） */
 @media (max-width: 1279.98px) {
