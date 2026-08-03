@@ -94,23 +94,29 @@ Neoverse-Doc/
 ├── src/
 │   ├── app/                   # Next.js App Router 页面
 │   ├── components/            # React 组件
-│   │   ├── transition/        # 页面过渡与遮罩揭示动画组件
+│   │   ├── home/              # 首页业务组件（含学习导航与计算主题背景）
+│   │   ├── react-bits/        # 本地化底层动效（不得直接充当页面业务 API）
+│   │   ├── transition/        # 集中式页面转场策略、Provider、Layer 与 Link
 │   │   ├── mdx/               # MDX 内容渲染组件
 │   │   ├── search.tsx         # 静态搜索对话框
 │   │   ├── guestbook.tsx      # Giscus 评论组件
-│   │   ├── glass-ripple-controller.tsx # 全局玻璃控件点击粒子控制器
+│   │   ├── immersive-interaction-controller.tsx # 点击 / 拖拽粒子预算、节流与清理
 │   │   └── sidebar-provider.tsx # 侧栏折叠状态持久化
 │   ├── dictionaries/          # i18n 语言包
 │   ├── lib/                   # 工具函数和配置
-│   │   ├── motion.ts          # framer-motion 动画预设
+│   │   ├── motion-config.ts   # JavaScript 动效时长、缓动与降级检测
+│   │   ├── home-sections.ts   # 首页章节树提取
 │   │   └── ...                # 其他工具
 │   └── styles/                # 模块化 CSS 样式表
 │       ├── theme.css          # 主题变量与色彩系统
-│       ├── glass.css          # 液态玻璃设计系统
+│       ├── tokens.css         # 语义设计 Token
+│       ├── motion.css         # 统一动效与降级
+│       ├── immersive-interactions.css # 控件光感、点击粒子与降级
+│       ├── glass.css          # 玻璃基础、业务表面与控件
 │       ├── fumadocs-glass.css # Fumadocs 表面玻璃化覆盖
 │       ├── typography.css     # 排版样式
-│       ├── home.css           # 首页渐变动画
-│       ├── ripple.css         # 沉浸光场与点击粒子动效
+│       ├── pages/             # 首页、文档与特殊页面样式
+│       ├── transitions.css    # 页面转场样式
 │       └── a11y.css           # 无障碍样式
 ├── source.config.ts           # fumadocs-mdx 配置
 ├── next.config.ts             # Next.js 配置
@@ -127,6 +133,27 @@ Neoverse-Doc/
 3. **遵循技术栈**：使用 `package.json` 中定义的依赖版本
 4. **类型安全**：充分利用 TypeScript 类型系统
 5. **动效隔离**：命令式挂载的视觉特效必须使用宿主直属层，禁止覆盖业务组件已有的定位、布局属性或接管内部控件的指针事件
+6. **设计 Token**：业务组件不得散落颜色、圆角、阴影和动效时长，优先使用 `src/styles/tokens.css` 中的语义变量
+7. **转场集中**：内部导航使用 `TransitionLink` 或交由 `TransitionProvider` 捕获，禁止在业务按钮中重复实现路由分类、DOM 快照和点击坐标协议；由 Provider 管理的客户端导航必须在目标模板挂载前写入 pending 标记，目标模板不得再次播放直达加载动画；包含固定模糊环境层的长页面不得执行整页 `transform`，应将入场收束限定在轻量内容区域
+8. **效果分层**：页面使用 `HeroTitle`、`ChapterGrid`、`DocCard` 等业务组件；React Bits 本地化组件只作为底层实现，并必须提供触摸、移动端与 `prefers-reduced-motion` 降级
+9. **滚动动效**：优先使用支持渐进增强的 CSS 视图时间线；必须保留无时间线浏览器的静态背景，并提供 `prefers-reduced-motion` 降级
+10. **Fumadocs 属性**：标题锚点使用空 `data-card`，真正卡片使用 `data-card="true"`；样式和粒子选择器必须区分二者，禁止给 Markdown 标题添加卡片背景
+11. **文本与容器层级**：品牌文字、Markdown 标题和代码标签页文字保持无框；玻璃背景、描边与圆角由其外层导航、卡片或标签栏容器统一提供
+12. **圆角层级**：Markdown 卡片、TOC、悬浮栏与二级弹层复用 `--radius-md`；按钮、菜单项与头像复用 `--radius-xs`。宽屏 TOC 保持无侧边分隔线，避免额外切割阅读画布
+13. **缩放与粒子宿主**：Mermaid 必须保留各图型渲染器提供的原生 `viewBox`，仅在绘制内容确实越界时扩展边界；初始画布按阅读宽度与浏览器视口高度中更严格的约束等比适配，且自动适配比例必须独立于用户交互比例，确保工具栏初始及重置状态始终为 `100%`。影响标签字体、字重、行高或边界的样式必须通过 Mermaid `themeCSS` 在测量阶段提供，禁止在 SVG 注入后再改变文字度量；所有 HTML 标签的 `foreignObject` 必须保持溢出可见，Git Graph 分支文字应根据实际字形与背景边界进行居中。Git Graph 必须通过图型专属 class 映射全部八个分支槽、特殊提交和标签样式，禁止让通用 `.label` 或 `darkMode` 派生色把分支、提交点与文字覆盖成同一种颜色。代码视图必须使用与渲染画布相同的可用宽度，按源码自然高度展示，并以对应渲染图的实际显示高度作为长源码滚动上限；全屏态不得另设源码宽度上限。工具栏缩放只能改变画布内部 SVG，禁止使用交互缩放值改变画布布局尺寸；滚轮缩放只能在全屏渲染视图中拦截，并必须通过同步补偿平移量将缩放中心锚定在鼠标位置，页面内图表与代码视图保留原生滚动。工具栏必须按视图、缩放和画布操作组织为共享底板的紧凑分段，统一复用项目圆角与按压尺度，不得混用圆形按钮和孤立分隔线；分组不得单独描边，整条工具栏只保留最外层发丝边。按钮悬浮、激活与激活悬浮状态必须使用 Mermaid 专属语义 Token，并在深浅玻璃表面上保持逐级增强且可辨识的对比度；悬浮与激活底色必须保留透明度，使后方图表或代码仍可透出。组合工具栏需要以共享外层作为粒子宿主，首批粒子应分散出生并直接展开，避免反馈被切碎或先叠成单点；紧凑 CTA 可使用更小的出生圆环，但不得退化为单点闪烁。Mermaid wrapper 的页面模糊必须由独立基底伪元素承载，wrapper 本身不得建立阻断工具栏采样的 Backdrop Root；普通与全屏工具栏必须复用同一套强模糊 Token，并将玻璃背景与交互控件拆分为独立合成层；工具栏容器自身不得承担 `backdrop-filter`，背景层仍需复用共享玻璃类以保留减少透明度降级，且其定位祖先不得使用 `transform` 建立额外合成层；普通模式复用标准玻璃底色、折射描边和主题阴影，全屏模式通过语义 Token 使用更轻透的玻璃底色，且不得在工具栏祖先上执行 `opacity` 入场动画以免延迟背景采样
+14. **代码 Tabs 层级**：代码 Tabs 仅允许根容器保留 `--radius-md`，内部 tablist、tabpanel、文件栏与代码块不得重复设置圆角；Tab 标签 hover 保持透明，整个 Tabs 根容器作为统一粒子宿主，粒子层需要同时覆盖语言栏与代码面板
+15. **内缩表面交互**：使用 `::before` 绘制的内缩玻璃条必须以伪元素的实际几何范围作为粒子命中、hover 与裁剪边界；移动端悬浮标题栏由圆角外层承载 hover、active 与粒子反馈，内部按钮不得重复着色或缩放
+16. **悬浮轮廓**：卡片与控件的锐利 hover 描边必须由宿主真实 border 提供，外层阴影仅负责柔光；伪元素描边不得使用负 inset 扩大边界，避免其圆角轮廓与实际内容边缘错位
+17. **Giscus 主题与布局**：宿主在 `src/styles/giscus.css` 中保持透明无框并仅负责宽度约束；文档评论区必须通过 `DocsCommunity` 作为 `#nd-docs-layout` 的独立 Grid 子节点呈现，社区卡片与正文卡片共享边框、圆角、背景和阴影规则，但 Giscus 内容必须跟随页面自然高度，禁止使用固定高度、内部滚动或 `overscroll-behavior` 截断页面滚动，也禁止重新放入 `DocsPage` 或 `DocsBody`。跨域 iframe 主题维护在 `public/giscus-light.css` 与 `public/giscus-dark.css`。宿主 `iframe` shadow part 的 `color-scheme` 必须与站点最终主题同步，两套 iframe 主题必须显式清空 `html`、`body` 与 `.gsc-main` 根画布，禁止系统主题在半透明表面后产生黑底串色。表情汇总区保持透明无框；评论卡片 / 弹层、输入组合、按钮 / 头像分别映射 `--radius-md`、`--radius-sm`、`--radius-xs` 对应尺寸。文本区与 Markdown 提示栏只允许一个 `--radius-sm` 外壳，内部不得重复设置圆角，滚动条也不得破坏右侧圆角。深色评论外框必须使用平面色阶和中性冷色内描边，禁止方向性高亮渐变或大面积蓝色外发光；表情弹层应使用更低不透明度的独立折射表面和更强背景模糊，保持文档背景可感知；深色主按钮必须使用低亮度表面、浅色文字和克制的折射高光，不得复用浅色主题的高亮渐变。宿主可禁止误选，但不得通过 `pointer-events` 阻断 iframe 内部交互
+18. **阅读宽度**：常规视口使用 `--reading-max`，仅在侧栏、正文与目录之间空间充足的宽屏断点切换到 `--reading-wide-max`；`#nd-page`、正文和移动 TOC 必须共用同一响应式宽度变量，并通过自动外边距与 `justify-self` 保持居中。桌面 `#nd-toc` 容器必须通过 `justify-self: end` 与逻辑外边距贴齐最右网格列，目录文字仍保持起始对齐
+19. **长文档性能**：MDX 组件必须通过共享注册表维护；纯展示主体优先保持服务端渲染，交互只保留最小客户端边界；Mermaid 等重型依赖必须动态导入并按视口激活；复杂离屏内容块使用 `content-visibility` 时必须通过稳定的 `[data-docs-body]` 标记限定范围，并提供固有尺寸与打印回退；禁止让每个内容块各自执行未合并的滚动状态更新；主题切换必须由 `next-themes` 临时停用 CSS 过渡，避免代码块与高亮节点随文章长度线性增加动画开销；嵌套玻璃不得重复执行 `backdrop-filter`，持续动画优先使用 `transform` / `opacity` 合成；首页无限环境动效必须复用 `MOTION_FRAME_RATE.homepageAmbient` 的共享时钟，不得分别按显示器刷新率持续提交；触摸粒子等高频反馈必须按帧批量读写
+20. **首页页脚**：外层必须保持透明或使用与首页画布同源的渐变延续，禁止使用独立通栏纯色切断场景；项目元信息统一放入使用语义 Token 的悬浮玻璃面，版权作者与项目修订信息保持上下两行，行内间距由结构化分组控制，并分别验证深色、浅色与移动端布局
+21. **Markdown 任务清单**：标准 `- [ ]` / `- [x]` 语法由共享 MDX 列表项组件渐进增强；普通列表必须继续保持服务端原生渲染，任务状态按页面与任务文本持久化，并在读取浏览器存储时校验数据；勾选动画只允许在直接交互时触发，优先使用 `transform` 与 `opacity`，并为粗指针设备及 `prefers-reduced-motion` 提供降级；仅当文章 frontmatter 配置 `todoProgress: true` 时，文档正文顶部才使用项目卡片样式汇总当前页面已完成项与任务总数，并提供定位到文末任务清单对应章节标题的键盘可访问操作；该操作必须使用 Fumadocs 自动生成的标题 Hash，禁止重复计算滚动坐标或使用 `scrollIntoView` 接管定位，普通点击仅临时启用遵循 `prefers-reduced-motion` 的 CSS 平滑滚动；TODO 深跳转后必须保持当前文档的延迟正文区块实体化，直至页面卸载，任务跳转不得依赖评论区高度或加载状态
+22. **块内内容对齐**：折叠块等内容面板中的直属有序列表标记及代码块外边缘应与相邻正文的内容边缘对齐；代码块保留自身圆角与内部滚动，嵌套列表继续保留层级缩进，禁止通过全局选择器改变普通正文布局
+23. **DocCard 信息层级**：资源卡片使用语义图标、标题、描述、目标域名与跳转反馈组成紧凑层级，禁止以固定大高度制造无效留白；外部资源优先懒加载目标官网声明的透明 SVG 图标，无矢量资源时使用官网 favicon，加载失败必须保留默认矢量图标，并通过原生链接在新标签页安全打开；移动端必须取消单卡实时 `backdrop-filter`，并为 `prefers-reduced-motion` 移除位移动画
+24. **MDX 编辑器预览**：文档新增项目自定义组件时，必须同步从 `src/components/mdx/mdx-preview-shims.tsx` 导出，并在 `.mdx-previewrc.json` 中注册组件名，避免 VS Code MDX Preview 将其识别为未知组件
+25. **搜索范围**：章节级搜索筛选必须使用 Fumadocs 原生 `tag` 能力；索引标签取页面首级 slug，筛选项从当前语言页面树生成并通过单个可滚动下拉菜单展示；菜单必须使用项目语义 Token 适配深浅主题，禁止额外硬编码章节名称、维护重复映射、依赖系统原生菜单配色或使用会随章节数量横向增长的控件
+26. **阅读返回点**：仅正文内普通的同源跨文档链接可以记录阅读返回点；外链、新窗口、下载、同页 Hash 与 Fumadocs 前后篇导航必须保留原生行为。返回数据需要经过类型校验、限制有效期，并记录来源链接的正文元素路径与视口相对位置；绝对滚动位置只能作为路径失效时的兜底。返回时必须暂时关闭原生滚动恢复与滚动锚定，展开 `content-visibility` 延迟区块，并在不可见状态完成位置校正，禁止向用户展示程序化视口滚动。悬浮操作使用 Portal 挂载到页面根节点，避免改变 `DocsPage` 网格结构
 
 ### 代码风格
 
@@ -277,8 +304,6 @@ class Sort { static void demo() {} }
 - 多语言代码块的语言选择条与内部代码块共用一个点击粒子表面，内部复制操作不会形成独立的粒子区域。
 - 完整的运行示例见 [`content/docs/zh/about/code-tabs-demo.mdx`](content/docs/zh/about/code-tabs-demo.mdx)。
 
-<!-- AI collapsible authoring guide: documents how contributors should write AI summary details blocks.
-     AI 折叠块编写指南：说明贡献者如何编写 AI 摘要折叠块。 -->
 ### AI 摘要折叠块
 
 当需要收纳 AI 生成的摘要内容时，使用 `[!DETAILS-AI]` 变体。它继承普通折叠块语法，并在读者展开后以自适应打字机效果分批显示正文；内容较长时会自动加快显示速度。

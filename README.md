@@ -7,9 +7,12 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=white)](https://react.dev)
-[![fumadocs](https://img.shields.io/badge/fumadocs-16.9-FF5C5C)](https://fumadocs.dev)
-[![Biome](https://img.shields.io/badge/Biome-2.4-60A5FA?logo=biome&logoColor=white)](https://biomejs.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![fumadocs](https://img.shields.io/badge/fumadocs-16.13-FF5C5C)](https://fumadocs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Biome](https://img.shields.io/badge/Biome-2.5-60A5FA?logo=biome&logoColor=white)](https://biomejs.dev)
+[![Bun](https://img.shields.io/badge/Bun-1.0-F9F1E0?logo=bun&logoColor=black)](https://bun.sh)
+[![Mermaid](https://img.shields.io/badge/Mermaid-11-FF3670?logo=mermaid&logoColor=white)](https://mermaid.js.org)
 
 </div>
 
@@ -58,14 +61,18 @@ Neoverse-Docs 是一个面向计算机科班学生与开发者社区的开源文
 ## 功能亮点
 
 - **纯静态生成 (SSG)** — `next build` 直接生成完整 HTML，无需 Node 运行时，可部署至 Vercel、Cloudflare Pages、GitHub Pages 等任意静态托管平台
-- **MDX 文档驱动** — Markdown + React 组件混合编写，支持 GFM 表格、任务列表、GitHub Alert 风格提示块、可折叠块、AI 摘要打字机、Mermaid 图表、LaTeX 公式等丰富语法
+- **MDX 文档驱动** — Markdown + React 组件混合编写，支持 GFM 表格、任务列表、GitHub Alert 风格提示块、可折叠块、AI 摘要打字机、Mermaid 图表、LaTeX 公式等丰富语法；折叠块内的正文、有序列表标记与代码块保持统一内容边缘，DocCard 使用紧凑资源入口布局呈现目标类型与域名，优先解析目标官网声明的透明 SVG 图标、无矢量资源时使用官网 favicon，并让外部资源在新标签页安全打开，代码 Tabs 仅由外层提供圆角和整体粒子反馈，内部标签保持无框
 - **增强代码块** — 自动识别顶部注释提取文件路径、顶部横条显示语言图标与复制按钮、Shiki 语法高亮、多语言 Tabs 联动
-- **页面过渡动效** — 自研 mask-reveal 径向镂空揭示动画 + page-enter 模糊淡入，由 framer-motion 驱动，按路由组方向不对称切换
-- **中文搜索支持** — 使用 Orama Mandarin 分词器，支持中文全文搜索
+- **统一页面转场** — 集中式路由策略提供 `aperture` 径向揭示、内容切换、页面概览与语言交叉淡入；来源视觉仅保存在内存 DOM 克隆中
+- **中英文混合搜索** — Orama 静态索引配合混合分词器，支持中文全文与英文大小写无关搜索，并可将结果限定到指定章节
 - **双语 i18n (中文 / 英文)** — 零硬编码的字典式文案管理，覆盖 fumadocs 内置 UI 及项目自定义文案；导航栏右上角内置语言切换器
-- **液态玻璃主题** — CSS 变量驱动的毛玻璃效果、全边界点击粒子与移动端按压拖动反馈，深色 / 浅色模式自动适配
-- **Giscus 社区互动** — 基于 GitHub Discussions 的留言墙，每个文档页底均内嵌评论区
-- **Mermaid 交互图表** — 内置缩放、拖动、重置、视口内放大工具栏，深色模式自动切换
+- **可交互文档任务清单** — 标准 Markdown / MDX `- [ ]` 与 `- [x]` 语法会渲染为可直接勾选的任务项，按文档页面在当前浏览器保存进度；勾选反馈使用轻量光子与扫光动画，并在移动端和减少动态效果模式下自动降级；在文章 frontmatter 中配置 `todoProgress: true` 后，正文顶部会使用项目卡片样式汇总已完成项与总数，并可通过 Fumadocs 生成的标题 Hash 平滑滚动到文末 TODO 清单对应的章节标题；首次深跳转会实体化当前文档的离屏延迟区块并保持到离开页面，避免估算高度恢复时再次改变落点
+- **专业学习门户** — 首页章节入口来自 Fumadocs 页面树，以面向计算机相关专业的学习导航替代技术栈宣传，并使用 CSS 滚动驱动的知识图谱、神经网络与数据流背景；页脚以透明场景延续和自适应深浅主题的玻璃信息栏收束页面
+- **沉浸式控件反馈** — 使用清晰可见的冰蓝 / 白色 HarmonyOS 风格圆点粒子；拖拽路径经帧级合并与距离插值连续补点，主页 CTA 使用紧凑出生圆环，侧栏底部共享工具栏仅以可见内缩玻璃条作为粒子边界，代码 Tabs 的语言栏与代码面板共享同一可见粒子层，移动端标题栏由圆角外层统一承载反馈，并在减少动态效果模式下关闭
+- **语义化设计系统** — 石墨中性色、冰蓝与薄荷青组成独立调校的深浅主题，颜色、表面、圆角、阴影和动效均由 Token 驱动；卡片、TOC、悬浮栏和二级玻璃菜单使用统一表面圆角，按钮与头像使用统一紧凑圆角，hover 锐利描边始终复用宿主真实边缘；文档卡片在超宽屏空间充足时使用独立宽屏阅读 Token 适度加宽，并始终保持居中
+- **Giscus 社区互动** — 基于 GitHub Discussions 的留言墙，每个文档页底均提供与正文卡片分离的独立 Grid 社区模块；社区卡片与正文共享边框、圆角、背景、阴影和主题降级规则，Giscus iframe 跟随页面自然高度，不引入嵌套滚动或固定视口空白；评论卡片、输入框、按钮与头像分别映射项目的 `--radius-md`、`--radius-sm`、`--radius-xs` 圆角层级，并提供随站点主题同步切换的浅色 / 深色玻璃样式；iframe 根画布与宿主色彩方案强制同步，避免系统主题造成黑底串色；深色评论框采用无定向渐变的石墨深海分层表面，表情弹层使用高模糊半透明折射玻璃，GitHub 登录按钮使用低亮玻璃配色，避免高亮渐变破坏暗色层级；宿主组件禁止误选，iframe 内链接、输入框与按钮仍保持完整交互
+- **Mermaid 交互图表** — 内置宽度适配、默认居中、缩放、拖动、重置与视口内放大，并统一节点玻璃样式；普通与全屏工具栏共享独立于控件内容的玻璃模糊背景层，使用无变换居中避免阻断背景采样，以折射描边和主题阴影强化玻璃层次，并让全屏状态从首帧获得更轻透的玻璃底色
+- **长文档渲染优化** — 代码块与普通折叠块优先服务端渲染；Mermaid 在接近视口时按需加载并合并工具栏滚动定位；高成本离屏内容块与首页区段使用浏览器原生 containment 延迟布局与绘制；嵌套玻璃表面仅由外层执行背景模糊，主题切换临时停用 CSS 过渡，持续扫光与网格动效使用 `transform` / `opacity` 合成；首页环境动效通过共享时钟保留原有轨迹、滤镜与缓动，并使用集中式帧率预算避免高刷屏重复提交，触摸粒子按帧批量写入 DOM
 - **实用工具链** — TypeScript 严格模式、Biome 格式化与 Lint、Tailwind CSS v4
 
 ## 技术栈
@@ -79,7 +86,7 @@ Neoverse-Docs 是一个面向计算机科班学生与开发者社区的开源文
 | 代码高亮 | Shiki (fumadocs 内置) + 自定义 remark/rehype 插件 |
 | 搜索 | Orama + @orama/tokenizers (Mandarin 分词) |
 | 类型检查 | TypeScript 5 (strict) |
-| 代码质量 | Biome 2.4 |
+| 代码质量 | Biome 2.5 |
 | 动效 | framer-motion 12 |
 | 评论 | Giscus (GitHub Discussions) |
 | 主题切换 | next-themes |
@@ -164,32 +171,41 @@ Neoverse-Doc/
 │   │   ├── globals.css            # 全局样式入口（@import 模块化样式表）
 │   │   ├── api/search/route.ts    # 静态搜索 API（Orama + Mandarin 分词）
 │   │   └── [lang]/                # 语言段（zh / en）
-│   │       ├── layout.tsx         # RootProvider 注入 i18nProvider + MaskReveal
+│   │       ├── layout.tsx         # RootProvider 注入 i18nProvider + TransitionProvider
 │   │       ├── (home)/            # 主页路由组（独立布局）
 │   │       │   ├── layout.tsx     # HomeLayout 包裹
-│   │       │   ├── (index)/page.tsx # 首页（品牌入口 + 进入文档按钮）
-│   │       │   ├── template.tsx   # page-enter 动画模板（framer-motion）
+│   │       │   ├── (index)/page.tsx # 首页（多区段内容门户）
+│   │       │   ├── template.tsx   # 直达加载与 BFCache 安全外壳
 │   │       │   └── guestbook/page.tsx # 独立留言墙页面
 │   │       └── docs/              # 文档路由组
 │   │           ├── layout.tsx     # DocsLayout（侧栏 + 正文 + 目录）
 │   │           ├── template.tsx   # 文档模板（无动画，因 fumadocs CSS Grid 约束）
 │   │           └── [...slug]/page.tsx # 文档正文（MDX + Mermaid + Giscus）
 │   ├── components/
-│   │   ├── transition/            # 页面过渡与遮罩揭示动画组件
-│   │   │   ├── mask-reveal.tsx       # 遮罩揭示径向扩展动画
-│   │   │   ├── enter-docs-button.tsx # 首页进入文档按钮
-│   │   │   └── back-link.tsx         # 返回链接组件
+│   │   ├── home/                  # 首页业务组件（Hero / 章节 / AI 计算背景 / footer）
+│   │   ├── react-bits/            # 本地化轻量效果（光束 / 拆字 / 磁吸 / Bento 等）
+│   │   ├── transition/            # 集中式页面转场系统
+│   │   │   ├── transition-provider.tsx # 转场状态、路由提交与清理
+│   │   │   ├── transition-layer.tsx    # 单一不可交互 DOM 克隆层
+│   │   │   ├── transition-link.tsx     # 统一内部链接 API
+│   │   │   ├── transition-policy.ts    # 纯函数路由策略
+│   │   │   └── transition-controller.ts # DOM 克隆、清理与几何计算
 │   │   ├── mdx/                   # MDX 内容渲染组件
 │   │   │   ├── custom-codeblock.tsx  # 增强代码块（文件路径 + 复制按钮）
 │   │   │   ├── code-tabs.tsx         # 多语言 Tabs 联动组件
 │   │   │   ├── collapsible-details.tsx # 可折叠块 + AI 打字机渲染
 │   │   │   ├── mermaid.tsx           # Mermaid 图表渲染（缩放 / 拖动 / 最大化）
-│   │   │   └── docs-author.tsx       # 文档作者与贡献者展示
+│   │   │   ├── task-list-item.tsx     # Markdown 任务项服务端识别
+│   │   │   ├── interactive-task-list-item.tsx # 可勾选并持久化的任务项
+│   │   │   ├── task-list-progress.tsx          # 页面级任务完成进度概览
+│   │   │   ├── docs-author.tsx       # 文档作者与贡献者展示
+│   │   │   ├── mdx-preview-shims.tsx # VS Code MDX Preview 自定义组件入口
+│   │   │   └── doc-cards.tsx         # DocCard / DocGrid / LearningPath 等
+│   │   ├── docs-community.tsx     # 与正文隔离的文档社区模块
 │   │   ├── guestbook.tsx          # Giscus 评论组件（按 locale 切换语言）
-│   │   ├── glass-ripple-controller.tsx # 全局玻璃控件点击粒子控制器
+│   │   ├── immersive-interaction-controller.tsx # 点击 / 拖拽粒子预算、节流与清理
 │   │   ├── nav-title.tsx         # 导航栏品牌标题（纯展示组件）
 │   │   ├── search.tsx             # 静态搜索对话框（Orama + Mandarin 分词）
-│   │   ├── home-footer.tsx        # 首页 footer（仓库 / Git / 作者元信息）
 │   │   ├── sidebar-provider.tsx   # 侧栏折叠状态持久化 Provider
 │   │   └── localized-*.tsx        # 本地化 404 / 错误 / 加载组件
 │   ├── dictionaries/              # i18n 语言包
@@ -201,9 +217,8 @@ Neoverse-Doc/
 │   │   ├── source.ts              # fumadocs 内容源加载器（i18n parser: 'dir'）
 │   │   ├── layout.shared.tsx      # fumadocs UI 翻译 + i18nProvider + baseOptions
 │   │   ├── site-config.ts         # 站点级常量（仓库 / 作者 / Giscus 配置）
-│   │   ├── motion.ts              # framer-motion 动画预设
-│   │   ├── animation-constants.ts # 集中式动画设计 token（时长 / z-index / 缓动 / a11y）
-│   │   ├── transition-snapshot.ts # 路由过渡快照工具（mask-reveal 协议）
+│   │   ├── motion-config.ts       # JavaScript 动效时长、缓动、帧率预算与 reduced-motion 检测
+│   │   ├── home-sections.ts       # 从 Fumadocs 页面树提取首页章节
 │   │   ├── parse-author.ts        # 作者 / 贡献者信息解析器
 │   │   ├── code-title.ts          # 代码块路径提取工具
 │   │   ├── language-mapping.ts    # 编程语言显示名映射
@@ -216,15 +231,22 @@ Neoverse-Doc/
 │   │   ├── search-tokenizer.ts    # 搜索分词器配置
 │   │   └── hooks/                 # Mermaid / 缩放 / 视口相关 React Hooks
 │   └── styles/                    # 模块化 CSS 样式表
-│       ├── theme.css              # Tailwind/fumadocs 导入、主题变量、色彩系统
+│       ├── theme.css              # Tailwind / Fumadocs 基础主题
+│       ├── tokens.css             # 语义颜色、圆角、阴影、间距与动效 Token
+│       ├── motion.css             # 统一入场与 reduced-motion 规则
+│       ├── immersive-interactions.css # 控件光感、粒子与静态降级
 │       ├── glass.css              # 液态玻璃设计系统（工具类 + 环境光）
 │       ├── fumadocs-glass.css     # Fumadocs 表面玻璃化覆盖
+│       ├── giscus.css             # Giscus 宿主无框布局与加载占位
 │       ├── typography.css         # 代码块、引用块、提示框、行内代码
-│       ├── home.css               # 首页渐变动画
+│       ├── pages/                 # 首页、文档页与特殊页面样式
+│       ├── transitions.css        # 页面转场层与目标入场动画
 │       ├── mermaid.css            # Mermaid 图表样式
 │       ├── loading.css            # 路由加载样式
-│       ├── ripple.css             # 沉浸光场与点击粒子动效
 │       └── a11y.css               # 无障碍（减少动画 / 减少透明度 / 回退）
+├── public/
+│   ├── giscus-light.css           # Giscus iframe 浅色主题
+│   └── giscus-dark.css            # Giscus iframe 深色主题
 ├── .github/ISSUE_TEMPLATE/        # GitHub Issue 模板（bug / feature / content）
 ├── .vscode/prompt/                # Commit 规范指引
 ├── source.config.ts               # fumadocs-mdx 配置（remark/rehype 插件注册）
@@ -259,25 +281,33 @@ src/app/[lang]/
 
 ### 页面过渡动效
 
-项目实现了自研的「遮罩揭示（mask-reveal）」页面过渡系统，由 framer-motion 驱动：
+页面转场由单一 `TransitionProvider` 管理。`transition-policy.ts` 以纯函数分类来源与目标路由，`TransitionLink` 只声明语义，不在业务组件中重复判断路由、快照或点击坐标；Provider 会在目标模板挂载前写入临时导航标记，避免留言板返回主页等客户端导航与直达加载淡入重复播放。
 
-- **mask-reveal（径向镂空揭示）** — 从点击坐标向外扩展 `radial-gradient` 裁剪动画，内圈揭示目标页，外圈展示来源页快照
-- **page-enter（模糊淡入）** — `opacity 0→1 + scale 0.96→1 + blur 8px→0`，时长 0.65s
-
-过渡方向 **不对称** 设计，由 `isCrossRouteGroupTransition()` 决定：
+`aperture` 会在内存中克隆实际 DOM，移除重复 `id` 与 `canvas`、`video`、`iframe`、`script` 等节点，并禁用克隆交互。目标路由提交前保持来源视觉，提交后从点击位置向四角最大距离扩展径向揭示；完成或超时后立即销毁克隆，不再将完整页面 HTML 写入 `sessionStorage`。
 
 | 方向 | 动画 | 实现 |
 | :--- | :--- | :--- |
-| home → docs | mask-reveal | `EnterDocsButton` 捕获快照 |
-| guestbook → docs | mask-reveal | `BackLink` 捕获快照 |
-| docs → home | page-enter (blur) | 全局 click 捕获跳过，目标页 template 播放 |
-| docs → guestbook | page-enter (blur) | 同上 |
+| home / guestbook → docs | `aperture` | 点击位置径向揭示，约 1200ms |
+| docs → home / guestbook | `overview` | 短淡入与轻微上移，约 560ms |
+| home ↔ guestbook | `surface` | 留言板淡入；返回主页时仅主视觉轻量收束，避免整页重绘，约 480ms |
+| docs → docs | `content` | 仅正文区域短入场，约 360ms |
+| 语言切换 | `crossfade` | 对应页面交叉淡入，约 420ms |
+| 同页 Hash | 无 | 保留原生锚点行为 |
 
 关键文件：
 
-- [src/components/transition/mask-reveal.tsx](src/components/transition/mask-reveal.tsx) — 遮罩揭示动画组件
-- [src/lib/transition-snapshot.ts](src/lib/transition-snapshot.ts) — 快照工具 + 路由组分类
-- [src/lib/motion.ts](src/lib/motion.ts) — 动画预设
+- [src/components/transition/transition-provider.tsx](src/components/transition/transition-provider.tsx) — 集中式状态、路由提交与异常清理
+- [src/components/transition/transition-policy.ts](src/components/transition/transition-policy.ts) — 路由到转场语义的纯函数映射
+- [src/components/transition/transition-controller.ts](src/components/transition/transition-controller.ts) — DOM 克隆、无障碍清理与半径计算
+- [src/styles/transitions.css](src/styles/transitions.css) — 单一转场层与 reduced-motion 降级
+
+### 跨文档阅读返回
+
+正文中的站内文档链接会记录当前文章、地址、点击链接在正文中的元素路径及其视口位置。到达另一篇文档后，页面底部会显示紧凑的“返回阅读位置”悬浮按钮；点击后使用浏览器历史返回来源文章，在首次显示前重新找到同一链接并恢复到离开时的屏幕高度。绝对滚动位置仅作为元素路径失效时的兜底，从而避免上方内容重新布局造成偏移。
+
+该能力仅处理正文内普通的同源文档跳转；外部链接、新窗口链接、下载链接、同页 Hash 及 Fumadocs 的上一篇/下一篇导航保持原有行为。返回点仅以经过校验的来源、目标与滚动位置元数据暂存于 `sessionStorage`，不会保存或复制正文内容。
+
+关键文件：[src/components/docs-reading-return.tsx](src/components/docs-reading-return.tsx)。
 
 ### 文档内容层
 
@@ -343,13 +373,13 @@ MDX 代码块 → remarkCodeTitle（提取路径，注入 meta="title=..."）
 
 Mermaid 11 通过 `fumadocs-core/mdx-plugins` 的 `remarkMdxMermaid` 接入，渲染端 [src/components/mdx/mermaid.tsx](src/components/mdx/mermaid.tsx) 提供交互工具栏：
 
-- 缩放（滚轮 + 按钮）
+- 缩放（全屏渲染视图下以鼠标位置为锚点滚轮缩放 + 工具栏按钮）
 - 拖动平移
 - 重置缩放
 - 视口内最大化（Portal 弹层）
 - 深色模式自动切换
 
-工具栏文案从共享字典读取，无障碍标签齐全。全局点击粒子使用宿主直属裁剪层并同步控件圆角；组合工具栏仅共享视觉反馈，不接管内部按钮事件；Mermaid 最大化画布与粒子宿主隔离，触发反馈不会改变图表或工具栏布局。
+工具栏文案从共享字典读取，无障碍标签齐全；模糊背景与控件内容使用独立合成层，在普通与全屏模式下稳定采样图表内容，并继续响应系统的减少透明度偏好。工具栏按“视图 / 缩放 / 画布操作”组成三个共享底板的紧凑分段，统一使用项目小圆角和按压尺度，整条工具栏仅保留最外层发丝描边；按钮使用独立的悬浮、激活与激活悬浮 Token，悬浮与激活底色均保持透明以透出后方图表或代码，同时在深浅玻璃表面上提供逐级加深的清晰反馈。图表渲染会先等待项目字体就绪，影响文字度量的样式通过 Mermaid `themeCSS` 在测量阶段生效，生成后的 `foreignObject` 保持溢出可见；Git Graph 分支文字还会依据实际字形与背景边界重新居中，避免文字偏移或分组标题被裁剪。渲染结果保留各 Mermaid 图型原生 `viewBox` 并仅在绘制内容越界时扩展边界，避免 `gitGraph` 等专用布局被通用测量覆盖；Git Graph 的八个分支槽、普通 / 高亮 / 反向 / 合并提交及标签使用项目语义色和主题表面，避免深色主题把分支和文字统一提亮为白色。小图保持自然内容尺寸，超出正文宽度或浏览器视口高度的大图自动按更严格的宽高约束等比缩小并完整显示。自动适配比例与用户交互缩放相互独立，因此工具栏初始及重置比例始终显示 `100%`，后续缩放也只变换画布内部 SVG。滚轮缩放仅在全屏渲染视图启用，通过同步补偿平移量把缩放中心锁定在鼠标位置；页面内图表与全屏代码视图继续使用原生滚动。代码视图复用渲染画布的可用宽度，短源码按自然高度展示，长源码以对应图表的实际显示高度为滚动上限；全屏模式不再额外限制源码宽度。节点、状态起止点、分组、连线与无底色转移标签复用项目玻璃和主题 Token。全局点击 / 拖拽粒子使用宿主直属裁剪层并同步控件圆角，首批粒子直接以小型环带展开，拖拽路径按距离插值连续生成圆点粒子；Mermaid 最大化画布与粒子宿主隔离。
 
 ### LaTeX 公式渲染
 
@@ -369,6 +399,7 @@ $$
 
 - **服务端**：[src/app/api/search/route.ts](src/app/api/search/route.ts) 使用 `createFromSource` + `localeMap` 配置 Mandarin 分词器
 - **客户端**：[src/components/search.tsx](src/components/search.tsx) 使用 `useDocsSearch` + `initOrama` 按 locale 动态选择分词器
+- **章节范围**：索引使用页面首级 slug 作为 Fumadocs `tag`；弹窗使用适配深浅主题的可滚动玻璃下拉菜单，并从对应语言的页面树生成选项，可在全部章节或单个章节之间切换
 
 ```typescript
 // 中文 locale 使用 Mandarin 分词器
@@ -389,18 +420,20 @@ localeMap: {
 
 ```text
 src/styles/
-├── theme.css              # 变量层：CSS 自定义属性（--background / --glass-bg / --color-fd-* 等）
-├── glass.css              # 工具类：.glass-panel / .glass-card / .glass-chip（全局可复用的毛玻璃效果）
+├── theme.css              # Tailwind / Fumadocs 基础主题与兼容变量
+├── tokens.css             # 语义颜色、圆角、阴影、间距与动效 Token
+├── motion.css             # 统一入场与 reduced-motion 规则
+├── glass.css              # 玻璃基础、业务表面与控件的统一实现
 ├── fumadocs-glass.css     # 组件覆写：fumadocs-ui CSS 预设 + CSS 变量映射
 ├── typography.css         # 排版：代码块、引用块、提示框、行内代码
-├── home.css               # 首页：渐变背景动画
+├── pages/                 # 首页、文档页与特殊页面样式
+├── transitions.css        # 集中式页面转场层
 ├── mermaid.css            # Mermaid：图表样式
 ├── loading.css            # 路由加载样式
-├── ripple.css             # 沉浸光场与点击粒子动效
 └── a11y.css               # 无障碍：减少动画 / 减少透明度 / 回退
 ```
 
-通过 Tailwind v4 的 `@theme inline` 将 CSS 变量映射为 Tailwind token，在 JSX 中可直接使用 `bg-background`、`text-foreground` 等语义化工具类。`next-themes` 通过 `class` 属性驱动 CSS 变量切换，实现浅色 / 深色模式全自动适配。
+通过 Tailwind v4 的 `@theme inline` 将 CSS 变量映射为 Tailwind token，在 JSX 中可直接使用 `bg-background`、`text-foreground` 等语义化工具类。`next-themes` 通过 `class` 属性驱动 CSS 变量切换，实现浅色 / 深色模式全自动适配；切换期间会临时停用 CSS 过渡，避免长文章中的代码块与高亮节点同时执行主题动画。
 
 字体策略：
 
@@ -471,4 +504,5 @@ git push origin feat/your-feature
 
 ## License
 
-[MIT](LICENSE) © 2026 [Shenshijun](https://github.com/SSJ-ZYJ)
+- **代码**：[MIT](LICENSE) © 2026 [Shenshijun](https://github.com/SSJ-ZYJ)
+- **文档内容**：[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
