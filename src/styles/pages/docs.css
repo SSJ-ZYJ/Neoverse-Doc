@@ -1349,16 +1349,13 @@ html[data-nd-reading-restore] {
   }
 }
 
-/* Mobile performance downgrade: real-time backdrop-filter on viewport-sized
-   elements (#nd-page, nav) is the primary cause of mobile scroll jank. iOS
-   Safari also struggles with background-attachment: fixed (forces repaint on
-   scroll). These rules replace real-time blur with static translucent backgrounds
-   that preserve the glass visual language while eliminating continuous GPU
-   sampling. Desktop retains the original real-time backdrop-filter.
-   移动端性能降级：视口尺寸元素（#nd-page、nav）的实时 backdrop-filter 是
-   移动端滚动卡顿的主因。iOS Safari 对 background-attachment: fixed 支持
-   不佳（滚动时强制重绘）。这些规则用静态半透明背景替代实时模糊，
-   保留玻璃视觉语言同时消除持续 GPU 采样。桌面端保留原始实时 backdrop-filter。 */
+/* Mobile keeps one restrained blur on the article surface while disabling it
+   on secondary viewport-sized surfaces. This preserves the document card's
+   frosted depth without restoring the heavier multi-layer sampling that caused
+   scroll jank. iOS also avoids fixed-background repaints below.
+   移动端仅为正文表面保留一层克制模糊，次要的大尺寸表面继续关闭滤镜，在
+   恢复文档卡片磨砂层次的同时避免重新引入多层采样造成的滚动卡顿；下方也
+   继续规避 iOS 固定背景重绘。 */
 @media (max-width: 768px) {
   /* background-attachment: fixed forces iOS Safari to repaint the background
      on every scroll frame. Switching to scroll lets the background scroll
@@ -1370,15 +1367,17 @@ html[data-nd-reading-restore] {
     background-attachment: scroll !important;
   }
 
-  /* #nd-page spans nearly the full viewport; real-time backdrop-filter here is
-     the single largest mobile GPU cost. Replace with a static translucent
-     background that matches the glass tint. The ambient refraction from
-     body::before still shows through the semi-transparent fill.
-     #nd-page 几乎占满整个视口；此处的实时 backdrop-filter 是移动端最大的
-     GPU 开销。用匹配玻璃色调的静态半透明背景替代。body::before 的环境光
-     折射仍可透过半透明填充显现。 */
-  #nd-page,
+  /* A half-strength blur gives the article a visible glass body while keeping
+     the only live filter on the primary reading surface.
+     半强度模糊让正文卡片恢复可见玻璃层，并将实时滤镜限制在主要阅读表面。 */
+  #nd-page {
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur-soft) * 0.5))
+      saturate(var(--glass-saturate)) !important;
+    backdrop-filter: blur(calc(var(--glass-blur-soft) * 0.5)) saturate(var(--glass-saturate)) !important;
+  }
+
   .docs-community-module {
+    -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
 
