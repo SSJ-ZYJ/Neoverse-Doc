@@ -772,9 +772,9 @@
   bottom: 0.75rem;
   inset-inline: 0;
   z-index: 2;
-  display: grid;
-  width: max-content;
-  max-width: calc(100% - 1rem);
+  display: flex;
+  inline-size: max-content;
+  max-inline-size: calc(100% - 1rem);
   margin-inline: auto;
   padding: 0.25rem;
   overflow: hidden;
@@ -832,11 +832,17 @@
    全屏态工具栏底色由上面的 [data-portaled='maximized'] 规则应用。 */
 
 /* Control row sits above the toolbar's glass surface and refractive ::before.
-   控件行位于工具栏玻璃表面与折射 ::before 之上。 */
+   Its max-content, non-wrapping geometry prevents transient wrapper or Portal
+   measurements from compressing the controls into a vertical strip.
+   控件行位于工具栏玻璃表面与折射 ::before 之上；使用不可换行的最大内容
+   尺寸，避免 wrapper 或 Portal 的瞬时测量将控件压缩成竖条。 */
 .mermaid-toolbar__controls {
   position: relative;
   z-index: 1;
-  display: inline-flex;
+  display: flex;
+  flex-flow: row nowrap;
+  inline-size: max-content;
+  min-inline-size: max-content;
   align-items: center;
   gap: 0.25rem;
   transition:
@@ -846,6 +852,7 @@
 
 .mermaid-toolbar__btn {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   width: 1.875rem;
@@ -899,6 +906,7 @@
 
 .mermaid-toolbar__scale {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   min-width: 2.875rem;
@@ -918,6 +926,7 @@
 .mermaid-toolbar__group,
 .mermaid-toolbar__view-toggle {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 0;
   padding: 0.125rem;

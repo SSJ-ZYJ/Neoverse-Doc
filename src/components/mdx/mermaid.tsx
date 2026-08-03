@@ -31,7 +31,7 @@ import { useMermaidMaximize } from '@/lib/hooks/use-mermaid-maximize';
 import { useMermaidRender } from '@/lib/hooks/use-mermaid-render';
 import { useMermaidViewMode } from '@/lib/hooks/use-mermaid-view-mode';
 import { useSvgViewBoxExpander } from '@/lib/hooks/use-svg-viewbox-expander';
-import { useZoomAndPan } from '@/lib/hooks/use-zoom-and-pan';
+import { DEFAULT_SCALE, useZoomAndPan } from '@/lib/hooks/use-zoom-and-pan';
 import { resolveLocale } from '@/lib/i18n';
 
 // Start diagram work before it enters the viewport so scrolling never exposes an unloaded canvas.
@@ -272,6 +272,9 @@ export function Mermaid({ chart }: { chart: string }) {
     resetZoom();
     recomputeFitCanvasScale();
   }, [recomputeFitCanvasScale, resetZoom]);
+  // Reset is meaningful only after the logical zoom leaves its 100% baseline.
+  // 重置仅在逻辑缩放偏离 100% 基线后才可操作。
+  const canResetZoom = Math.abs(scale - DEFAULT_SCALE) > 0.005;
 
   // The fit scale locks the canvas layout frame and combines with the logical
   // user scale only for painting. Toolbar zoom never resizes the canvas, while
@@ -428,7 +431,7 @@ export function Mermaid({ chart }: { chart: string }) {
           <button
             type="button"
             onClick={handleResetZoom}
-            disabled={viewMode === 'code'}
+            disabled={!canResetZoom || viewMode === 'code'}
             aria-label={labels.mermaidReset}
             className="mermaid-toolbar__btn"
           >
