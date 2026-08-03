@@ -56,13 +56,7 @@ export function useFitCanvasScale(
       Math.abs(currentScale - nextScale) <= SCALE_EPSILON ? currentScale : nextScale,
     );
     return nextScale;
-  }, [
-    svgNatural.width,
-    svgNatural.height,
-    inPageCanvasRef,
-    maximizedCanvasRef,
-    isMaximized,
-  ]);
+  }, [svgNatural.width, svgNatural.height, inPageCanvasRef, maximizedCanvasRef, isMaximized]);
 
   useLayoutEffect(() => {
     recomputeFitCanvasScale();
