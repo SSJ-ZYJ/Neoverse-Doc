@@ -7,6 +7,13 @@
    authoring syntax. Normal unordered lists keep their existing typography.
    标准 GFM `- [ ]` 清单以紧凑玻璃行呈现，不改变文档编写语法；
    普通无序列表继续沿用现有排版。 */
+/* Native hash navigation keeps ownership of the final heading position; this class only
+   adds temporary motion for the progress-card action.
+   原生 Hash 导航负责标题最终位置；此类仅为进度卡片操作临时添加滚动动画。 */
+html.mdx-task-list-smooth-scroll {
+  scroll-behavior: smooth;
+}
+
 .mdx-task-progress {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -16,10 +23,15 @@
 }
 
 .mdx-task-progress__heading,
+.mdx-task-progress__controls,
 .mdx-task-progress__stats,
 .mdx-task-progress__stats > span {
   display: flex;
   align-items: center;
+}
+
+.mdx-task-progress__controls {
+  gap: 0.75rem;
 }
 
 .mdx-task-progress__heading {
@@ -56,6 +68,66 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* The progress-card action reuses the compact project control hierarchy and
+   stays secondary to the task counts while remaining clearly discoverable.
+   进度卡片操作复用项目紧凑控件层级，在保持次于任务统计的同时清晰可发现。 */
+.mdx-task-progress__jump {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  gap: 0.375rem;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-xs);
+  padding: 0.35rem 0.55rem;
+  color: var(--text-secondary);
+  background: var(--glass-control-surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 48%, transparent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard),
+    transform var(--nd-tt-bounce);
+}
+
+.mdx-task-progress__jump > svg {
+  inline-size: 0.9rem;
+  block-size: 0.9rem;
+  color: var(--accent-primary);
+  transition: transform var(--motion-fast) var(--motion-ease-emphasized);
+}
+
+@media (hover: hover) {
+  .mdx-task-progress__jump:hover {
+    border-color: var(--border-interactive);
+    color: var(--text-primary);
+    background: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--shadow-interactive);
+    transform: translateY(-1px);
+  }
+
+  .mdx-task-progress__jump:hover > svg {
+    transform: translateY(0.125rem);
+  }
+}
+
+.mdx-task-progress__jump:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 2px;
+}
+
+.mdx-task-progress__jump:active {
+  transform: translateY(0) scale(0.97);
+}
+
 .mdx-task-progress__bar {
   grid-column: 1 / -1;
   inline-size: 100%;
@@ -84,6 +156,10 @@
   }
 
   .mdx-task-progress__stats {
+    gap: 1rem;
+  }
+
+  .mdx-task-progress__controls {
     justify-content: space-between;
   }
 
@@ -98,6 +174,23 @@
   margin-block: 1.25rem;
   padding-inline-start: 0;
   list-style: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.mdx-task-list-smooth-scroll {
+    scroll-behavior: auto;
+  }
+
+  .mdx-task-progress__jump,
+  .mdx-task-progress__jump > svg {
+    transition: none;
+  }
+
+  .mdx-task-progress__jump:hover,
+  .mdx-task-progress__jump:active,
+  .mdx-task-progress__jump:hover > svg {
+    transform: none;
+  }
 }
 
 #nd-page li.mdx-task-item {

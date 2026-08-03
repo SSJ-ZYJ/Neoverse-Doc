@@ -1,4 +1,6 @@
 {
+  "remarkPlugins": ["remark-math"],
+  "rehypePlugins": ["rehype-katex"],
   "components": {
     "DocCard": "./src/components/mdx/mdx-preview-shims.tsx",
     "DocGrid": "./src/components/mdx/mdx-preview-shims.tsx",

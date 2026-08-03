@@ -25,6 +25,9 @@
       "@/.source/*": ["./.source/*"]
     }
   },
+  "mdx": {
+    "plugins": ["remark-math"]
+  },
   "include": [
     "next-env.d.ts",
     "**/*.ts",

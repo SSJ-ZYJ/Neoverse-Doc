@@ -79,6 +79,7 @@ export interface Dictionary {
   taskListProgressLabel: string;
   taskListCompletedCount: string;
   taskListTotalCount: string;
+  taskListJumpToList: string;
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: string;
   mermaidZoomIn: string;

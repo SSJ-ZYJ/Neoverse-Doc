@@ -74,6 +74,7 @@ export const zh = {
   taskListProgressLabel: 'TODO 进度：已完成 {completed} 项，共 {total} 项',
   taskListCompletedCount: '已完成',
   taskListTotalCount: '总计',
+  taskListJumpToList: '查看清单',
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: '缩小图表',
   mermaidZoomIn: '放大图表',

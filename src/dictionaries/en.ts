@@ -78,6 +78,7 @@ export const en = {
   taskListProgressLabel: 'TODO progress: {completed} of {total} completed',
   taskListCompletedCount: 'Completed',
   taskListTotalCount: 'Total',
+  taskListJumpToList: 'View tasks',
   // Mermaid toolbar a11y labels / Mermaid 工具栏无障碍标签
   mermaidZoomOut: 'Zoom out',
   mermaidZoomIn: 'Zoom in',

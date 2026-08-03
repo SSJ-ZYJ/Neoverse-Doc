@@ -18,6 +18,7 @@ export const MOTION_DURATION_MS = {
   splitGlyph: 680,
   splitStagger: 45,
   splitStaggerLimit: 650,
+  nativeScrollCleanup: 2000,
   particleMin: 1500,
   particleMax: 2300,
   particleField: 2800,

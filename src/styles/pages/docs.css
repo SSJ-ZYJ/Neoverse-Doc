@@ -417,6 +417,35 @@ html[data-nd-reading-restore] {
     3.5rem 3.5rem;
 }
 
+/* Documents with a detached community module receive a dedicated grid row while
+   keeping Fumadocs' page, TOC, and popover as direct layout children.
+   包含独立社区模块的文档使用专属网格行，同时保持 Fumadocs 正文、目录与弹层
+   继续作为布局直属子节点。 */
+#nd-docs-layout:has(> .docs-community-module) {
+  align-content: start;
+  grid-template:
+    "sidebar sidebar header toc toc"
+    "sidebar sidebar toc-popover toc toc"
+    "sidebar sidebar main toc toc" auto
+    "sidebar sidebar community toc toc" auto /
+    minmax(min-content, 1fr) var(--fd-sidebar-col)
+    minmax(0, calc(var(--fd-layout-width, 97rem) - var(--fd-sidebar-width) - var(--fd-toc-width)))
+    var(--fd-toc-width) minmax(min-content, 1fr) !important;
+}
+
+@media (min-width: 1280px) {
+  #nd-docs-layout:has(> .docs-community-module) {
+    grid-template:
+      "sidebar . header . toc"
+      "sidebar . toc-popover . toc"
+      "sidebar . main . toc" auto
+      "sidebar . community . toc" auto /
+      var(--fd-sidebar-col) 1fr
+      minmax(0, calc(var(--fd-layout-width, 97rem) - var(--fd-sidebar-width) - var(--fd-toc-width)))
+      1fr var(--fd-toc-width) !important;
+  }
+}
+
 #nd-docs-layout #nd-nav > div,
 #nd-docs-layout > header {
   border-color: var(--docs-surface-border) !important;
@@ -546,16 +575,39 @@ html[data-nd-reading-restore] {
      刻意不使用 `paint`，因为 backdrop-filter 需要访问父级 stacking context，
      隔离 paint 会破坏效果。 */
   contain: layout style;
-  inline-size: min(calc(100% - 1rem), var(--docs-reading-width));
-  justify-self: center;
   margin-block: clamp(0.75rem, 2vw, 1.5rem) 2rem;
   margin-inline: auto;
+}
+
+/* Article and community modules share one document-card surface while remaining
+   independent grid items.
+   正文与社区模块共享同一文档卡片表面，同时保持为独立网格项。 */
+:is(#nd-page, .docs-community-module) {
+  inline-size: min(calc(100% - 1rem), var(--docs-reading-width));
+  justify-self: center;
   border: 1px solid var(--docs-surface-border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   background: var(--docs-page-background);
   box-shadow: var(--docs-page-shadow);
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+}
+
+/* The discussion remains a separate grid surface but follows the page's natural
+   scroll flow, preventing nested-scroll traps and fixed-height blank space.
+   讨论区保持为独立网格表面，但跟随页面自然滚动，避免嵌套滚动陷阱与固定高度空白。 */
+.docs-community-module {
+  grid-area: community;
+  contain: layout style;
+  overflow-anchor: none;
+  align-self: start;
+  margin-block: 0 2rem;
+  margin-inline: auto;
+  padding: 1.5rem;
+}
+
+.docs-community__content {
+  margin-block-start: 1rem;
 }
 
 #nd-page > article,
@@ -586,10 +638,11 @@ html[data-nd-reading-restore] {
     contain-intrinsic-block-size: auto 16rem;
   }
 
-  /* Materialize deferred blocks only during exact reading restoration so their
-     placeholder estimates cannot shift the saved document offset.
-     仅在精确阅读恢复期间展开延迟区块，避免占位高度估算使保存位置偏移。 */
-  html[data-nd-reading-restore]
+  /* Materialize deferred blocks during exact reading restoration and for the
+     remainder of a page after task-list navigation, preventing target drift.
+     在精确阅读恢复期间以及任务清单跳转后的当前页面生命周期内展开延迟区块，
+     避免占位高度估算再次使目标偏移。 */
+  :is(html[data-nd-reading-restore], html[data-nd-task-list-jump])
     #nd-page
     [data-docs-body]
     > :is(
@@ -797,24 +850,42 @@ html[data-nd-reading-restore] {
   box-shadow: none !important;
 }
 
-/* Community heading aligns copy with the icon's top edge and restores the
-   compact rounded-square icon geometry used before global radius overrides.
-   讨论区文字与图标顶部对齐，并恢复全局圆角覆盖前的紧凑圆角方形图标。 */
+/* Detached community heading keeps the compact project hierarchy without inheriting
+   Markdown heading margins from the article module.
+   独立社区标题保持项目紧凑层级，不继承正文模块的 Markdown 标题边距。 */
 .docs-community__header {
+  display: flex;
   align-items: flex-start;
+  gap: 0.75rem;
 }
 
 .docs-community__icon {
+  display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
   border-radius: var(--radius-xs) !important;
+  color: var(--accent-primary);
 }
 
-#nd-page .docs-community__copy :is(h3, p) {
+#nd-docs-layout .docs-community__copy :is(h2, p) {
   margin-block: 0;
 }
 
-#nd-page .docs-community__copy p {
+#nd-docs-layout .docs-community__copy h2 {
+  color: var(--text-primary);
+  font-size: 1.125rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+#nd-docs-layout .docs-community__copy p {
   margin-block-start: 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 /* Both compact floating actions stay individually unboxed at rest while their
@@ -1239,6 +1310,11 @@ html[data-nd-reading-restore] {
     border-radius: var(--radius-md);
   }
 
+  .docs-community-module {
+    margin-block: 0 1rem;
+    padding: 1.5rem 1rem;
+  }
+
   /* Mobile heading anchor actions align to the title's vertical center and
      keep hover feedback icon-only, without drawing a detached outer edge.
      移动端标题锚点操作与标题垂直居中，悬浮反馈仅作用于图标，不再绘制分离的外缘描边。 */
@@ -1301,7 +1377,8 @@ html[data-nd-reading-restore] {
      #nd-page 几乎占满整个视口；此处的实时 backdrop-filter 是移动端最大的
      GPU 开销。用匹配玻璃色调的静态半透明背景替代。body::before 的环境光
      折射仍可透过半透明填充显现。 */
-  #nd-page {
+  #nd-page,
+  .docs-community-module {
     backdrop-filter: none !important;
   }
 
