@@ -701,20 +701,16 @@
    the wrapper. The full glass treatment (blur + tint + edge + shadow) lives
    directly on this element — identical to .glass-chip elsewhere in the project
    — so the toolbar reads as a single cohesive glass surface.
-   In non-maximized mode the toolbar is portaled to document.body (position:
-   fixed) so its backdrop-filter samples the full viewport content behind it
-   (page background + circuit grid + Mermaid SVG), completely unaffected by
-   intermediate stacking contexts like #nd-page. In maximized mode it stays
-   inside the wrapper (position: absolute) since the maximized wrapper itself
-   is already portaled to body.
+   In non-maximized mode the toolbar remains absolutely positioned inside the
+   wrapper, so native document scrolling moves both as one layer without any
+   JavaScript position tracking. Maximized mode portals the toolbar to body
+   alongside the fullscreen diagram.
    悬浮工具栏：紧凑分段玻璃条锚定在 wrapper 底部居中。完整玻璃处理
    （模糊 + 底色 + 描边 + 阴影）直接落在本元素上，与项目中 .glass-chip
    一致，使工具栏呈现为单一完整的玻璃表面。
-   非全屏模式下工具栏通过 Portal 挂到 document.body（position: fixed），
-   使其 backdrop-filter 采样后方完整视口内容（页面背景 + 电路网格 +
-   Mermaid SVG），完全不受 #nd-page 等中间层叠上下文影响。全屏模式下
-   工具栏留在 wrapper 内（position: absolute），因为全屏 wrapper 本身
-   就已经 Portal 到 body 了。 */
+   普通模式下工具栏使用绝对定位留在 wrapper 内，文档原生滚动会让两者作为
+   同一层移动，无需 JavaScript 逐帧追踪位置；最大化模式再随全屏图表 Portal
+   到 body。 */
 .mermaid-toolbar {
   position: absolute;
   bottom: 0.75rem;
@@ -722,6 +718,7 @@
   z-index: 2;
   display: grid;
   width: max-content;
+  max-width: calc(100% - 1rem);
   margin-inline: auto;
   padding: 0.25rem;
   overflow: hidden;
@@ -737,47 +734,6 @@
      使用逻辑自动外边距居中，避免 transform 祖先。 */
 }
 
-/* Portaled toolbar: rendered at document.body level. Both in-page and
-   maximized modes portal the toolbar to body so it escapes wrapper stacking
-   contexts and its backdrop-filter samples real viewport content.
-   - In-page mode: position calculated by JS (left/top set inline). The
-     positioning hook clamps the horizontal position within the wrapper's
-     bounding rect so the toolbar never escapes the mermaid frame.
-   - Maximized mode: fixed to viewport bottom-center via CSS.
-   Portal 工具栏：渲染在 document.body 层级。普通与全屏模式都把工具栏
-   Portal 到 body，使其脱离 wrapper 层叠上下文，backdrop-filter 能采样
-   真实视口内容。
-   - 普通模式：由 JS 计算位置（left/top 内联设置）。定位 Hook 将水平位置
-     钳制在 wrapper 包围盒内，工具栏不会超出 mermaid 范围框。
-   - 全屏模式：由 CSS 固定到视口底部居中。 */
-.mermaid-toolbar[data-portaled] {
-  position: fixed;
-  inset-inline: auto;
-  bottom: auto;
-  z-index: 40;
-  margin-inline: 0;
-  /* Cap the toolbar's width to the viewport (minus a small gutter) so on very
-     narrow viewports the controls wrap/shrink instead of overflowing off-screen.
-     The JS clamp in the positioning hook keeps it within the wrapper horizontally;
-     this is a backstop for the edge case where the wrapper itself is wider than
-     the viewport but the toolbar would still exceed the viewport.
-     将工具栏宽度限制在视口（减去小间距）内，在极窄视口下控件换行/收缩而非
-     溢出屏幕。定位 Hook 中的 JS 钳制已保证其在 wrapper 水平范围内；
-     这是对 wrapper 自身比视口宽但工具栏仍可能超出视口的边界情况的兜底。 */
-  max-width: calc(100vw - 1rem);
-}
-
-/* In-page mode: z-index sits below fumadocs' search dialog / popover (z-50)
-   so opening search covers the toolbar.
-   普通模式：z-index 低于 fumadocs 搜索弹窗 / popover（z-50），
-   打开搜索时会盖住工具栏。 */
-.mermaid-toolbar[data-portaled="true"] {
-  /* The positioning Hook reveals the toolbar after its first measured frame.
-     定位 Hook 在完成首帧测量后再显示工具栏。 */
-  visibility: hidden;
-  /* left/top set inline by component */
-}
-
 /* Maximized mode: fixed to viewport bottom-center. z-index above the
    maximized wrapper (9999) and backdrop (9998) so the toolbar stays
    visible above the diagram. Uses transform for horizontal centering
@@ -788,11 +744,15 @@
    （transform 会使工具栏成为 backdrop root，但只影响后代的
    backdrop-filter，不影响工具栏自身）。 */
 .mermaid-toolbar[data-portaled="maximized"] {
+  position: fixed;
+  inset-inline: auto;
   bottom: 1rem;
   left: 50%;
-  transform: translateX(-50%);
   z-index: 10000;
+  max-width: calc(100vw - 1rem);
+  margin-inline: 0;
   background: var(--glass-refraction-fill), var(--mermaid-toolbar-tint-maximized);
+  transform: translateX(-50%);
 }
 
 /* Refractive hairline matches .glass-chip::before for consistent glass optics.
@@ -812,10 +772,8 @@
   mask-composite: exclude;
 }
 
-/* Maximized toolbar tint is applied via [data-portaled='maximized'] above,
-   since the toolbar is now portaled to body in both modes.
-   全屏态工具栏底色已由上面的 [data-portaled='maximized'] 规则应用，
-   因为两种模式下工具栏都 Portal 到 body。 */
+/* Maximized toolbar tint is applied via [data-portaled='maximized'] above.
+   全屏态工具栏底色由上面的 [data-portaled='maximized'] 规则应用。 */
 
 /* Control row sits above the toolbar's glass surface and refractive ::before.
    控件行位于工具栏玻璃表面与折射 ::before 之上。 */
@@ -950,13 +908,22 @@
     gap: 0.125rem;
   }
 
+  /* Viewport-relative controls prevent the fixed seven-button layout from
+     being clipped at narrow mobile widths or enlarged browser text ratios.
+     视口相对尺寸避免固定的七按钮布局在窄屏或浏览器文字放大比例下被裁切。 */
+  .mermaid-toolbar__btn {
+    width: clamp(2rem, 10vw, 2.5rem);
+    height: clamp(2rem, 10vw, 2.5rem);
+  }
+
   .mermaid-toolbar__group,
   .mermaid-toolbar__view-toggle {
     padding: 0.0625rem;
   }
 
   .mermaid-toolbar__scale {
-    min-width: 2.25rem;
+    min-width: clamp(2rem, 9vw, 2.25rem);
+    height: clamp(2rem, 10vw, 2.5rem);
     padding-inline: 0.125rem;
   }
 }

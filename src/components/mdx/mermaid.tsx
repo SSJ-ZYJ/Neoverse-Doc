@@ -1,14 +1,13 @@
 // Mermaid diagram renderer with zoom / pan / reset / maximize controls and a
 // render / code view toggle. Initializes mermaid on mount and re-renders
 // whenever the chart source or theme changes. Falls back to raw text on error.
-// The floating toolbar is portaled to document.body in non-maximized mode so
-// its backdrop-filter can sample the actual page + SVG content behind it
-// (unaffected by intermediate backdrop roots like #nd-page).
+// The floating toolbar stays inside the diagram wrapper in normal mode so it
+// shares the wrapper's scroll position and stacking order. Only maximized mode
+// portals it to document.body alongside the fullscreen diagram.
 // Mermaid 图表渲染器（带缩放 / 拖动 / 重置 / 视口内放大控制与渲染 / 代码
 // 视图切换）。挂载时初始化 mermaid，当图表源码或主题变化时重新渲染。
-// 出错时回退为原始文本。非全屏模式下，悬浮工具栏通过 Portal 挂到
-// document.body，使其 backdrop-filter 能采样到后方真实的页面内容与 SVG
-// （不受 #nd-page 等中间 backdrop root 影响）。
+// 出错时回退为原始文本。普通模式下工具栏保留在图表 wrapper 内，与图表
+// 共用滚动位置和层叠顺序；仅最大化模式随全屏图表 Portal 到 document.body。
 
 'use client';
 
@@ -26,7 +25,6 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { getPageDictionary } from '@/dictionaries';
-import { useAnchoredToolbarPosition } from '@/lib/hooks/use-anchored-toolbar-position';
 import { useFitCanvasScale } from '@/lib/hooks/use-fit-canvas-scale';
 import { useMermaidMaximize } from '@/lib/hooks/use-mermaid-maximize';
 import { useMermaidRender } from '@/lib/hooks/use-mermaid-render';
@@ -160,7 +158,6 @@ export function Mermaid({ chart }: { chart: string }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inPageWrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const toolbarRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
@@ -349,17 +346,12 @@ export function Mermaid({ chart }: { chart: string }) {
     };
   }, [isMaximized, viewMode, zoomAtPoint]);
 
-  // Imperative positioning avoids a React state update for every scroll event.
-  // 命令式定位避免每次滚动事件都触发 React 状态更新。
-  useAnchoredToolbarPosition(inPageWrapperRef, toolbarRef, toolbarVisible, isMaximized);
-
   const toolbar = (
     <div
-      ref={toolbarRef}
       role="toolbar"
       aria-label={labels.mermaidToolbar}
       className="mermaid-toolbar"
-      data-portaled={isMaximized ? 'maximized' : 'true'}
+      data-portaled={isMaximized ? 'maximized' : undefined}
     >
       <div className="mermaid-toolbar__controls">
         {/* View mode segmented toggle: render (SVG) vs. code (source editor).
@@ -515,6 +507,7 @@ export function Mermaid({ chart }: { chart: string }) {
       onKeyDown={handleKeyDown}
     >
       {canvasOnly}
+      {toolbarVisible && !isMaximized ? toolbar : null}
     </div>
   );
 
@@ -533,26 +526,22 @@ export function Mermaid({ chart }: { chart: string }) {
 
   const maximizedBackdrop = <div className="mermaid-maximized-backdrop" aria-hidden="true" />;
 
-  // Portal the toolbar once mounted AND there is something to show — either a
-  // rendered SVG (render view) or the code editor (code view). In code view
-  // svgContent may be null because rendering is intentionally disabled, so the
-  // viewMode check keeps the toolbar available.
-  // 当挂载且有内容可显示时 Portal 工具栏 —— 渲染的 SVG（渲染视图）或代码
-  // 编辑器（代码视图）。代码视图中 svgContent 可能为 null（渲染被有意禁用），
-  // 因此通过 viewMode 检查保持工具栏可用。
-  if (mounted && (svgContent || viewMode === 'code') && typeof document !== 'undefined') {
+  // Normal mode keeps the toolbar inside the in-page wrapper. Maximized mode
+  // portals the backdrop, diagram, and toolbar together above the document.
+  // 普通模式将工具栏保留在文档内 wrapper；最大化模式再把背景、图表与工具栏
+  // 一并 Portal 到文档上层。
+  if (
+    isMaximized &&
+    mounted &&
+    (svgContent || viewMode === 'code') &&
+    typeof document !== 'undefined'
+  ) {
     return (
       <>
         {inPageWrapper}
-        {isMaximized ? (
-          <>
-            {createPortal(maximizedBackdrop, document.body)}
-            {createPortal(maximizedWrapper, document.body)}
-            {createPortal(toolbar, document.body)}
-          </>
-        ) : (
-          createPortal(toolbar, document.body)
-        )}
+        {createPortal(maximizedBackdrop, document.body)}
+        {createPortal(maximizedWrapper, document.body)}
+        {createPortal(toolbar, document.body)}
       </>
     );
   }
