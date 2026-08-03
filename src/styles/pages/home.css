@@ -1281,8 +1281,7 @@
     max-inline-size: 17rem;
   }
 
-  .home-hero__actions,
-  .home-community__actions {
+  .home-hero__actions {
     inline-size: auto;
     flex-direction: column;
   }
@@ -1295,7 +1294,10 @@
   }
 
   .home-community__actions {
+    inline-size: auto;
+    flex-direction: row;
     align-items: center;
+    gap: clamp(0.375rem, 2vw, 0.75rem);
   }
 
   /* Mobile footer metadata stacks inside the same detached glass surface and
@@ -1328,9 +1330,17 @@
     inline-size: auto;
   }
 
-  .home-hero__actions .control-surface,
-  .home-community__actions .control-surface {
+  .home-hero__actions .control-surface {
     padding-inline: 1rem;
+  }
+
+  /* Community actions stay on one line down to narrow mobile viewports while
+     keeping both localized labels readable and comfortably tappable.
+     共建操作在窄屏下仍保持单行，同时保证本地化标签可读且触控尺寸舒适。 */
+  .home-community__actions .control-surface {
+    padding-inline: clamp(0.625rem, 3vw, 1rem);
+    font-size: clamp(0.875rem, 3.7vw, 1rem);
+    white-space: nowrap;
   }
 
   :where(.chapter-grid) {
