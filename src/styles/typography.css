@@ -748,7 +748,9 @@ figure.shiki .line > span:empty::before {
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  /* Reset the prose paragraph margin so the title aligns with the accent rail.
+     清除正文段落外边距，使标题与左侧强调竖线顶部对齐。 */
+  margin: 0 0 0.25rem;
   color: var(--markdown-alert-accent);
 }
 
