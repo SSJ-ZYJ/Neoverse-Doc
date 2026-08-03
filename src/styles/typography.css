@@ -962,11 +962,11 @@ figure.shiki .line > span:empty::before {
     color var(--theme-transition-duration) ease;
 }
 
-/* Wrapped inline code uses complete cloned capsules and a distinct restrained
-   surface. Continuation ticks are rendered separately at internal junctions,
-   leaving the beginning and final ending unmarked.
-   换行行内代码使用完整复制的圆角胶囊与克制的差异化表面；续行刻度单独绘制
-   在内部连接点，整体开头与最终收尾不显示刻度。 */
+/* Wrapped inline code uses native cloned capsules and a restrained accent
+   surface. Keeping every decoration on the inline element avoids detached
+   document overlays drifting during route and layout transitions.
+   换行行内代码使用浏览器原生复制的圆角胶囊与克制的强调表面；所有装饰均
+   保留在行内元素自身，避免文档级覆盖层在路由或布局切换时漂移。 */
 :not(pre) > code[data-inline-code-wrapped],
 #nd-page :not(pre) > code[data-inline-code-wrapped] {
   border-color: color-mix(
@@ -980,29 +980,6 @@ figure.shiki .line > span:empty::before {
     var(--surface-glass, transparent)
   );
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 28%, transparent);
-}
-
-/* A document-level overlay places horizontal markers only at real wrap
-   junctions, so the inline code's outer start and end remain undecorated.
-   文档级覆盖层仅在真实换行连接点放置水平刻度，使行内代码整体首尾保持无装饰。 */
-.inline-code-continuation-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  height: 0;
-  pointer-events: none;
-}
-
-.inline-code-continuation-marker {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0.7rem;
-  height: 1px;
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--accent-primary, var(--fd-primary)) 62%, transparent);
-  box-shadow: 0 0 0.35rem color-mix(in srgb, var(--accent-primary) 18%, transparent);
-  transform: translate3d(var(--inline-code-marker-x, 0), var(--inline-code-marker-y, 0), 0);
 }
 
 /* Inline code hover：极轻反馈 —— 边框颜色加深 + 文字着色，
