@@ -772,9 +772,9 @@
   bottom: 0.75rem;
   inset-inline: 0;
   z-index: 2;
-  display: flex;
-  inline-size: max-content;
-  max-inline-size: calc(100% - 1rem);
+  display: grid;
+  width: max-content;
+  max-width: calc(100% - 1rem);
   margin-inline: auto;
   padding: 0.25rem;
   overflow: hidden;
@@ -788,6 +788,15 @@
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   /* Logical auto margins center the toolbar without a transform ancestor.
      使用逻辑自动外边距居中，避免 transform 祖先。 */
+}
+
+/* Inline toolbars sit directly above detailed SVG text and connectors, so the
+   compact theme override is too weak there. Reuse the standard glass blur for
+   legibility while maximized toolbars retain their lighter compositor cost.
+   非全屏工具栏直接覆盖在密集的 SVG 文字与连线上，主题中的紧凑模糊强度不足；
+   此处复用标准玻璃模糊保证可读性，全屏工具栏则继续保持较轻的合成开销。 */
+.mermaid-toolbar:not([data-portaled="maximized"]) {
+  --mermaid-toolbar-blur: var(--glass-blur);
 }
 
 /* Maximized mode: fixed to viewport bottom-center. z-index above the
