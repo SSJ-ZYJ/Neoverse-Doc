@@ -26,6 +26,17 @@ const { staticGET } = createFromSource(source, {
   },
   localeMap: {
     zh: {
+      // zbsearch forbids passing `language` alongside a custom tokenizer
+      // (NO_LANGUAGE_WITH_CUSTOM_TOKENIZER). fumadocs-core's createDB defaults
+      // `language` to "multilingual", which would trigger that error. An empty
+      // string is falsy so it bypasses both the destructuring default (only
+      // `undefined` triggers it) and zbsearch's check, while keeping the
+      // zh-CN dictionary segmenter for proper Chinese word segmentation.
+      // zbsearch 禁止同时传入 language 与自定义分词器；fumadocs-core 的 createDB
+      // 会将 language 默认为 "multilingual" 从而触发该错误。空字符串为假值，
+      // 既不触发解构默认值（仅 undefined 触发），也能绕过 zbsearch 的校验，
+      // 同时保留 zh-CN 词典分词器以实现正确的中文分词。
+      language: '',
       components: {
         tokenizer: createMixedTokenizer(),
       },

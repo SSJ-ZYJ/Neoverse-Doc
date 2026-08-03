@@ -1,12 +1,11 @@
-// Static search dialog for SSG. Uses Orama static client with i18n locale support.
+// Static search dialog for SSG. Uses ZBSearch static client with i18n locale support.
 // Custom mixed tokenizer handles both Chinese (CJK segmentation) and English (case-insensitive).
-// 静态搜索对话框（用于 SSG）。使用 Orama 静态客户端，支持 i18n 语言切换。
+// 静态搜索对话框（用于 SSG）。使用 ZBSearch 静态客户端，支持 i18n 语言切换。
 // 自定义混合分词器同时处理中文（CJK 分词）和英文（大小写不敏感）。
 'use client';
 
-import { create } from '@orama/orama';
 import { useDocsSearch } from 'fumadocs-core/search/client';
-import { oramaStaticClient } from 'fumadocs-core/search/client/orama-static';
+import { staticClient } from 'fumadocs-core/search/client/orama-static';
 import {
   SearchDialog,
   SearchDialogClose,
@@ -29,6 +28,7 @@ import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import type { TagItem } from 'fumadocs-ui/contexts/search';
 import { Check, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { create } from 'zbsearch';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
 import { createMixedTokenizer } from '@/lib/search-tokenizer';
@@ -38,7 +38,7 @@ interface DefaultSearchDialogProps extends SharedProps {
   tags?: TagItem[];
 }
 
-function initOrama(locale?: string) {
+function initDB(locale?: string) {
   if (locale === 'zh') {
     return create({
       schema: { _: 'string' },
@@ -71,8 +71,8 @@ export default function DefaultSearchDialog({
   }, [defaultTag]);
 
   const { search, setSearch, query } = useDocsSearch({
-    client: oramaStaticClient({
-      initOrama,
+    client: staticClient({
+      initDB,
       locale,
       tag: tag || undefined,
     }),
