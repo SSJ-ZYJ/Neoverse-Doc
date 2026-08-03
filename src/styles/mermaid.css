@@ -1052,6 +1052,19 @@
   isolation: isolate;
 }
 
+/* Maximized render canvas: intercept all touch gestures (single-finger pan +
+   two-finger pinch-zoom) via pointer events. touch-action: none prevents the
+   browser from hijacking the gesture for page scroll or native pinch-zoom.
+   Inline (non-maximized) render canvas retains pan-y so the page still scrolls
+   past the diagram; code view retains auto for native text scrolling.
+   全屏渲染画布：通过 pointer 事件拦截所有触摸手势（单指平移 + 双指缩放）。
+   touch-action: none 阻止浏览器劫持手势用于页面滚动或原生双指缩放。
+   非全屏渲染画布保留 pan-y 使页面仍可滚过图表；代码视图保留 auto 以支持
+   原生文本滚动。 */
+.mermaid-wrapper[data-maximized] .mermaid-canvas[data-view="render"] {
+  touch-action: none;
+}
+
 /* In maximize + code view, use an explicit full-width grid track. The editor
    stretches across the same canvas content box as the render view while
    remaining vertically centered.
