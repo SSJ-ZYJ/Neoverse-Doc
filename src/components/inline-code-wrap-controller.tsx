@@ -5,8 +5,9 @@
 
 import { useEffect } from 'react';
 
-const INLINE_CODE_SELECTOR = ':not(pre) > code';
 const DOCS_BODY_SELECTOR = '[data-docs-body]';
+const INLINE_CODE_NODE_SELECTOR = ':not(pre) > code';
+const INLINE_CODE_SELECTOR = `${DOCS_BODY_SELECTOR} ${INLINE_CODE_NODE_SELECTOR}`;
 const WRAPPED_ATTRIBUTE = 'data-inline-code-wrapped';
 const MARKER_LAYER_CLASS = 'inline-code-continuation-layer';
 const MARKER_CLASS = 'inline-code-continuation-marker';
@@ -16,12 +17,12 @@ const MARKER_BOTTOM_OFFSET_REM = 0.08;
 const MARKER_HEIGHT_PX = 1;
 
 /**
- * Checks whether an inserted subtree can change inline-code fragmentation.
- * 检查新增子树是否可能改变行内代码的分片状态。
+ * Checks whether an inserted or removed subtree contains a docs body.
+ * 检查新增或移除的子树是否包含文档正文。
  */
-function containsInlineCode(node: Node): boolean {
+function containsDocsBody(node: Node): boolean {
   if (!(node instanceof Element)) return false;
-  return node.matches(INLINE_CODE_SELECTOR) || node.querySelector(INLINE_CODE_SELECTOR) !== null;
+  return node.matches(DOCS_BODY_SELECTOR) || node.querySelector(DOCS_BODY_SELECTOR) !== null;
 }
 
 /**
@@ -41,6 +42,7 @@ export function InlineCodeWrapController() {
     markerLayer.setAttribute('aria-hidden', 'true');
     document.body.append(markerLayer);
 
+    const observedBodies = new Set<HTMLElement>();
     const resizeObserver = new ResizeObserver(() => scheduleUpdate());
 
     const updateWrappedState = () => {
@@ -52,11 +54,24 @@ export function InlineCodeWrapController() {
       const edgeOffset = MARKER_EDGE_OFFSET_REM * rem;
       const bottomOffset = MARKER_BOTTOM_OFFSET_REM * rem;
 
-      document.querySelectorAll<HTMLElement>(DOCS_BODY_SELECTOR).forEach((body) => {
+      const currentBodies = new Set(
+        document.querySelectorAll<HTMLElement>(DOCS_BODY_SELECTOR),
+      );
+      for (const body of observedBodies) {
+        if (currentBodies.has(body)) continue;
+        resizeObserver.unobserve(body);
+        observedBodies.delete(body);
+      }
+      for (const body of currentBodies) {
+        if (observedBodies.has(body)) continue;
         resizeObserver.observe(body);
-      });
+        observedBodies.add(body);
+      }
+
       document.querySelectorAll<HTMLElement>(INLINE_CODE_SELECTOR).forEach((code) => {
-        const rects = [...code.getClientRects()];
+        const rects = [...code.getClientRects()].filter(
+          (rect) => rect.width > 0.5 && rect.height > 0.5,
+        );
         const wrapped = rects.length > 1;
         code.toggleAttribute(WRAPPED_ATTRIBUTE, wrapped);
         if (!wrapped) return;
@@ -100,13 +115,23 @@ export function InlineCodeWrapController() {
     };
 
     const mutationObserver = new MutationObserver((records) => {
-      const affectsInlineCode = records.some((record) => {
+      const affectsDocsLayout = records.some((record) => {
         if (record.type === 'characterData') {
-          return record.target.parentElement?.closest(INLINE_CODE_SELECTOR) !== null;
+          return record.target.parentElement?.closest(DOCS_BODY_SELECTOR) !== null;
         }
-        return [...record.addedNodes].some(containsInlineCode);
+
+        const targetElement =
+          record.target instanceof Element ? record.target : record.target.parentElement;
+        if (
+          targetElement?.matches(DOCS_BODY_SELECTOR) ||
+          targetElement?.closest(DOCS_BODY_SELECTOR)
+        ) {
+          return true;
+        }
+
+        return [...record.addedNodes, ...record.removedNodes].some(containsDocsBody);
       });
-      if (affectsInlineCode) scheduleUpdate();
+      if (affectsDocsLayout) scheduleUpdate();
     });
 
     mutationObserver.observe(document.body, {
