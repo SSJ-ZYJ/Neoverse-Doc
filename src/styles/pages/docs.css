@@ -1391,6 +1391,13 @@ html[data-nd-reading-restore] {
   #nd-docs-layout > header {
     backdrop-filter: none !important;
   }
+
+  /* Without real-time blur, the mobile subnav needs an opaque static fill so
+     scrolled article content cannot visually bleed through the toolbar.
+     关闭实时模糊后，移动端二级导航需要不透明的静态底色，避免滚动正文透过工具栏。 */
+  #nd-docs-layout > #nd-subnav {
+    background: var(--docs-canvas-surface) !important;
+  }
 }
 
 /* Code block language icons: PowerShell and CMD/Batch ship fixed brand colors
