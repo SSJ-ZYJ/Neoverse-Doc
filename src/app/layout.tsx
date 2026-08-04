@@ -29,6 +29,7 @@ import { ThemeProvider } from 'next-themes';
 import { ImmersiveInteractionController } from '@/components/immersive-interaction-controller';
 import ImmersiveScrollbar from '@/components/immersive-scrollbar';
 import { InlineCodeWrapController } from '@/components/inline-code-wrap-controller';
+import { DeploymentSkewGuard } from '@/components/deployment-skew-guard';
 import { i18n } from '@/lib/i18n';
 import '@/app/globals.css';
 // Route loading styles are imported at the root CSS entry for Turbopack tracking.
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           disableTransitionOnChange
           enableSystem
         >
+          <DeploymentSkewGuard />
           {/* Scoped light and particles provide activation feedback without page-level cursor tracking.
               局部光感与粒子提供激活反馈，不进行页面级光标跟踪。 */}
           <ImmersiveInteractionController />
