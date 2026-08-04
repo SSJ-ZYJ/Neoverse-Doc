@@ -514,6 +514,7 @@
 
 .mermaid-svg-host path.arrow {
   stroke: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
+  stroke-width: 1.6px !important;
 }
 
 .mermaid-svg-host .commit {
@@ -535,7 +536,7 @@
 .mermaid-svg-host rect.branchLabelBkg {
   fill: color-mix(
     in srgb,
-    var(--mermaid-git-branch-color, var(--accent-primary)) 24%,
+    var(--mermaid-git-branch-color, var(--accent-primary)) 30%,
     var(--surface-elevated)
   ) !important;
   stroke: color-mix(
@@ -544,6 +545,8 @@
     var(--edge-light)
   ) !important;
   stroke-width: 1px !important;
+  rx: 8px;
+  ry: 8px;
 }
 
 .mermaid-svg-host :is(.branchLabel text, .branchLabel tspan) {
@@ -556,6 +559,8 @@
   stroke: var(--border-subtle) !important;
   stroke-width: 0.75px !important;
   opacity: 1 !important;
+  rx: 8px;
+  ry: 8px;
 }
 
 .mermaid-svg-host text.commit-label {
@@ -566,6 +571,8 @@
 .mermaid-svg-host .tag-label-bkg {
   fill: color-mix(in srgb, var(--surface-elevated) 84%, var(--accent-soft)) !important;
   stroke: var(--border-interactive) !important;
+  rx: 8px;
+  ry: 8px;
 }
 
 .mermaid-svg-host :is(.tag-label, .gitTitleText) {
@@ -574,7 +581,7 @@
 }
 
 .mermaid-svg-host .tag-hole {
-  fill: var(--accent-primary) !important;
+  fill: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
 }
 
 /* Mermaid measures HTML labels before SVG insertion. Metric-sensitive styles
