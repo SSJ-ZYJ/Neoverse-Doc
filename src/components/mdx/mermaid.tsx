@@ -31,7 +31,7 @@ import { useMermaidMaximize } from '@/lib/hooks/use-mermaid-maximize';
 import { useMermaidRender } from '@/lib/hooks/use-mermaid-render';
 import { useMermaidViewMode } from '@/lib/hooks/use-mermaid-view-mode';
 import { useSvgViewBoxExpander } from '@/lib/hooks/use-svg-viewbox-expander';
-import { DEFAULT_SCALE, useZoomAndPan } from '@/lib/hooks/use-zoom-and-pan';
+import { DEFAULT_SCALE, ORIGIN, useZoomAndPan } from '@/lib/hooks/use-zoom-and-pan';
 import { resolveLocale } from '@/lib/i18n';
 
 // Start diagram work before it enters the viewport so scrolling never exposes an unloaded canvas.
@@ -272,9 +272,11 @@ export function Mermaid({ chart }: { chart: string }) {
     resetZoom();
     recomputeFitCanvasScale();
   }, [recomputeFitCanvasScale, resetZoom]);
-  // Reset is meaningful only after the logical zoom leaves its 100% baseline.
-  // 重置仅在逻辑缩放偏离 100% 基线后才可操作。
-  const canResetZoom = Math.abs(scale - DEFAULT_SCALE) > 0.005;
+  // Reset remains available whenever zoom or pan differs from the centered
+  // 100% baseline, including a dragged canvas that still reads as 100%.
+  // 缩放或平移偏离居中的 100% 基线时均可重置，包括比例仍显示 100% 的拖动画布。
+  const canResetZoom =
+    Math.abs(scale - DEFAULT_SCALE) > 0.005 || pan.x !== ORIGIN.x || pan.y !== ORIGIN.y;
 
   // The fit scale locks the canvas layout frame and combines with the logical
   // user scale only for painting. Toolbar zoom never resizes the canvas, while

@@ -797,13 +797,17 @@
      使用逻辑自动外边距居中，避免 transform 祖先。 */
 }
 
-/* Inline toolbars sit directly above detailed SVG text and connectors, so the
-   compact theme override is too weak there. Reuse the standard glass blur for
-   legibility while maximized toolbars retain their lighter compositor cost.
-   非全屏工具栏直接覆盖在密集的 SVG 文字与连线上，主题中的紧凑模糊强度不足；
-   此处复用标准玻璃模糊保证可读性，全屏工具栏则继续保持较轻的合成开销。 */
+/* Inline toolbars use a static translucent surface because nested backdrop
+   sampling is unreliable around embedded SVG content. Maximized toolbars keep
+   the live blur defined by the base rule above.
+   非全屏工具栏使用静态半透明表面，避免嵌入 SVG 周围不稳定的嵌套背景采样；
+   全屏工具栏继续保留上方基础规则定义的实时模糊。 */
 .mermaid-toolbar:not([data-portaled="maximized"]) {
-  --mermaid-toolbar-blur: var(--glass-blur);
+  background:
+    var(--glass-refraction-fill),
+    color-mix(in srgb, var(--docs-canvas-surface) 88%, var(--surface-elevated));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 /* Maximized mode: fixed to viewport bottom-center. z-index above the
