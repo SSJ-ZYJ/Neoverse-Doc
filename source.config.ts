@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { remarkCodeTitle } from './src/lib/remark-code-title';
 import { remarkCollapsibleAlert } from './src/lib/remark-collapsible-alert';
 import { remarkGithubAlert } from './src/lib/remark-github-alert';
+import { remarkLangAlias } from './src/lib/remark-lang-alias';
 import { transformerMetaTitle } from './src/lib/transformer-meta-title';
 
 // Shared person field schema for author and contributor frontmatter.
@@ -37,6 +38,7 @@ export default defineConfig({
       remarkMath,
       remarkMdxMermaid,
       remarkCodeTitle,
+      remarkLangAlias,
     ],
     rehypePlugins: (plugins) => [rehypeKatex, ...plugins],
     rehypeCodeOptions: {
@@ -199,6 +201,13 @@ export default defineConfig({
             fill: '#F7A41D',
             d: 'm23.53 1.02-7.686 3.45h-7.06l-2.98 3.452h7.173L.47 22.98l7.681-3.607h7.065v-.002l2.978-3.45-7.148-.001 12.482-14.9zM0 4.47v14.901h1.883l2.98-3.45H3.451v-8h.942l2.824-3.45H0zm22.117 0-2.98 3.608h1.412v7.844h-.942l-2.98 3.45H24V4.47h-1.883z',
           },
+          // Git: branch-graph logo, used for gitattributes and other git config files.
+          // Git：分支图标识，用于 gitattributes 等 git 配置文件。
+          git: {
+            viewBox: '0 0 24 24',
+            fill: '#F05032',
+            d: 'M23.546 10.93L13.067.452a1.55 1.55 0 0 0-2.188 0L8.708 2.627l2.632 2.632a1.834 1.834 0 0 1 2.323 2.337l2.535 2.535a1.835 1.835 0 0 1 1.897 3.033 1.835 1.835 0 0 1-3.034-1.898l-2.364-2.364v6.214a1.838 1.838 0 0 1 .485.336 1.836 1.836 0 0 1 0 2.598 1.836 1.836 0 0 1-2.598 0 1.836 1.836 0 0 1 0-2.598 1.84 1.84 0 0 1 .602-.393V8.236a1.835 1.835 0 0 1-.995-2.404L8.124 3.214.454 10.883c-.604.605-.604 1.585 0 2.19l10.48 10.48c.604.604 1.584.604 2.188 0l10.424-10.424c.604-.604.604-1.585 0-2.19',
+          },
           // Default
           default: {
             viewBox: '0 0 24 24',
@@ -212,6 +221,7 @@ export default defineConfig({
           pwsh: 'powershell',
           ps1: 'powershell',
           batch: 'bat',
+          gitattributes: 'git',
         },
       },
     } as never,
