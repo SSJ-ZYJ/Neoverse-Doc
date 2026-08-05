@@ -39,6 +39,7 @@ export const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
   fsharp: 'F#',
   go: 'Go',
   golang: 'Go',
+  gitattributes: 'Git Attributes',
   graphql: 'GraphQL',
   groovy: 'Groovy',
   haskell: 'Haskell',
