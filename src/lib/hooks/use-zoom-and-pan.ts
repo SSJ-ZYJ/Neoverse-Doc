@@ -8,7 +8,6 @@
 import {
   type PointerEvent as ReactPointerEvent,
   useCallback,
-  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -50,6 +49,11 @@ interface DragState {
   startPanX: number;
   startPanY: number;
   moved: boolean;
+  // Cached zoom-target element for direct DOM updates during drag.
+  // Bypassing React re-renders eliminates per-frame reconciliation overhead.
+  // 缓存的缩放目标元素，用于拖动期间直接更新 DOM。
+  // 绕过 React 重渲染，消除每帧协调开销。
+  zoomTarget: HTMLElement | null;
 }
 
 // Pinch gesture state: captured when a second pointer goes down.
@@ -73,11 +77,6 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
   const pinchStateRef = useRef<PinchState | null>(null);
 
-  // RAF throttling for pan updates during drag to reduce React re-renders.
-  // 拖动期间用 RAF 节流平移更新，减少 React 重渲染次数。
-  const panRafRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
-  const pendingPanRef = useRef<PanOffset | null>(null);
-
   // Wheel events can arrive faster than React commits state updates. Keep the
   // latest interaction targets in refs so every tick builds on the preceding
   // one instead of a stale render.
@@ -85,16 +84,6 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
   // 滚轮都基于前一次结果计算，而不是基于过期渲染。
   scaleRef.current = scale;
   panRef.current = pan;
-
-  // Cleanup pending RAF on unmount.
-  // 卸载时清理待处理的 RAF。
-  useEffect(() => {
-    return () => {
-      if (panRafRef.current != null) {
-        cancelAnimationFrame(panRafRef.current);
-      }
-    };
-  }, []);
 
   const zoomIn = useCallback(() => {
     setScale((s) => Math.min(MAX_SCALE, +(s + SCALE_STEP).toFixed(2)));
@@ -188,19 +177,18 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
       const points = [...pointersRef.current.values()];
       const zoomTarget = target.querySelector<HTMLElement>('.mermaid-zoom-target');
       if (zoomTarget) {
+        // Sync any unsaved pan from the cancelled drag to React state so the
+        // pinch starts from the correct position.
+        // 将取消的拖动中未保存的平移同步到 React 状态，使双指缩放从正确位置开始。
+        if (dragStateRef.current?.moved) {
+          setPan(panRef.current);
+        }
         pinchStateRef.current = {
           startDistance: Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y),
           startScale: scaleRef.current,
           target: zoomTarget,
         };
         dragStateRef.current = null;
-        // Cancel any pending drag pan update so it doesn't interfere with pinch.
-        // 取消待处理的拖动平移更新，避免与双指缩放冲突。
-        if (panRafRef.current != null) {
-          cancelAnimationFrame(panRafRef.current);
-          panRafRef.current = null;
-        }
-        pendingPanRef.current = null;
       }
       return;
     }
@@ -211,6 +199,10 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
     // 通过直接 DOM 操作立即标记画布为拖动态，在 React 提交状态更新前
     // 禁用 CSS 过渡，避免首次 pointermove 的首帧过渡延迟。
     target.dataset.dragging = '';
+    // Cache the zoom-target element for direct DOM updates during drag.
+    // This bypasses React re-renders, eliminating per-frame reconciliation.
+    // 缓存缩放目标元素用于拖动期间直接 DOM 更新，绕过 React 重渲染。
+    const zoomTarget = target.querySelector<HTMLElement>('.mermaid-zoom-target');
     dragStateRef.current = {
       pointerId: e.pointerId,
       startClientX: e.clientX,
@@ -218,6 +210,7 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
       startPanX: panRef.current.x,
       startPanY: panRef.current.y,
       moved: false,
+      zoomTarget,
     };
     setIsDragging(true);
   }, []);
@@ -252,21 +245,23 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
 
       const nextPan = { x: state.startPanX + deltaX, y: state.startPanY + deltaY };
       panRef.current = nextPan;
-      pendingPanRef.current = nextPan;
 
-      // Throttle setPan to one update per animation frame to avoid excessive
-      // React re-renders on high-frequency pointermove events. panRef is
-      // updated immediately so concurrent zoom operations see the latest value.
-      // 将 setPan 节流为每帧一次更新，避免高频 pointermove 导致过多 React
-      // 重渲染。panRef 立即更新，使并发缩放操作能看到最新值。
-      if (panRafRef.current == null) {
-        panRafRef.current = requestAnimationFrame(() => {
-          panRafRef.current = null;
-          if (pendingPanRef.current) {
-            setPan(pendingPanRef.current);
-            pendingPanRef.current = null;
-          }
-        });
+      // Direct DOM update: set CSS variables on the zoom-target element to
+      // update the pan transform without triggering a React re-render. This
+      // eliminates per-frame React reconciliation (hook re-execution, style
+      // object creation, virtual DOM diffing, commit) during drag, which is
+      // the main bottleneck on complex diagrams with many SVG nodes.
+      // panRef is updated immediately so concurrent zoom operations see the
+      // latest value. React state is synced once when drag ends.
+      // 直接 DOM 更新：在缩放目标元素上设置 CSS 变量以更新平移 transform，
+      // 无需触发 React 重渲染。这消除了拖动期间每帧的 React 协调开销
+      //（hook 重新执行、样式对象创建、虚拟 DOM diff、提交），这是含大量
+      // SVG 节点的复杂图上的主要瓶颈。panRef 立即更新使并发缩放操作能
+      // 看到最新值；React 状态在拖动结束时同步一次。
+      const el = state.zoomTarget;
+      if (el) {
+        el.style.setProperty('--mermaid-pan-x', `${nextPan.x}px`);
+        el.style.setProperty('--mermaid-pan-y', `${nextPan.y}px`);
       }
     },
     [applyZoomAtPoint],
@@ -289,18 +284,19 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
     // End drag when the drag pointer is released.
     // 拖动指针释放时结束拖动。
     if (dragStateRef.current && dragStateRef.current.pointerId === e.pointerId) {
+      const state = dragStateRef.current;
       dragStateRef.current = null;
 
-      // Flush any pending pan update synchronously so the final position is
-      // committed before drag ends.
-      // 同步刷新待处理的平移更新，确保拖动结束前最终位置已提交。
-      if (panRafRef.current != null) {
-        cancelAnimationFrame(panRafRef.current);
-        panRafRef.current = null;
-      }
-      if (pendingPanRef.current) {
-        setPan(pendingPanRef.current);
-        pendingPanRef.current = null;
+      // Sync the final pan position to React state. During drag, pan was
+      // updated directly on the DOM via CSS variables for smoother rendering;
+      // this single setPan call aligns React state with the DOM after drag
+      // ends so subsequent operations (zoom, reset, re-render) use the
+      // correct position.
+      // 将最终平移位置同步到 React 状态。拖动期间平移已通过 CSS 变量直接
+      // 更新到 DOM 以获得更流畅的渲染；此 setPan 调用在拖动结束后将
+      // React 状态与 DOM 对齐，使后续操作（缩放、重置、重渲染）使用正确位置。
+      if (state.moved) {
+        setPan(panRef.current);
       }
     }
 
