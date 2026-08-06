@@ -91,7 +91,7 @@ export interface Dictionary {
   mermaidViewMode: string;
   mermaidViewRender: string;
   mermaidViewCode: string;
-  mermaidCodeEditor: string;
+  mermaidSourceCode: string;
 }
 
 const dictionaries: Record<Locale, Dictionary> = { zh, en };

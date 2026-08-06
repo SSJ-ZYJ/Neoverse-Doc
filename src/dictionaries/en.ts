@@ -90,5 +90,5 @@ export const en = {
   mermaidViewMode: 'Mermaid view mode',
   mermaidViewRender: 'Rendered view',
   mermaidViewCode: 'Code view',
-  mermaidCodeEditor: 'Mermaid code editor',
+  mermaidSourceCode: 'Mermaid source code',
 } satisfies Dictionary;

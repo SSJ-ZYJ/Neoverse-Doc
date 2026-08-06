@@ -9,6 +9,10 @@ export interface ExpandedViewBox {
 
 const DEFAULT_BBOX_PADDING = 16;
 const GIT_BRANCH_LABEL_ALIGNMENT_TOLERANCE = 0.25;
+const GIT_BRANCH_LABEL_INLINE_OFFSET = 16;
+const GIT_COMMIT_LABEL_INLINE_PADDING = 10;
+const GIT_COMMIT_LABEL_BLOCK_PADDING = 4;
+const GIT_COMMIT_LABEL_NODE_GAP = 6;
 
 interface SvgPoint {
   x: number;
@@ -71,34 +75,124 @@ export function alignGitBranchLabels(svg: SVGSVGElement): void {
   for (let index = 0; index < pairCount; index += 1) {
     const background = backgrounds[index];
     const label = labels[index];
+    if (!background || !label) continue;
+
+    if (label.dataset.mermaidTextAligned !== 'true') {
+      const backgroundCenter = getTransformedCenter(background);
+      const labelCenter = getTransformedCenter(label);
+      const parent = label.parentNode;
+      const parentMatrix = parent instanceof SVGGraphicsElement ? parent.getCTM() : null;
+      const ownMatrix = label.transform.baseVal.consolidate()?.matrix;
+      if (!backgroundCenter || !labelCenter || !parentMatrix || !ownMatrix) continue;
+
+      const rootDeltaX = backgroundCenter.centerX - labelCenter.centerX;
+      const rootDeltaY = backgroundCenter.centerY - labelCenter.centerY;
+      const determinant = parentMatrix.a * parentMatrix.d - parentMatrix.b * parentMatrix.c;
+      if (!Number.isFinite(determinant) || Math.abs(determinant) < Number.EPSILON) continue;
+
+      const parentDeltaX =
+        (parentMatrix.d * rootDeltaX - parentMatrix.c * rootDeltaY) / determinant;
+      const parentDeltaY =
+        (-parentMatrix.b * rootDeltaX + parentMatrix.a * rootDeltaY) / determinant;
+
+      if (
+        Math.abs(parentDeltaX) > GIT_BRANCH_LABEL_ALIGNMENT_TOLERANCE ||
+        Math.abs(parentDeltaY) > GIT_BRANCH_LABEL_ALIGNMENT_TOLERANCE
+      ) {
+        label.setAttribute(
+          'transform',
+          `matrix(${ownMatrix.a} ${ownMatrix.b} ${ownMatrix.c} ${ownMatrix.d} ${ownMatrix.e + parentDeltaX} ${ownMatrix.f + parentDeltaY})`,
+        );
+      }
+      label.dataset.mermaidTextAligned = 'true';
+    }
+
+    if (background.dataset.mermaidTrackSpaced === 'true') continue;
+
+    const backgroundMatrix = background.transform.baseVal.consolidate()?.matrix;
+    const labelMatrix = label.transform.baseVal.consolidate()?.matrix;
+    if (!backgroundMatrix || !labelMatrix) continue;
+
+    // Mermaid leaves only 5px between the branch chip and the first commit.
+    // Move both generated label layers toward inline-start so the shared
+    // GitGraph presentation has a clearer 21px visual separation.
+    // Mermaid 默认只在分支标签与首个提交间保留 5px。统一将文字和背景向
+    // 行首移动，使共享 GitGraph 样式获得更清晰的 21px 视觉间距。
+    background.setAttribute(
+      'transform',
+      `matrix(${backgroundMatrix.a} ${backgroundMatrix.b} ${backgroundMatrix.c} ${backgroundMatrix.d} ${backgroundMatrix.e - GIT_BRANCH_LABEL_INLINE_OFFSET} ${backgroundMatrix.f})`,
+    );
+    label.setAttribute(
+      'transform',
+      `matrix(${labelMatrix.a} ${labelMatrix.b} ${labelMatrix.c} ${labelMatrix.d} ${labelMatrix.e - GIT_BRANCH_LABEL_INLINE_OFFSET} ${labelMatrix.f})`,
+    );
+    background.dataset.mermaidTrackSpaced = 'true';
+  }
+}
+
+/**
+ * Mermaid sizes horizontal commit-label backgrounds from the raw glyph width
+ * with almost no inline padding, and positions text by its baseline. Normalize
+ * every generated pair to the same compact padding used by regular Mermaid
+ * edge labels, then anchor the text to the chip's true center. This runs on
+ * rendered SVG only, so chart source and the code view remain untouched.
+ *
+ * Mermaid 按原始字形宽度生成水平提交标签背景，几乎没有横向留白，并以
+ * baseline 定位文字。这里将所有生成结果统一到可复用的最小标签尺寸，再把
+ * 文字锚定到标签的真实中心。修复仅作用于渲染后的 SVG，不修改图表源码与
+ * 代码视图。
+ */
+export function alignGitCommitLabels(svg: SVGSVGElement): void {
+  if (svg.getAttribute('aria-roledescription') !== 'gitGraph') return;
+
+  const backgrounds = svg.querySelectorAll<SVGRectElement>('rect.commit-label-bkg');
+  const labels = svg.querySelectorAll<SVGTextElement>('text.commit-label');
+  const pairCount = Math.min(backgrounds.length, labels.length);
+
+  for (let index = 0; index < pairCount; index += 1) {
+    const background = backgrounds[index];
+    const label = labels[index];
     if (!background || !label || label.dataset.mermaidTextAligned === 'true') continue;
 
-    const backgroundCenter = getTransformedCenter(background);
-    const labelCenter = getTransformedCenter(label);
-    const parent = label.parentNode;
-    const parentMatrix = parent instanceof SVGGraphicsElement ? parent.getCTM() : null;
-    const ownMatrix = label.transform.baseVal.consolidate()?.matrix;
-    if (!backgroundCenter || !labelCenter || !parentMatrix || !ownMatrix) continue;
+    const x = Number(background.getAttribute('x'));
+    const y = Number(background.getAttribute('y'));
+    const width = Number(background.getAttribute('width'));
+    const height = Number(background.getAttribute('height'));
+    if (![x, y, width, height].every(Number.isFinite) || width <= 0 || height <= 0) continue;
 
-    const rootDeltaX = backgroundCenter.centerX - labelCenter.centerX;
-    const rootDeltaY = backgroundCenter.centerY - labelCenter.centerY;
-    const determinant = parentMatrix.a * parentMatrix.d - parentMatrix.b * parentMatrix.c;
-    if (!Number.isFinite(determinant) || Math.abs(determinant) < Number.EPSILON) continue;
-
-    const parentDeltaX = (parentMatrix.d * rootDeltaX - parentMatrix.c * rootDeltaY) / determinant;
-    const parentDeltaY = (-parentMatrix.b * rootDeltaX + parentMatrix.a * rootDeltaY) / determinant;
-
-    if (
-      Math.abs(parentDeltaX) > GIT_BRANCH_LABEL_ALIGNMENT_TOLERANCE ||
-      Math.abs(parentDeltaY) > GIT_BRANCH_LABEL_ALIGNMENT_TOLERANCE
-    ) {
-      label.setAttribute(
-        'transform',
-        `matrix(${ownMatrix.a} ${ownMatrix.b} ${ownMatrix.c} ${ownMatrix.d} ${ownMatrix.e + parentDeltaX} ${ownMatrix.f + parentDeltaY})`,
-      );
+    let labelBounds: DOMRect;
+    try {
+      labelBounds = label.getBBox();
+    } catch {
+      continue;
     }
+
+    const centerX = x + width / 2;
+    const normalizedWidth = labelBounds.width + GIT_COMMIT_LABEL_INLINE_PADDING;
+    const normalizedHeight = labelBounds.height + GIT_COMMIT_LABEL_BLOCK_PADDING;
+    // Mermaid's original label starts below the commit node. Expanding around
+    // its center would grow the chip upward into the node, so keep that edge
+    // and add an explicit gap while allowing the larger chip to grow downward.
+    // Mermaid 原始标签位于提交节点下方。若以中心扩容，标签会向上侵入节点；
+    // 因此保留下边定位语义并增加明确间距，让更大的标签框向下扩展。
+    const normalizedY = y + GIT_COMMIT_LABEL_NODE_GAP;
+    const centerY = normalizedY + normalizedHeight / 2;
+
+    background.setAttribute('x', String(centerX - normalizedWidth / 2));
+    background.setAttribute('y', String(normalizedY));
+    background.setAttribute('width', String(normalizedWidth));
+    background.setAttribute('height', String(normalizedHeight));
+    label.setAttribute('x', String(centerX));
+    label.setAttribute('y', String(centerY));
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('dominant-baseline', 'central');
     label.dataset.mermaidTextAligned = 'true';
   }
+}
+
+function alignGitGraphLabels(svg: SVGSVGElement): void {
+  alignGitBranchLabels(svg);
+  alignGitCommitLabels(svg);
 }
 
 /**
@@ -111,7 +205,7 @@ export function computeExpandedViewBox(
   svg: SVGSVGElement,
   padding = DEFAULT_BBOX_PADDING,
 ): ExpandedViewBox | null {
-  alignGitBranchLabels(svg);
+  alignGitGraphLabels(svg);
   const vb = svg.viewBox.baseVal;
   const hasViewBox =
     [vb.x, vb.y, vb.width, vb.height].every(Number.isFinite) && vb.width > 0 && vb.height > 0;
@@ -174,7 +268,7 @@ export function computeExpandedViewBox(
  * responsive SVG), so the shared host always normalizes both axes to 100%.
  */
 export function applySvgFixes(svg: SVGSVGElement, viewBox: string): void {
-  alignGitBranchLabels(svg);
+  alignGitGraphLabels(svg);
   if (svg.getAttribute('viewBox') !== viewBox) {
     svg.setAttribute('viewBox', viewBox);
   }

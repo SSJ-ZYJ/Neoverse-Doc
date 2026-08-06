@@ -158,14 +158,16 @@
   padding: 1.25rem 1rem 3.5rem;
 }
 
-/* Gantt is a short, wide chart whose visual center makes the canvas' larger
-   toolbar clearance especially noticeable. Give it symmetric block padding so
-   the fitted timeline is geometrically centered while retaining the full
+/* Short, wide timeline diagrams make the canvas' larger toolbar clearance
+   especially noticeable. Give Gantt and Git Graph symmetric block padding so
+   their fitted timelines are geometrically centered while retaining the full
    bottom safe area for controls.
-   甘特图通常短而宽，画布为工具栏预留的较大底部空间会让偏移格外明显。
-   使用对称块轴内边距，使适配后的时间线几何居中，同时保留完整的底部控件
-   安全区。 */
-.mermaid-canvas[data-view="render"]:has(svg[aria-roledescription="gantt"]) {
+   短而宽的时间线图会让画布为工具栏预留的较大底部空间格外明显。甘特图与
+   Git Graph 使用对称块轴内边距，使适配后的时间线几何居中，同时保留完整
+   的底部控件安全区。 */
+.mermaid-canvas[data-view="render"]:has(
+  svg:is([aria-roledescription="gantt"], [aria-roledescription="gitGraph"])
+) {
   padding-block: 3.5rem;
 }
 
@@ -241,16 +243,6 @@
   inset-block-start: 50%;
   inset-inline-start: 50%;
   display: block;
-  /* Semantic Git Graph branch palette shared by normal and maximized hosts.
-     普通与放大态 SVG 宿主共用的 Git Graph 语义分支色板。 */
-  --mermaid-git-branch-0: var(--accent-primary);
-  --mermaid-git-branch-1: var(--accent-tertiary);
-  --mermaid-git-branch-2: var(--accent-secondary);
-  --mermaid-git-branch-3: color-mix(in srgb, var(--accent-primary) 52%, var(--accent-tertiary));
-  --mermaid-git-branch-4: color-mix(in srgb, var(--accent-secondary) 58%, var(--accent-tertiary));
-  --mermaid-git-branch-5: color-mix(in srgb, var(--accent-primary) 54%, var(--accent-secondary));
-  --mermaid-git-branch-6: color-mix(in srgb, var(--text-secondary) 35%, var(--accent-tertiary));
-  --mermaid-git-branch-7: color-mix(in srgb, var(--accent-primary) 34%, var(--accent-secondary));
   width: var(--svg-w, 0px);
   height: var(--svg-h, 0px);
   transform: translate(-50%, -50%) scale(var(--mermaid-scale, 1));
@@ -391,14 +383,10 @@
   opacity: 1 !important;
   box-sizing: content-box;
   padding: 0.125rem 0.3125rem;
-  border-radius: var(--radius-xs);
+  border-radius: var(--mermaid-label-radius);
   color: color-mix(in srgb, var(--text-primary) 88%, var(--accent-primary)) !important;
-  background: color-mix(
-    in srgb,
-    var(--surface-elevated) 88%,
-    var(--docs-canvas-surface)
-  ) !important;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 26%, var(--border-subtle));
+  background: var(--mermaid-label-surface) !important;
+  box-shadow: inset 0 0 0 1px var(--mermaid-label-stroke);
   transform: translate(-0.3125rem, -0.125rem);
 }
 
@@ -745,60 +733,80 @@
    节点 class。将其支持的八个分支槽映射到项目语义色，避免 Mermaid base
    主题的深色提亮把所有分支压成白色；提交与分支标签使用主题感知表面和文字，
    在深浅主题下均保持可读对比度。 */
-.mermaid-svg-host :is(.commit0, .commit-highlight0, .arrow0, .branch0, .label0, .branch-label0) {
+.mermaid-svg-host
+  svg[aria-roledescription="gitGraph"]
+  :is(.commit0, .commit-highlight0, .arrow0, .branch0, .label0, .branch-label0) {
   --mermaid-git-branch-color: var(--mermaid-git-branch-0);
 }
 
-.mermaid-svg-host :is(.commit1, .commit-highlight1, .arrow1, .branch1, .label1, .branch-label1) {
+.mermaid-svg-host
+  svg[aria-roledescription="gitGraph"]
+  :is(.commit1, .commit-highlight1, .arrow1, .branch1, .label1, .branch-label1) {
   --mermaid-git-branch-color: var(--mermaid-git-branch-1);
 }
 
-.mermaid-svg-host :is(.commit2, .commit-highlight2, .arrow2, .branch2, .label2, .branch-label2) {
+.mermaid-svg-host
+  svg[aria-roledescription="gitGraph"]
+  :is(.commit2, .commit-highlight2, .arrow2, .branch2, .label2, .branch-label2) {
   --mermaid-git-branch-color: var(--mermaid-git-branch-2);
 }
 
-.mermaid-svg-host :is(.commit3, .commit-highlight3, .arrow3, .branch3, .label3, .branch-label3) {
+.mermaid-svg-host
+  svg[aria-roledescription="gitGraph"]
+  :is(.commit3, .commit-highlight3, .arrow3, .branch3, .label3, .branch-label3) {
   --mermaid-git-branch-color: var(--mermaid-git-branch-3);
 }
 
-.mermaid-svg-host :is(.commit4, .commit-highlight4, .arrow4, .branch4, .label4, .branch-label4) {
+.mermaid-svg-host
+  svg[aria-roledescription="gitGraph"]
+  :is(.commit4, .commit-highlight4, .arrow4, .branch4, .label4, .branch-label4) {
   --mermaid-git-branch-color: var(--mermaid-git-branch-4);
 }
 
-.mermaid-svg-host :is(.commit5, .commit-highlight5, .arrow5, .branch5, .label5, .branch-label5) {
+.mermaid-svg-host
+  svg[aria-roledescription="gitGraph"]
+  :is(.commit5, .commit-highlight5, .arrow5, .branch5, .label5, .branch-label5) {
   --mermaid-git-branch-color: var(--mermaid-git-branch-5);
 }
 
-.mermaid-svg-host :is(.commit6, .commit-highlight6, .arrow6, .branch6, .label6, .branch-label6) {
+.mermaid-svg-host
+  svg[aria-roledescription="gitGraph"]
+  :is(.commit6, .commit-highlight6, .arrow6, .branch6, .label6, .branch-label6) {
   --mermaid-git-branch-color: var(--mermaid-git-branch-6);
 }
 
-.mermaid-svg-host :is(.commit7, .commit-highlight7, .arrow7, .branch7, .label7, .branch-label7) {
+.mermaid-svg-host
+  svg[aria-roledescription="gitGraph"]
+  :is(.commit7, .commit-highlight7, .arrow7, .branch7, .label7, .branch-label7) {
   --mermaid-git-branch-color: var(--mermaid-git-branch-7);
 }
 
-.mermaid-svg-host path.arrow {
+.mermaid-svg-host svg[aria-roledescription="gitGraph"] path.arrow {
   stroke: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
-  stroke-width: 1.6px !important;
+  stroke-width: var(--mermaid-git-track-width) !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.mermaid-svg-host .commit {
+.mermaid-svg-host svg[aria-roledescription="gitGraph"] .commit {
   fill: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
   stroke: color-mix(
     in srgb,
     var(--mermaid-git-branch-color, var(--accent-primary)) 78%,
     var(--edge-light)
   ) !important;
-  stroke-width: 1.25px !important;
+  stroke-width: var(--mermaid-git-node-stroke-width) !important;
 }
 
-.mermaid-svg-host :is(.commit-merge, .commit-reverse, .commit-highlight-inner) {
+.mermaid-svg-host
+  svg[aria-roledescription="gitGraph"]
+  :is(.commit-merge, .commit-reverse, .commit-highlight-inner) {
   fill: var(--docs-canvas-surface) !important;
   stroke: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
   stroke-width: 2px !important;
 }
 
-.mermaid-svg-host rect.branchLabelBkg {
+.mermaid-svg-host svg[aria-roledescription="gitGraph"] rect.branchLabelBkg {
   fill: color-mix(
     in srgb,
     var(--mermaid-git-branch-color, var(--accent-primary)) 30%,
@@ -809,43 +817,48 @@
     var(--mermaid-git-branch-color, var(--accent-primary)) 72%,
     var(--edge-light)
   ) !important;
-  stroke-width: 1px !important;
-  rx: 8px;
-  ry: 8px;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+  rx: var(--mermaid-shape-radius-small);
+  ry: var(--mermaid-shape-radius-small);
 }
 
-.mermaid-svg-host :is(.branchLabel text, .branchLabel tspan) {
+.mermaid-svg-host svg[aria-roledescription="gitGraph"] :is(.branchLabel text, .branchLabel tspan) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
+  font-weight: 750;
 }
 
-.mermaid-svg-host rect.commit-label-bkg {
-  fill: color-mix(in srgb, var(--surface-elevated) 86%, var(--accent-soft)) !important;
-  stroke: var(--border-subtle) !important;
-  stroke-width: 0.75px !important;
+.mermaid-svg-host svg[aria-roledescription="gitGraph"] rect.commit-label-bkg {
+  fill: var(--mermaid-label-surface) !important;
+  stroke: var(--mermaid-label-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
   opacity: 1 !important;
-  rx: 8px;
-  ry: 8px;
+  rx: var(--mermaid-label-radius);
+  ry: var(--mermaid-label-radius);
 }
 
-.mermaid-svg-host text.commit-label {
+.mermaid-svg-host svg[aria-roledescription="gitGraph"] text.commit-label {
   fill: var(--text-secondary) !important;
   color: var(--text-secondary) !important;
+  font-weight: 750;
+  text-anchor: middle;
+  dominant-baseline: central;
 }
 
-.mermaid-svg-host .tag-label-bkg {
-  fill: color-mix(in srgb, var(--surface-elevated) 84%, var(--accent-soft)) !important;
-  stroke: var(--border-interactive) !important;
-  rx: 8px;
-  ry: 8px;
+.mermaid-svg-host svg[aria-roledescription="gitGraph"] .tag-label-bkg {
+  fill: var(--mermaid-label-surface) !important;
+  stroke: var(--mermaid-label-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+  rx: var(--mermaid-shape-radius-small);
+  ry: var(--mermaid-shape-radius-small);
 }
 
-.mermaid-svg-host :is(.tag-label, .gitTitleText) {
+.mermaid-svg-host svg[aria-roledescription="gitGraph"] :is(.tag-label, .gitTitleText) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
 }
 
-.mermaid-svg-host .tag-hole {
+.mermaid-svg-host svg[aria-roledescription="gitGraph"] .tag-hole {
   fill: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
 }
 
@@ -933,11 +946,11 @@
   }
 }
 
-/* Code view: a scrollable container holding the editable textarea. It uses the
+/* Code view: a scrollable container holding the selectable, read-only source. It uses the
    same available width as the render canvas. Its natural content height is
    capped by the fitted rendered-diagram height; the fixed values remain only
    as a first-render fallback before measurement is available.
-   代码视图：可滚动容器承载可编辑文本域，使用与渲染画布相同的可用宽度。
+   代码视图：可滚动容器承载可选择、可复制的只读源码，使用与渲染画布相同的可用宽度。
    自然内容高度以适配后的渲染图高度为上限；固定值仅在测量完成前作为首帧兜底。 */
 .mermaid-code-view {
   position: relative;

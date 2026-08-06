@@ -47,24 +47,18 @@ const WHEEL_ZOOM_SETTLE_DELAY = 180;
 
 type MermaidCodeViewProps = {
   chart: string;
-  editorLabel: string;
+  codeViewLabel: string;
   renderedDiagramHeight: number;
-  onChartChange: (chart: string) => void;
 };
 
-// Measure the editable source at its current width so short Mermaid code uses
+// Measure the read-only source at its current width so short Mermaid code uses
 // only its natural height, while longer code scrolls within the rendered
 // diagram's height. Each mounted view owns its refs because maximize mode keeps
 // both an in-page placeholder and a portaled copy in the DOM.
-// 按当前宽度测量可编辑源码，使较短 Mermaid 代码仅占自身自然高度，较长代码
+// 按当前宽度测量只读源码，使较短 Mermaid 代码仅占自身自然高度，较长代码
 // 则在渲染图高度内滚动。每个已挂载视图独立持有 ref，因为放大模式会同时在
 // DOM 中保留文档内占位副本和 Portal 副本。
-function MermaidCodeView({
-  chart,
-  editorLabel,
-  renderedDiagramHeight,
-  onChartChange,
-}: MermaidCodeViewProps) {
+function MermaidCodeView({ chart, codeViewLabel, renderedDiagramHeight }: MermaidCodeViewProps) {
   const codeViewRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
@@ -134,22 +128,9 @@ function MermaidCodeView({
         ref={editorRef}
         className="mermaid-code-editor"
         value={chart}
-        onChange={(event) => onChartChange(event.target.value)}
+        readOnly
         spellCheck={false}
-        aria-label={editorLabel}
-        onKeyDown={(event) => {
-          if (event.key !== 'Tab') return;
-
-          event.preventDefault();
-          const target = event.currentTarget;
-          const start = target.selectionStart;
-          const end = target.selectionEnd;
-          const newValue = `${target.value.slice(0, start)}  ${target.value.slice(end)}`;
-          onChartChange(newValue);
-          requestAnimationFrame(() => {
-            target.selectionStart = target.selectionEnd = start + 2;
-          });
-        }}
+        aria-label={codeViewLabel}
       />
     </div>
   );
@@ -176,19 +157,12 @@ export function Mermaid({ chart }: { chart: string }) {
   // 需要转义。
   const filterId = `mermaid-shadow-${useId().replace(/:/g, '')}`;
 
-  // View mode toggle: 'render' (SVG) or 'code' (editable source). The
+  // View mode toggle: 'render' (SVG) or 'code' (read-only source). The
   // preference is persisted to localStorage via the hook so the last-used
   // view is restored on revisit.
-  // 视图模式切换：'render'（SVG）或 'code'（可编辑源码）。偏好通过
+  // 视图模式切换：'render'（SVG）或 'code'（只读源码）。偏好通过
   // Hook 持久化到 localStorage，重新访问时恢复上次使用的视图。
   const { viewMode, setViewMode, toggleViewMode } = useMermaidViewMode();
-  // Edited chart source — diverges from the original prop once the user
-  // types in the code view. Passed to the render hook so switching back to
-  // render view re-renders with the latest edits.
-  // 编辑后的图表源码 —— 用户在代码视图中输入后会与原始 prop 不同。
-  // 传递给渲染 Hook，使切回渲染视图时以最新编辑内容重新渲染。
-  const [editedChart, setEditedChart] = useState(chart);
-
   const { resolvedTheme } = useTheme();
   const { locale } = useI18n();
   // Locale from fumadocs i18n context is a string; resolve to a valid Locale
@@ -226,13 +200,12 @@ export function Mermaid({ chart }: { chart: string }) {
   }, [shouldRender]);
 
   // Only render the SVG when the diagram has approached the viewport AND the
-  // user is viewing the rendered diagram (not the code editor). This avoids
-  // spending CPU on rendering while the user is editing the source; switching
-  // back to render view re-enables rendering and picks up the latest edits.
-  // 仅当图表接近视口且用户处于渲染视图（而非代码编辑器）时才渲染 SVG。
-  // 避免用户编辑源码时浪费 CPU 渲染；切回渲染视图时重新启用渲染并采用最新编辑。
+  // user is viewing the rendered diagram. Code view can display the original
+  // source without keeping the heavyweight renderer active.
+  // 仅当图表接近视口且用户处于渲染视图时才渲染 SVG。代码视图可直接展示
+  // 原始源码，无需让较重的渲染器持续运行。
   const svgContent = useMermaidRender(
-    editedChart,
+    chart,
     resolvedTheme === 'dark' ? 'dark' : 'default',
     shouldRender && viewMode === 'render',
   );
@@ -499,15 +472,14 @@ export function Mermaid({ chart }: { chart: string }) {
               dangerouslySetInnerHTML={{ __html: svgContent }}
             />
           ) : includeRenderedSvg ? (
-            <pre className="mermaid-fallback">{editedChart}</pre>
+            <pre className="mermaid-fallback">{chart}</pre>
           ) : null}
         </div>
       ) : (
         <MermaidCodeView
-          chart={editedChart}
-          editorLabel={labels.mermaidCodeEditor}
+          chart={chart}
+          codeViewLabel={labels.mermaidSourceCode}
           renderedDiagramHeight={renderedDiagramHeight}
-          onChartChange={setEditedChart}
         />
       )}
     </div>

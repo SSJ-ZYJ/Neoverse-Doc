@@ -1179,8 +1179,16 @@ figure.shiki .line > span:empty::before {
 
 /* Direct code blocks use the same horizontal safe area as paragraphs while
    retaining their own rounded surface and internal scrolling.
-   直属代码块与正文共用横向安全区，同时保留自身圆角表面与内部滚动。 */
+   The block margin must be set explicitly here because the generic
+   `> *:not(summary)` rule above zeroes out margin on all direct children,
+   which would otherwise make the figure touch the summary border and the
+   details edge. Non-glass blocks get their margin from the rule above.
+   直属代码块与正文共用横向安全区，同时保留自身圆角表面与内部滚动。
+   此处必须显式设置 block margin：上面的通用 `> *:not(summary)` 规则会将
+   所有直接子元素的 margin 置零，否则代码块会紧贴 summary 边框与 details
+   边缘。非玻璃代码块的 margin 由上方规则提供。 */
 .markdown-details > figure.shiki {
+  margin-block: 0.5rem;
   margin-inline: var(--markdown-details-content-inline);
   padding: 0;
 }

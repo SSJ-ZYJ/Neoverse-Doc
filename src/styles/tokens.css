@@ -244,6 +244,28 @@
   --mermaid-shape-stroke-width: 1.25px;
   --mermaid-shape-radius: 12px;
   --mermaid-shape-radius-small: 6px;
+  --mermaid-label-surface: color-mix(
+    in srgb,
+    var(--surface-elevated) 88%,
+    var(--docs-canvas-surface)
+  );
+  --mermaid-label-stroke: color-mix(in srgb, var(--accent-primary) 26%, var(--border-subtle));
+  --mermaid-label-radius: var(--radius-xs);
+  /* Git Graph reuses the shared shape contract while exposing its eight
+     semantic branch slots as project tokens. Mermaid cycles these slots for
+     additional branches.
+     Git Graph 复用共享形状契约，并将八个语义分支槽暴露为项目 Token；
+     Mermaid 会为更多分支循环使用这些色槽。 */
+  --mermaid-git-branch-0: var(--accent-primary);
+  --mermaid-git-branch-1: var(--accent-tertiary);
+  --mermaid-git-branch-2: var(--accent-secondary);
+  --mermaid-git-branch-3: color-mix(in srgb, var(--accent-primary) 52%, var(--accent-tertiary));
+  --mermaid-git-branch-4: color-mix(in srgb, var(--accent-secondary) 58%, var(--accent-tertiary));
+  --mermaid-git-branch-5: color-mix(in srgb, var(--accent-primary) 54%, var(--accent-secondary));
+  --mermaid-git-branch-6: color-mix(in srgb, var(--text-secondary) 35%, var(--accent-tertiary));
+  --mermaid-git-branch-7: color-mix(in srgb, var(--accent-primary) 34%, var(--accent-secondary));
+  --mermaid-git-track-width: 2px;
+  --mermaid-git-node-stroke-width: 1.5px;
   /* Diagram-specific palettes keep class, Gantt, and pie charts aligned with
      the document canvas while preserving semantic contrast for each chart type.
      图表专属色板让类图、甘特图与饼图统一于文档画布，同时保留各图表类型

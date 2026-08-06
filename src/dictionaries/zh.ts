@@ -86,5 +86,5 @@ export const zh = {
   mermaidViewMode: 'Mermaid 视图模式',
   mermaidViewRender: '渲染视图',
   mermaidViewCode: '代码视图',
-  mermaidCodeEditor: 'Mermaid 代码编辑器',
+  mermaidSourceCode: 'Mermaid 源代码',
 } satisfies Dictionary;
