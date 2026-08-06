@@ -8,6 +8,7 @@ import { remarkCodeTitle } from './src/lib/remark-code-title';
 import { remarkCollapsibleAlert } from './src/lib/remark-collapsible-alert';
 import { remarkGithubAlert } from './src/lib/remark-github-alert';
 import { remarkLangAlias } from './src/lib/remark-lang-alias';
+import { remarkLongCodeBlock } from './src/lib/remark-long-code-block';
 import { transformerMetaTitle } from './src/lib/transformer-meta-title';
 
 // Shared person field schema for author and contributor frontmatter.
@@ -21,6 +22,9 @@ export const docs = defineDocs({
       author: personFieldSchema.optional(),
       contributor: personFieldSchema.optional(),
       contributors: personFieldSchema.optional(),
+      // Per-page publishing state for the soft draft gate.
+      // 控制单篇文档是否显示可临时解锁的草稿施工提示。
+      draft: z.boolean().default(false),
       // Per-page switch for the interactive TODO progress card.
       // 控制单篇文档是否显示可交互 TODO 进度卡片。
       todoProgress: z.boolean().default(false),
@@ -39,6 +43,7 @@ export default defineConfig({
       remarkMdxMermaid,
       remarkCodeTitle,
       remarkLangAlias,
+      remarkLongCodeBlock,
     ],
     rehypePlugins: (plugins) => [rehypeKatex, ...plugins],
     rehypeCodeOptions: {

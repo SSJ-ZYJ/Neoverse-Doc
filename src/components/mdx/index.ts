@@ -10,7 +10,7 @@ import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
 import { Tab, Tabs } from '@/components/mdx/code-tabs';
 import { CollapsibleDetailsRenderer } from '@/components/mdx/collapsible-details-renderer';
-import { CustomCodeBlock } from '@/components/mdx/custom-codeblock';
+import { CustomCodeBlock, LongCodeBlock } from '@/components/mdx/custom-codeblock';
 import {
   DocCard,
   DocGrid,
@@ -30,6 +30,7 @@ const projectMdxComponents = {
   li: MdxListItem,
   Mermaid,
   pre: CustomCodeBlock,
+  LongCodeBlock,
   Tabs,
   Tab,
   DocCard,

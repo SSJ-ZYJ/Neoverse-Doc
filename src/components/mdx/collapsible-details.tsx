@@ -287,8 +287,7 @@ function renderTypedNode(
     node,
     hasTypableContent
       ? {
-          'data-ai-visible-content':
-            firstChildChunkIndex < visibleChunks ? 'true' : 'false',
+          'data-ai-visible-content': firstChildChunkIndex < visibleChunks ? 'true' : 'false',
         }
       : undefined,
     children,

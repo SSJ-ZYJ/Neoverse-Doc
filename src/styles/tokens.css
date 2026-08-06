@@ -273,6 +273,27 @@
   --mermaid-class-surface: var(--mermaid-shape-surface);
   --mermaid-class-divider: var(--mermaid-shape-stroke-muted);
   --mermaid-class-relation: color-mix(in srgb, var(--accent-primary) 62%, var(--text-muted));
+  --mermaid-er-header: color-mix(in srgb, var(--accent-primary) 16%, var(--surface-elevated));
+  --mermaid-er-row: color-mix(in srgb, var(--surface-elevated) 78%, var(--docs-canvas-surface));
+  --mermaid-er-key: color-mix(in srgb, var(--accent-secondary) 72%, var(--text-primary));
+  --mermaid-mindmap-root: color-mix(in srgb, var(--accent-primary) 74%, var(--surface-elevated));
+  --mermaid-mindmap-branch-1: color-mix(
+    in srgb,
+    var(--accent-primary) 34%,
+    var(--surface-elevated)
+  );
+  --mermaid-mindmap-branch-2: color-mix(
+    in srgb,
+    var(--accent-secondary) 34%,
+    var(--surface-elevated)
+  );
+  --mermaid-mindmap-branch-3: color-mix(
+    in srgb,
+    var(--accent-tertiary) 32%,
+    var(--surface-elevated)
+  );
+  --mermaid-timeline-card: color-mix(in srgb, var(--surface-elevated) 82%, var(--accent-soft));
+  --mermaid-timeline-axis: color-mix(in srgb, var(--accent-primary) 58%, var(--text-muted));
   --mermaid-gantt-grid: color-mix(in srgb, var(--border-subtle) 70%, transparent);
   --mermaid-gantt-section: color-mix(in srgb, var(--accent-primary) 8%, var(--surface-subtle));
   --mermaid-gantt-section-alt: color-mix(
@@ -465,6 +486,31 @@
   --mermaid-class-surface: var(--mermaid-shape-surface);
   --mermaid-class-divider: var(--mermaid-shape-stroke-muted);
   --mermaid-class-relation: color-mix(in srgb, var(--text-secondary) 66%, var(--accent-primary));
+  --mermaid-er-header: color-mix(in srgb, var(--accent-primary) 18%, var(--docs-canvas-surface));
+  --mermaid-er-row: color-mix(in srgb, var(--text-secondary) 8%, var(--docs-canvas-surface));
+  --mermaid-er-key: color-mix(in srgb, var(--accent-secondary) 74%, var(--text-primary));
+  --mermaid-mindmap-root: color-mix(in srgb, var(--accent-primary) 48%, var(--docs-canvas-surface));
+  --mermaid-mindmap-branch-1: color-mix(
+    in srgb,
+    var(--accent-primary) 24%,
+    var(--docs-canvas-surface)
+  );
+  --mermaid-mindmap-branch-2: color-mix(
+    in srgb,
+    var(--accent-secondary) 24%,
+    var(--docs-canvas-surface)
+  );
+  --mermaid-mindmap-branch-3: color-mix(
+    in srgb,
+    var(--accent-tertiary) 22%,
+    var(--docs-canvas-surface)
+  );
+  --mermaid-timeline-card: color-mix(
+    in srgb,
+    var(--text-secondary) 10%,
+    var(--docs-canvas-surface)
+  );
+  --mermaid-timeline-axis: color-mix(in srgb, var(--accent-primary) 66%, var(--text-secondary));
   --mermaid-gantt-grid: color-mix(in srgb, var(--text-muted) 22%, transparent);
   --mermaid-gantt-section: color-mix(in srgb, var(--text-secondary) 7%, var(--surface-subtle));
   --mermaid-gantt-section-alt: color-mix(in srgb, var(--accent-primary) 7%, var(--surface-subtle));

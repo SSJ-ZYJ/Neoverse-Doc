@@ -46,6 +46,14 @@ export interface Dictionary {
   notFoundBack: string;
   notFoundHome: string;
   notFoundDocs: string;
+  // Draft document gate labels / 草稿文档门禁文案
+  draftBadge: string;
+  draftTitle: string;
+  draftDescription: string;
+  draftPrevious: string;
+  draftHome: string;
+  draftReveal: string;
+  draftUnlocked: string;
   home: {
     eyebrow: string;
     heroDescription: string;

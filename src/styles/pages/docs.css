@@ -615,6 +615,373 @@ html[data-nd-reading-restore] {
   max-inline-size: var(--docs-reading-width);
 }
 
+/* Draft pages retain their server-rendered article beneath a temporary,
+   explicitly unlockable construction gate. The gate clips the long document
+   before reveal so the notice remains immediately visible without a fixed layer.
+   草稿页在可临时解锁的施工门禁下保留服务端渲染正文；解锁前裁切长文档，
+   让提示始终出现在首屏附近，同时避免使用固定定位层。 */
+.docs-draft {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  inline-size: 100%;
+  min-block-size: clamp(26rem, 62svh, 38rem);
+  max-block-size: clamp(26rem, 62svh, 38rem);
+  border: 1px solid var(--docs-surface-border);
+  border-radius: var(--radius-md);
+  background: var(--docs-page-background);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 32%, transparent);
+}
+
+.docs-draft::before {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-image:
+    radial-gradient(circle at center, var(--docs-circuit-node) 0 1.5px, transparent 2px),
+    linear-gradient(var(--docs-circuit-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--docs-circuit-line) 1px, transparent 1px);
+  background-position: center;
+  background-size:
+    2.75rem 2.75rem,
+    2.75rem 2.75rem,
+    2.75rem 2.75rem;
+  content: "";
+  -webkit-mask-image: radial-gradient(ellipse 68% 62% at 50% 50%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(ellipse 68% 62% at 50% 50%, #000 0%, transparent 78%);
+  opacity: 0.72;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+.docs-draft::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(
+      circle at 28% 24%,
+      color-mix(in srgb, var(--accent-primary) 14%, transparent),
+      transparent 22rem
+    ),
+    radial-gradient(circle at 78% 76%, var(--ambient-mint), transparent 24rem),
+    var(--docs-draft-scrim);
+  content: "";
+  pointer-events: none;
+  transition: opacity var(--motion-standard) var(--motion-ease-standard);
+}
+
+.docs-draft__content {
+  display: flex;
+  min-block-size: 100%;
+  flex-direction: column;
+  gap: 1rem;
+  opacity: 0.24;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity var(--motion-standard) var(--motion-ease-standard);
+}
+
+.docs-draft__notice {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  z-index: 3;
+  display: grid;
+  inline-size: min(calc(100% - 2rem), 34rem);
+  grid-template:
+    "badge illustration" auto
+    "copy illustration" auto
+    "actions actions" auto / minmax(0, 1fr) auto;
+  column-gap: 1.5rem;
+  row-gap: 0.9rem;
+  overflow: hidden;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-md);
+  padding: clamp(1.4rem, 4vw, 2.15rem);
+  text-align: start;
+  background:
+    radial-gradient(circle at 0% 0%, var(--ambient-ice), transparent 18rem),
+    radial-gradient(circle at 100% 110%, var(--ambient-violet), transparent 21rem),
+    var(--glass-refraction-fill),
+    color-mix(in srgb, var(--surface-elevated) 88%, var(--docs-canvas-surface));
+  box-shadow: var(--shadow-edge), var(--shadow-popover);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  transform: translate(-50%, -50%);
+  transition:
+    visibility var(--motion-fast) var(--motion-ease-standard),
+    opacity var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-standard) var(--motion-ease-standard);
+}
+
+.docs-draft__notice::before {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: clamp(1.4rem, 4vw, 2.15rem);
+  inline-size: 5.5rem;
+  block-size: 2px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  box-shadow: 0 0 1.25rem color-mix(in srgb, var(--accent-primary) 46%, transparent);
+  content: "";
+}
+
+.docs-draft__badge {
+  grid-area: badge;
+  display: inline-flex;
+  min-block-size: 1.8rem;
+  align-items: center;
+  align-self: start;
+  justify-self: start;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 28%, var(--border-subtle));
+  border-radius: var(--radius-pill);
+  padding-inline: 0.72rem;
+  color: color-mix(in srgb, var(--accent-primary) 76%, var(--text-primary));
+  font-family: var(--font-mono);
+  font-weight: 650;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  background: color-mix(in srgb, var(--accent-primary) 9%, var(--surface-subtle));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 42%, transparent);
+}
+
+.docs-draft__illustration {
+  position: relative;
+  grid-area: illustration;
+  display: grid;
+  inline-size: clamp(5.75rem, 12vw, 7rem);
+  block-size: clamp(5rem, 10vw, 6rem);
+  place-items: center;
+  align-self: start;
+  margin-block-start: -0.35rem;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 26%, var(--glass-border-hairline));
+  border-radius: var(--radius-lg);
+  font-size: clamp(3rem, 7vw, 4rem);
+  line-height: 1;
+  background:
+    radial-gradient(circle at 22% 18%, var(--ambient-ice), transparent 68%),
+    radial-gradient(circle at 88% 88%, var(--ambient-violet), transparent 72%),
+    var(--glass-refraction-fill),
+    color-mix(in srgb, var(--surface-glass) 78%, var(--surface-elevated));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 54%, transparent),
+    var(--shadow-edge),
+    0 1.15rem 2.6rem -1.65rem color-mix(in srgb, var(--accent-primary) 58%, transparent);
+  transform: rotate(2.5deg);
+}
+
+.docs-draft__copy {
+  grid-area: copy;
+  display: grid;
+  max-inline-size: 30rem;
+  gap: 0.7rem;
+}
+
+.docs-draft__title,
+.docs-draft__description {
+  margin: 0;
+}
+
+.docs-draft__title {
+  color: var(--text-primary);
+  font-weight: 720;
+  font-size: clamp(1.55rem, 3.5vw, 2.05rem);
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.docs-draft__description {
+  color: var(--text-secondary);
+  font-size: clamp(0.9rem, 2vw, 0.98rem);
+  line-height: 1.72;
+  text-wrap: pretty;
+}
+
+.docs-draft__actions {
+  grid-area: actions;
+  display: grid;
+  inline-size: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.docs-draft__action {
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 3rem;
+  border-radius: var(--radius-sm);
+  font-weight: 680;
+  transition:
+    color var(--motion-fast) var(--motion-ease-standard),
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    background var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-fast) var(--motion-ease-standard);
+}
+
+.docs-draft__action--previous {
+  border-color: color-mix(in srgb, var(--accent-primary) 24%, var(--glass-border-hairline));
+  color: var(--text-primary);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--edge-light) 22%, transparent), transparent 52%),
+    color-mix(in srgb, var(--surface-elevated) 72%, var(--surface-glass));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 48%, transparent),
+    var(--shadow-edge);
+}
+
+.docs-draft__action--previous svg {
+  color: var(--accent-primary);
+}
+
+.docs-draft__action--reveal {
+  border-color: color-mix(in srgb, var(--text-primary) 68%, var(--accent-primary));
+  color: var(--background-primary);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--edge-light) 26%, transparent), transparent 46%),
+    linear-gradient(
+      120deg,
+      var(--text-primary),
+      color-mix(in srgb, var(--text-primary) 82%, var(--accent-primary))
+    );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 48%, transparent),
+    0 1rem 2.4rem -1.35rem color-mix(in srgb, var(--accent-primary) 88%, transparent);
+}
+
+@media (hover: hover) {
+  .docs-draft__action--previous:hover {
+    border-color: color-mix(in srgb, var(--accent-primary) 46%, var(--glass-border-hairline));
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--edge-light) 28%, transparent),
+        transparent 52%
+      ),
+      color-mix(in srgb, var(--accent-primary) 10%, var(--surface-elevated));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--edge-light) 58%, transparent),
+      var(--shadow-edge),
+      0 0.8rem 1.8rem -1.5rem color-mix(in srgb, var(--accent-primary) 64%, transparent);
+    transform: translateY(-2px);
+  }
+
+  .docs-draft__action--reveal:hover {
+    border-color: color-mix(in srgb, var(--text-primary) 58%, var(--accent-primary));
+    color: var(--background-primary);
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--edge-light) 34%, transparent),
+        transparent 46%
+      ),
+      linear-gradient(
+        120deg,
+        color-mix(in srgb, var(--text-primary) 92%, var(--accent-primary)),
+        color-mix(in srgb, var(--text-primary) 72%, var(--accent-primary))
+      );
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--edge-light) 58%, transparent),
+      0 1.15rem 2.7rem -1.25rem color-mix(in srgb, var(--accent-primary) 96%, transparent);
+    transform: translateY(-2px);
+  }
+}
+
+.docs-draft__action:active {
+  transform: scale(0.985);
+}
+
+/* TOC, pagination, and community stay mounted in their original Fumadocs
+   positions; the explicit gate state only controls their visibility. This
+   avoids rebuilding the full document tree when the reader reveals a draft.
+   TOC、分页与讨论区始终保留在 Fumadocs 原始位置；显式门禁状态只控制
+   可见性，避免读者解锁草稿时重建整棵文档树。 */
+#nd-docs-layout:has(.docs-draft[data-state="locked"]) :is(#nd-toc, [data-toc-popover]) {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#nd-page:has(.docs-draft[data-state="locked"]) .docs-draft__footer,
+#nd-docs-layout:has(.docs-draft[data-state="locked"]) > .docs-community-module {
+  display: none;
+}
+
+.docs-draft[data-state="unlocked"] {
+  overflow: visible;
+  min-block-size: 0;
+  max-block-size: none;
+  border-width: 0;
+  background: transparent;
+}
+
+.docs-draft[data-state="unlocked"]::before,
+.docs-draft[data-state="unlocked"]::after {
+  opacity: 0;
+}
+
+.docs-draft[data-state="unlocked"] .docs-draft__content {
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
+}
+
+.docs-draft[data-state="unlocked"] .docs-draft__notice {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -48%) scale(0.985);
+}
+
+@media (max-width: 640px) {
+  .docs-draft {
+    min-block-size: clamp(25rem, 68svh, 32rem);
+    max-block-size: clamp(25rem, 68svh, 32rem);
+  }
+
+  .docs-draft__notice {
+    inline-size: calc(100% - 1rem);
+    grid-template:
+      "badge illustration" auto
+      "copy copy" auto
+      "actions actions" auto / minmax(0, 1fr) auto;
+    column-gap: 1rem;
+    row-gap: 1.1rem;
+    padding: 1.25rem;
+  }
+
+  .docs-draft__illustration {
+    inline-size: 4.75rem;
+    block-size: 4.25rem;
+    margin-block-start: -0.2rem;
+    font-size: 2.65rem;
+  }
+
+  .docs-draft__actions {
+    inline-size: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .docs-draft__action {
+    min-block-size: 2.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-draft::before,
+  .docs-draft::after,
+  .docs-draft__content,
+  .docs-draft__notice,
+  .docs-draft__action {
+    transition: none;
+  }
+
+  .docs-draft__action:hover,
+  .docs-draft__action:active {
+    transform: none;
+  }
+}
+
 /* Skip initial layout and paint for expensive off-screen MDX blocks while
    keeping their DOM, accessibility tree, find-in-page, and anchor behavior.
    Restricting containment to complex direct children avoids fragmenting every
@@ -689,7 +1056,7 @@ html[data-nd-reading-restore] {
   letter-spacing: -0.02em;
 }
 
-#nd-page h2 {
+#nd-page h2:not(.docs-draft__title) {
   margin-block-start: 3.5rem;
 }
 
@@ -728,7 +1095,7 @@ html[data-nd-reading-restore] {
 /* Document controls use the compact glass tier; the larger surrounding bars
    and cards use medium/large radii, preserving a deliberate radius hierarchy.
    文档控件使用紧凑玻璃层级，外围工具条与卡片使用中 / 大圆角，形成明确层次。 */
-#nd-page button:not(.mermaid-toolbar__btn, [role="tab"]) {
+#nd-page button:not(.mermaid-toolbar__btn, [role="tab"], .docs-draft__action) {
   border: 1px solid var(--glass-border-hairline);
   border-radius: var(--radius-xs);
   background: var(--glass-refraction-fill), var(--glass-control-surface);

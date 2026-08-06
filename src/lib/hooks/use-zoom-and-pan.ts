@@ -5,12 +5,7 @@
 
 'use client';
 
-import {
-  type PointerEvent as ReactPointerEvent,
-  useCallback,
-  useRef,
-  useState,
-} from 'react';
+import { type PointerEvent as ReactPointerEvent, useCallback, useRef, useState } from 'react';
 
 export const MIN_SCALE = 0.25;
 export const MAX_SCALE = 4;

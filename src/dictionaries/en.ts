@@ -41,6 +41,15 @@ export const en = {
   notFoundBack: 'Go Back',
   notFoundHome: 'Back to Home',
   notFoundDocs: 'Enter Docs',
+  // Draft document gate labels / 草稿文档门禁文案
+  draftBadge: 'Under construction',
+  draftTitle: 'This document is still being written',
+  draftDescription:
+    'We are still writing, testing, and smoothing out the rough edges. Head back to the previous page, or peek behind the barrier to see how far the work has come.',
+  draftPrevious: 'Read the previous page',
+  draftHome: 'Back to the knowledge map',
+  draftReveal: 'Just one quick peek 👀',
+  draftUnlocked: 'Draft content unlocked.',
   // Homepage portal copy / 首页内容门户文案
   home: {
     eyebrow: 'Open knowledge network · Always evolving',

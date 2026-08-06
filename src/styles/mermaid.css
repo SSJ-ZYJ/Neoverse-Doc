@@ -531,6 +531,70 @@
   ry: var(--mermaid-shape-radius);
 }
 
+/* ER diagrams have their own entity table geometry rather than generic Mermaid
+   nodes. Keep the header, attribute rows, keys, relationship labels, and
+   cardinality markers in one compact editorial system.
+   ER 图使用实体表格专属几何，而非通用 Mermaid 节点。统一实体表头、属性行、
+   主键标识、关系标签与数量约束标记，形成紧凑的编辑式视觉系统。 */
+.mermaid-svg-host svg[aria-roledescription="er"] .entityBox {
+  fill: var(--mermaid-er-header) !important;
+  stroke: var(--mermaid-shape-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="er"] .entityLabel {
+  fill: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+  font-weight: 750 !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="er"] :is(.attributeBoxOdd, .attributeBoxEven) {
+  fill: var(--mermaid-er-row) !important;
+  stroke: var(--mermaid-shape-stroke-muted) !important;
+  stroke-width: 0.85px !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="er"] .attributeBoxOdd {
+  fill: color-mix(in srgb, var(--mermaid-er-row) 86%, var(--accent-primary)) !important;
+}
+
+.mermaid-svg-host
+  svg[aria-roledescription="er"]
+  :is(.attributeType, .attributeName, .attributeKey) {
+  fill: var(--text-secondary) !important;
+  color: var(--text-secondary) !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="er"] .attributeKey {
+  fill: var(--mermaid-er-key) !important;
+  color: var(--mermaid-er-key) !important;
+  font-weight: 750 !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="er"] :is(.relationshipLine, .edgePath path, .marker) {
+  stroke: var(--accent-primary) !important;
+  stroke-width: 1.55px !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="er"] .relationshipLabelBox {
+  fill: var(--mermaid-label-surface) !important;
+  stroke: var(--mermaid-label-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+  opacity: 1 !important;
+  rx: var(--mermaid-label-radius);
+  ry: var(--mermaid-label-radius);
+}
+
+.mermaid-svg-host svg[aria-roledescription="er"] :is(.edgeLabel, .relationshipLabel) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 650 !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="er"] .edge-pattern-dashed {
+  stroke-dasharray: 6 5 !important;
+}
+
 .mermaid-svg-host
   svg[aria-roledescription="class"]
   :is(.label-group .nodeLabel, .classTitle, .classTitleText) {
@@ -860,6 +924,105 @@
 
 .mermaid-svg-host svg[aria-roledescription="gitGraph"] .tag-hole {
   fill: var(--mermaid-git-branch-color, var(--accent-primary)) !important;
+}
+
+/* Mindmaps retain their semantic branch colors but replace Mermaid's saturated
+   fills and very thick depth strokes with the project's quiet three-accent
+   hierarchy. The root remains the strongest visual anchor.
+   思维导图保留分支语义色，同时以项目克制的三强调色层级替换 Mermaid 高饱和
+   填充与过粗层级连线；根节点继续作为最强视觉锚点。 */
+.mermaid-svg-host svg:has(.mindmap-node) .mindmap-node :is(rect, path, circle, polygon) {
+  fill: var(--mermaid-mindmap-branch-1) !important;
+  stroke: var(--mermaid-shape-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+}
+
+.mermaid-svg-host
+  svg:has(.mindmap-node)
+  .mindmap-node.section-root
+  :is(rect, path, circle, polygon) {
+  fill: var(--mermaid-mindmap-root) !important;
+  stroke: color-mix(in srgb, var(--accent-primary) 76%, var(--edge-light)) !important;
+  stroke-width: 1.75px !important;
+}
+
+.mermaid-svg-host
+  svg:has(.mindmap-node)
+  :is(.mindmap-node.section-1, .mindmap-node.section-4, .mindmap-node.section-7)
+  :is(rect, path, circle, polygon) {
+  fill: var(--mermaid-mindmap-branch-2) !important;
+  stroke: color-mix(in srgb, var(--accent-secondary) 64%, var(--edge-light)) !important;
+}
+
+.mermaid-svg-host
+  svg:has(.mindmap-node)
+  :is(.mindmap-node.section-2, .mindmap-node.section-5, .mindmap-node.section-8)
+  :is(rect, path, circle, polygon) {
+  fill: var(--mermaid-mindmap-branch-3) !important;
+  stroke: color-mix(in srgb, var(--accent-tertiary) 58%, var(--edge-light)) !important;
+}
+
+.mermaid-svg-host svg:has(.mindmap-node) :is(.mindmap-node text, .mindmap-node span) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 650 !important;
+}
+
+.mermaid-svg-host svg:has(.mindmap-node) .section-root :is(text, span) {
+  font-weight: 780 !important;
+}
+
+.mermaid-svg-host svg:has(.mindmap-node) .edge {
+  fill: none !important;
+  stroke-width: 2px !important;
+  opacity: 0.72;
+}
+
+.mermaid-svg-host svg:has(.mindmap-node) :is(.section-edge-0, .section-edge-3, .section-edge-6) {
+  stroke: var(--accent-primary) !important;
+}
+
+.mermaid-svg-host svg:has(.mindmap-node) :is(.section-edge-1, .section-edge-4, .section-edge-7) {
+  stroke: var(--accent-secondary) !important;
+}
+
+.mermaid-svg-host svg:has(.mindmap-node) :is(.section-edge-2, .section-edge-5, .section-edge-8) {
+  stroke: var(--accent-tertiary) !important;
+}
+
+/* Timeline nodes use a shared glass-card surface, a restrained accent axis,
+   and clear period/event typography. Renderer-generated section colors remain
+   only as small line accents rather than large saturated fields.
+   时间轴节点使用统一玻璃卡片、克制强调轴线与清晰的时期/事件文字层级；
+   渲染器生成的分组颜色仅作为小面积线条强调，不再形成大块高饱和色面。 */
+.mermaid-svg-host svg:has(.timeline-node) .timeline-node .node-bkg {
+  fill: var(--mermaid-timeline-card) !important;
+  stroke: var(--mermaid-shape-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+}
+
+.mermaid-svg-host svg:has(.timeline-node) .timeline-node text {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 650 !important;
+}
+
+.mermaid-svg-host svg:has(.timeline-node) :is(.timeline-node line, .task-line, .timeline-axis) {
+  stroke: var(--mermaid-timeline-axis) !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid-svg-host svg:has(.timeline-node) :is(.timeline-title, .titleText, .section-title) {
+  fill: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+  font-weight: 750 !important;
+}
+
+.mermaid-svg-host
+  svg:has(.timeline-node)
+  :is(.eventWrapper, .eventWrapper text, .eventWrapper tspan) {
+  fill: var(--text-secondary) !important;
+  color: var(--text-secondary) !important;
 }
 
 /* Mermaid measures HTML labels before SVG insertion. Metric-sensitive styles

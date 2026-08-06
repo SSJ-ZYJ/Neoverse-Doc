@@ -32,6 +32,12 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  // Static hosting owns production compression. Disabling Next's development
+  // response compressor prevents large MDX payloads from accumulating drain
+  // listeners on a shared Gzip stream.
+  // 生产压缩由静态托管层负责；开发环境关闭 Next 响应压缩，避免大型 MDX
+  // 载荷在共享 Gzip 流上累积 drain 监听器。
+  compress: process.env.NODE_ENV === 'production',
   reactStrictMode: true,
 };
 

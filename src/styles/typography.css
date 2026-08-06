@@ -547,6 +547,20 @@ pre code {
   background: transparent !important;
 }
 
+/* Extremely long snippets intentionally skip token-level Shiki markup. A
+   single preformatted text node keeps the code readable and copyable while
+   avoiding a multi-megabyte React payload.
+   超长代码有意跳过 Token 级 Shiki 标记；单个预格式化文本节点既保留阅读与
+   复制能力，也避免生成数 MB 的 React 载荷。 */
+.docs-long-codeblock__content {
+  display: block;
+  min-inline-size: max-content;
+  padding-inline: 1rem;
+  color: var(--text-primary);
+  line-height: 1.65;
+  white-space: pre;
+}
+
 /* Preserve empty line height: the `*:flex *:flex-col` layout on <pre> turns each Shiki `.line`
    into a flex item. Shiki renders empty lines as `<span class="line"><span></span></span>`,
    so both the .line flex item and its inner <span> have zero content height — blank lines vanish.
@@ -638,7 +652,7 @@ figure.shiki .line > span:empty::before {
    粒子控制器会临时在正文后追加自有图层；该动态图层存在时，仍清除其前方
    末尾内容的外边距。 */
 :where(#nd-page blockquote, #nd-page .markdown-alert)
-  > :is(:last-child, :has(+ .immersive-particle-layer)) {
+> :is(:last-child, :has(+ .immersive-particle-layer)) {
   margin-block-end: 0;
 }
 

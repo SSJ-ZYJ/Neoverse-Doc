@@ -40,6 +40,15 @@ export const zh = {
   notFoundBack: '返回上一页',
   notFoundHome: '返回首页',
   notFoundDocs: '进入文档',
+  // Draft document gate labels / 草稿文档门禁文案
+  draftBadge: '前方施工',
+  draftTitle: '这篇文档还在撰写中',
+  draftDescription:
+    '内容正在加紧编写和反复打磨。你可以先去上一篇，也可以悄悄掀开围挡，看看现在写到哪了——半成品还请“轻拿轻放”。',
+  draftPrevious: '先看上一篇',
+  draftHome: '返回知识地图',
+  draftReveal: '我就偷看一眼👀',
+  draftUnlocked: '草稿正文已展开。',
   // Homepage portal copy / 首页内容门户文案
   home: {
     eyebrow: '开放知识网络 · 持续生长',

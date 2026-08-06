@@ -13,6 +13,9 @@ const GIT_BRANCH_LABEL_INLINE_OFFSET = 16;
 const GIT_COMMIT_LABEL_INLINE_PADDING = 10;
 const GIT_COMMIT_LABEL_BLOCK_PADDING = 4;
 const GIT_COMMIT_LABEL_NODE_GAP = 6;
+const GIT_COMMIT_MIN_INLINE_GAP = 12;
+const GIT_COMMIT_NODE_HALF_EXTENT = 10;
+const GIT_COMMIT_POSITION_TOLERANCE = 0.5;
 
 interface SvgPoint {
   x: number;
@@ -190,9 +193,288 @@ export function alignGitCommitLabels(svg: SVGSVGElement): void {
   }
 }
 
+interface GitCommitLayoutItem {
+  center: number;
+  labelHalfWidth: number;
+}
+
+function readSvgNumber(element: Element, attribute: string): number | null {
+  const value = Number(element.getAttribute(attribute));
+  return Number.isFinite(value) ? value : null;
+}
+
+function mapGitInlineCoordinate(
+  value: number,
+  originalCenters: number[],
+  adjustedCenters: number[],
+): number {
+  if (originalCenters.length === 0 || originalCenters.length !== adjustedCenters.length)
+    return value;
+  if (originalCenters.length === 1) return value + adjustedCenters[0] - originalCenters[0];
+  if (value <= originalCenters[0]) return value + adjustedCenters[0] - originalCenters[0];
+  if (value >= originalCenters[originalCenters.length - 1]) {
+    const lastIndex = originalCenters.length - 1;
+    return value + adjustedCenters[lastIndex] - originalCenters[lastIndex];
+  }
+
+  let segment = 0;
+  while (segment < originalCenters.length - 2 && value > originalCenters[segment + 1]) {
+    segment += 1;
+  }
+
+  const sourceStart = originalCenters[segment];
+  const sourceEnd = originalCenters[segment + 1];
+  const targetStart = adjustedCenters[segment];
+  const targetEnd = adjustedCenters[segment + 1];
+  const sourceSpan = sourceEnd - sourceStart;
+  if (Math.abs(sourceSpan) < Number.EPSILON) return targetStart;
+
+  return targetStart + ((value - sourceStart) / sourceSpan) * (targetEnd - targetStart);
+}
+
+function transformGitPathInlineCoordinates(
+  path: SVGPathElement,
+  originalCenters: number[],
+  adjustedCenters: number[],
+  inlineAxis: 'x' | 'y',
+): void {
+  const pathData = path.getAttribute('d');
+  if (!pathData) return;
+
+  const tokens = pathData.match(/[a-zA-Z]|-?\d*\.?\d+(?:e[-+]?\d+)?/gi);
+  if (!tokens) return;
+
+  const axisIndex = inlineAxis === 'x' ? 0 : 1;
+  const adjustedTokens = [...tokens];
+  let cursor = 0;
+  let command = '';
+  const coordinateChunkSize: Record<string, number> = {
+    M: 2,
+    L: 2,
+    T: 2,
+    H: 1,
+    V: 1,
+    C: 6,
+    S: 4,
+    Q: 4,
+    A: 7,
+  };
+
+  while (cursor < tokens.length) {
+    if (/^[a-zA-Z]$/.test(tokens[cursor])) {
+      command = tokens[cursor];
+      cursor += 1;
+      if (command === 'Z' || command === 'z') continue;
+    }
+    if (!command || /[a-z]/.test(command)) return;
+
+    const upperCommand = command;
+    const chunkSize = coordinateChunkSize[upperCommand];
+    if (!chunkSize) return;
+    const remaining = tokens.length - cursor;
+    if (
+      remaining < chunkSize ||
+      tokens.slice(cursor, cursor + chunkSize).some((token) => /^[a-zA-Z]$/.test(token))
+    ) {
+      return;
+    }
+
+    const chunkStart = cursor;
+    const coordinateOffsets =
+      upperCommand === 'A'
+        ? [axisIndex === 0 ? 5 : 6]
+        : upperCommand === 'H'
+          ? inlineAxis === 'x'
+            ? [0]
+            : []
+          : upperCommand === 'V'
+            ? inlineAxis === 'y'
+              ? [0]
+              : []
+            : Array.from({ length: chunkSize / 2 }, (_, index) => index * 2 + axisIndex);
+    for (const offset of coordinateOffsets) {
+      const tokenIndex = chunkStart + offset;
+      const value = Number(tokens[tokenIndex]);
+      if (!Number.isFinite(value)) continue;
+      adjustedTokens[tokenIndex] = String(
+        mapGitInlineCoordinate(value, originalCenters, adjustedCenters),
+      );
+    }
+    cursor += chunkSize;
+    if (upperCommand === 'M') command = 'L';
+  }
+
+  path.setAttribute('d', adjustedTokens.join(' '));
+}
+
+/**
+ * Mermaid 11 advances horizontal GitGraph commits by a fixed 50px step even
+ * when an unrotated commit label is wider than that step. Use the browser's
+ * final glyph metrics to preserve 50px as the minimum distance and enlarge each
+ * adjacent interval only when the two labels or commit nodes need more room.
+ * Every coordinate-bearing GitGraph layer is remapped through the same
+ * piecewise-linear axis, keeping branch tracks and merge arrows connected.
+ *
+ * Mermaid 11 对横向 GitGraph 提交固定使用 50px 步长，即使未旋转标签远宽于
+ * 该步长也不会扩容。这里使用浏览器最终字形度量，以 50px 为最小距离，仅在
+ * 相邻标签或提交节点需要更多空间时扩大区间；所有含坐标的 GitGraph 图层通过
+ * 同一分段线性坐标轴重映射，确保分支轨道和合并箭头仍与节点准确连接。
+ */
+export function spaceGitGraphCommits(svg: SVGSVGElement): void {
+  if (
+    svg.getAttribute('aria-roledescription') !== 'gitGraph' ||
+    svg.dataset.mermaidCommitsSpaced === 'true'
+  ) {
+    return;
+  }
+
+  const bullets = Array.from(svg.querySelectorAll<SVGGraphicsElement>('.commit-bullets .commit'));
+  if (bullets.length < 2) {
+    svg.dataset.mermaidCommitsSpaced = 'true';
+    return;
+  }
+
+  const firstBranch = svg.querySelector<SVGLineElement>('line.branch');
+  const firstBranchX1 = firstBranch ? readSvgNumber(firstBranch, 'x1') : null;
+  const firstBranchX2 = firstBranch ? readSvgNumber(firstBranch, 'x2') : null;
+  const inlineAxis: 'x' | 'y' =
+    firstBranchX1 !== null &&
+    firstBranchX2 !== null &&
+    Math.abs(firstBranchX1 - firstBranchX2) < 0.01
+      ? 'y'
+      : 'x';
+  const labels = Array.from(svg.querySelectorAll<SVGTextElement>('text.commit-label'));
+  const labelWidthsByCenter = new Map<number, number>();
+  for (const label of labels) {
+    const center = readSvgNumber(label, inlineAxis);
+    if (center === null) continue;
+    try {
+      const bounds = label.getBBox();
+      const labelExtent = inlineAxis === 'x' ? bounds.width : bounds.height;
+      labelWidthsByCenter.set(center, labelExtent + GIT_COMMIT_LABEL_INLINE_PADDING);
+    } catch {
+      // Keep the commit-node extent as a safe fallback when text is not measurable.
+    }
+  }
+
+  const itemsByCenter = new Map<number, GitCommitLayoutItem>();
+  for (const bullet of bullets) {
+    let bounds: DOMRect;
+    try {
+      bounds = bullet.getBBox();
+    } catch {
+      continue;
+    }
+    const center = inlineAxis === 'x' ? bounds.x + bounds.width / 2 : bounds.y + bounds.height / 2;
+    const matchedLabelCenter = Array.from(labelWidthsByCenter.keys()).find(
+      (labelCenter) => Math.abs(labelCenter - center) <= GIT_COMMIT_POSITION_TOLERANCE,
+    );
+    const labelWidth =
+      matchedLabelCenter === undefined ? 0 : (labelWidthsByCenter.get(matchedLabelCenter) ?? 0);
+    const bulletExtent = inlineAxis === 'x' ? bounds.width : bounds.height;
+    const labelHalfWidth = Math.max(labelWidth / 2, bulletExtent / 2, GIT_COMMIT_NODE_HALF_EXTENT);
+    itemsByCenter.set(center, {
+      center,
+      labelHalfWidth: Math.max(itemsByCenter.get(center)?.labelHalfWidth ?? 0, labelHalfWidth),
+    });
+  }
+
+  const items = Array.from(itemsByCenter.values()).sort(
+    (left, right) => left.center - right.center,
+  );
+  if (items.length < 2) {
+    svg.dataset.mermaidCommitsSpaced = 'true';
+    return;
+  }
+
+  const originalCenters = items.map((item) => item.center);
+  const adjustedCenters = [originalCenters[0]];
+  for (let index = 1; index < items.length; index += 1) {
+    const previous = items[index - 1];
+    const current = items[index];
+    const originalStep = current.center - previous.center;
+    const contentStep =
+      previous.labelHalfWidth + current.labelHalfWidth + GIT_COMMIT_MIN_INLINE_GAP;
+    adjustedCenters.push(adjustedCenters[index - 1] + Math.max(originalStep, contentStep));
+  }
+
+  if (adjustedCenters.every((center, index) => Math.abs(center - originalCenters[index]) < 0.01)) {
+    svg.dataset.mermaidCommitsSpaced = 'true';
+    return;
+  }
+
+  const remapAttribute = (element: Element, attribute: string) => {
+    const value = readSvgNumber(element, attribute);
+    if (value === null) return;
+    element.setAttribute(
+      attribute,
+      String(mapGitInlineCoordinate(value, originalCenters, adjustedCenters)),
+    );
+  };
+  const getNearestCenterIndex = (value: number) => {
+    let nearestIndex = 0;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    for (let index = 0; index < originalCenters.length; index += 1) {
+      const distance = Math.abs(originalCenters[index] - value);
+      if (distance >= nearestDistance) continue;
+      nearestIndex = index;
+      nearestDistance = distance;
+    }
+    return nearestIndex;
+  };
+  const translateCoordinate = (element: Element, attribute: string, anchor: number) => {
+    const value = readSvgNumber(element, attribute);
+    if (value === null) return;
+    const index = getNearestCenterIndex(anchor);
+    element.setAttribute(
+      attribute,
+      String(value + adjustedCenters[index] - originalCenters[index]),
+    );
+  };
+  const translateGraphicsElement = (element: SVGGraphicsElement, anchor: number) => {
+    const index = getNearestCenterIndex(anchor);
+    const delta = adjustedCenters[index] - originalCenters[index];
+    if (Math.abs(delta) < 0.01) return;
+    const translation = inlineAxis === 'x' ? `translate(${delta} 0)` : `translate(0 ${delta})`;
+    const existingTransform = element.getAttribute('transform');
+    element.setAttribute(
+      'transform',
+      `${translation}${existingTransform ? ` ${existingTransform}` : ''}`,
+    );
+  };
+
+  for (const line of svg.querySelectorAll<SVGLineElement>('line.branch')) {
+    remapAttribute(line, inlineAxis === 'x' ? 'x1' : 'y1');
+    remapAttribute(line, inlineAxis === 'x' ? 'x2' : 'y2');
+  }
+  for (const bullet of bullets) {
+    const bounds = bullet.getBBox();
+    const anchor = inlineAxis === 'x' ? bounds.x + bounds.width / 2 : bounds.y + bounds.height / 2;
+    translateGraphicsElement(bullet, anchor);
+  }
+  for (const element of svg.querySelectorAll<SVGElement>(
+    'text.commit-label, rect.commit-label-bkg, text.tag-label, circle.tag-hole',
+  )) {
+    const attribute = inlineAxis === 'x' ? 'x' : 'y';
+    const anchor = readSvgNumber(element, attribute);
+    if (anchor !== null) translateCoordinate(element, attribute, anchor);
+  }
+  for (const polygon of svg.querySelectorAll<SVGPolygonElement>('polygon.tag-label-bkg')) {
+    const bounds = polygon.getBBox();
+    const anchor = inlineAxis === 'x' ? bounds.x + bounds.width / 2 : bounds.y + bounds.height / 2;
+    translateGraphicsElement(polygon, anchor);
+  }
+  for (const arrow of svg.querySelectorAll<SVGPathElement>('.commit-arrows path.arrow')) {
+    transformGitPathInlineCoordinates(arrow, originalCenters, adjustedCenters, inlineAxis);
+  }
+
+  svg.dataset.mermaidCommitsSpaced = 'true';
+}
+
 function alignGitGraphLabels(svg: SVGSVGElement): void {
   alignGitBranchLabels(svg);
   alignGitCommitLabels(svg);
+  spaceGitGraphCommits(svg);
 }
 
 /**

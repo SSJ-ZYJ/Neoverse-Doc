@@ -34,6 +34,22 @@ interface CodeBlockPreProps extends ComponentProps<'pre'> {
   'data-line-numbers-start'?: string;
 }
 
+interface LongCodeBlockProps {
+  code: string;
+  lang?: string;
+  title?: string;
+}
+
+export function LongCodeBlock({ code, lang, title }: LongCodeBlockProps) {
+  return (
+    <CustomCodeBlock className="docs-long-codeblock" lang={lang} title={title}>
+      <code className={lang ? `language-${lang}` : undefined}>
+        <span className="docs-long-codeblock__content">{code}</span>
+      </code>
+    </CustomCodeBlock>
+  );
+}
+
 export function CustomCodeBlock(props: CodeBlockPreProps) {
   const { children, title, icon, lang, className, ...rest } = props;
 

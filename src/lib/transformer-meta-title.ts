@@ -82,8 +82,7 @@ export function transformerMetaTitle() {
             const shortcuts = iconConfig.shortcuts;
             const extend = iconConfig.extend;
             if (shortcuts && extend) {
-              const iconName =
-                originalLang in shortcuts ? shortcuts[originalLang] : originalLang;
+              const iconName = originalLang in shortcuts ? shortcuts[originalLang] : originalLang;
               const icon = extend[iconName];
               if (icon) {
                 pre.properties.icon = `<svg viewBox="${icon.viewBox}"><path d="${icon.d}" fill="${icon.fill}" /></svg>`;
