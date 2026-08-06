@@ -1,0 +1,450 @@
+---
+title: 1.9 LaTeX
+description: 认识 LaTeX 排版系统，掌握数学公式、文档结构、交叉引用与基本编译流程
+todoProgress: true
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] 本节 AI 摘要
+> 本节介绍 LaTeX 的定位与基本工作流，讲解行内公式、块级公式、上下标、分式、根式、求和、积分、矩阵、分段函数、对齐公式，以及完整文档中的章节、列表、图片、表格、标签与交叉引用。学完后，既能在 Markdown 中编写数学公式，也能读懂并修改一份基础的 `.tex` 文档。
+
+> [!INFO]
+> LaTeX 使用纯文本命令描述文档结构与数学公式，再由排版引擎生成 PDF。它适合课程报告、实验文档、论文和数学推导，也便于使用 Git 管理源码。本节重点是读懂和编写常用语法，而不是一次学完所有宏包与排版细节。
+
+## 一、TeX、LaTeX 与数学公式
+
+TeX 是 Donald Knuth 创建的排版系统，LaTeX 则在 TeX 之上提供了一套更易使用的文档命令和宏包生态。日常所说的“用 LaTeX 写公式或论文”，通常是指编写 LaTeX 源文件，再交给某种 TeX 引擎处理。
+
+| 名称 | 作用 | 常见形式 |
+| :--- | :--- | :--- |
+| TeX | 底层排版系统与语言 | TeX 引擎、TeX 命令 |
+| LaTeX | 建立在 TeX 之上的文档格式与宏集合 | `.tex` 源文件、文档类、宏包 |
+| pdfLaTeX | 直接生成 PDF 的传统编译引擎 | 适合传统拉丁文字工作流 |
+| XeLaTeX | 支持 Unicode 和系统字体的现代引擎 | 常用于中英文混排 |
+| LuaLaTeX | 基于 LuaTeX 的现代引擎 | Unicode、字体与可编程扩展 |
+| KaTeX / MathJax | 在网页中渲染部分 LaTeX 数学语法 | Markdown、网页文档 |
+
+> [!IMPORTANT] 网页公式不等于完整 LaTeX
+> Markdown 中的 `$...$` 和 `$$...$$` 通常由 KaTeX 或 MathJax 渲染，只支持数学模式及其实现提供的命令，不能直接使用完整文档中的 `\documentclass`、章节、图片或参考文献功能。完整 `.tex` 文档需要 TeX 发行版或在线 LaTeX 平台进行编译。
+
+LaTeX 的核心思想与 Markdown 相似：源码关注“这是什么”，排版系统决定“如何显示”。Markdown 擅长通用技术文档，LaTeX 则尤其擅长数学公式、交叉引用与可重复的长文档排版。
+
+## 二、在 Markdown 中编写公式
+
+本项目已经支持 LaTeX 数学公式。在 Markdown 或 MDX 中，行内公式通常放在一对 `$` 中，独立公式放在一对 `$$` 中。
+
+### 2.1 行内公式
+
+```markdown
+质能方程 $E = mc^2$ 描述了质量与能量的关系。
+```
+
+效果：质能方程 $E = mc^2$ 描述了质量与能量的关系。
+
+行内公式应当是句子的一部分，适合较短的变量、等式和符号。公式前后的中文标点仍按正文语义书写。
+
+### 2.2 块级公式
+
+```markdown
+$$
+f(x) = ax^2 + bx + c
+$$
+```
+
+效果：
+
+$$
+f(x) = ax^2 + bx + c
+$$
+
+块级公式独占一行，适合较长推导或需要重点展示的表达式。不同 Markdown 平台对定界符的支持可能不同，发布前应在目标渲染器中检查。
+
+> [!WARNING] 不要在数学定界符周围随意加空格
+> `$x$` 是兼容性较好的行内写法；`$ x $` 在部分解析器中可能无法按预期识别。美元符号若表示货币，应按目标平台的规则转义或改写，避免被误判为公式。
+
+## 三、常用数学语法
+
+LaTeX 命令通常以反斜杠 `\` 开头，花括号 `{}` 用来界定命令参数。花括号本身通常不显示，只负责告诉命令哪些内容属于同一组。
+
+### 3.1 上标、下标与分组
+
+| 目标 | 源码 | 效果 |
+| :--- | :--- | :--- |
+| 上标 | `$x^2$` | $x^2$ |
+| 下标 | `$a_1$` | $a_1$ |
+| 多字符上标 | `$x^{n+1}$` | $x^{n+1}$ |
+| 多字符下标 | `$a_{i,j}$` | $a_{i,j}$ |
+| 同时使用 | `$x_i^2$` | $x_i^2$ |
+
+`^` 和 `_` 默认只作用于后面的一个记号。需要包含多个字符时，必须使用花括号分组。例如，`x^10` 会把 `1` 作为上标、`0` 留在基线上，而 `x^{10}` 才表示十次方。
+
+### 3.2 分式、根式与括号
+
+```latex
+\frac{a+b}{c+d}
+\sqrt{x}
+\sqrt[n]{x}
+\left( \frac{x+1}{x-1} \right)
+```
+
+对应效果：
+
+$$
+\frac{a+b}{c+d}, \qquad
+\sqrt{x}, \qquad
+\sqrt[n]{x}, \qquad
+\left( \frac{x+1}{x-1} \right)
+$$
+
+`\frac{分子}{分母}` 表示分式，`\sqrt[n]{表达式}` 表示 $n$ 次根。`\left` 与 `\right` 可以让括号随内部内容自动调整大小。
+
+> [!NOTE] 成对使用 `\left` 与 `\right`
+> 两个命令通常需要成对出现。只想显示一侧定界符时，可以用英文句点表示不可见的一侧，例如 `\left. ... \right\}`。
+
+### 3.3 希腊字母与常用符号
+
+| 类型 | 源码示例 | 效果 |
+| :--- | :--- | :--- |
+| 小写希腊字母 | `\alpha`、`\beta`、`\lambda` | $\alpha$、$\beta$、$\lambda$ |
+| 大写希腊字母 | `\Gamma`、`\Delta`、`\Omega` | $\Gamma$、$\Delta$、$\Omega$ |
+| 关系符号 | `\le`、`\ge`、`\ne`、`\approx` | $\le$、$\ge$、$\ne$、$\approx$ |
+| 集合符号 | `\in`、`\subseteq`、`\cup`、`\cap` | $\in$、$\subseteq$、$\cup$、$\cap$ |
+| 逻辑符号 | `\forall`、`\exists`、`\land`、`\lor` | $\forall$、$\exists$、$\land$、$\lor$ |
+| 箭头 | `\to`、`\Rightarrow`、`\leftrightarrow` | $\to$、$\Rightarrow$、$\leftrightarrow$ |
+
+命令名称区分大小写，例如 `\delta` 产生 $\delta$，`\Delta` 产生 $\Delta$。不是所有大写希腊字母都需要命令；形状与拉丁字母相同的通常直接写普通字母。
+
+### 3.4 求和、极限与积分
+
+```latex
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+
+\int_a^b f(x)\,dx
+```
+
+效果：
+
+$$
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+$$
+
+$$
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
+
+$$
+\int_a^b f(x)\,dx
+$$
+
+`\sum`、`\lim` 和 `\int` 等大型运算符可以配合上下标表示范围。积分中的 `\,` 加入一个较小的空白，让被积函数与微分记号更易区分；这是排版习惯，不影响数学含义。
+
+### 3.5 数学字体与正文
+
+```latex
+\mathbf{v}
+\mathbb{R}
+\mathcal{F}
+\text{当 } x > 0
+```
+
+效果：
+
+$$
+\mathbf{v} \in \mathbb{R}^n, \qquad
+\mathcal{F}(x), \qquad
+f(x) = x^2 \text{ 当 } x > 0
+$$
+
+- `\mathbf{}` 常用于粗体拉丁字母
+- `\mathbb{}` 常用于数集，如实数集 $\mathbb{R}$
+- `\mathcal{}` 常用于花体大写字母
+- `\text{}` 在数学模式中插入普通文字
+
+具体命令是否可用取决于渲染器和宏包。网页公式中应以 KaTeX 或 MathJax 的支持列表为准；完整文档中则取决于导言区加载的宏包。
+
+## 四、多行公式与结构化表达
+
+### 4.1 对齐公式
+
+需要按等号对齐多行推导时，可以使用 `aligned` 环境。`&` 标记对齐位置，`\\` 表示换行：
+
+```latex
+\begin{aligned}
+(a+b)^2
+  &= (a+b)(a+b) \\
+  &= a^2 + 2ab + b^2
+\end{aligned}
+```
+
+效果：
+
+$$
+\begin{aligned}
+(a+b)^2
+  &= (a+b)(a+b) \\
+  &= a^2 + 2ab + b^2
+\end{aligned}
+$$
+
+> [!TIP] 对齐点放在哪里
+> 常见做法是在每行的等号、约等号或不等号之前放置 `&`。同一组推导应围绕同一种关系对齐，不要仅为了视觉效果随意添加多个对齐点。
+
+### 4.2 矩阵
+
+```latex
+A = \begin{bmatrix}
+1 & 2 \\
+3 & 4
+\end{bmatrix}
+```
+
+效果：
+
+$$
+A = \begin{bmatrix}
+1 & 2 \\
+3 & 4
+\end{bmatrix}
+$$
+
+矩阵中，`&` 分隔列，`\\` 分隔行。常见环境包括：
+
+| 环境 | 外观 |
+| :--- | :--- |
+| `matrix` | 无定界符 |
+| `pmatrix` | 圆括号 |
+| `bmatrix` | 方括号 |
+| `vmatrix` | 单竖线，常用于行列式 |
+| `Vmatrix` | 双竖线 |
+
+### 4.3 分段函数
+
+```latex
+f(x) =
+\begin{cases}
+x^2, & x \ge 0 \\
+-x, & x < 0
+\end{cases}
+```
+
+效果：
+
+$$
+f(x) =
+\begin{cases}
+x^2, & x \ge 0 \\
+-x, & x < 0
+\end{cases}
+$$
+
+`cases` 环境通常把表达式写在第一列、条件写在第二列。条件中的普通文字应放入 `\text{}`，避免被当作变量逐字排版。
+
+## 五、一份最小的 LaTeX 文档
+
+Markdown 公式只负责数学表达。要生成有标题、章节和页面布局的 PDF，需要编写完整的 `.tex` 文档：
+
+```latex title="main.tex"
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\title{LaTeX 入门示例}
+\author{你的名字}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{引言}
+这是正文。行内公式写作 $E = mc^2$。
+
+\section{一个公式}
+\begin{equation}
+  \sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+  \label{eq:sum}
+\end{equation}
+
+公式~\ref{eq:sum} 给出了前 $n$ 个正整数之和。
+
+\end{document}
+```
+
+文档由几个部分组成：
+
+1. `\documentclass{article}` 选择文档类
+2. `\usepackage{...}` 在导言区加载宏包
+3. `\title`、`\author` 和 `\date` 定义元信息
+4. `\begin{document}` 与 `\end{document}` 包围正文
+5. `\section{...}` 定义章节结构
+6. `equation` 环境创建可编号的独立公式
+7. `\label` 与 `\ref` 建立稳定的交叉引用
+
+> [!CAUTION] 不要手写章节号和公式号
+> LaTeX 可以自动编号章节、公式、图片和表格。使用 `\label` 与 `\ref` 引用对象，调整内容顺序后编号会自动更新；手写“见公式（3）”容易在增删内容后失效。
+
+### 5.1 中文文档
+
+中文文档通常使用 XeLaTeX 或 LuaLaTeX，并借助 `ctex` 文档类或宏包处理中文排版：
+
+```latex title="main.tex"
+\documentclass[UTF8]{ctexart}
+
+\title{中文课程报告}
+\author{你的名字}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{引言}
+这是一份使用 LaTeX 编写的中文文档。
+
+\end{document}
+```
+
+`ctexart` 是否可用取决于 TeX 发行版中是否安装了对应宏包。中文字体、学校模板和编译引擎可能有额外要求，应优先遵循课程或模板说明，不要未经检查就混用网上的导言区配置。
+
+## 六、列表、图片与表格
+
+### 6.1 列表
+
+```latex
+\begin{itemize}
+  \item 无序列表第一项
+  \item 无序列表第二项
+\end{itemize}
+
+\begin{enumerate}
+  \item 有序列表第一步
+  \item 有序列表第二步
+\end{enumerate}
+```
+
+`itemize` 创建无序列表，`enumerate` 创建有序列表，每一项由 `\item` 开始。LaTeX 会处理缩进和编号，不需要手动输入项目符号。
+
+### 6.2 图片与浮动体
+
+```latex
+\usepackage{graphicx}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/result.png}
+  \caption{实验结果}
+  \label{fig:result}
+\end{figure}
+```
+
+`figure` 是浮动体，LaTeX 会综合当前位置和页面剩余空间安排图片。`[htbp]` 表示允许尝试当前位置、页顶、页底或浮动页，不保证图片一定出现在源码所在位置。
+
+> [!NOTE] `\label` 放在 `\caption` 之后
+> 图片和表格的编号通常由 `\caption` 产生。把 `\label` 放在其后，交叉引用更容易取得正确编号。文件路径应使用相对于主 `.tex` 文件的路径，并把图片资源一同纳入项目管理。
+
+### 6.3 表格
+
+```latex
+\begin{table}[htbp]
+  \centering
+  \caption{实验数据}
+  \label{tab:data}
+  \begin{tabular}{lcr}
+    \hline
+    项目 & 次数 & 耗时 \\
+    \hline
+    方案 A & 10 & 1.2 s \\
+    方案 B & 10 & 0.8 s \\
+    \hline
+  \end{tabular}
+\end{table}
+```
+
+`tabular` 的列格式 `{lcr}` 分别表示左对齐、居中和右对齐。与矩阵类似，`&` 分隔列，`\\` 分隔行。复杂表格应优先保证数据清晰，不要用大量竖线和合并单元格模拟电子表格。
+
+## 七、编辑与编译工作流
+
+### 7.1 在线与本地工具
+
+| 方式 | 适合场景 | 注意事项 |
+| :--- | :--- | :--- |
+| 在线 LaTeX 平台 | 快速开始、多人协作、课程模板 | 需要网络；上传前确认文档隐私与学校要求 |
+| TeX Live | Windows、Linux、macOS 的完整发行版 | 体积较大，安装和更新需要时间 |
+| MiKTeX | Windows 上按需安装宏包 | 首次编译可能需要下载缺失宏包 |
+| VS Code + LaTeX Workshop | 在编辑器中编写、编译和预览 | 仍需先安装本地 TeX 发行版 |
+
+在线平台适合初学与协作，本地环境适合离线使用、自动化构建和大型项目。不要同时安装多套发行版后随意混用，因为命令路径、宏包版本和缓存可能相互干扰。
+
+### 7.2 编译命令
+
+安装 TeX 发行版后，可以在终端中编译：
+
+```bash
+xelatex main.tex
+```
+
+包含目录、交叉引用或参考文献的文档，常常需要多次编译。`latexmk` 能根据依赖自动选择需要执行的轮次：
+
+```bash
+latexmk -xelatex main.tex
+```
+
+编译成功后通常会生成 PDF，以及 `.aux`、`.log`、`.toc` 等辅助文件。哪些文件应提交到 Git 取决于项目约定；通常保留 `.tex`、图片、参考文献和模板源码，忽略可以重新生成的中间文件。
+
+> [!WARNING] 不要忽略编译日志中的首个错误
+> LaTeX 的后续错误经常由前面一个缺失括号、未知命令或未闭合环境连锁产生。排查时先定位日志中的第一个错误，检查对应源码附近，再重新编译；不要只看最后一条报错。
+
+## 八、常见错误与排查
+
+| 现象 | 常见原因 | 检查方式 |
+| :--- | :--- | :--- |
+| `Undefined control sequence` | 命令拼写错误或缺少宏包 | 核对命令名称与 `\usepackage` |
+| `Missing $ inserted` | 在正文中直接使用 `_`、`^` 等数学符号 | 确认是否应进入数学模式或转义字符 |
+| `File ... not found` | 图片、模板或宏包路径错误 | 从主文件位置检查相对路径和文件名大小写 |
+| `Environment ... undefined` | 环境拼写错误或缺少宏包 | 检查 `\begin` / `\end` 与宏包文档 |
+| 引用显示为 `??` | 标签不存在或编译轮次不足 | 核对标签名称并再次编译 |
+| 中文缺字或乱码 | 引擎、编码或字体配置不匹配 | 使用 UTF-8，并按模板要求选择 XeLaTeX / LuaLaTeX |
+
+还应检查以下成对结构：
+
+- `{` 与 `}`
+- `\begin{环境}` 与 `\end{环境}`
+- 数学模式的 `$` 与 `$`
+- `\left` 与 `\right`
+
+> [!TIP] 从最小示例开始排查
+> 复杂模板无法编译时，可以复制一份文件，暂时移除与问题无关的章节和宏包，缩减到仍能复现错误的最小示例。这样更容易判断问题来自正文、宏包冲突、资源路径还是模板配置。
+
+## 九、更多资料
+
+本节只覆盖最常用的入门能力。遇到具体需求时，再按问题查阅资料：
+
+- [LaTeX Project](https://www.latex-project.org/)：LaTeX 项目官网与入门资料
+- [CTAN](https://ctan.org/)：宏包、模板与文档的主要归档站
+- [TeX Live](https://www.tug.org/texlive/)：TeX Live 官方信息
+- [KaTeX Supported Functions](https://katex.org/docs/supported)：本项目网页公式支持的命令列表
+
+课程或学校提供模板时，应先阅读模板的 README、示例文件和编译说明。模板可能固定文档类、引擎、字体、参考文献工具和提交文件结构，通用教程不能替代这些约定。
+
+下一节 [1.10 Mermaid](/zh/docs/ch1/1.10-Mermaid) 将继续介绍如何用纯文本描述流程图、时序图等结构化图表。
+
+## 十、TODO 清单
+
+- [ ] 能区分完整 LaTeX 文档与 Markdown 中的数学公式
+- [ ] 能正确使用上下标、分式、根式、求和、极限和积分
+- [ ] 了解矩阵、分段函数和按等号对齐的多行公式
+- [ ] 了解 `\documentclass`、导言区和 `document` 环境
+- [ ] 能使用 `\label` 与 `\ref` 建立交叉引用
+- [ ] 在 AI 的辅助下，能根据模板要求选择正确的编译引擎
+- [ ] 遇到编译失败时，会先定位日志中的第一个错误
+
+## 十一、值得我们思考的问题
+
+> [!DETAILS-FAQ] 为什么 LaTeX 不采用所见即所得的编辑方式？
+> LaTeX 把内容结构与最终排版分开。作者在源码中表达章节、公式、引用和图表之间的语义关系，排版系统统一处理编号、间距和页面布局。这降低了长文档中反复手工调整格式的成本，也让源码更适合版本控制和自动化构建。
+>
+> 代价是需要经过编译才能看到最终结果，错误信息也不总是直观。因此短小、强调视觉拖拽的文档未必适合 LaTeX；公式密集、引用较多或需要统一模板的长文档更能体现它的优势。
