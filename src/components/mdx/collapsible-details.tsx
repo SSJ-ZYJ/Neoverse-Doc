@@ -45,6 +45,7 @@ interface TypedRenderState {
 interface TypableElementProps {
   children?: ReactNode;
   className?: string;
+  'data-ai-visible-content'?: 'true' | 'false';
 }
 
 export function CollapsibleDetails(props: ComponentProps<'details'>) {
@@ -278,10 +279,19 @@ function renderTypedNode(
 
   if (!isValidElement<TypableElementProps>(node) || shouldSkipTyping(node)) return node;
 
+  const firstChildChunkIndex = state.chunkIndex;
+  const children = renderTypedNode(node.props.children, visibleChunks, chunkSize, state);
+  const hasTypableContent = state.chunkIndex > firstChildChunkIndex;
+
   return cloneElement(
     node,
-    undefined,
-    renderTypedNode(node.props.children, visibleChunks, chunkSize, state),
+    hasTypableContent
+      ? {
+          'data-ai-visible-content':
+            firstChildChunkIndex < visibleChunks ? 'true' : 'false',
+        }
+      : undefined,
+    children,
   );
 }
 
