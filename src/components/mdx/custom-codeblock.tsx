@@ -90,7 +90,7 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
         role="region"
         // biome-ignore lint/a11y/noNoninteractiveTabindex: matches fumadocs CodeBlock behavior
         tabIndex={0}
-        className="text-[0.8125rem] py-3.5 overflow-auto max-h-[600px] fd-scroll-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fd-ring"
+        className="text-[0.8125rem] py-3.5 overflow-auto max-h-150 fd-scroll-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fd-ring"
         style={{
           counterSet: rest['data-line-numbers']
             ? `line ${Number(rest['data-line-numbers-start'] ?? 1) - 1}`
