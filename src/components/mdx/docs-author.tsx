@@ -130,7 +130,7 @@ export function DocsAuthor({ author, label }: DocsAuthorProps) {
   }
 
   return (
-    <div className="mb-6 flex items-center gap-3 text-sm text-fd-muted-foreground">
+    <div className="flex items-center gap-3 text-sm text-fd-muted-foreground">
       <User size={14} className="shrink-0" />
       <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2">
         <span className="font-medium text-fd-foreground">{label}</span>

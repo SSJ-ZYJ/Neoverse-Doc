@@ -27,6 +27,10 @@ export interface Dictionary {
   communityDesc: string;
   primaryAuthorLabel: string;
   documentContributorsTitle: string;
+  pageActionsLabel: string;
+  // Page actions menu item labels / 页面操作菜单项文案
+  pageActionsViewSource: string;
+  pageActionsOpenGithub: string;
   backToDocs: string;
   backToHome: string;
   // Search scope labels / 搜索范围标签

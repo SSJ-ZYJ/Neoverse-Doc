@@ -5,16 +5,18 @@
 // 底部附带 Giscus 讨论区。元信息（标题/描述）从页面 frontmatter 生成。
 
 import { findNeighbour } from 'fumadocs-core/page-tree';
-import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
+import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { DocsCommunity } from '@/components/docs-community';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
+import { DocsPageActions } from '@/components/docs-page-actions';
 import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { TaskListProgress } from '@/components/mdx/task-list-progress';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
+import { REPO_URL } from '@/lib/site-config';
 import { source } from '@/lib/source';
 
 export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
@@ -26,6 +28,9 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
 
   const MDX = page.data.body;
   const slugKey = slug.join('/');
+  const sourcePath = page.data.info.fullPath;
+  const markdownUrl = `/${locale}/docs-source/${slugKey}`;
+  const githubUrl = `${REPO_URL}/blob/main/${sourcePath}`;
   // Contributor frontmatter supports both singular and plural keys.
   // 贡献者 frontmatter 同时兼容单数与复数字段。
   const contributors = page.data.contributors ?? page.data.contributor;
@@ -35,7 +40,13 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
           稳定的标题元数据让客户端阅读返回操作能够标明来源文章。 */}
       <DocsTitle data-docs-title="">{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
-      {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
+      {/* Author and page actions share one baseline: author on the left, actions
+           right-aligned beside it.
+           作者与页面操作共用一行基线：作者在左，操作弹层右对齐。 */}
+      <div className="docs-page-meta">
+        {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
+        <DocsPageActions githubUrl={githubUrl} markdownUrl={markdownUrl} />
+      </div>
     </>
   );
   const content = (

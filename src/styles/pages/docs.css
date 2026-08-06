@@ -615,6 +615,84 @@ html[data-nd-reading-restore] {
   max-inline-size: var(--docs-reading-width);
 }
 
+/* Author meta row hosts the contributor line and the right-aligned page actions
+   on a shared baseline with the divider below.
+   作者元信息行让贡献者列表与右对齐的页面操作弹层共用一个基线与底部分隔线。 */
+.docs-page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-block: -0.5rem 2rem;
+  padding-block-end: 1rem;
+  border-block-end: 1px solid var(--border-subtle);
+}
+
+/* Page actions use a comfortable glass-control box (text-sm type set on the
+   element) while sharing the author baseline and leaning right when no author
+   precedes them.
+   页面操作使用舒适的玻璃控件盒子（text-sm 字号由元素自身设置），与作者行
+   共用基线；无作者行时靠右对齐。 */
+.docs-page-actions {
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
+.docs-page-actions > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: 2.25rem;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-xs);
+  padding-inline: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--glass-refraction-fill), var(--glass-control-surface);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--shadow-edge);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--motion-ease-standard),
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-fast) var(--motion-ease-standard);
+}
+
+.docs-page-actions > button[data-state="open"] {
+  border-color: var(--border-interactive);
+  color: var(--text-primary);
+  background-color: var(--glass-control-active-tint);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+}
+
+@media (hover: hover) {
+  .docs-page-actions > button:hover {
+    color: var(--text-primary);
+    background-color: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+    transform: translateY(-1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-page-actions > button {
+    transition: none;
+  }
+
+  .docs-page-actions > button:hover {
+    transform: none;
+  }
+}
+
 /* Draft pages retain their server-rendered article beneath a temporary,
    explicitly unlockable construction gate. The gate clips the long document
    before reveal so the notice remains immediately visible without a fixed layer.

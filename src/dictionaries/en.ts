@@ -21,6 +21,10 @@ export const en = {
   communityDesc: 'Welcome to share your thoughts and suggestions',
   primaryAuthorLabel: 'Primary author:',
   documentContributorsTitle: 'Document contributors',
+  pageActionsLabel: 'More',
+  // Page actions menu item labels / 页面操作菜单项文案
+  pageActionsViewSource: 'View source',
+  pageActionsOpenGithub: 'Open in GitHub',
   backToDocs: 'Back to Docs',
   backToHome: 'Back to Home',
   // Search scope labels / 搜索范围标签

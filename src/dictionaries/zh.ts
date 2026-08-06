@@ -21,6 +21,10 @@ export const zh = {
   communityDesc: '欢迎分享你的想法与建议',
   primaryAuthorLabel: '主要编写者：',
   documentContributorsTitle: '本文档贡献者',
+  pageActionsLabel: '更多',
+  // Page actions menu item labels / 页面操作菜单项文案
+  pageActionsViewSource: '查看源码',
+  pageActionsOpenGithub: '在 GitHub 中打开',
   backToDocs: '返回文档',
   backToHome: '返回首页',
   // Search scope labels / 搜索范围标签
