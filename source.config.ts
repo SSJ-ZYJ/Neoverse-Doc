@@ -249,6 +249,14 @@ export default defineConfig({
             fill: '#6B7280',
             d: 'M3 5h18v2H3zM3 9h18v2H3zM3 13h18v2H3zM3 17h12v2H3z',
           },
+          // LaTeX: sigma symbol representing mathematical typesetting.
+          // Uses currentColor to adapt to light/dark themes automatically.
+          // LaTeX：sigma 符号代表数学排版，使用 currentColor 自动适配深浅主题。
+          latex: {
+            viewBox: '0 0 24 24',
+            fill: 'currentColor',
+            d: 'M4,4 h16 v2.5 h-11 l7.5,5.5 -7.5,5.5 h11 v2.5 H4 v-1.5 l9,-6.5 -9,-6.5 z',
+          },
           // Default
           default: {
             viewBox: '0 0 24 24',
@@ -263,6 +271,7 @@ export default defineConfig({
           ps1: 'powershell',
           batch: 'bat',
           gitattributes: 'git',
+          tex: 'latex',
           // Markdown family shares the md icon.
           // Markdown 家族共用 md 图标。
           markdown: 'md',
