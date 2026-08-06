@@ -77,6 +77,23 @@ export function useMermaidRender(chart: string, theme: 'dark' | 'default', enabl
           htmlLabels: true,
           useMaxWidth: false,
         },
+        // Gantt reads its parent width while Mermaid renders in a temporary
+        // off-screen container. On long documentation pages that container can
+        // inherit the page scroll width, producing a several-thousand-pixel
+        // viewBox that the shared fitter then shrinks to an unreadable scale.
+        // Use Mermaid's supported intrinsic width so the chart is measured
+        // consistently, centered by the shared SVG host, and only scaled down
+        // when the real document canvas is narrower.
+        // 甘特图会在 Mermaid 的离屏临时容器中读取父级宽度；长文档可能让该
+        // 容器继承整页滚动宽度，生成数千像素的 viewBox，再被通用适配逻辑
+        // 缩得过小。使用 Mermaid 官方支持的固有宽度，使图表稳定测量、由
+        // 共享 SVG 宿主居中，并且只在真实文档画布较窄时缩小。
+        gantt: {
+          fontSize: 12,
+          sectionFontSize: 12,
+          useMaxWidth: false,
+          useWidth: 640,
+        },
         // gitGraph otherwise emits a width-only responsive SVG. The shared
         // renderer normalizes both axes, and fixed intrinsic output prevents
         // the Git-specific layout from being measured against a transient 0px host.

@@ -158,6 +158,17 @@
   padding: 1.25rem 1rem 3.5rem;
 }
 
+/* Gantt is a short, wide chart whose visual center makes the canvas' larger
+   toolbar clearance especially noticeable. Give it symmetric block padding so
+   the fitted timeline is geometrically centered while retaining the full
+   bottom safe area for controls.
+   甘特图通常短而宽，画布为工具栏预留的较大底部空间会让偏移格外明显。
+   使用对称块轴内边距，使适配后的时间线几何居中，同时保留完整的底部控件
+   安全区。 */
+.mermaid-canvas[data-view="render"]:has(svg[aria-roledescription="gantt"]) {
+  padding-block: 3.5rem;
+}
+
 /* Zoom target uses the initial fit-to-canvas dimensions as a stable frame.
    The frame never grows with toolbar zoom — only the centered diagram inside
    scales. The frame's transform is reserved for panning, so enlarged content
@@ -267,14 +278,31 @@
    Mermaid 视觉语言：半透明计算节点、明亮边缘、克制标签与圆角分组，
    与项目液态玻璃界面保持一致。 */
 .mermaid-svg-host :is(.node rect, .node polygon, .node circle, .node ellipse, .label-container) {
-  fill: color-mix(in srgb, var(--surface-elevated) 72%, var(--accent-soft)) !important;
-  stroke: color-mix(in srgb, var(--accent-primary) 58%, var(--edge-light)) !important;
-  stroke-width: 1.25px !important;
+  fill: var(--mermaid-shape-surface) !important;
+  stroke: var(--mermaid-shape-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
 }
 
-.mermaid-svg-host :is(.node rect, .label-container, .actor, .note, .labelBox) {
-  rx: 12px;
-  ry: 12px;
+.mermaid-svg-host :is(.actor, .note, .labelBox) {
+  rx: var(--mermaid-shape-radius);
+  ry: var(--mermaid-shape-radius);
+}
+
+/* Keep flowchart geometry semantic: a plain rectangle has sharp corners,
+   while Mermaid's explicit rounded rectangle (identified by its generated
+   rx/ry attributes) receives the shared radius. Other SVG shapes retain their
+   own paths instead of being flattened into a second rectangle style.
+   保留流程图形状语义：普通矩形保持直角；Mermaid 通过 rx/ry 属性显式生成
+   的圆角矩形使用共享圆角。其他 SVG 形状继续保留自身路径，不被扁平化成
+   第二种矩形样式。 */
+.mermaid-svg-host svg[aria-roledescription="flowchart-v2"] .node > rect.label-container:not([rx]) {
+  rx: 0;
+  ry: 0;
+}
+
+.mermaid-svg-host svg[aria-roledescription="flowchart-v2"] .node > rect.label-container[rx] {
+  rx: var(--mermaid-shape-radius);
+  ry: var(--mermaid-shape-radius);
 }
 
 .mermaid-svg-host .node {
@@ -448,27 +476,264 @@
    the project cyan palette with an opaque canvas center for theme contrast.
    Mermaid 11 将状态图结束节点渲染为 `.outer-path` 内的多层路径，而非旧版
    `.state-end` 圆形；这里将双环映射到项目青色体系，并用画布底色保证主题对比。 */
-.mermaid-svg-host .node > .outer-path > path:first-of-type {
+.mermaid-svg-host
+  svg[aria-roledescription="stateDiagram"]
+  .node
+  > .outer-path
+  > path:first-of-type {
   fill: var(--docs-canvas-surface) !important;
   stroke: var(--accent-primary) !important;
   stroke-width: 1.5px !important;
 }
 
-.mermaid-svg-host .node > .outer-path > path:nth-of-type(2) {
+.mermaid-svg-host
+  svg[aria-roledescription="stateDiagram"]
+  .node
+  > .outer-path
+  > path:nth-of-type(2) {
   fill: none !important;
   stroke: color-mix(in srgb, var(--accent-primary) 72%, var(--text-primary)) !important;
   stroke-width: 1.5px !important;
 }
 
-.mermaid-svg-host .node > .outer-path > g > path:first-of-type {
+.mermaid-svg-host
+  svg[aria-roledescription="stateDiagram"]
+  .node
+  > .outer-path
+  > g
+  > path:first-of-type {
   fill: var(--accent-primary) !important;
   stroke: none !important;
 }
 
-.mermaid-svg-host .node > .outer-path > g > path:nth-of-type(2) {
+.mermaid-svg-host
+  svg[aria-roledescription="stateDiagram"]
+  .node
+  > .outer-path
+  > g
+  > path:nth-of-type(2) {
   fill: none !important;
   stroke: color-mix(in srgb, var(--edge-light) 64%, var(--accent-primary)) !important;
   stroke-width: 1px !important;
+}
+
+/* Class diagrams use the stable SVG role instead of renderer-specific title
+   classes. Mermaid 11's current renderer draws class cards as a fill path plus
+   an outline path; the legacy rect output is retained as a fallback. Both
+   variants consume the same reusable shape surface and stroke tokens.
+   类图使用稳定的 SVG role，而不依赖渲染器专属标题 class。Mermaid 11 当前
+   将类卡片绘制为填充路径与轮廓路径；同时保留旧版 rect 输出的兼容规则。
+   两种结构统一复用形状表面与描边 Token。 */
+.mermaid-svg-host svg[aria-roledescription="class"] .node > .outer-path > path:first-of-type {
+  fill: var(--mermaid-class-surface) !important;
+  stroke: none !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="class"] .node > .outer-path > path:nth-of-type(2) {
+  fill: none !important;
+  stroke: var(--mermaid-shape-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="class"] g.classGroup rect {
+  fill: var(--mermaid-class-surface) !important;
+  stroke: var(--mermaid-shape-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+  rx: var(--mermaid-shape-radius);
+  ry: var(--mermaid-shape-radius);
+}
+
+.mermaid-svg-host
+  svg[aria-roledescription="class"]
+  :is(.label-group .nodeLabel, .classTitle, .classTitleText) {
+  fill: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+  font-weight: 700 !important;
+}
+
+.mermaid-svg-host
+  svg[aria-roledescription="class"]
+  :is(.members-group .nodeLabel, .methods-group .nodeLabel, .edgeTerminals, .classLabel .label) {
+  fill: var(--text-secondary) !important;
+  color: var(--text-secondary) !important;
+}
+
+.mermaid-svg-host
+  svg[aria-roledescription="class"]
+  :is(g.classGroup line, .divider path, .divider line) {
+  stroke: var(--mermaid-class-divider) !important;
+  stroke-width: 1.15px !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="class"] .relation {
+  stroke: var(--mermaid-class-relation) !important;
+  stroke-width: 1.55px !important;
+}
+
+/* Gantt charts: separate the schedule grid, section bands, and task states so
+   the timeline reads editorially instead of inheriting Mermaid's saturated
+   blue-to-orange gradient. Status colors are semantic and remain restrained.
+   甘特图：分离时间网格、分组条带与任务状态，让时间线呈现编辑式层级，
+   避免继承 Mermaid 高饱和的蓝到橙渐变。状态色保持语义明确且克制。 */
+.mermaid-svg-host
+  svg:has(.taskText, .sectionTitle)
+  :is(.section, .section0, .section1, .section2, .section3) {
+  stroke: none !important;
+  opacity: 1 !important;
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.section, .section0, .section2) {
+  fill: var(--mermaid-gantt-section) !important;
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.section1, .section3) {
+  fill: var(--mermaid-gantt-section-alt) !important;
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.grid .tick, .grid path) {
+  stroke: var(--mermaid-gantt-grid) !important;
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) .grid .tick text {
+  fill: var(--text-muted) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.72rem;
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.sectionTitle, .titleText) {
+  fill: var(--text-secondary) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 700 !important;
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.task0, .task1, .task2, .task3) {
+  fill: var(--mermaid-gantt-task) !important;
+  stroke: var(--mermaid-shape-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+  rx: var(--mermaid-shape-radius-small);
+  ry: var(--mermaid-shape-radius-small);
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.task1, .task3) {
+  fill: var(--mermaid-gantt-task-alt) !important;
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.active0, .active1, .active2, .active3) {
+  fill: var(--mermaid-gantt-active) !important;
+  stroke: var(--accent-secondary) !important;
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.done0, .done1, .done2, .done3) {
+  fill: var(--mermaid-gantt-done) !important;
+  stroke: color-mix(in srgb, var(--text-muted) 76%, var(--border-subtle)) !important;
+}
+
+.mermaid-svg-host
+  svg:has(.taskText, .sectionTitle)
+  :is(
+    .crit0,
+    .crit1,
+    .crit2,
+    .crit3,
+    .activeCrit0,
+    .activeCrit1,
+    .activeCrit2,
+    .activeCrit3,
+    .doneCrit0,
+    .doneCrit1,
+    .doneCrit2,
+    .doneCrit3
+  ) {
+  fill: var(--mermaid-gantt-critical) !important;
+  stroke: var(--accent-tertiary) !important;
+}
+
+.mermaid-svg-host
+  svg:has(.taskText, .sectionTitle)
+  :is(
+    .taskText,
+    .taskTextOutsideLeft,
+    .taskTextOutsideRight,
+    .taskText0,
+    .taskText1,
+    .taskText2,
+    .taskText3
+  ) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.mermaid-svg-host svg:has(.taskText, .sectionTitle) .today {
+  stroke: var(--mermaid-gantt-today) !important;
+  stroke-width: 1.5px !important;
+  opacity: 0.82;
+}
+
+/* Pie charts: keep Mermaid's generated slice colors but replace them with the
+   project's cyan / mint / violet palette and add a quiet hairline between
+   segments. The legend uses the same swatches for a coherent key.
+   饼图：保留 Mermaid 自动生成的切片结构，但替换为项目青 / 薄荷 / 紫色板，
+   并用克制细线分隔扇区；图例同步使用相同色标。 */
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle {
+  stroke: var(--docs-canvas-surface) !important;
+  stroke-width: 2.5px !important;
+  opacity: 0.96 !important;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieOuterCircle {
+  stroke: var(--mermaid-chart-hairline) !important;
+  stroke-width: 1.25px !important;
+}
+
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) :is(.pieTitleText, .legend text) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend rect {
+  rx: var(--mermaid-shape-radius-small);
+  ry: var(--mermaid-shape-radius-small);
+  stroke: var(--docs-canvas-surface) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+}
+
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .slice {
+  fill: var(--text-primary) !important;
+  font-weight: 650;
+}
+
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(1),
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(2) rect {
+  fill: var(--mermaid-pie-1) !important;
+}
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(2),
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(3) rect {
+  fill: var(--mermaid-pie-2) !important;
+}
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(3),
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(4) rect {
+  fill: var(--mermaid-pie-3) !important;
+}
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(4),
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(5) rect {
+  fill: var(--mermaid-pie-4) !important;
+}
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(5),
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(6) rect {
+  fill: var(--mermaid-pie-5) !important;
+}
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(6),
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(7) rect {
+  fill: var(--mermaid-pie-6) !important;
+}
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(7),
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(8) rect {
+  fill: var(--mermaid-pie-7) !important;
+}
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(8),
+.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(9) rect {
+  fill: var(--mermaid-pie-8) !important;
 }
 
 /* Git Graph uses diagram-specific branch, commit, label, and arrow classes

@@ -115,15 +115,28 @@ export function computeExpandedViewBox(
   const vb = svg.viewBox.baseVal;
   const hasViewBox =
     [vb.x, vb.y, vb.width, vb.height].every(Number.isFinite) && vb.width > 0 && vb.height > 0;
+  // Gantt's generated `today` marker is extrapolated beyond the time scale
+  // when today's date falls outside the chart range. Root getBBox() includes
+  // that invisible off-canvas line, which can expand an otherwise correct
+  // 640px viewBox to several thousand pixels and make the fitted chart tiny.
+  // Mermaid's Gantt renderer already reports its intended bounds, so preserve
+  // that diagram-specific viewBox instead of treating the marker as overflow.
+  // 当今天日期超出甘特图时间范围时，生成的 `today` 标记会沿时间轴外推。
+  // 根 getBBox() 会把这条画布外不可见线计入边界，将原本正确的 640px
+  // viewBox 扩成数千像素并导致图表过度缩小。甘特图渲染器已经给出预期
+  // 边界，因此直接保留其专用 viewBox，不把该标记视为内容溢出。
+  const preservesRendererBounds = svg.getAttribute('aria-roledescription') === 'gantt';
   let drawnBounds: DOMRect | null = null;
-  try {
-    // Root getBBox resolves descendant transforms into the SVG user coordinate
-    // system and is used only as an overflow guard around the renderer's own box.
-    // 根 getBBox 会把后代 transform 归一到 SVG 坐标系，此处仅用于检查内容是否
-    // 越出专用渲染器已经计算好的边界。
-    drawnBounds = svg.getBBox();
-  } catch {
-    // Detached or not-yet-painted SVGs fall back to Mermaid's reported viewBox.
+  if (!preservesRendererBounds) {
+    try {
+      // Root getBBox resolves descendant transforms into the SVG user coordinate
+      // system and is used only as an overflow guard around the renderer's own box.
+      // 根 getBBox 会把后代 transform 归一到 SVG 坐标系，此处仅用于检查内容是否
+      // 越出专用渲染器已经计算好的边界。
+      drawnBounds = svg.getBBox();
+    } catch {
+      // Detached or not-yet-painted SVGs fall back to Mermaid's reported viewBox.
+    }
   }
 
   const minX = drawnBounds?.x ?? Number.NaN;
