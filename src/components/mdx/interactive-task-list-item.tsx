@@ -145,7 +145,9 @@ export function InteractiveTaskListItem({
         onChange={(event) => handleCheckedChange(event.currentTarget.checked)}
         title={actionLabel}
       />
-      <span className="mdx-task-item__content">{children}</span>
+      <span className="mdx-task-item__content">
+        <span className="mdx-task-item__label">{children}</span>
+      </span>
     </li>
   );
 }

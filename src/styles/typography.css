@@ -344,8 +344,24 @@ html.mdx-task-list-smooth-scroll {
 
 #nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__content {
   color: var(--text-muted);
-  text-decoration: line-through;
-  text-decoration-color: color-mix(in srgb, var(--text-muted) 68%, transparent);
+}
+
+/* The task content is a grid item and therefore blockified. Its inline child
+   supplies one cloned strikeout fragment per visual line without inheriting a
+   new native metric when the text enters a smaller monospace code capsule.
+   任务内容作为网格项会被块级化；内部行内容器按每个视觉行片段复制统一删除线，
+   遇到较小的等宽代码胶囊时也不会切换到新的原生字体度量。 */
+#nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__label {
+  text-decoration: none;
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--text-muted) 68%, transparent),
+    color-mix(in srgb, var(--text-muted) 68%, transparent)
+  );
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* Completion feedback mirrors the project's restrained photon language while
@@ -981,6 +997,57 @@ figure.shiki .line > span:empty::before {
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
     color var(--theme-transition-duration) ease;
+}
+
+/* A mixed strikethrough must not reuse the smaller monospace font's native
+   strikeout metric. Cloned one-pixel backgrounds keep each wrapped fragment on
+   the surrounding text axis while preserving the inline-code capsule.
+   混合删除线不复用较小等宽字体的原生删除线度量；随换行片段复制的一像素背景线
+   让普通文字与代码保持同一视觉轴，同时保留行内代码胶囊。 */
+#nd-page del:has(> code) {
+  text-decoration: none;
+  background-image: linear-gradient(currentcolor, currentcolor);
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+#nd-page del:has(> code) > code {
+  background-image: linear-gradient(currentcolor, currentcolor);
+  background-position: 0 calc(50% - 0.12em);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+}
+
+/* A completed task already supplies one continuous strikeout for the whole row.
+   Suppress nested Markdown strikeout painting so del + inline code cannot add a
+   second line with a different font metric; reopening restores it automatically.
+   已完成任务已由整行提供连续删除线；隐藏内部 Markdown 删除线，避免 del 与
+   行内代码按不同字体度量叠加第二条线，取消勾选后会自动恢复。 */
+#nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__content del,
+#nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__content del > code {
+  text-decoration: none;
+  background-image: none;
+}
+
+/* The opaque code capsule covers its ancestor's background, so repaint the
+   same task strikeout locally using the existing monospace-size compensation.
+   代码胶囊的不透明背景会覆盖祖先背景，因此沿用现有等宽字号补偿，在胶囊内
+   重新绘制同一条任务删除线。 */
+#nd-page
+  li.mdx-task-item[data-task-checked="true"]
+  .mdx-task-item__label
+  :not(pre)
+  > code {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--text-muted) 68%, transparent),
+    color-mix(in srgb, var(--text-muted) 68%, transparent)
+  );
+  background-position: 0 calc(50% - 0.12em);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
 }
 
 /* Wrapped inline code uses native cloned capsules and a restrained accent
