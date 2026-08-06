@@ -1,6 +1,6 @@
 {
   "title": "Chapter 0：自述与前言",
-  "description": "What? Why? How?",
+  "description": "Why? What? How?",
   "icon": "BookMarked",
   "pages": ["---Stage 0：序---", "index"],
   "root": true

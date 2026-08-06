@@ -337,6 +337,17 @@ Windows 自带的搜索速度较慢，推荐安装免费工具 [Everything](http
 path:"D:\Projects" ext:cpp   # 在指定项目目录中查找 C++ 源文件
 ```
 
+#### 方法三：正则搜索
+
+Everything 支持用 `regex:` 前缀启用正则表达式，按命名模式匹配整个文件名：
+
+```text
+regex:^\d{4} 试卷      # 文件名以四位数字开头（如 2024 试卷.pdf）
+regex:报告\d+\.pdf    # 名字含 "报告" 且以 .pdf 结尾（如 报告1.pdf、报告2.pdf）
+```
+
+通配符与正则的基础语法见 [1.7 文本编辑](/zh/docs/ch1/1.7-Text-Editing#53-正则表达式)。Everything 使用的正则引擎与其他工具略有差异，先用小例子验证匹配范围再批量使用。
+
 > [!TIP] 为 Everything 设置全局热键
 > `Win + S` 打开的是 Windows 搜索，并不会默认唤起 Everything。
 >
