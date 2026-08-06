@@ -51,6 +51,7 @@ export const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
   javascript: 'JavaScript',
   jl: 'Julia',
   json: 'JSON',
+  jsonc: 'JSONC',
   js: 'JavaScript',
   jsx: 'JSX',
   julia: 'Julia',

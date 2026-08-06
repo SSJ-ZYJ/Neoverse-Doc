@@ -208,6 +208,42 @@ export default defineConfig({
             fill: '#F05032',
             d: 'M23.546 10.93L13.067.452a1.55 1.55 0 0 0-2.188 0L8.708 2.627l2.632 2.632a1.834 1.834 0 0 1 2.323 2.337l2.535 2.535a1.835 1.835 0 0 1 1.897 3.033 1.835 1.835 0 0 1-3.034-1.898l-2.364-2.364v6.214a1.838 1.838 0 0 1 .485.336 1.836 1.836 0 0 1 0 2.598 1.836 1.836 0 0 1-2.598 0 1.836 1.836 0 0 1 0-2.598 1.84 1.84 0 0 1 .602-.393V8.236a1.835 1.835 0 0 1-.995-2.404L8.124 3.214.454 10.883c-.604.605-.604 1.585 0 2.19l10.48 10.48c.604.604 1.584.604 2.188 0l10.424-10.424c.604-.604.604-1.585 0-2.19',
           },
+          // Data & Config: bracket pair for JSON, letter marks for YAML/TOML/INI.
+          // 数据与配置：JSON 用方括号对，YAML/TOML/INI 用字母标记。
+          json: {
+            viewBox: '0 0 24 24',
+            fill: '#6B7280',
+            d: 'M3 4h3v16H3zM3 4h7v2H3zM3 18h7v2H3zM18 4h3v16h-3zM14 4h7v2H14zM14 18h7v2H14z',
+          },
+          yaml: {
+            viewBox: '0 0 24 24',
+            fill: '#CB171E',
+            d: 'M3 3h4l5 7 5-7h4l-7 10v8h-4v-8z',
+          },
+          toml: {
+            viewBox: '0 0 24 24',
+            fill: '#D97706',
+            d: 'M3 3h18v4h-7v14h-4V7H3z',
+          },
+          ini: {
+            viewBox: '0 0 24 24',
+            fill: '#6B7280',
+            d: 'M7 3h10v2H7zM10 5h4v14h-4zM7 19h10v2H7z',
+          },
+          // Vim: capital "V" in Vim green.
+          // Vim：Vim 绿色的大写字母 V。
+          vim: {
+            viewBox: '0 0 24 24',
+            fill: '#019733',
+            d: 'M3 3h4l5 12 5-12h4l-7 18h-4z',
+          },
+          // Text: stacked lines for plain text output.
+          // Text：堆叠横线表示纯文本输出。
+          text: {
+            viewBox: '0 0 24 24',
+            fill: '#6B7280',
+            d: 'M3 5h18v2H3zM3 9h18v2H3zM3 13h18v2H3zM3 17h12v2H3z',
+          },
           // Default
           default: {
             viewBox: '0 0 24 24',
@@ -222,6 +258,16 @@ export default defineConfig({
           ps1: 'powershell',
           batch: 'bat',
           gitattributes: 'git',
+          // Markdown family shares the md icon.
+          // Markdown 家族共用 md 图标。
+          markdown: 'md',
+          mdx: 'md',
+          // fish is a shell — reuse the shellscript icon.
+          // fish 是一种 shell，复用 shellscript 图标。
+          fish: 'shellscript',
+          // JSONC (JSON with Comments) shares the json icon.
+          // JSONC（带注释的 JSON）共用 json 图标。
+          jsonc: 'json',
         },
       },
     } as never,
