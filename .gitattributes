@@ -1,0 +1,36 @@
+# Normalize text files to LF in the repository and working tree.
+* text=auto eol=lf
+
+# Keep Windows command scripts compatible with native Windows tools.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Images.
+*.avif binary
+*.gif binary
+*.ico binary
+*.jpeg binary
+*.jpg binary
+*.png binary
+*.webp binary
+
+# Fonts.
+*.eot binary
+*.otf binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+
+# Documents and archives.
+*.7z binary
+*.gz binary
+*.pdf binary
+*.tar binary
+*.zip binary
+
+# Audio and video.
+*.mp3 binary
+*.mp4 binary
+*.ogg binary
+*.wav binary
+*.webm binary
