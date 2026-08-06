@@ -631,7 +631,14 @@ figure.shiki .line > span:empty::before {
   margin-block-start: 0;
 }
 
-#nd-page blockquote > :last-child {
+/* Remark emits GFM alerts as divs, so include them in the same edge reset.
+   The particle controller temporarily appends its owned layer after the prose;
+   keep the preceding content edge reset while that dynamic layer is present.
+   Remark 会将 GFM 提示框输出为 div，因此同步应用相同的边缘重置。
+   粒子控制器会临时在正文后追加自有图层；该动态图层存在时，仍清除其前方
+   末尾内容的外边距。 */
+:where(#nd-page blockquote, #nd-page .markdown-alert)
+  > :is(:last-child, :has(+ .immersive-particle-layer)) {
   margin-block-end: 0;
 }
 
@@ -1396,6 +1403,9 @@ figure.shiki > div:first-child {
 .markdown-details-ai[data-ai-typing="true"] .markdown-details-ai-typed-chunk {
   opacity: 0;
 }
+.markdown-details-ai[data-ai-typing="true"] [data-ai-visible-content="false"] {
+  visibility: hidden;
+}
 .markdown-details-ai[data-ai-typing="true"]
   .markdown-details-ai-typed-chunk[data-ai-visible="true"] {
   opacity: 1;
@@ -1424,6 +1434,9 @@ figure.shiki > div:first-child {
 @media (prefers-reduced-motion: reduce) {
   .markdown-details-ai[data-ai-typing="true"] .markdown-details-ai-typed-chunk {
     opacity: 1;
+  }
+  .markdown-details-ai[data-ai-typing="true"] [data-ai-visible-content="false"] {
+    visibility: visible;
   }
   .markdown-details-ai[data-ai-typing="true"]
     .markdown-details-ai-typed-chunk[data-ai-caret="true"]::after {
