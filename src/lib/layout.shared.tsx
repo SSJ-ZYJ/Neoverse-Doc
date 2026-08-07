@@ -80,7 +80,7 @@ const zhUITranslations = {
   'Toggle Menu(mobile menu)(aria-label)': '切换菜单',
   'Toggle Theme(theme switcher)(aria-label)': '切换主题',
   'Type(type table)': '类型',
-  'View as Markdown(page actions)': '以 Markdown 查看',
+  'View as Markdown(page actions)': '查看源码',
   displayName: '中文',
 } satisfies FumadocsUITranslations;
 

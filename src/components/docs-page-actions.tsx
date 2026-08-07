@@ -7,11 +7,7 @@
 // 操作，复用 fumadocs-ui 的 Popover 原语与条目样式。
 'use client';
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from 'fumadocs-ui/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from 'fumadocs-ui/components/ui/popover';
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { ChevronDown, ExternalLink, Text } from 'lucide-react';
 import { getPageDictionary } from '@/dictionaries';
@@ -40,7 +36,10 @@ export function DocsPageActions({ githubUrl, markdownUrl }: DocsPageActionsProps
   return (
     <div className="docs-page-actions">
       <Popover>
-        <PopoverTrigger aria-label={dict.pageActionsLabel} className="inline-flex items-center gap-2 text-sm">
+        <PopoverTrigger
+          aria-label={dict.pageActionsLabel}
+          className="inline-flex items-center gap-2 text-sm"
+        >
           {dict.pageActionsLabel}
           <ChevronDown aria-hidden="true" className="size-3.5 text-fd-muted-foreground" />
         </PopoverTrigger>
