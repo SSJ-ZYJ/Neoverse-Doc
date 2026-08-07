@@ -21,7 +21,10 @@ export async function generateMetadata(props: LayoutProps<'/[lang]'>): Promise<M
   const dict = getPageDictionary(locale);
 
   return {
-    title: dict.siteTitle,
+    title: {
+      default: dict.siteTitle,
+      template: `%s - ${dict.siteTitle}`,
+    },
     description: dict.tagline,
   };
 }
