@@ -1,19 +1,19 @@
 // Mermaid diagram renderer with zoom / pan / reset / maximize controls and a
-// render / code view toggle. Initializes mermaid on mount and re-renders
-// whenever the chart source or theme changes. Falls back to raw text on error.
+// render / code view toggle. Mermaid loads near the viewport and re-renders
+// only when chart source changes; theme colors update through CSS variables.
+// Falls back to raw text on error.
 // The floating toolbar stays inside the diagram wrapper in normal mode so it
 // shares the wrapper's scroll position and stacking order. Only maximized mode
 // portals it to document.body alongside the fullscreen diagram.
 // Mermaid 图表渲染器（带缩放 / 拖动 / 重置 / 视口内放大控制与渲染 / 代码
-// 视图切换）。挂载时初始化 mermaid，当图表源码或主题变化时重新渲染。
-// 出错时回退为原始文本。普通模式下工具栏保留在图表 wrapper 内，与图表
+// 视图切换）。图表接近视口时加载，仅在源码变化时重新渲染；主题配色通过
+// CSS 变量更新。出错时回退为原始文本。普通模式下工具栏保留在图表 wrapper 内，与图表
 // 共用滚动位置和层叠顺序；仅最大化模式随全屏图表 Portal 到 document.body。
 
 'use client';
 
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { Code2, Eye, Maximize, Minimize, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import {
   type CSSProperties,
   type RefObject,
@@ -163,7 +163,6 @@ export function Mermaid({ chart }: { chart: string }) {
   // 视图模式切换：'render'（SVG）或 'code'（只读源码）。偏好通过
   // Hook 持久化到 localStorage，重新访问时恢复上次使用的视图。
   const { viewMode, setViewMode, toggleViewMode } = useMermaidViewMode();
-  const { resolvedTheme } = useTheme();
   const { locale } = useI18n();
   // Locale from fumadocs i18n context is a string; resolve to a valid Locale
   // and pull labels from the shared dictionary (single source of truth).
@@ -204,11 +203,7 @@ export function Mermaid({ chart }: { chart: string }) {
   // source without keeping the heavyweight renderer active.
   // 仅当图表接近视口且用户处于渲染视图时才渲染 SVG。代码视图可直接展示
   // 原始源码，无需让较重的渲染器持续运行。
-  const svgContent = useMermaidRender(
-    chart,
-    resolvedTheme === 'dark' ? 'dark' : 'default',
-    shouldRender && viewMode === 'render',
-  );
+  const svgContent = useMermaidRender(chart, shouldRender && viewMode === 'render');
   const {
     scale,
     setScale,
@@ -225,8 +220,13 @@ export function Mermaid({ chart }: { chart: string }) {
     canZoomOut,
     canZoomIn,
   } = useZoomAndPan();
-  const { svgNatural } = useSvgViewBoxExpander(svgContent, inPageWrapperRef, wrapperRef);
   const { isMaximized, toggleMaximize } = useMermaidMaximize(scale, setScale, pan, setPan);
+  const { svgNatural } = useSvgViewBoxExpander(
+    svgContent,
+    inPageWrapperRef,
+    wrapperRef,
+    isMaximized,
+  );
   const { fitCanvasScale, recomputeFitCanvasScale } = useFitCanvasScale(
     svgNatural,
     inPageCanvasRef,

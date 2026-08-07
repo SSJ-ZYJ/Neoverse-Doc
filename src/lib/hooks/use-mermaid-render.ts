@@ -1,10 +1,10 @@
 // Hook: lazily loads Mermaid and renders a chart to SVG near the viewport.
-// Uses a request ID guard to prevent stale SVG from winning when the chart
-// source or theme changes rapidly (e.g., toggling theme back and forth).
-// The module promise is shared so multiple diagrams never duplicate the package request.
+// Mermaid is initialized once per client session; theme changes are handled by
+// project CSS variables so they do not re-parse and re-layout every diagram.
+// A request ID guard prevents stale SVG from winning when chart input changes.
 // 自定义 Hook：按需加载 Mermaid，并在图表接近视口时渲染 SVG。
-// 使用 request ID 守卫，防止图表源码或主题快速切换时旧 SVG 覆盖新结果。
-// 模块 Promise 在图表间共享，避免重复请求同一依赖。
+// Mermaid 在客户端会话中只初始化一次；主题变化交给项目 CSS 变量处理，
+// 不再重新解析、布局整页图表。request ID 守卫防止旧图覆盖新的源码结果。
 
 'use client';
 
@@ -14,6 +14,7 @@ type MermaidApi = typeof import('mermaid')['default'];
 
 let counter = 0;
 let mermaidPromise: Promise<MermaidApi> | undefined;
+let mermaidInitialized = false;
 
 // Metric-sensitive label styles must be present while Mermaid measures its
 // temporary SVG. Applying them only after injection can shift baselines or make
@@ -28,6 +29,16 @@ const MERMAID_METRIC_THEME_CSS = `
   .branchLabel text,
   .branchLabel tspan,
   .commit-label {
+    font-weight: 750;
+  }
+
+  svg[aria-roledescription='timeline'] .timeline-node text {
+    font-size: 18px;
+    font-weight: 650;
+  }
+
+  svg[aria-roledescription='timeline'] > text {
+    font-size: 24px;
     font-weight: 750;
   }
 
@@ -50,14 +61,62 @@ function loadMermaid() {
   return mermaidPromise;
 }
 
-export function useMermaidRender(chart: string, theme: 'dark' | 'default', enabled = true) {
+function initializeMermaid(mermaid: MermaidApi) {
+  if (mermaidInitialized) return;
+
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    fontFamily: 'inherit',
+    themeCSS: MERMAID_METRIC_THEME_CSS,
+    flowchart: {
+      htmlLabels: true,
+      useMaxWidth: false,
+    },
+    // Gantt reads its parent width while Mermaid renders in a temporary
+    // off-screen container. Use a stable intrinsic width so long pages cannot
+    // produce a several-thousand-pixel viewBox.
+    // 甘特图会在离屏临时容器中读取父级宽度；使用稳定固有宽度，避免长页面
+    // 生成数千像素的 viewBox。
+    gantt: {
+      fontSize: 12,
+      sectionFontSize: 12,
+      useMaxWidth: false,
+      useWidth: 640,
+    },
+    // Fixed intrinsic output prevents Git-specific layout from being measured
+    // against a transient 0px host.
+    // 固有尺寸输出避免 Git 专用布局在临时 0px 宿主中被错误测量。
+    gitGraph: {
+      rotateCommitLabel: false,
+      useMaxWidth: false,
+    },
+    sequence: {
+      useMaxWidth: false,
+    },
+    timeline: {
+      padding: 32,
+      useMaxWidth: false,
+    },
+    themeVariables: {
+      background: 'transparent',
+      commitLabelFontSize: '12px',
+      fontFamily: 'inherit',
+      tagLabelFontSize: '12px',
+    },
+  });
+  mermaidInitialized = true;
+}
+
+export function useMermaidRender(chart: string, enabled = true) {
   const mountedRef = useRef(true);
   const requestIdRef = useRef(0);
+  const renderedChartRef = useRef<string | null>(null);
   const [svgContent, setSvgContent] = useState<string | null>(null);
 
   const renderChart = useCallback(async () => {
     const code = chart?.trim();
-    if (!enabled || !code || !mountedRef.current) return;
+    if (!enabled || !code || !mountedRef.current || renderedChartRef.current === code) return;
 
     const id = `mermaid-${++counter}`;
     // Track the latest request so stale renders can be discarded.
@@ -74,57 +133,12 @@ export function useMermaidRender(chart: string, theme: 'dark' | 'default', enabl
         document.fonts?.ready ?? Promise.resolve(),
       ]);
 
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: 'base',
-        fontFamily: 'inherit',
-        themeCSS: MERMAID_METRIC_THEME_CSS,
-        flowchart: {
-          htmlLabels: true,
-          useMaxWidth: false,
-        },
-        // Gantt reads its parent width while Mermaid renders in a temporary
-        // off-screen container. On long documentation pages that container can
-        // inherit the page scroll width, producing a several-thousand-pixel
-        // viewBox that the shared fitter then shrinks to an unreadable scale.
-        // Use Mermaid's supported intrinsic width so the chart is measured
-        // consistently, centered by the shared SVG host, and only scaled down
-        // when the real document canvas is narrower.
-        // 甘特图会在 Mermaid 的离屏临时容器中读取父级宽度；长文档可能让该
-        // 容器继承整页滚动宽度，生成数千像素的 viewBox，再被通用适配逻辑
-        // 缩得过小。使用 Mermaid 官方支持的固有宽度，使图表稳定测量、由
-        // 共享 SVG 宿主居中，并且只在真实文档画布较窄时缩小。
-        gantt: {
-          fontSize: 12,
-          sectionFontSize: 12,
-          useMaxWidth: false,
-          useWidth: 640,
-        },
-        // gitGraph otherwise emits a width-only responsive SVG. The shared
-        // renderer normalizes both axes, and fixed intrinsic output prevents
-        // the Git-specific layout from being measured against a transient 0px host.
-        // gitGraph 默认输出仅含宽度的响应式 SVG；共享渲染器会统一归一化宽高，
-        // 固有尺寸输出可避免 Git 专用布局在临时 0px 宿主中被错误测量。
-        gitGraph: {
-          rotateCommitLabel: false,
-          useMaxWidth: false,
-        },
-        sequence: {
-          useMaxWidth: false,
-        },
-        themeVariables: {
-          background: 'transparent',
-          commitLabelFontSize: '12px',
-          fontFamily: 'inherit',
-          darkMode: theme === 'dark',
-          tagLabelFontSize: '12px',
-        },
-      });
-
+      initializeMermaid(mermaid);
       const { svg } = await mermaid.render(id, code);
       // Only apply the result if this is still the most recent request.
       // 仅当此请求仍为最新时才应用结果。
       if (!mountedRef.current || requestId !== requestIdRef.current) return;
+      renderedChartRef.current = code;
       setSvgContent(svg);
     } catch {
       if (!mountedRef.current || requestId !== requestIdRef.current) return;
@@ -132,7 +146,7 @@ export function useMermaidRender(chart: string, theme: 'dark' | 'default', enabl
       const leftover = document.getElementById(`d${id}`);
       if (leftover) leftover.remove();
     }
-  }, [chart, enabled, theme]);
+  }, [chart, enabled]);
 
   useEffect(() => {
     mountedRef.current = true;

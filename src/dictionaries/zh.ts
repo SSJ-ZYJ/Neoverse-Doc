@@ -55,12 +55,12 @@ export const zh = {
   draftUnlocked: '草稿正文已展开。',
   // Homepage portal copy / 首页内容门户文案
   home: {
-    eyebrow: '开放知识网络 · 持续生长',
-    heroDescription: '从计算机基础到算法实践，把零散经验连接成清晰、可检索、可共同维护的学习路径。',
-    scrollHint: '探索知识版图',
+    eyebrow: 'DO SOMETHING GREAT',
+    heroDescription: '一份还在持续建设的“技术”文档',
+    scrollHint: '探索与发现',
     chaptersEyebrow: '知识坐标',
-    chaptersTitle: '从真实章节开始探索',
-    chaptersDescription: '入口直接来自当前文档树；内容更新时，首页会随之保持一致。',
+    chaptersTitle: '章节版图',
+    chaptersDescription: '现阶段包含的内容',
     chapterAction: '打开章节',
     communityEyebrow: '共同维护',
     communityTitle: '让知识网络继续生长',

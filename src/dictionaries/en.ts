@@ -56,14 +56,14 @@ export const en = {
   draftUnlocked: 'Draft content unlocked.',
   // Homepage portal copy / 首页内容门户文案
   home: {
-    eyebrow: 'Open knowledge network · Always evolving',
+    eyebrow: 'DO SOMETHING GREAT',
     heroDescription:
-      'From computer fundamentals to algorithm practice, connect scattered experience into clear, searchable, and collaborative learning paths.',
+      'A document under construction for computer science learners, focused on "technical" topics.',
     scrollHint: 'Explore the knowledge map',
     chaptersEyebrow: 'Knowledge coordinates',
-    chaptersTitle: 'Start with real chapters',
+    chaptersTitle: 'Knowledge map',
     chaptersDescription:
-      'These entries come directly from the current documentation tree and evolve with it.',
+      'What is currently available',
     chapterAction: 'Open chapter',
     communityEyebrow: 'Built together',
     communityTitle: 'Help the knowledge network grow',

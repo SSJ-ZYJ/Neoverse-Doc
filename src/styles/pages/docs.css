@@ -1794,13 +1794,13 @@ html[data-nd-reading-restore] {
   }
 }
 
-/* Mobile keeps one restrained blur on the article surface while disabling it
-   on secondary viewport-sized surfaces. This preserves the document card's
-   frosted depth without restoring the heavier multi-layer sampling that caused
-   scroll jank. iOS also avoids fixed-background repaints below.
-   移动端仅为正文表面保留一层克制模糊，次要的大尺寸表面继续关闭滤镜，在
-   恢复文档卡片磨砂层次的同时避免重新引入多层采样造成的滚动卡顿；下方也
-   继续规避 iOS 固定背景重绘。 */
+/* Mobile keeps restrained blur on the article and detached discussion cards
+   while disabling it on other viewport-sized surfaces. This preserves both
+   document-card surfaces without restoring the heavier multi-layer sampling
+   that caused scroll jank. iOS also avoids fixed-background repaints below.
+   移动端为正文与独立讨论卡片保留克制模糊，其他大尺寸表面继续关闭滤镜，
+   在保持两块文档卡片层次的同时避免重新引入过重的多层采样；下方也继续
+   规避 iOS 固定背景重绘。 */
 @media (max-width: 768px) {
   /* background-attachment: fixed forces iOS Safari to repaint the background
      on every scroll frame. Switching to scroll lets the background scroll
@@ -1821,9 +1821,15 @@ html[data-nd-reading-restore] {
     backdrop-filter: blur(calc(var(--glass-blur-soft) * 0.5)) saturate(var(--glass-saturate)) !important;
   }
 
+  /* Keep the detached discussion card on the same restrained mobile glass tier
+     as the article. Disabling its filter left the shared translucent
+     --docs-page-background visually transparent against the circuit canvas.
+     独立讨论卡片在移动端与正文复用同一层克制玻璃。此前关闭滤镜后，共用的
+     半透明 --docs-page-background 会直接透出电路画布，看起来近似全透明。 */
   .docs-community-module {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur-soft) * 0.5))
+      saturate(var(--glass-saturate)) !important;
+    backdrop-filter: blur(calc(var(--glass-blur-soft) * 0.5)) saturate(var(--glass-saturate)) !important;
   }
 
   /* Top nav glass surface: same trade-off as #nd-page. The nav background

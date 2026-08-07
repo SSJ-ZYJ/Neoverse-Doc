@@ -9,7 +9,7 @@ export interface ExpandedViewBox {
 
 const DEFAULT_BBOX_PADDING = 16;
 const GIT_BRANCH_LABEL_ALIGNMENT_TOLERANCE = 0.25;
-const GIT_BRANCH_LABEL_INLINE_OFFSET = 16;
+const GIT_BRANCH_LABEL_INLINE_OFFSET = 24;
 const GIT_COMMIT_LABEL_INLINE_PADDING = 10;
 const GIT_COMMIT_LABEL_BLOCK_PADDING = 4;
 const GIT_COMMIT_LABEL_NODE_GAP = 6;
@@ -29,9 +29,27 @@ function transformPoint(matrix: DOMMatrix, x: number, y: number): SvgPoint {
   };
 }
 
-function getTransformedCenter(
-  element: SVGGraphicsElement,
-): { centerX: number; centerY: number } | null {
+function getLocalBounds(element: SVGGraphicsElement): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+} | null {
+  try {
+    const bounds = element.getBBox();
+    if (![bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite)) return null;
+    return bounds;
+  } catch {
+    return null;
+  }
+}
+
+function getTransformedBounds(element: SVGGraphicsElement): {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+} | null {
   try {
     const bounds = element.getBBox();
     const matrix = element.getCTM();
@@ -51,12 +69,150 @@ function getTransformedCenter(
     const maxY = Math.max(...yValues);
     if (![minX, maxX, minY, maxY].every(Number.isFinite)) return null;
 
-    return {
-      centerX: (minX + maxX) / 2,
-      centerY: (minY + maxY) / 2,
-    };
+    return { minX, minY, maxX, maxY };
   } catch {
     return null;
+  }
+}
+
+function getTransformedCenter(
+  element: SVGGraphicsElement,
+): { centerX: number; centerY: number } | null {
+  const bounds = getTransformedBounds(element);
+  if (!bounds) return null;
+
+  return {
+    centerX: (bounds.minX + bounds.maxX) / 2,
+    centerY: (bounds.minY + bounds.maxY) / 2,
+  };
+}
+
+/**
+ * Normalize every timeline label from the card's actual path bounds and merge
+ * Mermaid's detached accent rule into a square card bottom border. The title
+ * keeps Mermaid's original coordinates and anchors so normal and maximized
+ * views share the same renderer-defined placement.
+ *
+ * 依据卡片实际路径边界居中所有时间轴标签，并将 Mermaid 独立的强调线合并到
+ * 直角卡片底边。标题保留 Mermaid 原始坐标与锚点，使普通视图和全屏视图始终
+ * 使用渲染器定义的默认位置。
+ */
+export function normalizeTimeline(svg: SVGSVGElement): void {
+  if (svg.getAttribute('aria-roledescription') !== 'timeline') return;
+
+  for (const node of svg.querySelectorAll<SVGGElement>('.timeline-node')) {
+    const background = node.querySelector<SVGPathElement>(':scope > g > path.node-bkg');
+    const text = node.querySelector<SVGTextElement>(':scope > g > text');
+    const textGroup = text?.parentElement;
+    const bounds = background ? getLocalBounds(background) : null;
+    if (!background || !text || !textGroup || !bounds) continue;
+
+    background.setAttribute(
+      'd',
+      [
+        `M ${bounds.x} ${bounds.y}`,
+        `H ${bounds.x + bounds.width}`,
+        `V ${bounds.y + bounds.height}`,
+        `H ${bounds.x}`,
+        'Z',
+      ].join(' '),
+    );
+
+    const bottomBorder = node.querySelector<SVGLineElement>(':scope > g > line');
+    if (bottomBorder) {
+      const bottom = bounds.y + bounds.height;
+      bottomBorder.setAttribute('x1', String(bounds.x));
+      bottomBorder.setAttribute('x2', String(bounds.x + bounds.width));
+      bottomBorder.setAttribute('y1', String(bottom));
+      bottomBorder.setAttribute('y2', String(bottom));
+    }
+
+    const tspans = Array.from(text.children).filter(
+      (element): element is SVGTSpanElement => element.tagName.toLowerCase() === 'tspan',
+    );
+    const fontSize = Number.parseFloat(getComputedStyle(text).fontSize) || 18;
+    const lineHeight = fontSize * 1.18;
+    const textHeight = Math.max(tspans.length - 1, 0) * lineHeight;
+    const centerX = bounds.x + bounds.width / 2;
+    const centerY = bounds.y + bounds.height / 2 - textHeight / 2;
+
+    textGroup.setAttribute('transform', `translate(${centerX}, ${centerY})`);
+    text.removeAttribute('dy');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('alignment-baseline', 'middle');
+    text.setAttribute('text-anchor', 'middle');
+
+    tspans.forEach((tspan, index) => {
+      tspan.setAttribute('x', '0');
+      tspan.setAttribute('dy', index === 0 ? '0' : `${lineHeight}px`);
+    });
+  }
+}
+
+/**
+ * Mermaid flowcharts paint the complete edge layer after the cluster layer, so
+ * cross-cluster links can cover subgraph titles. Move only cluster labels into
+ * a final overlay group while leaving cluster surfaces below edges and regular
+ * nodes above them. The operation is naturally idempotent because moved labels
+ * are no longer descendants of the original cluster layer.
+ *
+ * Mermaid 流程图会在完整 cluster 层之后绘制边，因此跨子图连线可能覆盖子图
+ * 标题。这里只将 cluster 标题移入最终覆盖层，保留子图表面位于连线之下、普通
+ * 节点位于连线之上的原有结构。移动后的标题不再属于原 cluster 层，重复执行
+ * 不会再次移动或产生累计偏移。
+ */
+export function normalizeFlowchartClusterLabels(svg: SVGSVGElement): void {
+  const role = svg.getAttribute('aria-roledescription');
+  if (role !== 'flowchart-v2' && role !== 'flowchart') return;
+
+  const root = svg.querySelector<SVGGElement>('g.root');
+  const clusters = root?.querySelector<SVGGElement>(':scope > g.clusters');
+  if (!root || !clusters) return;
+
+  const labels = Array.from(
+    clusters.querySelectorAll<SVGGElement>(':scope > g.cluster > g.cluster-label'),
+  );
+  if (labels.length === 0) return;
+
+  let overlay = root.querySelector<SVGGElement>(
+    ':scope > g[data-mermaid-cluster-label-layer="true"]',
+  );
+  if (!overlay) {
+    overlay = svg.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
+    overlay.setAttribute('class', 'mermaid-cluster-label-layer');
+    overlay.dataset.mermaidClusterLabelLayer = 'true';
+    root.appendChild(overlay);
+  }
+
+  for (const label of labels) overlay.appendChild(label);
+}
+
+/**
+ * Mermaid's sequence renderer creates the Note rectangle and its text in the
+ * same group, then appends message lines and other diagram layers after that
+ * group. Move each complete note group to the end of its parent, with its
+ * background first and text last, so no later sibling can paint over the note
+ * text. This supports both normal text and foreignObject labels.
+ *
+ * Mermaid 的时序图渲染器会把 Note 背景与文字放在同一分组中，随后又在该分组
+ * 之后追加消息线等图层。将完整 Note 分组移到父级末尾，并保证背景在前、文字
+ * 在后，避免后续兄弟图层覆盖备注文字；同时兼容普通 text 与 foreignObject 标签。
+ */
+export function normalizeSequenceNotes(svg: SVGSVGElement): void {
+  if (svg.getAttribute('aria-roledescription') !== 'sequence') return;
+
+  for (const noteGroup of svg.querySelectorAll<SVGGElement>('g[data-et="note"]')) {
+    const noteBackground = noteGroup.querySelector<SVGElement>(':scope > .note');
+    if (!noteBackground) continue;
+
+    noteGroup.prepend(noteBackground);
+    for (const child of Array.from(noteGroup.children)) {
+      if (child === noteBackground) continue;
+      const isNoteText =
+        child.matches('.noteText, foreignObject') || Boolean(child.querySelector('.noteText'));
+      if (isNoteText) noteGroup.appendChild(child);
+    }
+    noteGroup.parentNode?.appendChild(noteGroup);
   }
 }
 
@@ -118,9 +274,9 @@ export function alignGitBranchLabels(svg: SVGSVGElement): void {
 
     // Mermaid leaves only 5px between the branch chip and the first commit.
     // Move both generated label layers toward inline-start so the shared
-    // GitGraph presentation has a clearer 21px visual separation.
+    // GitGraph presentation keeps a clear visual separation from the track.
     // Mermaid 默认只在分支标签与首个提交间保留 5px。统一将文字和背景向
-    // 行首移动，使共享 GitGraph 样式获得更清晰的 21px 视觉间距。
+    // 行首移动，使共享 GitGraph 样式与分支线保持清晰的视觉间距。
     background.setAttribute(
       'transform',
       `matrix(${backgroundMatrix.a} ${backgroundMatrix.b} ${backgroundMatrix.c} ${backgroundMatrix.d} ${backgroundMatrix.e - GIT_BRANCH_LABEL_INLINE_OFFSET} ${backgroundMatrix.f})`,
@@ -452,12 +608,28 @@ export function spaceGitGraphCommits(svg: SVGSVGElement): void {
     const anchor = inlineAxis === 'x' ? bounds.x + bounds.width / 2 : bounds.y + bounds.height / 2;
     translateGraphicsElement(bullet, anchor);
   }
-  for (const element of svg.querySelectorAll<SVGElement>(
-    'text.commit-label, rect.commit-label-bkg, text.tag-label, circle.tag-hole',
-  )) {
-    const attribute = inlineAxis === 'x' ? 'x' : 'y';
-    const anchor = readSvgNumber(element, attribute);
-    if (anchor !== null) translateCoordinate(element, attribute, anchor);
+  const commitLabelBackgrounds = Array.from(
+    svg.querySelectorAll<SVGRectElement>('rect.commit-label-bkg'),
+  );
+  const commitLabels = Array.from(svg.querySelectorAll<SVGTextElement>('text.commit-label'));
+  const commitLabelPairs = Math.min(commitLabelBackgrounds.length, commitLabels.length);
+  const inlineAttribute = inlineAxis === 'x' ? 'x' : 'y';
+  for (let index = 0; index < commitLabelPairs; index += 1) {
+    const background = commitLabelBackgrounds[index];
+    const label = commitLabels[index];
+    const labelAnchor = readSvgNumber(label, inlineAttribute);
+    if (labelAnchor === null) continue;
+    const centerIndex = getNearestCenterIndex(labelAnchor);
+    const delta = adjustedCenters[centerIndex] - originalCenters[centerIndex];
+    const backgroundAnchor = readSvgNumber(background, inlineAttribute);
+    if (backgroundAnchor !== null) {
+      background.setAttribute(inlineAttribute, String(backgroundAnchor + delta));
+    }
+    label.setAttribute(inlineAttribute, String(labelAnchor + delta));
+  }
+  for (const element of svg.querySelectorAll<SVGElement>('text.tag-label, circle.tag-hole')) {
+    const anchor = readSvgNumber(element, inlineAttribute);
+    if (anchor !== null) translateCoordinate(element, inlineAttribute, anchor);
   }
   for (const polygon of svg.querySelectorAll<SVGPolygonElement>('polygon.tag-label-bkg')) {
     const bounds = polygon.getBBox();
@@ -487,6 +659,9 @@ export function computeExpandedViewBox(
   svg: SVGSVGElement,
   padding = DEFAULT_BBOX_PADDING,
 ): ExpandedViewBox | null {
+  normalizeFlowchartClusterLabels(svg);
+  normalizeSequenceNotes(svg);
+  normalizeTimeline(svg);
   alignGitGraphLabels(svg);
   const vb = svg.viewBox.baseVal;
   const hasViewBox =
@@ -550,6 +725,9 @@ export function computeExpandedViewBox(
  * responsive SVG), so the shared host always normalizes both axes to 100%.
  */
 export function applySvgFixes(svg: SVGSVGElement, viewBox: string): void {
+  normalizeFlowchartClusterLabels(svg);
+  normalizeSequenceNotes(svg);
+  normalizeTimeline(svg);
   alignGitGraphLabels(svg);
   if (svg.getAttribute('viewBox') !== viewBox) {
     svg.setAttribute('viewBox', viewBox);

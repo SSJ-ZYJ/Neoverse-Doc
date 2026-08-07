@@ -297,6 +297,29 @@
   ry: var(--mermaid-shape-radius);
 }
 
+/* Flowchart edges are emitted after the cluster layer. The renderer moves
+   cluster labels into this final SVG layer so cross-subgraph arrows stay behind
+   the title glyphs instead of painting through them. The label remains a
+   pointer-transparent overlay because it is presentation-only.
+   流程图的边会在 cluster 层之后输出。渲染器将子图标题移动到最终 SVG 层，
+   使跨子图箭头位于文字之后绘制，不再穿过标题字形；该层仅用于展示，因此
+   保持鼠标事件穿透。 */
+.mermaid-svg-host
+  svg:is([aria-roledescription="flowchart-v2"], [aria-roledescription="flowchart"])
+  > g.root
+  > g.mermaid-cluster-label-layer {
+  pointer-events: none;
+}
+
+.mermaid-svg-host
+  svg:is([aria-roledescription="flowchart-v2"], [aria-roledescription="flowchart"])
+  > g.root
+  > g.mermaid-cluster-label-layer
+  :is(.cluster-label, .cluster-label foreignObject, .cluster-label .nodeLabel) {
+  color: var(--accent-primary) !important;
+  fill: var(--accent-primary) !important;
+}
+
 .mermaid-svg-host .node {
   /* Reference the shared SVG filter defined once per Mermaid instance.
      Falls back to CSS drop-shadow() if the SVG filter is unavailable
@@ -330,10 +353,48 @@
   flood-opacity: 0.14;
 }
 
-.mermaid-svg-host :is(.cluster rect, .actor, .note, .labelBox) {
+.mermaid-svg-host :is(.cluster rect, rect.actor, .labelBox) {
   fill: color-mix(in srgb, var(--surface-glass) 62%, transparent) !important;
   stroke: color-mix(in srgb, var(--border-interactive) 82%, var(--edge-light)) !important;
   stroke-width: 1.15px !important;
+}
+
+/* Mermaid uses `.actor` on both participant rectangles and participant text.
+   Restrict the shared surface to `rect.actor`, then explicitly restore the
+   readable foreground on both top and bottom participant labels.
+   Mermaid 会同时给 participant 的矩形和文字添加 `.actor`。共享表面只命中
+   `rect.actor`，并显式为顶部、底部 participant 标签恢复可读前景色。 */
+.mermaid-svg-host svg[aria-roledescription="sequence"] :is(text.actor.actor-box, text.actor-box tspan) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+}
+
+/* Sequence notes need an opaque-enough theme surface. The previous translucent
+   shared fill let actor lifelines and messages visually pass through the note,
+   which looked like the Note over rectangle was painted above its own text in
+   dark mode. The renderer also normalizes the complete note group to the final
+   paint layer. 时序图备注使用具有足够遮罩能力的主题表面。此前共用的透明填充会让
+   生命线与消息线透过备注，深色模式下看起来像 Note over 矩形盖住了自己的文字；
+   渲染器同时将完整备注分组归一到最后的绘制层。 */
+.mermaid-svg-host svg[aria-roledescription="sequence"] g[data-et="note"] > .note {
+  fill: var(--mermaid-note-surface) !important;
+  stroke: var(--mermaid-shape-stroke) !important;
+  stroke-width: 1.15px !important;
+  opacity: 1 !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="sequence"] g[data-et="note"] > :is(.noteText, foreignObject) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+  isolation: isolate;
+  paint-order: normal;
+}
+
+.mermaid-svg-host svg[aria-roledescription="sequence"] g[data-et="note"] > .noteText tspan {
+  fill: var(--text-primary) !important;
+  stroke: none !important;
 }
 
 .mermaid-svg-host .cluster rect {
@@ -531,52 +592,129 @@
   ry: var(--mermaid-shape-radius);
 }
 
-/* ER diagrams have their own entity table geometry rather than generic Mermaid
-   nodes. Keep the header, attribute rows, keys, relationship labels, and
-   cardinality markers in one compact editorial system.
-   ER 图使用实体表格专属几何，而非通用 Mermaid 节点。统一实体表头、属性行、
-   主键标识、关系标签与数量约束标记，形成紧凑的编辑式视觉系统。 */
-.mermaid-svg-host svg[aria-roledescription="er"] .entityBox {
+/* Mermaid 11.16 currently emits `er` for ER diagrams, while some renderer
+   versions expose `erDiagram`. Both variants draw each table and row as a
+   rough.js group whose first path carries the solid fill and remaining paths
+   carry the outline. Theme those concrete paint layers while keeping legacy
+   rect classes as fallbacks for older output.
+   Mermaid 11.16 当前为 ER 图输出 `er`，部分渲染器版本则输出 `erDiagram`。
+   两种变体都会将表格和属性行绘制为 rough.js 分组：首个 path 承载实色填充，
+   其余 path 承载轮廓。这里直接设置实际绘制层，同时保留旧版 rect 类作为回退。 */
+.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) .entityBox,
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .node
+  > .outer-path
+  > path:first-of-type {
   fill: var(--mermaid-er-header) !important;
-  stroke: var(--mermaid-shape-stroke) !important;
-  stroke-width: var(--mermaid-shape-stroke-width) !important;
+  stroke: none !important;
+  opacity: 1 !important;
 }
 
-.mermaid-svg-host svg[aria-roledescription="er"] .entityLabel {
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .node
+  > .outer-path
+  > path:not(:first-of-type) {
+  fill: none !important;
+  stroke: var(--mermaid-shape-stroke) !important;
+  stroke-width: var(--mermaid-shape-stroke-width) !important;
+  opacity: 1 !important;
+}
+
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .node
+  > :is(.attributeBoxOdd, .attributeBoxEven),
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .node
+  > :is(.row-rect-odd, .row-rect-even)
+  > path:first-of-type {
+  fill: var(--mermaid-er-row) !important;
+  stroke: none !important;
+  opacity: 1 !important;
+}
+
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .node
+  > :is(.row-rect-odd, .row-rect-even)
+  > path:not(:first-of-type) {
+  fill: none !important;
+  stroke: var(--mermaid-shape-stroke-muted) !important;
+  stroke-width: 0.85px !important;
+  opacity: 1 !important;
+}
+
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .node
+  > .attributeBoxOdd,
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .node
+  > .row-rect-odd
+  > path:first-of-type {
+  fill: color-mix(in srgb, var(--mermaid-er-row) 86%, var(--accent-primary)) !important;
+}
+
+.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) :is(.divider, .divider > path) {
+  fill: var(--mermaid-shape-stroke-muted) !important;
+  stroke: var(--mermaid-shape-stroke-muted) !important;
+}
+
+.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) :is(.entityLabel, .label.name) {
   fill: var(--accent-primary) !important;
   color: var(--accent-primary) !important;
   font-weight: 750 !important;
 }
 
-.mermaid-svg-host svg[aria-roledescription="er"] :is(.attributeBoxOdd, .attributeBoxEven) {
-  fill: var(--mermaid-er-row) !important;
-  stroke: var(--mermaid-shape-stroke-muted) !important;
-  stroke-width: 0.85px !important;
-}
-
-.mermaid-svg-host svg[aria-roledescription="er"] .attributeBoxOdd {
-  fill: color-mix(in srgb, var(--mermaid-er-row) 86%, var(--accent-primary)) !important;
-}
-
 .mermaid-svg-host
-  svg[aria-roledescription="er"]
-  :is(.attributeType, .attributeName, .attributeKey) {
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  :is(
+    .attributeType,
+    .attributeName,
+    .attributeKey,
+    .label.attribute-type,
+    .label.attribute-name,
+    .label.attribute-keys,
+    .label.attribute-comment
+  ) {
   fill: var(--text-secondary) !important;
   color: var(--text-secondary) !important;
 }
 
-.mermaid-svg-host svg[aria-roledescription="er"] .attributeKey {
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  :is(.attributeKey, .label.attribute-keys) {
   fill: var(--mermaid-er-key) !important;
   color: var(--mermaid-er-key) !important;
   font-weight: 750 !important;
 }
 
-.mermaid-svg-host svg[aria-roledescription="er"] :is(.relationshipLine, .edgePath path, .marker) {
+.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) :is(.relationshipLine, .edgePath path, .marker) {
+  fill: none !important;
   stroke: var(--accent-primary) !important;
   stroke-width: 1.55px !important;
 }
 
-.mermaid-svg-host svg[aria-roledescription="er"] .relationshipLabelBox {
+/* Mermaid hardcodes the optional-cardinality circles in `zeroOrOne` and
+   `zeroOrMore` markers to white. Use an opaque canvas tint and a strong accent
+   ring so the zero marker remains distinct on both light and dark surfaces.
+   Mermaid 会将 `zeroOrOne` 与 `zeroOrMore` 基数标记中的圆点硬编码为白色。
+   这里改用不透明画布色与高对比强调色描边，确保浅色和深色背景均清晰可见。 */
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  marker:is(.zeroOrOne, .zeroOrMore).er
+  > circle {
+  fill: var(--mermaid-er-zero-surface) !important;
+  stroke: var(--mermaid-er-zero-stroke) !important;
+  stroke-width: 2px !important;
+  vector-effect: non-scaling-stroke;
+}
+
+.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) .relationshipLabelBox {
   fill: var(--mermaid-label-surface) !important;
   stroke: var(--mermaid-label-stroke) !important;
   stroke-width: var(--mermaid-shape-stroke-width) !important;
@@ -585,13 +723,13 @@
   ry: var(--mermaid-label-radius);
 }
 
-.mermaid-svg-host svg[aria-roledescription="er"] :is(.edgeLabel, .relationshipLabel) {
+.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) :is(.edgeLabel, .relationshipLabel) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
   font-weight: 650 !important;
 }
 
-.mermaid-svg-host svg[aria-roledescription="er"] .edge-pattern-dashed {
+.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) .edge-pattern-dashed {
   stroke-dasharray: 6 5 !important;
 }
 
@@ -990,39 +1128,110 @@
   stroke: var(--accent-tertiary) !important;
 }
 
-/* Timeline nodes use a shared glass-card surface, a restrained accent axis,
-   and clear period/event typography. Renderer-generated section colors remain
-   only as small line accents rather than large saturated fields.
-   时间轴节点使用统一玻璃卡片、克制强调轴线与清晰的时期/事件文字层级；
-   渲染器生成的分组颜色仅作为小面积线条强调，不再形成大块高饱和色面。 */
-.mermaid-svg-host svg:has(.timeline-node) .timeline-node .node-bkg {
+/* Timeline geometry is normalized once after render: every card label follows
+   its card center and Mermaid's detached accent rule becomes the square card's
+   heavier bottom border. The title keeps Mermaid's original placement. CSS
+   owns only theme color, typography, and rasterization quality.
+   时间轴几何在渲染后一次性归一化：卡片标签对齐自身中心，并将 Mermaid 独立
+   强调线合并为直角卡片的加粗底边；标题保留 Mermaid 原始位置。CSS 仅负责
+   主题色、字体和栅格化质量。 */
+.mermaid-svg-host svg[aria-roledescription="timeline"] {
+  font-family:
+    var(--font-noto-sans), "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif !important;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* The shared node shadow softens text because timeline labels live inside the
+   same `.timeline-node` group as their card. Keep timeline cards crisp and let
+   the container surface provide depth instead.
+   通用节点阴影会连同 `.timeline-node` 内的文字一起栅格化，造成小字号锯齿；
+   时间轴关闭组级滤镜，由外层图表卡片继续提供层次。 */
+.mermaid-svg-host svg[aria-roledescription="timeline"] .timeline-node {
+  filter: none;
+}
+
+.mermaid-svg-host svg[aria-roledescription="timeline"] .timeline-node .node-bkg {
   fill: var(--mermaid-timeline-card) !important;
   stroke: var(--mermaid-shape-stroke) !important;
   stroke-width: var(--mermaid-shape-stroke-width) !important;
+  stroke-linejoin: miter;
+  shape-rendering: geometricPrecision;
 }
 
-.mermaid-svg-host svg:has(.timeline-node) .timeline-node text {
+.mermaid-svg-host svg[aria-roledescription="timeline"] .timeline-node text {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
-  font-weight: 650 !important;
+  stroke: none !important;
+  font-size: 18px !important;
+  font-weight: 620 !important;
+  letter-spacing: 0.01em;
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
 
-.mermaid-svg-host svg:has(.timeline-node) :is(.timeline-node line, .task-line, .timeline-axis) {
+.mermaid-svg-host svg[aria-roledescription="timeline"] .taskWrapper .timeline-node text {
+  font-size: 19px !important;
+  font-weight: 700 !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="timeline"] .eventWrapper .timeline-node text {
+  font-size: 17px !important;
+  font-weight: 580 !important;
+}
+
+/* `node-line-*` is generated below each period/event card. Geometry
+   normalization moves it onto the card edge, where it becomes the deliberate
+   heavier bottom border rather than a detached second line.
+   `node-line-*` 原本位于时期/事件卡片下方；几何归一化会把它贴合到卡片边缘，
+   作为明确的加粗底边，而不是悬空的第二条横线。 */
+.mermaid-svg-host svg[aria-roledescription="timeline"] :is(.timeline-node line, .node-line-0, .node-line-1, .node-line-2, .node-line--1) {
   stroke: var(--mermaid-timeline-axis) !important;
-  stroke-width: 1.5px !important;
+  stroke-width: 3px !important;
+  stroke-linecap: butt;
+  shape-rendering: geometricPrecision;
 }
 
-.mermaid-svg-host svg:has(.timeline-node) :is(.timeline-title, .titleText, .section-title) {
+/* The renderer writes black directly on every lineWrapper line. Override both
+   the dashed vertical connectors and the solid horizontal axis, then recolor
+   the shared arrowhead marker so no black connector remains in dark mode.
+   Mermaid 会直接给 lineWrapper 中的连线写入黑色，覆盖竖向虚线和横向主轴，
+   并同步重绘共用箭头标记，避免深色模式残留黑色连线。 */
+.mermaid-svg-host svg[aria-roledescription="timeline"] .lineWrapper > line {
+  stroke: var(--mermaid-timeline-axis) !important;
+  stroke-linecap: round;
+  shape-rendering: geometricPrecision;
+}
+
+.mermaid-svg-host svg[aria-roledescription="timeline"] .lineWrapper > line:not([stroke-dasharray]) {
+  stroke-width: 2.5px !important;
+}
+
+.mermaid-svg-host svg[aria-roledescription="timeline"] .lineWrapper > line[stroke-dasharray] {
+  stroke-width: 1.5px !important;
+  opacity: 0.82;
+}
+
+.mermaid-svg-host svg[aria-roledescription="timeline"] marker path {
+  fill: var(--mermaid-timeline-axis) !important;
+  stroke: var(--mermaid-timeline-axis) !important;
+}
+
+/* Timeline titles are direct SVG children in Mermaid 11.16. Preserve their
+   renderer-defined geometry so maximizing the diagram cannot shift the title;
+   only the theme foreground is adapted here.
+   Mermaid 11.16 的标题是 SVG 直接子节点。这里保留渲染器定义的坐标、锚点与
+   字号，避免图表全屏时标题发生偏移，仅适配主题前景色。 */
+.mermaid-svg-host svg[aria-roledescription="timeline"] > text {
   fill: var(--accent-primary) !important;
   color: var(--accent-primary) !important;
-  font-weight: 750 !important;
+  stroke: none !important;
 }
 
-.mermaid-svg-host
-  svg:has(.timeline-node)
-  :is(.eventWrapper, .eventWrapper text, .eventWrapper tspan) {
-  fill: var(--text-secondary) !important;
-  color: var(--text-secondary) !important;
+.mermaid-svg-host svg[aria-roledescription="timeline"] :is(.eventWrapper text, .eventWrapper tspan) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
 }
 
 /* Mermaid measures HTML labels before SVG insertion. Metric-sensitive styles

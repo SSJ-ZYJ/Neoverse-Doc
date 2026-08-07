@@ -1,8 +1,8 @@
 // Hook: measures a Mermaid-rendered SVG and computes an expanded viewBox
-// that contains every drawn element. Re-applies the expanded viewBox after
-// every commit because React replaces the SVG node on parent re-renders.
+// that contains every drawn element. Re-applies fixes only when the rendered
+// SVG node changes (for example when maximize mode moves it between wrappers).
 // 自定义 Hook：测量 Mermaid 渲染后的 SVG，计算包含所有绘制内容的扩展
-// viewBox，并在每次 commit 后重新应用（因为父组件重渲染会替换 SVG 节点）。
+// viewBox；仅在渲染后的 SVG 节点变化时重应用修复（例如最大化切换 wrapper）。
 
 'use client';
 
@@ -13,6 +13,7 @@ export function useSvgViewBoxExpander(
   svgContent: string | null,
   inPageWrapperRef: RefObject<HTMLDivElement | null>,
   maximizedWrapperRef: RefObject<HTMLDivElement | null>,
+  isMaximized: boolean,
 ) {
   const expandedViewBoxRef = useRef<{ viewBox: string; width: number; height: number } | null>(
     null,
@@ -42,27 +43,21 @@ export function useSvgViewBoxExpander(
     setSvgNatural({ width: expanded.width, height: expanded.height });
   }, [svgContent, inPageWrapperRef]);
 
-  // Re-apply the expanded viewBox after every commit. React replaces the SVG
-  // element on each parent re-render, so the [svgContent]-scoped effect above
-  // is not enough: any setState (zoom, pan, maximize, theme) would reset it.
-  // applySvgFixes guards each attribute independently: some Mermaid renderers
-  // can restore their original width/height while keeping the same viewBox.
-  // 每次 commit 后重新应用扩展 viewBox。React 在父组件重渲染时会替换 SVG
-  // 节点，仅依赖 [svgContent] 的上方的 effect 不够：任何 setState（缩放、
-  // 平移、最大化、主题）都会重置它。applySvgFixes 会分别检查各属性，因为
-  // 部分 Mermaid 渲染器会保留 viewBox 却恢复其原始宽高。
+  // Maximize toggling replaces one SVG node with another: entering mounts the
+  // portal copy, while exiting remounts the in-page copy from raw svgContent.
+  // Apply the stored fixes to whichever node is active so both directions keep
+  // GitGraph labels and other normalized geometry. Ordinary zoom, pan, and
+  // theme updates still do not revisit Mermaid geometry.
+  // 最大化切换会替换 SVG 节点：进入时挂载 Portal 副本，退出时则从原始
+  // svgContent 重新挂载页面内副本。对当前激活节点重应用已保存修复，确保两个
+  // 方向的 GitGraph 标签及其他归一化几何保持一致；普通缩放、平移与主题变化
+  // 仍不会重复处理 Mermaid 几何。
   useLayoutEffect(() => {
     const stored = expandedViewBoxRef.current;
-    if (!stored) return;
-
-    const wrappers = [inPageWrapperRef.current, maximizedWrapperRef.current];
-    for (const wrapper of wrappers) {
-      if (!wrapper) continue;
-      const svg = wrapper.querySelector<SVGSVGElement>('.mermaid-svg-host > svg');
-      if (!svg) continue;
-      applySvgFixes(svg, stored.viewBox);
-    }
-  });
+    const wrapper = isMaximized ? maximizedWrapperRef.current : inPageWrapperRef.current;
+    const svg = wrapper?.querySelector<SVGSVGElement>('.mermaid-svg-host > svg');
+    if (stored && svg) applySvgFixes(svg, stored.viewBox);
+  }, [isMaximized, inPageWrapperRef, maximizedWrapperRef]);
 
   return { expandedViewBoxRef, svgNatural };
 }
