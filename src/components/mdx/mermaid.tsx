@@ -1,14 +1,16 @@
 // Mermaid diagram renderer with zoom / pan / reset / maximize controls and a
-// render / code view toggle. Mermaid loads near the viewport and re-renders
-// only when chart source changes; theme colors update through CSS variables.
-// Falls back to raw text on error.
+// render / code view toggle. Charts render through the shared idle-time
+// scheduler (mermaid-render-scheduler) and re-render only when the chart
+// source changes; theme colors update through CSS variables. Falls back to
+// raw text on error.
 // The floating toolbar stays inside the diagram wrapper in normal mode so it
 // shares the wrapper's scroll position and stacking order. Only maximized mode
 // portals it to document.body alongside the fullscreen diagram.
 // Mermaid 图表渲染器（带缩放 / 拖动 / 重置 / 视口内放大控制与渲染 / 代码
-// 视图切换）。图表接近视口时加载，仅在源码变化时重新渲染；主题配色通过
-// CSS 变量更新。出错时回退为原始文本。普通模式下工具栏保留在图表 wrapper 内，与图表
-// 共用滚动位置和层叠顺序；仅最大化模式随全屏图表 Portal 到 document.body。
+// 视图切换）。图表由共享调度器在空闲时段渲染，仅在源码变化时重新渲染；
+// 主题配色通过 CSS 变量更新。出错时回退为原始文本。普通模式下工具栏保留在
+// 图表 wrapper 内，与图表共用滚动位置和层叠顺序；仅最大化模式随全屏图表
+// Portal 到 document.body。
 
 'use client';
 
@@ -33,9 +35,11 @@ import { useMermaidViewMode } from '@/lib/hooks/use-mermaid-view-mode';
 import { useSvgViewBoxExpander } from '@/lib/hooks/use-svg-viewbox-expander';
 import { DEFAULT_SCALE, ORIGIN, useZoomAndPan } from '@/lib/hooks/use-zoom-and-pan';
 import { resolveLocale } from '@/lib/i18n';
+import { promoteMermaidChart } from '@/lib/mermaid-render-scheduler';
 
-// Start diagram work before it enters the viewport so scrolling never exposes an unloaded canvas.
-// 图表进入视口前提前启动渲染，避免滚动时暴露尚未加载的画布。
+// Promote the chart as it approaches the viewport so the reader never reaches
+// an unrendered canvas when idle scheduling hasn't covered it yet.
+// 图表接近视口时提升渲染优先级，避免空闲调度尚未覆盖时读者看到未渲染画布。
 const MERMAID_RENDER_ROOT_MARGIN = '600px 0px';
 // Keep the wheel-zoom transition active briefly after the last wheel event so
 // the final 140ms glide can finish before the default (longer) transitions
@@ -142,7 +146,6 @@ export function Mermaid({ chart }: { chart: string }) {
   const inPageCanvasRef = useRef<HTMLDivElement>(null);
   const maximizedCanvasRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
-  const [shouldRender, setShouldRender] = useState(false);
 
   // Unique id for the shared SVG drop-shadow filter. Defined once per Mermaid
   // instance so all .node elements in the same diagram reference a single
@@ -174,21 +177,21 @@ export function Mermaid({ chart }: { chart: string }) {
     setMounted(true);
   }, []);
 
+  // When the diagram approaches the viewport, promote it to the front of the
+  // shared idle render queue so charts the reader is actually reaching finish
+  // first if the idle pump hasn't covered them yet. Rendering itself stays off
+  // the scroll path; this observer only reorders pending work.
+  // 图表接近视口时将其提升到共享空闲渲染队列的队首，保证读者即将看到的
+  // 图表在空闲泵尚未覆盖时优先完成。渲染本身仍不占用滚动路径，此观察器
+  // 只负责调整待处理任务的顺序。
   useEffect(() => {
-    if (shouldRender) return;
-
     const wrapper = inPageWrapperRef.current;
-    if (!wrapper || typeof IntersectionObserver === 'undefined') {
-      setShouldRender(true);
-      return;
-    }
+    if (!wrapper || typeof IntersectionObserver === 'undefined') return;
 
-    // Render once the diagram approaches the viewport; no observer remains afterward.
-    // 图表接近视口时仅触发一次渲染，随后立即释放观察器。
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry?.isIntersecting) return;
-        setShouldRender(true);
+        promoteMermaidChart(chart);
         observer.disconnect();
       },
       { rootMargin: MERMAID_RENDER_ROOT_MARGIN },
@@ -196,14 +199,15 @@ export function Mermaid({ chart }: { chart: string }) {
     observer.observe(wrapper);
 
     return () => observer.disconnect();
-  }, [shouldRender]);
+  }, [chart]);
 
-  // Only render the SVG when the diagram has approached the viewport AND the
-  // user is viewing the rendered diagram. Code view can display the original
-  // source without keeping the heavyweight renderer active.
-  // 仅当图表接近视口且用户处于渲染视图时才渲染 SVG。代码视图可直接展示
-  // 原始源码，无需让较重的渲染器持续运行。
-  const svgContent = useMermaidRender(chart, shouldRender && viewMode === 'render');
+  // Only render the SVG when the user is viewing the rendered diagram. Code
+  // view can display the original source without keeping the heavyweight
+  // renderer active; charts still pre-render in the background via the shared
+  // scheduler when they approach the viewport.
+  // 仅当用户处于渲染视图时才展示 SVG。代码视图可直接展示原始源码，无需
+  // 让较重的渲染器持续运行；图表接近视口时仍由共享调度器在后台预渲染。
+  const svgContent = useMermaidRender(chart, viewMode === 'render');
   const {
     scale,
     setScale,
