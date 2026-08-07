@@ -1138,6 +1138,13 @@ html[data-nd-reading-restore] {
   margin-block-start: 3.5rem;
 }
 
+/* A document that opens directly with an h2 should rely on the header divider's
+   spacing instead of also inheriting the between-section heading margin.
+   正文以 h2 直接开篇时，仅沿用头部分隔线的间距，避免叠加章节间标题上边距。 */
+#nd-page [data-docs-body] > h2:first-child {
+  margin-block-start: 0;
+}
+
 #nd-page h3 {
   margin-block-start: 2.5rem;
 }

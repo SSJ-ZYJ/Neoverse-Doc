@@ -544,10 +544,14 @@ pre code {
     box-shadow var(--theme-transition-duration) ease;
 }
 
-/* Code block hover: 展示性容器，不抬升，仅切换到 hover 投影，
-   与 .markdown-alert / table 容器保持一致的悬浮层级反馈。 */
+/* Code block hover: keep the reading surface stationary while strengthening
+   its tint, rim, and ambient shadow so the state remains visible in both themes.
+   代码块悬浮：阅读表面保持静止，通过底色、边缘与环境投影共同增强反馈，
+   确保浅色和深色主题下都能清晰辨识。 */
 @media (hover: hover) {
   .glass-codeblock:hover {
+    border-color: color-mix(in srgb, var(--accent-primary) 34%, var(--glass-border-hairline));
+    background-color: var(--glass-control-hover-tint);
     box-shadow:
       inset 0 1px 0 var(--glass-highlight),
       var(--glass-shadow-hover);

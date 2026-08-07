@@ -1648,9 +1648,13 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
   overflow: hidden;
 }
 
-/* Tabs container hover: 展示性容器，不抬升，仅切换 hover 投影。 */
+/* Tabs container hover: the outer panel owns one unified response for the tab
+   strip and its nested code block, avoiding duplicated borders or shadows.
+   Tabs 容器悬浮：由外层面板统一响应语言栏与内部代码块，避免重复描边或投影。 */
 @media (hover: hover) {
   #nd-page div[data-orientation]:has(> [role="tablist"]):hover {
+    border-color: color-mix(in srgb, var(--accent-primary) 34%, var(--glass-border-hairline));
+    background-color: var(--glass-control-hover-tint);
     box-shadow:
       inset 0 1px 0 var(--glass-highlight),
       var(--glass-shadow-hover);
