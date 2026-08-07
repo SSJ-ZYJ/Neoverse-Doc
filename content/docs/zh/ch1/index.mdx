@@ -6,7 +6,7 @@ author:
   - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 > [!DETAILS-AI] 本章 AI 摘要
-> 本章包含 7 个阶段、16 节已发布内容，覆盖文件管理、Windows 设置、浏览器与常用工具，以及文本编辑、Markdown、Shell、开发环境、Git 和 Docker。既可以按阶段系统学习，也可以从当前问题对应的小节开始查阅。
+> 本章包含 7 个阶段、17 节已发布内容，覆盖文件管理、Windows 设置、浏览器与常用工具，以及文本编辑、Markdown、LaTeX、Shell、开发环境、Git 和 Docker。既可以按阶段系统学习，也可以从当前问题对应的小节开始查阅。
 
 ## 一、前言
 
@@ -15,7 +15,7 @@ author:
 诚然，我国的绝大多数计算机科班生在上大学前甚至可能从未接触过计算机，他们或许因各种各样的原因，走入了这类专业。然而，大多数科班生的课程培养方案，往往假设他们已经具备了基本的计算机操作能力，同时也并不包含一些如 配置环境、Git、Docker、智能体编程 等 “现代化内容” 的教学。
 
 > [!DETAILS-FAQ] 为何名为 “缺失的一学期” ？
-> 如果我们注意到本章的标题，或许会好奇：为什么叫“缺失的一学期”？
+> 如果注意到本章的标题，或许会好奇：为什么叫“缺失的一学期”？
 >
 > 而本章的编写灵感，最初源于 MIT 的一门课程：[The Missing Semester of Your CS Education](https://missing.csail.mit.edu/)。这门课程主要关注那些在传统课堂中较少被系统讲授，但会长期影响学习与开发效率的工具与实践能力。
 >
@@ -43,30 +43,31 @@ flowchart TD
         direction TB
         S3_1["1.7 文本编辑<br/>编码、换行符与编辑器"]
         S3_2["1.8 Markdown<br/>轻量标记语言"]
-        S3_3["1.9 Mermaid<br/>流程图与图表"]
+        S3_3["1.9 LaTeX<br/>数学公式与文档排版"]
+        S3_4["1.10 Mermaid<br/>流程图与图表"]
     end
 
     subgraph S4[Stage 4：系统与 Shell]
         direction TB
-        S4_1["1.10 主流操作系统分类<br/>Windows / Linux / macOS"]
-        S4_2["1.11 Shell 基础<br/>命令行与脚本"]
-        S4_3["1.12 Shell 中的文本编辑<br/>nano、Vim 与安全编辑流程"]
+        S4_1["1.11 主流操作系统分类<br/>Windows / Linux / macOS"]
+        S4_2["1.12 Shell 基础<br/>命令行与脚本"]
+        S4_3["1.13 Shell 中的文本编辑<br/>nano、Vim 与安全编辑流程"]
     end
 
     subgraph S5[Stage 5：配置环境]
         direction TB
-        S5_1["1.13 配置环境<br/>开发环境搭建"]
+        S5_1["1.14 配置环境<br/>开发环境搭建"]
     end
 
     subgraph S6[Stage 6：版本控制]
         direction TB
-        S6_1["1.14 版本控制 Git<br/>分支、合并与远程"]
-        S6_2["1.15 GitHub 与 CNB<br/>代码托管与协作"]
+        S6_1["1.15 版本控制 Git<br/>分支、合并与远程"]
+        S6_2["1.16 GitHub 与 CNB<br/>代码托管与协作"]
     end
 
     subgraph S7[Stage 7：Docker 基础]
         direction TB
-        S7_1["1.16 Docker 基础<br/>容器化开发环境"]
+        S7_1["1.17 Docker 基础<br/>容器化开发环境"]
     end
 
     S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7
@@ -96,34 +97,35 @@ flowchart TD
 | :------------------------------- | :--------------------- |
 | [1.7 文本编辑](./ch1/1.7-Text-Editing) | 理解字符编码、换行符与编辑器选择 |
 | [1.8 Markdown](./ch1/1.8-Markdown) | 掌握标题、列表、代码块、表格、链接等基础语法 |
-| [1.9 Mermaid](./ch1/1.9-Mermaid) | 用文本绘制流程图、时序图与甘特图 |
+| [1.9 LaTeX](./ch1/1.9-LaTeX) | 掌握数学公式、文档结构、交叉引用与基本编译流程 |
+| [1.10 Mermaid](./ch1/1.10-Mermaid) | 用文本绘制流程图、时序图与甘特图 |
 
 ### Stage 4：系统与 Shell
 
 | 小节 | 目标 |
 | :--------------------------------------------- | :------------------------------ |
-| [1.10 主流操作系统分类](./ch1/1.10-Operating-Systems) | 了解 Windows、Linux、macOS 的差异与适用场景 |
-| [1.11 Shell 基础](./ch1/1.11-Shell-Basics) | 掌握文件操作、管道、重定向、权限等核心命令 |
-| [1.12 Shell 中的文本编辑](./ch1/1.12-Shell-Text-Editing) | 使用 `nano` 与 `Vim` 安全地修改和验证文件 |
+| [1.11 主流操作系统分类](./ch1/1.11-Operating-Systems) | 了解 Windows、Linux、macOS 的差异与适用场景 |
+| [1.12 Shell 基础](./ch1/1.12-Shell-Basics) | 掌握文件操作、管道、重定向、权限等核心命令 |
+| [1.13 Shell 中的文本编辑](./ch1/1.13-Shell-Text-Editing) | 使用 `nano` 与 `Vim` 安全地修改和验证文件 |
 
 ### Stage 5：环境配置
 
 | 小节 | 目标 |
 | :------------------------------------ | :------------------------------------------------ |
-| [1.13 配置环境](./ch1/1.13-Environment-Setup) | 串联 WSL、Git、Node.js、Python、VS Code 与 Docker，搭建完整环境 |
+| [1.14 配置环境](./ch1/1.14-Environment-Setup) | 串联 WSL、Git、Node.js、Python、VS Code 与 Docker，搭建完整环境 |
 
 ### Stage 6：版本控制
 
 | 小节 | 目标 |
 | :------------------------------------------ | :------------------------------------ |
-| [1.14 版本控制 Git](./ch1/1.14-Version-Control-Git) | 理解 Git 模型，掌握分支、合并、撤销与远程操作 |
-| [1.15 GitHub 与 CNB](./ch1/1.15-GitHub-CNB) | 完成账号、SSH、仓库与 Fork + Pull Request 协作流程 |
+| [1.15 版本控制 Git](./ch1/1.15-Version-Control-Git) | 理解 Git 模型，掌握分支、合并、撤销与远程操作 |
+| [1.16 GitHub 与 CNB](./ch1/1.16-GitHub-CNB) | 完成账号、SSH、仓库与 Fork + Pull Request 协作流程 |
 
 ### Stage 7：Docker 基础
 
 | 小节 | 目标 |
 | :------------------------------------- | :----------------------------------- |
-| [1.16 Docker 基础](./ch1/1.16-Docker-Basics) | 使用镜像、容器、Dockerfile 与 Compose 管理可复现环境 |
+| [1.17 Docker 基础](./ch1/1.17-Docker-Basics) | 使用镜像、容器、Dockerfile 与 Compose 管理可复现环境 |
 
 以上七个阶段覆盖了从基础操作到开发工具链的核心内容。不必一口气读完：第一次阅读可以先建立全局认识，遇到实际问题时再回到对应小节复习和练习。
 
@@ -135,8 +137,8 @@ flowchart TD
 - [ ] 通读章节概览，了解本章覆盖的内容与学习路径
 - [ ] 完成 Stage 1：[文件管理](./ch1/1.1-File-Management)、[Windows 设置](./ch1/1.2-Windows-Settings)、[浏览器](./ch1/1.3-Browser)与[常用工具与软件](./ch1/1.4-Common-Tools)
 - [ ] 完成 Stage 2：[如何提问](./ch1/1.5-Asking-Questions)、[社区](./ch1/1.6-Community-Platforms)
-- [ ] 完成 Stage 3：[文本编辑](./ch1/1.7-Text-Editing)、[Markdown](./ch1/1.8-Markdown)、[Mermaid](./ch1/1.9-Mermaid)
-- [ ] 完成 Stage 4：[主流操作系统](./ch1/1.10-Operating-Systems)、[Shell 基础](./ch1/1.11-Shell-Basics)、[Shell 中的文本编辑](./ch1/1.12-Shell-Text-Editing)
-- [ ] 完成 Stage 5：[环境配置](./ch1/1.13-Environment-Setup)
-- [ ] 完成 Stage 6：[版本控制 Git](./ch1/1.14-Version-Control-Git)、[GitHub 与 CNB](./ch1/1.15-GitHub-CNB)
-- [ ] 完成 Stage 7：[Docker 基础](./ch1/1.16-Docker-Basics)
+- [ ] 完成 Stage 3：[文本编辑](./ch1/1.7-Text-Editing)、[Markdown](./ch1/1.8-Markdown)、[LaTeX](./ch1/1.9-LaTeX)、[Mermaid](./ch1/1.10-Mermaid)
+- [ ] 完成 Stage 4：[主流操作系统](./ch1/1.11-Operating-Systems)、[Shell 基础](./ch1/1.12-Shell-Basics)、[Shell 中的文本编辑](./ch1/1.13-Shell-Text-Editing)
+- [ ] 完成 Stage 5：[环境配置](./ch1/1.14-Environment-Setup)
+- [ ] 完成 Stage 6：[版本控制 Git](./ch1/1.15-Version-Control-Git)、[GitHub 与 CNB](./ch1/1.16-GitHub-CNB)
+- [ ] 完成 Stage 7：[Docker 基础](./ch1/1.17-Docker-Basics)
