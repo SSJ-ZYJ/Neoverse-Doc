@@ -29,7 +29,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   const MDX = page.data.body;
   const slugKey = slug.join('/');
   const sourcePath = page.data.info.fullPath;
-  const markdownUrl = `/${locale}/docs-source/${slugKey}`;
+  const markdownUrl = `/${locale}/docs-source/${slugKey}.md`;
   const githubUrl = `${REPO_URL}/blob/main/${sourcePath}`;
   // Contributor frontmatter supports both singular and plural keys.
   // 贡献者 frontmatter 同时兼容单数与复数字段。
@@ -44,7 +44,9 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
            right-aligned beside it.
            作者与页面操作共用一行基线：作者在左，操作弹层右对齐。 */}
       <div className="docs-page-meta">
-        {page.data.author && <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />}
+        {page.data.author && (
+          <DocsAuthor author={page.data.author} label={dict.primaryAuthorLabel} />
+        )}
         <DocsPageActions githubUrl={githubUrl} markdownUrl={markdownUrl} />
       </div>
     </>
