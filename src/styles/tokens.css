@@ -276,7 +276,11 @@
   --mermaid-er-header: color-mix(in srgb, var(--accent-primary) 16%, var(--surface-elevated));
   --mermaid-er-row: color-mix(in srgb, var(--surface-elevated) 78%, var(--docs-canvas-surface));
   --mermaid-er-key: color-mix(in srgb, var(--accent-secondary) 72%, var(--text-primary));
-  --mermaid-er-zero-surface: color-mix(in srgb, var(--accent-primary) 18%, var(--docs-canvas-surface));
+  --mermaid-er-zero-surface: color-mix(
+    in srgb,
+    var(--accent-primary) 18%,
+    var(--docs-canvas-surface)
+  );
   --mermaid-er-zero-stroke: color-mix(in srgb, var(--accent-primary) 78%, var(--text-primary));
   --mermaid-note-surface: color-mix(in srgb, var(--surface-elevated) 94%, var(--accent-primary));
   --mermaid-mindmap-root: color-mix(in srgb, var(--accent-primary) 74%, var(--surface-elevated));
@@ -492,7 +496,11 @@
   --mermaid-er-header: color-mix(in srgb, var(--accent-primary) 18%, var(--docs-canvas-surface));
   --mermaid-er-row: color-mix(in srgb, var(--text-secondary) 8%, var(--docs-canvas-surface));
   --mermaid-er-key: color-mix(in srgb, var(--accent-secondary) 74%, var(--text-primary));
-  --mermaid-er-zero-surface: color-mix(in srgb, var(--accent-primary) 16%, var(--docs-canvas-surface));
+  --mermaid-er-zero-surface: color-mix(
+    in srgb,
+    var(--accent-primary) 16%,
+    var(--docs-canvas-surface)
+  );
   --mermaid-er-zero-stroke: color-mix(in srgb, var(--accent-primary) 76%, var(--text-primary));
   --mermaid-note-surface: color-mix(in srgb, var(--docs-canvas-surface) 88%, var(--accent-primary));
   --mermaid-mindmap-root: color-mix(in srgb, var(--accent-primary) 48%, var(--docs-canvas-surface));

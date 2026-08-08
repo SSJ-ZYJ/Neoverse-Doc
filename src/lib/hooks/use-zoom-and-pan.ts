@@ -303,6 +303,34 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
     }
   }, []);
 
+  // End any active pointer gesture before a fullscreen geometry transition.
+  // Pointer capture can otherwise keep delivering drag / pinch updates even
+  // after the animated wrapper has disabled pointer hit testing. Preserve the
+  // last position reached before the lock, then discard all gesture state.
+  // 全屏几何动画开始前结束当前指针手势。否则 pointer capture 会绕过动画层的
+  // 命中禁用，继续发送拖拽 / 双指缩放更新。保留锁定前的最终位置，再清空手势状态。
+  const cancelInteraction = useCallback((canvas: HTMLElement | null) => {
+    if (dragStateRef.current?.moved) {
+      setPan(panRef.current);
+    }
+
+    if (canvas) {
+      for (const pointerId of pointersRef.current.keys()) {
+        try {
+          if (canvas.hasPointerCapture(pointerId)) canvas.releasePointerCapture(pointerId);
+        } catch {
+          // Capture may already have ended outside the canvas.
+        }
+      }
+      delete canvas.dataset.dragging;
+    }
+
+    pointersRef.current.clear();
+    pinchStateRef.current = null;
+    dragStateRef.current = null;
+    setIsDragging(false);
+  }, []);
+
   const canZoomOut = scale > MIN_SCALE;
   const canZoomIn = scale < MAX_SCALE;
   return {
@@ -318,6 +346,7 @@ export function useZoomAndPan(initialScale = DEFAULT_SCALE) {
     handlePointerDown,
     handlePointerMove,
     endDrag,
+    cancelInteraction,
     canZoomOut,
     canZoomIn,
   };

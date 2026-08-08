@@ -1083,6 +1083,16 @@ html[data-nd-reading-restore] {
     contain-intrinsic-block-size: auto 16rem;
   }
 
+  /* Promoted Mermaid charts render while the reader is still approaching.
+     Materialize the completed SVG in that quiet window instead of deferring
+     its first real layout until content-visibility activates at the viewport.
+     尚在接近视口时，已提升优先级的 Mermaid 图表会在阅读停顿中完成渲染。
+     此时直接实体化 SVG，避免等 content-visibility 到达视口才触发首次真实布局。 */
+  #nd-page [data-docs-body] > .mermaid-wrapper[data-rendered] {
+    content-visibility: visible;
+    contain-intrinsic-block-size: none;
+  }
+
   /* Materialize deferred blocks during exact reading restoration and for the
      remainder of a page after task-list navigation, preventing target drift.
      在精确阅读恢复期间以及任务清单跳转后的当前页面生命周期内展开延迟区块，

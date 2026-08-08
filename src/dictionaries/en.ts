@@ -62,8 +62,7 @@ export const en = {
     scrollHint: 'Explore the knowledge map',
     chaptersEyebrow: 'Knowledge coordinates',
     chaptersTitle: 'Knowledge map',
-    chaptersDescription:
-      'What is currently available',
+    chaptersDescription: 'What is currently available',
     chapterAction: 'Open chapter',
     communityEyebrow: 'Built together',
     communityTitle: 'Help the knowledge network grow',

@@ -18,7 +18,8 @@
       "!**/*.min.js",
       "!**/bun.lock",
       "!**/package-lock.json",
-      "!**/yarn.lock"
+      "!**/yarn.lock",
+      "!**/public/mermaid"
     ]
   },
   "formatter": {

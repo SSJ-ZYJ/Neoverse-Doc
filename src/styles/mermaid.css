@@ -16,6 +16,19 @@
   border-radius: var(--radius-md);
   box-shadow: var(--mermaid-surface-shadow);
   overflow: hidden;
+  /* Isolate layout and style recalculation so injecting a large Mermaid SVG
+     does not trigger document-wide reflow. `layout` creates an independent
+     formatting context (the wrapper is already position: relative, so this
+     does not change containing-block behavior) and `style` scopes counter and
+     quote isolation. Neither value creates a stacking context, so the
+     wrapper remains excluded from the backdrop-root chain — the toolbar's
+     backdrop-filter still samples #nd-page content as intended.
+     隔离布局与样式重算，使注入大型 Mermaid SVG 时不触发整文档重排。
+     `layout` 创建独立格式化上下文（wrapper 已是 position: relative，
+     不改变包含块行为），`style` 限定计数器与引用隔离。两者均不创建
+     层叠上下文，wrapper 仍排除在 backdrop-root 链之外 —— 工具栏的
+     backdrop-filter 仍按预期采样 #nd-page 内容。 */
+  contain: layout style;
   /* No z-index / isolation here on purpose. Any stacking context (z-index: 0,
      isolation: isolate, etc.) is a backdrop root per the Filter Effects spec.
      If the wrapper became a backdrop root, the toolbar's backdrop-filter would
@@ -161,13 +174,16 @@
 /* Short, wide timeline diagrams make the canvas' larger toolbar clearance
    especially noticeable. Give Gantt and Git Graph symmetric block padding so
    their fitted timelines are geometrically centered while retaining the full
-   bottom safe area for controls.
+   bottom safe area for controls. The data attribute is set by useFitCanvasScale
+   after reading the SVG's aria-roledescription, avoiding a :has() selector that
+   would force a subtree scan on every style recalc.
    短而宽的时间线图会让画布为工具栏预留的较大底部空间格外明显。甘特图与
    Git Graph 使用对称块轴内边距，使适配后的时间线几何居中，同时保留完整
-   的底部控件安全区。 */
-.mermaid-canvas[data-view="render"]:has(
-  svg:is([aria-roledescription="gantt"], [aria-roledescription="gitGraph"])
-) {
+   的底部控件安全区。data 属性由 useFitCanvasScale 读取 SVG 的
+   aria-roledescription 后设置，避免 :has() 选择器在每次样式重算时强制
+   后代树扫描。 */
+.mermaid-canvas[data-view="render"][data-mermaid-type="gantt"],
+.mermaid-canvas[data-view="render"][data-mermaid-type="gitGraph"] {
   padding-block: 3.5rem;
 }
 
@@ -321,34 +337,23 @@
 }
 
 .mermaid-svg-host .node {
-  /* Reference the shared SVG filter defined once per Mermaid instance.
-     Falls back to CSS drop-shadow() if the SVG filter is unavailable
-     (e.g. before the defs svg mounts). The browser caches the SVG filter
-     result and reuses it across all .node elements, avoiding per-node
-     filter recomputation on complex diagrams.
-     引用每个 Mermaid 实例定义一次的共享 SVG 滤镜。SVG 滤镜不可用时
-     （如 defs svg 挂载前）回退到 CSS drop-shadow()。浏览器缓存 SVG
-     滤镜结果并在所有 .node 元素间复用，避免复杂图中每节点重新计算滤镜。 */
+  /* Reference the filter embedded in the rendered Mermaid SVG. The browser
+     caches that shared filter result across the diagram's nodes, avoiding
+     per-node filter recomputation on complex diagrams. The custom property
+     remains `none` for the first painted frame while the SVG settles.
+     引用嵌入实际 Mermaid SVG 的共享滤镜。浏览器会在图表节点间复用其
+     结果，避免复杂图逐节点重复计算；SVG 首帧稳定前自定义属性仍为 `none`。 */
   filter: var(
     --mermaid-node-shadow-filter,
     drop-shadow(0 0.4rem 0.75rem color-mix(in srgb, var(--accent-primary) 14%, transparent))
   );
 }
 
-/* Shared SVG filter host: invisible, no layout impact, only carries <defs>.
-   共享 SVG 滤镜宿主：不可见，无布局影响，仅承载 <defs>。 */
-.mermaid-defs {
-  position: absolute;
-  inline-size: 0;
-  block-size: 0;
-  pointer-events: none;
-}
-
 /* feDropShadow flood color matches the previous CSS drop-shadow tint.
    Set via CSS so the filter follows theme variables (accent-primary).
    feDropShadow 洪水色匹配之前的 CSS drop-shadow 色调。
    通过 CSS 设置使滤镜跟随主题变量（accent-primary）。 */
-.mermaid-defs feDropShadow {
+.mermaid-svg-host .mermaid-node-shadow {
   flood-color: var(--accent-primary);
   flood-opacity: 0.14;
 }
@@ -364,7 +369,9 @@
    readable foreground on both top and bottom participant labels.
    Mermaid 会同时给 participant 的矩形和文字添加 `.actor`。共享表面只命中
    `rect.actor`，并显式为顶部、底部 participant 标签恢复可读前景色。 */
-.mermaid-svg-host svg[aria-roledescription="sequence"] :is(text.actor.actor-box, text.actor-box tspan) {
+.mermaid-svg-host
+  svg[aria-roledescription="sequence"]
+  :is(text.actor.actor-box, text.actor-box tspan) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
   opacity: 1 !important;
@@ -384,7 +391,10 @@
   opacity: 1 !important;
 }
 
-.mermaid-svg-host svg[aria-roledescription="sequence"] g[data-et="note"] > :is(.noteText, foreignObject) {
+.mermaid-svg-host
+  svg[aria-roledescription="sequence"]
+  g[data-et="note"]
+  > :is(.noteText, foreignObject) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
   opacity: 1 !important;
@@ -434,6 +444,17 @@
   opacity: 0 !important;
   rx: 8px;
   ry: 8px;
+}
+
+/* Mermaid keeps a 10x4 HTML label placeholder at the SVG origin for every
+   unlabeled edge. Hide that empty foreignObject before the shared label-chip
+   styling below can turn it into a visible dash; labels containing text remain
+   unchanged.
+   Mermaid 会在 SVG 原点为每条无文字连线保留一个 10x4 的 HTML 标签占位。
+   在下方共享标签样式把它绘制成短横块前隐藏空 foreignObject；有文字的标签
+   保持不变。 */
+.mermaid-svg-host .edgeLabel foreignObject:has(> .labelBkg > span.edgeLabel:empty) {
+  display: none;
 }
 
 /* HTML edge-label backgrounds contain the transition text itself, so keep the
@@ -600,7 +621,9 @@
    Mermaid 11.16 当前为 ER 图输出 `er`，部分渲染器版本则输出 `erDiagram`。
    两种变体都会将表格和属性行绘制为 rough.js 分组：首个 path 承载实色填充，
    其余 path 承载轮廓。这里直接设置实际绘制层，同时保留旧版 rect 类作为回退。 */
-.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) .entityBox,
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .entityBox,
 .mermaid-svg-host
   svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
   .node
@@ -659,12 +682,16 @@
   fill: color-mix(in srgb, var(--mermaid-er-row) 86%, var(--accent-primary)) !important;
 }
 
-.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) :is(.divider, .divider > path) {
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  :is(.divider, .divider > path) {
   fill: var(--mermaid-shape-stroke-muted) !important;
   stroke: var(--mermaid-shape-stroke-muted) !important;
 }
 
-.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) :is(.entityLabel, .label.name) {
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  :is(.entityLabel, .label.name) {
   fill: var(--accent-primary) !important;
   color: var(--accent-primary) !important;
   font-weight: 750 !important;
@@ -693,7 +720,9 @@
   font-weight: 750 !important;
 }
 
-.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) :is(.relationshipLine, .edgePath path, .marker) {
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  :is(.relationshipLine, .edgePath path, .marker) {
   fill: none !important;
   stroke: var(--accent-primary) !important;
   stroke-width: 1.55px !important;
@@ -714,7 +743,9 @@
   vector-effect: non-scaling-stroke;
 }
 
-.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) .relationshipLabelBox {
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .relationshipLabelBox {
   fill: var(--mermaid-label-surface) !important;
   stroke: var(--mermaid-label-stroke) !important;
   stroke-width: var(--mermaid-shape-stroke-width) !important;
@@ -723,21 +754,34 @@
   ry: var(--mermaid-label-radius);
 }
 
-.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) :is(.edgeLabel, .relationshipLabel) {
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  :is(.edgeLabel, .relationshipLabel) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
   font-weight: 650 !important;
 }
 
-.mermaid-svg-host svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"]) .edge-pattern-dashed {
+.mermaid-svg-host
+  svg:is([aria-roledescription="er"], [aria-roledescription="erDiagram"])
+  .edge-pattern-dashed {
   stroke-dasharray: 6 5 !important;
 }
 
+/* Class titles must not depend on `.prose` text inheritance: the fullscreen
+   SVG is portaled to body, while the inline SVG remains inside the article.
+   类名标题不能依赖 `.prose` 的文字继承：全屏 SVG Portal 到 body，普通 SVG
+   则保留在正文内。两端直接使用同一文本 Token。 */
 .mermaid-svg-host
   svg[aria-roledescription="class"]
-  :is(.label-group .nodeLabel, .classTitle, .classTitleText) {
-  fill: var(--accent-primary) !important;
-  color: var(--accent-primary) !important;
+  :is(
+    .label-group .nodeLabel,
+    .label-group .nodeLabel :is(p, span, div),
+    .classTitle,
+    .classTitleText
+  ) {
+  fill: var(--text-primary) !important;
+  color: var(--text-primary) !important;
   font-weight: 700 !important;
 }
 
@@ -766,37 +810,37 @@
    甘特图：分离时间网格、分组条带与任务状态，让时间线呈现编辑式层级，
    避免继承 Mermaid 高饱和的蓝到橙渐变。状态色保持语义明确且克制。 */
 .mermaid-svg-host
-  svg:has(.taskText, .sectionTitle)
+  svg[aria-roledescription="gantt"]
   :is(.section, .section0, .section1, .section2, .section3) {
   stroke: none !important;
   opacity: 1 !important;
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.section, .section0, .section2) {
+.mermaid-svg-host svg[aria-roledescription="gantt"] :is(.section, .section0, .section2) {
   fill: var(--mermaid-gantt-section) !important;
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.section1, .section3) {
+.mermaid-svg-host svg[aria-roledescription="gantt"] :is(.section1, .section3) {
   fill: var(--mermaid-gantt-section-alt) !important;
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.grid .tick, .grid path) {
+.mermaid-svg-host svg[aria-roledescription="gantt"] :is(.grid .tick, .grid path) {
   stroke: var(--mermaid-gantt-grid) !important;
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) .grid .tick text {
+.mermaid-svg-host svg[aria-roledescription="gantt"] .grid .tick text {
   fill: var(--text-muted) !important;
   color: var(--text-muted) !important;
   font-size: 0.72rem;
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.sectionTitle, .titleText) {
+.mermaid-svg-host svg[aria-roledescription="gantt"] :is(.sectionTitle, .titleText) {
   fill: var(--text-secondary) !important;
   color: var(--text-secondary) !important;
   font-weight: 700 !important;
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.task0, .task1, .task2, .task3) {
+.mermaid-svg-host svg[aria-roledescription="gantt"] :is(.task0, .task1, .task2, .task3) {
   fill: var(--mermaid-gantt-task) !important;
   stroke: var(--mermaid-shape-stroke) !important;
   stroke-width: var(--mermaid-shape-stroke-width) !important;
@@ -804,22 +848,22 @@
   ry: var(--mermaid-shape-radius-small);
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.task1, .task3) {
+.mermaid-svg-host svg[aria-roledescription="gantt"] :is(.task1, .task3) {
   fill: var(--mermaid-gantt-task-alt) !important;
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.active0, .active1, .active2, .active3) {
+.mermaid-svg-host svg[aria-roledescription="gantt"] :is(.active0, .active1, .active2, .active3) {
   fill: var(--mermaid-gantt-active) !important;
   stroke: var(--accent-secondary) !important;
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) :is(.done0, .done1, .done2, .done3) {
+.mermaid-svg-host svg[aria-roledescription="gantt"] :is(.done0, .done1, .done2, .done3) {
   fill: var(--mermaid-gantt-done) !important;
   stroke: color-mix(in srgb, var(--text-muted) 76%, var(--border-subtle)) !important;
 }
 
 .mermaid-svg-host
-  svg:has(.taskText, .sectionTitle)
+  svg[aria-roledescription="gantt"]
   :is(
     .crit0,
     .crit1,
@@ -839,7 +883,7 @@
 }
 
 .mermaid-svg-host
-  svg:has(.taskText, .sectionTitle)
+  svg[aria-roledescription="gantt"]
   :is(
     .taskText,
     .taskTextOutsideLeft,
@@ -853,7 +897,7 @@
   color: var(--text-primary) !important;
 }
 
-.mermaid-svg-host svg:has(.taskText, .sectionTitle) .today {
+.mermaid-svg-host svg[aria-roledescription="gantt"] .today {
   stroke: var(--mermaid-gantt-today) !important;
   stroke-width: 1.5px !important;
   opacity: 0.82;
@@ -864,65 +908,65 @@
    segments. The legend uses the same swatches for a coherent key.
    饼图：保留 Mermaid 自动生成的切片结构，但替换为项目青 / 薄荷 / 紫色板，
    并用克制细线分隔扇区；图例同步使用相同色标。 */
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieCircle {
   stroke: var(--docs-canvas-surface) !important;
   stroke-width: 2.5px !important;
   opacity: 0.96 !important;
   transition: opacity var(--motion-fast) var(--motion-ease-standard);
 }
 
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieOuterCircle {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieOuterCircle {
   stroke: var(--mermaid-chart-hairline) !important;
   stroke-width: 1.25px !important;
 }
 
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) :is(.pieTitleText, .legend text) {
+.mermaid-svg-host svg[aria-roledescription="pie"] :is(.pieTitleText, .legend text) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
 }
 
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend rect {
+.mermaid-svg-host svg[aria-roledescription="pie"] .legend rect {
   rx: var(--mermaid-shape-radius-small);
   ry: var(--mermaid-shape-radius-small);
   stroke: var(--docs-canvas-surface) !important;
   stroke-width: var(--mermaid-shape-stroke-width) !important;
 }
 
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .slice {
+.mermaid-svg-host svg[aria-roledescription="pie"] .slice {
   fill: var(--text-primary) !important;
   font-weight: 650;
 }
 
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(1),
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(2) rect {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieCircle:nth-of-type(1),
+.mermaid-svg-host svg[aria-roledescription="pie"] .legend:nth-of-type(2) rect {
   fill: var(--mermaid-pie-1) !important;
 }
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(2),
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(3) rect {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieCircle:nth-of-type(2),
+.mermaid-svg-host svg[aria-roledescription="pie"] .legend:nth-of-type(3) rect {
   fill: var(--mermaid-pie-2) !important;
 }
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(3),
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(4) rect {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieCircle:nth-of-type(3),
+.mermaid-svg-host svg[aria-roledescription="pie"] .legend:nth-of-type(4) rect {
   fill: var(--mermaid-pie-3) !important;
 }
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(4),
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(5) rect {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieCircle:nth-of-type(4),
+.mermaid-svg-host svg[aria-roledescription="pie"] .legend:nth-of-type(5) rect {
   fill: var(--mermaid-pie-4) !important;
 }
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(5),
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(6) rect {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieCircle:nth-of-type(5),
+.mermaid-svg-host svg[aria-roledescription="pie"] .legend:nth-of-type(6) rect {
   fill: var(--mermaid-pie-5) !important;
 }
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(6),
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(7) rect {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieCircle:nth-of-type(6),
+.mermaid-svg-host svg[aria-roledescription="pie"] .legend:nth-of-type(7) rect {
   fill: var(--mermaid-pie-6) !important;
 }
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(7),
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(8) rect {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieCircle:nth-of-type(7),
+.mermaid-svg-host svg[aria-roledescription="pie"] .legend:nth-of-type(8) rect {
   fill: var(--mermaid-pie-7) !important;
 }
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .pieCircle:nth-of-type(8),
-.mermaid-svg-host svg:has(.pieCircle, .pieTitleText) .legend:nth-of-type(9) rect {
+.mermaid-svg-host svg[aria-roledescription="pie"] .pieCircle:nth-of-type(8),
+.mermaid-svg-host svg[aria-roledescription="pie"] .legend:nth-of-type(9) rect {
   fill: var(--mermaid-pie-8) !important;
 }
 
@@ -1069,14 +1113,17 @@
    hierarchy. The root remains the strongest visual anchor.
    思维导图保留分支语义色，同时以项目克制的三强调色层级替换 Mermaid 高饱和
    填充与过粗层级连线；根节点继续作为最强视觉锚点。 */
-.mermaid-svg-host svg:has(.mindmap-node) .mindmap-node :is(rect, path, circle, polygon) {
+.mermaid-svg-host
+  svg[aria-roledescription="mindmap"]
+  .mindmap-node
+  :is(rect, path, circle, polygon) {
   fill: var(--mermaid-mindmap-branch-1) !important;
   stroke: var(--mermaid-shape-stroke) !important;
   stroke-width: var(--mermaid-shape-stroke-width) !important;
 }
 
 .mermaid-svg-host
-  svg:has(.mindmap-node)
+  svg[aria-roledescription="mindmap"]
   .mindmap-node.section-root
   :is(rect, path, circle, polygon) {
   fill: var(--mermaid-mindmap-root) !important;
@@ -1085,7 +1132,7 @@
 }
 
 .mermaid-svg-host
-  svg:has(.mindmap-node)
+  svg[aria-roledescription="mindmap"]
   :is(.mindmap-node.section-1, .mindmap-node.section-4, .mindmap-node.section-7)
   :is(rect, path, circle, polygon) {
   fill: var(--mermaid-mindmap-branch-2) !important;
@@ -1093,38 +1140,44 @@
 }
 
 .mermaid-svg-host
-  svg:has(.mindmap-node)
+  svg[aria-roledescription="mindmap"]
   :is(.mindmap-node.section-2, .mindmap-node.section-5, .mindmap-node.section-8)
   :is(rect, path, circle, polygon) {
   fill: var(--mermaid-mindmap-branch-3) !important;
   stroke: color-mix(in srgb, var(--accent-tertiary) 58%, var(--edge-light)) !important;
 }
 
-.mermaid-svg-host svg:has(.mindmap-node) :is(.mindmap-node text, .mindmap-node span) {
+.mermaid-svg-host svg[aria-roledescription="mindmap"] :is(.mindmap-node text, .mindmap-node span) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
   font-weight: 650 !important;
 }
 
-.mermaid-svg-host svg:has(.mindmap-node) .section-root :is(text, span) {
+.mermaid-svg-host svg[aria-roledescription="mindmap"] .section-root :is(text, span) {
   font-weight: 780 !important;
 }
 
-.mermaid-svg-host svg:has(.mindmap-node) .edge {
+.mermaid-svg-host svg[aria-roledescription="mindmap"] .edge {
   fill: none !important;
   stroke-width: 2px !important;
   opacity: 0.72;
 }
 
-.mermaid-svg-host svg:has(.mindmap-node) :is(.section-edge-0, .section-edge-3, .section-edge-6) {
+.mermaid-svg-host
+  svg[aria-roledescription="mindmap"]
+  :is(.section-edge-0, .section-edge-3, .section-edge-6) {
   stroke: var(--accent-primary) !important;
 }
 
-.mermaid-svg-host svg:has(.mindmap-node) :is(.section-edge-1, .section-edge-4, .section-edge-7) {
+.mermaid-svg-host
+  svg[aria-roledescription="mindmap"]
+  :is(.section-edge-1, .section-edge-4, .section-edge-7) {
   stroke: var(--accent-secondary) !important;
 }
 
-.mermaid-svg-host svg:has(.mindmap-node) :is(.section-edge-2, .section-edge-5, .section-edge-8) {
+.mermaid-svg-host
+  svg[aria-roledescription="mindmap"]
+  :is(.section-edge-2, .section-edge-5, .section-edge-8) {
   stroke: var(--accent-tertiary) !important;
 }
 
@@ -1186,7 +1239,9 @@
    heavier bottom border rather than a detached second line.
    `node-line-*` 原本位于时期/事件卡片下方；几何归一化会把它贴合到卡片边缘，
    作为明确的加粗底边，而不是悬空的第二条横线。 */
-.mermaid-svg-host svg[aria-roledescription="timeline"] :is(.timeline-node line, .node-line-0, .node-line-1, .node-line-2, .node-line--1) {
+.mermaid-svg-host
+  svg[aria-roledescription="timeline"]
+  :is(.timeline-node line, .node-line-0, .node-line-1, .node-line-2, .node-line--1) {
   stroke: var(--mermaid-timeline-axis) !important;
   stroke-width: 3px !important;
   stroke-linecap: butt;
@@ -1229,7 +1284,9 @@
   stroke: none !important;
 }
 
-.mermaid-svg-host svg[aria-roledescription="timeline"] :is(.eventWrapper text, .eventWrapper tspan) {
+.mermaid-svg-host
+  svg[aria-roledescription="timeline"]
+  :is(.eventWrapper text, .eventWrapper tspan) {
   fill: var(--text-primary) !important;
   color: var(--text-primary) !important;
 }
@@ -1280,6 +1337,9 @@
   .mermaid-zoom-target > .mermaid-svg-host {
     transition: none;
   }
+  .mermaid-skeleton__bar::after {
+    display: none;
+  }
 }
 
 /* Fallback shown when mermaid fails to render: print the raw chart source
@@ -1296,6 +1356,80 @@
   word-break: break-word;
   max-width: 100%;
   overflow: auto;
+}
+
+/* Pending-render placeholder: three centered silhouette bars with a subtle
+   shimmer marking the diagram footprint while the scheduler renders in a quiet
+   moment. It is a flex sibling of the zoom target so the canvas keeps centering
+   it before the SVG's size is known. Colors use the project-owned tokens
+   (tokens.css) so the shape stays visible in both themes.
+   渲染等待期的占位：三条居中剪影条 + 柔和微光标记图形区域，调度器仍在
+   渲染中。它是缩放目标的 flex 兄弟节点，SVG 尺寸未知前画布也能把它居中。
+   配色使用项目化 Token（tokens.css），保证深/浅主题下都清晰。 */
+.mermaid-skeleton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 30rem);
+  min-height: 11rem;
+}
+
+.mermaid-skeleton__bars {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+  width: min(100%, 22rem);
+}
+
+.mermaid-skeleton__bar {
+  position: relative;
+  overflow: hidden;
+  height: 0.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 28%, transparent);
+}
+
+/* Animate a narrow highlight with transform instead of repainting a full-width
+   background-position gradient. The promoted pseudo-element stays on the
+   compositor while Mermaid temporarily occupies the main thread, so the
+   loading state does not visibly freeze at the render boundary.
+   使用 transform 移动窄高光，而非反复重绘整条 background-position 渐变。
+   提升到合成层的伪元素在 Mermaid 短暂占用主线程时仍可继续运动，加载态不会
+   在渲染边界明显定格。 */
+.mermaid-skeleton__bar::after {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text-muted) 46%, transparent),
+    transparent
+  );
+  content: "";
+  transform: translate3d(-150%, 0, 0);
+  animation: mermaid-shimmer 1.6s linear infinite;
+  will-change: transform;
+}
+
+.mermaid-skeleton__bar:nth-of-type(1) {
+  width: 68%;
+}
+
+.mermaid-skeleton__bar:nth-of-type(2) {
+  width: 44%;
+}
+
+.mermaid-skeleton__bar:nth-of-type(3) {
+  width: 56%;
+}
+
+@keyframes mermaid-shimmer {
+  to {
+    transform: translate3d(350%, 0, 0);
+  }
 }
 
 /* View fade-in: when switching between render and code, the newly-mounted view
@@ -1675,6 +1809,32 @@
   visibility: hidden;
 }
 
+/* During restore, fade the retained page shell and its local toolbar in below
+   the travelling fullscreen diagram. Its canvas stays invisible until the
+   portal reaches the exact saved rectangle, so the final handoff has neither
+   a duplicate chart nor a late frame / toolbar pop.
+   返回过程中，在移动的全屏图下方渐入保留的页面外框与本地工具栏；画布在
+   Portal 精确抵达原矩形前保持不可见，最终交接既不会重图，也不会让外框和
+   工具栏在末帧突然出现。 */
+.mermaid-wrapper[data-page-renderer][data-restoring] {
+  pointer-events: none;
+  animation: mermaid-in-page-shell-in var(--motion-standard) var(--motion-ease-standard) both;
+}
+
+.mermaid-wrapper[data-page-renderer][data-restoring] .mermaid-canvas {
+  visibility: hidden;
+}
+
+/* Geometry transitions are visual-only. Disable hit testing on both renderer
+   copies and the portaled toolbar until the active enter / exit animation has
+   completed; body scroll is locked separately by useMermaidMaximize.
+   几何过渡仅用于展示。进入 / 退出动画结束前，页面与 Portal 两份渲染器以及
+   Portal 工具栏都不参与命中；页面滚动由 useMermaidMaximize 另行锁定。 */
+.mermaid-wrapper[data-interaction-locked],
+.mermaid-toolbar[data-interaction-locked] {
+  pointer-events: none;
+}
+
 /* Maximized state: the dim + blur backdrop is a SEPARATE portal element
    (`.mermaid-maximized-backdrop` below), so the wrapper itself is a
    transparent centered container — no border, no background, no blur
@@ -1709,6 +1869,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transform-origin: top left;
 }
 
 .mermaid-wrapper[data-maximized]::before {
@@ -1788,18 +1949,12 @@
 }
 
 /* Dim + blur backdrop for maximize mode. Portaled to <body> by the
-   component, sits at z-index 9998 so the wrapper (9999) renders on
-   top. Uses the same 78% background tint + 20px blur as the previous
-   in-wrapper treatment, so the dimming is identical — but the
-   wrapper above is now free to be a transparent centered container
-   instead of a viewport-sized frame.
-   Enter animation only (opacity fade-in); exit is instant to avoid
-   the delayed-unmount flicker that scale + opacity exit animations
-   caused on complex SVG content.
-   放大模式的 dim + blur 背景。由组件 portal 到 <body>，z-index 9998，
-   让 wrapper（9999）渲染在它之上。背景的 78% 透明度 + 20px blur 与
-   之前 wrapper 内实现完全一致。仅进入动画（淡入）；退出即时，
-   避免缩放 + 透明度退出动画在复杂 SVG 内容上导致的延迟卸载闪烁。 */
+   component, it fades in and out in sync with the geometry transition while
+   the wrapper stays above it. The measuring / preparing phases remain clear so
+   the diagram can paint at its source rectangle before the backdrop appears.
+   放大模式的 dim + blur 背景由组件 Portal 到 <body>。它与几何动画同步淡入、
+   淡出，wrapper 始终位于其上；测量 / 预绘制阶段保持透明，让图表先在来源
+   矩形完成首帧绘制，再显示背景。 */
 .mermaid-maximized-backdrop {
   position: fixed;
   inset: 0;
@@ -1809,18 +1964,56 @@
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
   backdrop-filter: blur(var(--glass-blur-backdrop)) saturate(var(--glass-saturate))
     brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  animation: mermaid-backdrop-in var(--motion-standard) var(--motion-ease-standard);
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
-/* Maximized wrapper enter animation: opacity-only fade-in. Scale transforms
-   were removed because they caused repaint flicker on complex SVG + backdrop-
-   filter content. Exit is instant (no animation) to eliminate the delayed
-   unmount that previously caused perceived lag.
-   全屏 wrapper 进入动画：仅透明度淡入。移除了 scale 变换，因为它在
-   复杂 SVG + backdrop-filter 内容上导致重绘闪烁。退出即时（无动画），
-   消除此前延迟卸载导致的感知延迟。 */
-.mermaid-wrapper[data-maximized] {
-  animation: mermaid-wrapper-in var(--motion-standard) var(--motion-ease-standard);
+/* Every rendered diagram uses one uniform FLIP scale derived from the actual
+   in-page and fullscreen SVG host rectangles. `preparing` overlays both hosts
+   for one painted frame; inverse enter / exit keyframes then preserve the SVG
+   aspect ratio and meet the retained in-page diagram at the exact endpoint.
+   每张渲染图都依据页面内与全屏 SVG host 的实际矩形计算单一等比 FLIP。
+   `preparing` 先让两端 host 重合并完整绘制一帧；互为反向的进入 / 退出关键帧
+   始终保持 SVG 宽高比，并在终点精确衔接保留的页面内图表。 */
+.mermaid-wrapper[data-maximized][data-transition="measuring"] {
+  opacity: 0;
+}
+
+.mermaid-wrapper[data-maximized][data-transition="preparing"] {
+  border-radius: var(--mermaid-maximize-origin-radius, var(--radius-md));
+  transform: translate(var(--mermaid-maximize-x, 0), var(--mermaid-maximize-y, 0))
+    scale(var(--mermaid-maximize-scale, 1));
+}
+
+.mermaid-wrapper[data-maximized][data-transition="preparing"],
+.mermaid-wrapper[data-maximized][data-transition="entering"],
+.mermaid-wrapper[data-maximized][data-transition="exiting"] {
+  will-change: transform;
+}
+
+.mermaid-wrapper[data-maximized][data-transition="entering"] {
+  animation: mermaid-maximized-wrapper-in var(--motion-standard) var(--motion-ease-standard) both;
+}
+
+.mermaid-wrapper[data-maximized][data-transition="exiting"] {
+  animation: mermaid-maximized-wrapper-out var(--motion-standard) var(--motion-ease-standard) both;
+}
+
+.mermaid-maximized-backdrop[data-transition="measuring"],
+.mermaid-maximized-backdrop[data-transition="preparing"],
+.mermaid-toolbar[data-portaled="maximized"][data-transition="measuring"],
+.mermaid-toolbar[data-portaled="maximized"][data-transition="preparing"] {
+  opacity: 0;
+}
+
+.mermaid-maximized-backdrop[data-transition="entering"],
+.mermaid-toolbar[data-portaled="maximized"][data-transition="entering"] {
+  animation: mermaid-backdrop-in var(--motion-standard) var(--motion-ease-standard) both;
+}
+
+.mermaid-maximized-backdrop[data-transition="exiting"],
+.mermaid-toolbar[data-portaled="maximized"][data-transition="exiting"] {
+  animation: mermaid-backdrop-out var(--motion-standard) var(--motion-ease-standard) both;
 }
 
 @keyframes mermaid-backdrop-in {
@@ -1832,7 +2025,16 @@
   }
 }
 
-@keyframes mermaid-wrapper-in {
+@keyframes mermaid-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes mermaid-in-page-shell-in {
   from {
     opacity: 0;
   }
@@ -1841,9 +2043,36 @@
   }
 }
 
+@keyframes mermaid-maximized-wrapper-in {
+  from {
+    border-radius: var(--mermaid-maximize-origin-radius, var(--radius-md));
+    transform: translate(var(--mermaid-maximize-x, 0), var(--mermaid-maximize-y, 0))
+      scale(var(--mermaid-maximize-scale, 1));
+  }
+  to {
+    border-radius: 0;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes mermaid-maximized-wrapper-out {
+  from {
+    border-radius: 0;
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    border-radius: var(--mermaid-maximize-origin-radius, var(--radius-md));
+    transform: translate(var(--mermaid-maximize-x, 0), var(--mermaid-maximize-y, 0))
+      scale(var(--mermaid-maximize-scale, 1));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mermaid-maximized-backdrop,
+  .mermaid-toolbar[data-portaled="maximized"],
+  .mermaid-wrapper[data-page-renderer][data-restoring],
   .mermaid-wrapper[data-maximized] {
     animation: none;
+    transform: none;
   }
 }

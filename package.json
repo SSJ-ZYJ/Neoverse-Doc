@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "generate:mermaid": "bun scripts/generate-mermaid-assets.ts",
+    "predev": "bun run generate:mermaid",
     "dev": "next dev --turbopack",
+    "prebuild": "bun run generate:mermaid",
     "build": "next build",
     "start": "serve out",
     "postinstall": "fumadocs-mdx",
@@ -40,6 +43,7 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "puppeteer": "25.5.0",
     "serve": "^14.2.6",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"
@@ -49,8 +53,9 @@
     "unrs-resolver"
   ],
   "trustedDependencies": [
+    "@biomejs/biome",
+    "puppeteer",
     "sharp",
-    "unrs-resolver",
-    "@biomejs/biome"
+    "unrs-resolver"
   ]
 }
