@@ -1,10 +1,12 @@
 // Standalone guestbook page (per locale): wraps Giscus comments with localized
-// header, back-link, and metadata pulled from the dictionary.
+// header, back-link, and metadata pulled from the dictionary. The back link is
+// source-aware: it restores the originating docs page when entered from docs.
 // 独立留言墙页面（按语言）：包装 Giscus 评论，标题、返回链接、元信息均来自字典。
+// 返回链接为来源感知：从文档页进入时还原来源文档页。
 
 import { MessageSquareText } from 'lucide-react';
 import { Guestbook } from '@/components/guestbook';
-import { BackLink } from '@/components/transition/back-link';
+import { GuestbookReturnLink } from '@/components/guestbook-return';
 import { getPageDictionary } from '@/dictionaries';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 
@@ -23,10 +25,17 @@ export default async function GuestbookPage({ params }: PageProps<'/[lang]/guest
     <main className="special-page guestbook-page">
       <div className="guestbook-page__inner">
         <div className="guestbook-page__header">
-          {/* The guestbook has a deterministic home destination so its route
-              transition can be prefetched and prepared without history lookup.
-              留言板固定返回主页，使路由可预取且无需查询浏览历史即可准备转场。 */}
-          <BackLink href={`/${locale}`} label={dict.backToHome} />
+          {/* The back link restores the recorded source docs page when the
+              guestbook was opened from a document; otherwise it falls back to
+              the deterministic home destination so the route transition stays
+              prefetchable without history lookup.
+              返回链接在留言板从文档页打开时还原记录的来源文档页；
+              其余情况回退到既定的首页目标，使路由转场无需查询浏览历史即可预取。 */}
+          <GuestbookReturnLink
+            docsLabel={dict.backToDocs}
+            homeHref={`/${locale}`}
+            homeLabel={dict.backToHome}
+          />
           <div className="special-page__icon">
             <MessageSquareText size={24} />
           </div>

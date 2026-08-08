@@ -7,6 +7,7 @@
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { Metadata } from 'next';
 import DefaultSearchDialog from '@/components/search';
+import { GuestbookReturnTracker } from '@/components/guestbook-return';
 import { TransitionProvider } from '@/components/transition/transition-provider';
 import { getPageDictionary } from '@/dictionaries';
 import { getSearchChapterTags } from '@/lib/home-sections';
@@ -53,7 +54,13 @@ export default async function LangLayout({ params, children }: LayoutProps<'/[la
     >
       {/* The centralized provider owns route policy, DOM clones, cleanup, and reduced motion.
           集中式 Provider 统一管理路由策略、DOM 克隆、清理与减弱动画。 */}
-      <TransitionProvider>{children}</TransitionProvider>
+      <TransitionProvider>
+        {/* Records the source page before entering the guestbook so its back
+            link can restore the exact origin document.
+            进入留言板前记录来源页面，使返回链接可还原精确的原始文档。 */}
+        <GuestbookReturnTracker />
+        {children}
+      </TransitionProvider>
     </RootProvider>
   );
 }
