@@ -64,14 +64,23 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
       const targetPath = targetUrl.pathname;
       const kind =
         explicit && explicit !== 'auto' ? explicit : selectTransition(sourcePath, targetPath);
-      if (
-        kind === 'none' ||
-        isSamePageHashNavigation(window.location.href, targetUrl.href) ||
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ) {
+      // Hash navigation does not replace the page and can run independently of
+      // an in-flight route transition. A route navigation without motion still
+      // supersedes the previous intent, so release its visual state before the
+      // browser or Next.js handles the new destination.
+      // 哈希导航不会替换页面，可与进行中的路由转场独立执行。无动画的路由导航
+      // 仍会取代旧意图，因此在浏览器或 Next.js 处理新目标前先释放旧视觉状态。
+      if (isSamePageHashNavigation(window.location.href, targetUrl.href)) return;
+      if (kind === 'none' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        cleanup();
         return;
       }
 
+      // Route transitions are latest-intent-wins: cleanup atomically cancels
+      // the previous snapshot, timer, and root animation before this click
+      // installs its own intent. The navigation itself remains unblocked.
+      // 路由转场采用“最新意图优先”：cleanup 会原子化取消旧快照、计时器与
+      // 根节点动画，再由本次点击建立新意图；导航本身始终保持可响应。
       cleanup();
       const origin = resolveEventOrigin(event, anchor);
       intentRef.current = { kind, origin, sourcePath, targetPath };
@@ -110,13 +119,8 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
     const handleClick = (event: MouseEvent) => {
       const target = event.target instanceof Element ? event.target : null;
       const anchor = target?.closest<HTMLAnchorElement>('a[href]');
-      if (!anchor || anchor.closest('#nd-transition-layer') || anchor.dataset.transition === 'none')
-        return;
+      if (!anchor || anchor.closest('#nd-transition-layer')) return;
       if (!isPlainInternalNavigation(event, anchor)) return;
-      if (intentRef.current) {
-        event.preventDefault();
-        return;
-      }
       prepare(anchor, event);
     };
 
@@ -126,7 +130,11 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
 
   useLayoutEffect(() => {
     const intent = intentRef.current;
-    if (!intent || pathname === intent.sourcePath) return;
+    // An earlier navigation can finish after a newer click. Only the latest
+    // intent's destination may consume and reveal the shared transition state.
+    // 较早的导航可能在新点击后才完成；只有最新意图的目标页可以消费并揭示
+    // 共享转场状态。
+    if (!intent || pathname === intent.sourcePath || pathname !== intent.targetPath) return;
 
     const resolvedKind = selectTransition(intent.sourcePath, pathname);
     if (resolvedKind === 'none') {
