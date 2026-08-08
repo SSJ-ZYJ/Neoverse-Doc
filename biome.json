@@ -19,7 +19,8 @@
       "!**/bun.lock",
       "!**/package-lock.json",
       "!**/yarn.lock",
-      "!**/public/mermaid"
+      "!**/public/mermaid",
+      "!**/src/generated/mermaid-assets.ts"
     ]
   },
   "formatter": {
