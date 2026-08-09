@@ -60,6 +60,7 @@ const SURFACE_SELECTOR = [
 
 const INTERACTIVE_SELECTOR = `${CONTROL_SELECTOR},${SURFACE_SELECTOR}`;
 const PARTICLE_LAYER_SELECTOR = ':scope > .immersive-particle-layer';
+const NATIVE_PARTICLE_SCROLL_SELECTOR = '[data-particle-scroll-native]';
 const FEEDBACK_LIFETIME_MS = MOTION_DURATION_MS.particleField + 400;
 const INITIAL_PARTICLE_COUNT = 28;
 const TOUCH_INITIAL_PARTICLE_COUNT = 24;
@@ -518,6 +519,23 @@ export function ImmersiveInteractionController() {
       sessions.delete(event.pointerId);
       pendingMoves.delete(event.pointerId);
       if (session.target.dataset.immersiveToken !== session.token) return;
+
+      // A touch navigation can unmount an HTML-in-Canvas subtree in the same
+      // task as pointerup. Release its transient particle layer before click so
+      // Chromium never tears down the experimental canvas with composited DOM
+      // descendants still attached. Mouse feedback and non-navigation controls
+      // keep their full settle animation.
+      // 触摸导航会在 pointerup 同一任务中卸载 HTML-in-Canvas 子树，因此在
+      // click 前同步释放临时粒子层，避免 Chromium 在仍挂载合成 DOM 后代时
+      // 销毁实验性画布。鼠标反馈与非导航控件仍保留完整收束动画。
+      const releaseBeforeNativeCanvasNavigation =
+        (event.pointerType === 'touch' || event.pointerType === 'pen') &&
+        session.target.closest(NATIVE_PARTICLE_SCROLL_SELECTOR) &&
+        session.target.closest('a[href]');
+      if (releaseBeforeNativeCanvasNavigation) {
+        clearTarget(session.target, session.token);
+        return;
+      }
 
       session.target.classList.remove('immersive--tracking', 'immersive--active');
       void session.target.offsetWidth;
