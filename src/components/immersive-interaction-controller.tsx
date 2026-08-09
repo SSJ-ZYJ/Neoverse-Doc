@@ -465,6 +465,18 @@ export function ImmersiveInteractionController() {
         source?.closest<HTMLElement>(INTERACTIVE_SELECTOR);
       if (!target || target.matches(':disabled, [aria-disabled="true"]')) return;
 
+      // Chromium can stop dispatching the touch sequence as soon as composited
+      // particle descendants are inserted into an HTML-in-Canvas link. Skip
+      // that transient feedback before it mutates the experimental subtree;
+      // mouse input and non-navigation controls retain the full effect.
+      // Chromium 在 HTML-in-Canvas 链接中插入合成粒子后可能立即停止分发
+      // 后续触摸事件，因此在修改实验性子树前跳过该瞬时反馈；鼠标输入与
+      // 非导航控件仍保留完整效果。
+      const nativeCanvasTouchNavigation =
+        (event.pointerType === 'touch' || event.pointerType === 'pen') &&
+        source?.closest('a[href]')?.closest(NATIVE_PARTICLE_SCROLL_SELECTOR);
+      if (nativeCanvasTouchNavigation) return;
+
       const geometry = readParticleGeometry(target);
       const rect = geometry.rect;
       // Inset pseudo-element surfaces should only react inside their visible
@@ -519,23 +531,6 @@ export function ImmersiveInteractionController() {
       sessions.delete(event.pointerId);
       pendingMoves.delete(event.pointerId);
       if (session.target.dataset.immersiveToken !== session.token) return;
-
-      // A touch navigation can unmount an HTML-in-Canvas subtree in the same
-      // task as pointerup. Release its transient particle layer before click so
-      // Chromium never tears down the experimental canvas with composited DOM
-      // descendants still attached. Mouse feedback and non-navigation controls
-      // keep their full settle animation.
-      // 触摸导航会在 pointerup 同一任务中卸载 HTML-in-Canvas 子树，因此在
-      // click 前同步释放临时粒子层，避免 Chromium 在仍挂载合成 DOM 后代时
-      // 销毁实验性画布。鼠标反馈与非导航控件仍保留完整收束动画。
-      const releaseBeforeNativeCanvasNavigation =
-        (event.pointerType === 'touch' || event.pointerType === 'pen') &&
-        session.target.closest(NATIVE_PARTICLE_SCROLL_SELECTOR) &&
-        session.target.closest('a[href]');
-      if (releaseBeforeNativeCanvasNavigation) {
-        clearTarget(session.target, session.token);
-        return;
-      }
 
       session.target.classList.remove('immersive--tracking', 'immersive--active');
       void session.target.offsetWidth;
