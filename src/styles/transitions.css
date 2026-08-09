@@ -7,9 +7,10 @@
   initial-value: 0px;
 }
 
-/* Clear cloned article surfaces before the official drawElementImage capture,
-   keeping typography and glyphs as the only particle source.
-   在官方 drawElementImage 捕获前清除克隆正文的表面，仅保留排版与字形作为粒子源。 */
+/* Clear cloned article surfaces during the official drawElementImage capture,
+   keeping only typography as the particle source while the live card remains.
+   官方 drawElementImage 捕获期间清除克隆正文的表面，仅保留文字作为粒子源，
+   实时卡片则始终保留。 */
 [data-particle-capture],
 [data-particle-capture] * {
   animation-play-state: paused !important;
@@ -100,9 +101,9 @@
   animation: nd-layer-fade var(--nd-duration-crossfade) linear forwards;
 }
 
-/* Docs-to-docs navigation keeps the target article card and canvas visible.
-   Only the sampled old text is drawn into this transparent particle layer.
-   文档间导航保持目标正文卡片与画布可见，仅将采样后的旧文字绘制到透明粒子层。 */
+/* Docs-to-docs navigation draws only outgoing typography into this transparent
+   particle layer; the stable article card remains visible underneath.
+   文档间导航仅将旧文字绘制到透明粒子层，稳定的正文卡片始终保留在其下方。 */
 #nd-transition-layer[data-transition="content"] {
   background: transparent;
 }
@@ -116,10 +117,9 @@
 }
 
 /* The official drawElementImage source remains laid out for one capture frame
-   but never paints into the visible page. Its cloned article keeps typography
-   while all surfaces are cleared, so only changed content becomes particles.
+   but never paints into the visible page. Its card surfaces are transparent.
    官方 drawElementImage 源画布保留一个捕获帧的布局但不绘制到可见页面；
-   克隆正文保留排版，并清除所有表面，使只有变化内容进入粒子层。 */
+   其中的卡片表面保持透明。 */
 .nd-content-particle-source {
   position: fixed;
   inset: 0;
@@ -166,12 +166,27 @@ html[data-nd-route-transition="aperture"] #nd-page {
   animation: nd-aperture-land var(--nd-duration-aperture) var(--motion-ease-emphasized) both;
 }
 
-/* Fade only the new article's child content. The #nd-page glass background,
-   border, shadow, and geometry remain unchanged while old text disperses.
-   仅淡入新文章的子内容；旧文字消散期间，#nd-page 的玻璃背景、边框、阴影与
-   几何位置均保持不变。 */
+/* Hide only live outgoing content after the particle canvas renders its first
+   frame. Destination content remains fully transparent until supported-browser
+   particles finish, then starts a short linear fade; the card always remains.
+   粒子画布绘制首帧后仅隐藏实时旧内容；支持粒子效果时，新内容会保持完全透明，
+   等粒子彻底消失后再短暂线性淡入，卡片始终保留。 */
+html[data-nd-route-transition-capturing="content"] #nd-page > * {
+  opacity: var(--nd-content-outgoing-opacity, 1);
+}
+
+html[data-nd-route-transition-outgoing="content"] #nd-page > * {
+  opacity: 0;
+}
+
 html[data-nd-route-transition="content"] #nd-page > * {
-  animation: nd-route-content-enter var(--nd-duration-content) var(--motion-ease-standard) both;
+  animation: nd-route-content-enter var(--nd-duration-content-enter) linear both;
+}
+
+html[data-nd-route-transition="content"][data-nd-route-transition-particles="content"]
+  #nd-page
+  > * {
+  animation-delay: var(--nd-delay-content-enter);
 }
 
 /* Returning from the guestbook must not transform the full homepage: its

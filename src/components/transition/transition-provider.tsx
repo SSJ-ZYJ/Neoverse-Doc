@@ -5,7 +5,11 @@
 
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { TRANSITION_DURATION_MS, TRANSITION_TIMEOUT_MS } from '@/lib/motion-config';
+import {
+  MOTION_DURATION_MS,
+  TRANSITION_DURATION_MS,
+  TRANSITION_TIMEOUT_MS,
+} from '@/lib/motion-config';
 import {
   type ContentParticleTransition,
   createContentParticleTransition,
@@ -39,6 +43,10 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
     contentParticleRef.current = null;
     document.documentElement.removeAttribute('data-nd-route-transition');
     document.documentElement.removeAttribute('data-nd-route-transition-pending');
+    document.documentElement.removeAttribute('data-nd-route-transition-outgoing');
+    document.documentElement.removeAttribute('data-nd-route-transition-capturing');
+    document.documentElement.removeAttribute('data-nd-route-transition-particles');
+    document.documentElement.style.removeProperty('--nd-content-outgoing-opacity');
     const layer = layerRef.current;
     if (!layer) return;
     // Explicitly reset will-change on clones before removing them. This ensures
@@ -63,6 +71,16 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
     layer.style.removeProperty('--transition-max-radius');
   }, []);
 
+  const scheduleCleanup = useCallback(
+    (intent: TransitionIntent, delay: number) => {
+      if (cleanupTimerRef.current !== null) window.clearTimeout(cleanupTimerRef.current);
+      cleanupTimerRef.current = window.setTimeout(() => {
+        if (intentRef.current === intent) cleanup();
+      }, delay);
+    },
+    [cleanup],
+  );
+
   const prepare = useCallback(
     (anchor: HTMLAnchorElement, event: MouseEvent) => {
       const explicit = anchor.dataset.transition as TransitionKind | undefined;
@@ -83,19 +101,52 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
         return;
       }
 
+      const origin = resolveEventOrigin(event, anchor);
+      const intent = { kind, origin, sourcePath, targetPath };
+      const root = document.documentElement;
+      const layer = layerRef.current;
+
+      // Re-target clicks that occur before the first docs navigation commits.
+      // The already-running outgoing card remains valid, so replacing it would
+      // only restart the same dissolve and expose the hidden live article.
+      // 首次文档导航提交前的连续点击仅更新目标；当前退场卡片仍然有效，替换它
+      // 只会重启同一段消散并暴露已隐藏的实时正文。
+      if (
+        kind === 'content' &&
+        contentParticleRef.current &&
+        root.dataset.ndRouteTransitionOutgoing === 'content' &&
+        !root.hasAttribute('data-nd-route-transition')
+      ) {
+        intentRef.current = intent;
+        root.dataset.ndRouteTransitionPending = kind;
+        scheduleCleanup(intent, TRANSITION_TIMEOUT_MS.navigation);
+        return;
+      }
+
+      // Snapshot a partially faded destination before cleanup removes its
+      // animation. The inline opacity on the clone preserves the exact frame
+      // used as the next outgoing card during rapid navigation.
+      // cleanup 移除淡入动画前先截取尚未完全显现的目标页；克隆上的内联透明度
+      // 会保留该帧，作为快速切页时的下一张退场卡片。
+      const outgoingOpacity =
+        kind === 'content'
+          ? getComputedStyle(document.querySelector<HTMLElement>('#nd-page > *') ?? document.body)
+              .opacity
+          : '1';
+      const preparedContentTransition =
+        layer && kind === 'content' ? createContentParticleTransition() : null;
+
       // Route transitions are latest-intent-wins: cleanup atomically cancels
       // the previous snapshot, timer, and root animation before this click
       // installs its own intent. The navigation itself remains unblocked.
       // 路由转场采用“最新意图优先”：cleanup 会原子化取消旧快照、计时器与
       // 根节点动画，再由本次点击建立新意图；导航本身始终保持可响应。
       cleanup();
-      const origin = resolveEventOrigin(event, anchor);
-      intentRef.current = { kind, origin, sourcePath, targetPath };
+      intentRef.current = intent;
       // Mark the navigation before the target template mounts so its direct-load
       // animation cannot stack on top of the provider-owned route transition.
       // 在目标模板挂载前标记导航，避免直达加载动画与 Provider 路由转场重复叠加。
-      document.documentElement.dataset.ndRouteTransitionPending = kind;
-      const layer = layerRef.current;
+      root.dataset.ndRouteTransitionPending = kind;
       // Only aperture transitions need a DOM snapshot in the layer (the radial
       // mask reveals the cloned source page). Overview, surface, and crossfade
       // rely on the target page's own enter animation; showing a clone of the
@@ -116,22 +167,37 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
           `${calculateRevealRadius(origin) + Math.min(Math.max(window.innerWidth * 0.07, 48), 140)}px`,
         );
       } else if (layer && kind === 'content') {
-        // Capture only visible article text. The glass card, docs canvas,
-        // navigation, and TOC stay outside the particle layer.
-        // 仅采样当前可见的正文文字；玻璃卡片、文档画布、导航与目录均不进入粒子层。
-        const transition = createContentParticleTransition();
+        // Capture the complete visible article card and start its particle exit
+        // as soon as the first WebGL frame is ready. Keeping the live source
+        // visible until that frame prevents a blank flash on rapid navigation.
+        // 捕获完整的可见正文卡片，并在首个 WebGL 帧就绪后立即开始粒子退场；
+        // 在此之前保留实时源卡片，避免快速切页时出现空白闪烁。
+        const transition = preparedContentTransition;
         if (transition) {
           contentParticleRef.current = transition;
           layer.replaceChildren(transition.canvas);
           layer.hidden = true;
           layer.dataset.phase = 'preparing';
           layer.dataset.transition = kind;
+          root.style.setProperty('--nd-content-outgoing-opacity', outgoingOpacity);
+          root.dataset.ndRouteTransitionCapturing = kind;
+          root.dataset.ndRouteTransitionParticles = kind;
+          transition.play(() => {
+            if (contentParticleRef.current !== transition) return;
+            layer.hidden = false;
+            if (!root.hasAttribute('data-nd-route-transition')) {
+              layer.dataset.phase = 'navigating';
+              root.dataset.ndRouteTransitionOutgoing = kind;
+            }
+            root.removeAttribute('data-nd-route-transition-capturing');
+            root.style.removeProperty('--nd-content-outgoing-opacity');
+          });
         }
       }
 
-      cleanupTimerRef.current = window.setTimeout(cleanup, TRANSITION_TIMEOUT_MS.navigation);
+      scheduleCleanup(intent, TRANSITION_TIMEOUT_MS.navigation);
     },
-    [cleanup],
+    [cleanup, scheduleCleanup],
   );
 
   useEffect(() => {
@@ -163,6 +229,10 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
 
     intent.kind = resolvedKind;
     document.documentElement.dataset.ndRouteTransition = resolvedKind;
+    document.documentElement.removeAttribute('data-nd-route-transition-pending');
+    document.documentElement.removeAttribute('data-nd-route-transition-outgoing');
+    document.documentElement.removeAttribute('data-nd-route-transition-capturing');
+    document.documentElement.style.removeProperty('--nd-content-outgoing-opacity');
     const layer = layerRef.current;
     // Keep the DOM-snapshot layer revealing only for aperture. Other transitions
     // intentionally leave the layer hidden so the target page's enter animation
@@ -173,18 +243,20 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
       layer.dataset.transition = resolvedKind;
       layer.dataset.phase = 'revealing';
     } else if (layer && resolvedKind === 'content' && contentParticleRef.current) {
-      layer.hidden = false;
       layer.dataset.transition = resolvedKind;
       layer.dataset.phase = 'revealing';
-      contentParticleRef.current.play();
     }
 
     const duration = TRANSITION_DURATION_MS[resolvedKind];
-    cleanupTimerRef.current = window.setTimeout(
-      cleanup,
-      duration + TRANSITION_TIMEOUT_MS.settleBuffer,
-    );
-  }, [cleanup, pathname]);
+    const settleDuration =
+      resolvedKind === 'content'
+        ? Math.max(
+            duration,
+            MOTION_DURATION_MS.contentEnterDelay + MOTION_DURATION_MS.contentEnter,
+          ) + TRANSITION_TIMEOUT_MS.settleBuffer
+        : duration + TRANSITION_TIMEOUT_MS.settleBuffer;
+    scheduleCleanup(intent, settleDuration);
+  }, [cleanup, pathname, scheduleCleanup]);
 
   useEffect(() => {
     const handlePageShow = (event: PageTransitionEvent) => {

@@ -18,11 +18,11 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
   const chapters = getHomeChapters(locale);
 
   return (
-    <main className="home-page">
-      {/* Particle scroll is deliberately scoped to the homepage. Docs pages
-          keep normal document scrolling and use particles only during article navigation.
-          粒子滚动严格限定在主页；文档页保持普通滚动，仅在文章切换时使用粒子。 */}
-      <HomeParticleScroll>
+    <HomeParticleScroll>
+      {/* Keep the complete homepage surface inside the HTML-in-Canvas subtree so
+          its ambient background is captured together with the foreground content.
+          将完整首页表面置于 HTML-in-Canvas 子树内，使环境背景与前景内容一同捕获。 */}
+      <main className="home-page">
         {/* The portal component keeps page structure semantic and effects encapsulated.
             门户组件保持页面结构语义化，并封装底层效果。 */}
         <HomePortal chapters={chapters} dict={dict} locale={locale} />
@@ -30,7 +30,7 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
         {/* Homepage footer with repository, Git commit, and author metadata.
             首页底部信息，展示仓库、Git 提交与作者元信息。 */}
         <HomeFooter locale={locale} />
-      </HomeParticleScroll>
-    </main>
+      </main>
+    </HomeParticleScroll>
   );
 }

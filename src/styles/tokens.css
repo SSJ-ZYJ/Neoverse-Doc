@@ -366,7 +366,9 @@
   --nd-duration-aperture: 1200ms;
   --nd-duration-overview: 560ms;
   --nd-duration-surface: 480ms;
-  --nd-duration-content: 360ms;
+  --nd-duration-content: 1400ms;
+  --nd-delay-content-enter: 700ms;
+  --nd-duration-content-enter: 360ms;
   --nd-duration-crossfade: 420ms;
   --nd-duration-loading-release: 480ms;
   --nd-duration-ai-caret-blink: 1200ms;
