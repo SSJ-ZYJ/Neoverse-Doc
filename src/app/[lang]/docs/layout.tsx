@@ -53,6 +53,7 @@ export default async function Layout({ params, children }: LayoutProps<'/[lang]/
       <DocsReadingReturn
         actionLabel={dict.readingReturnAction}
         ariaLabelTemplate={dict.readingReturnAriaLabel}
+        dismissLabel={dict.readingReturnDismiss}
       />
     </DocsLayout>
   );

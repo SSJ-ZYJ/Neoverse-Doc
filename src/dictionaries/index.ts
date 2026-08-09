@@ -39,6 +39,7 @@ export interface Dictionary {
   // Cross-document reading return labels / 跨文档阅读返回标签
   readingReturnAction: string;
   readingReturnAriaLabel: string;
+  readingReturnDismiss: string;
   // Route error recovery copy / 路由错误恢复文案
   errorTitle: string;
   errorCode: string;

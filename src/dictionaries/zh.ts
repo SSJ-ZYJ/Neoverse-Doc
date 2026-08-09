@@ -33,6 +33,7 @@ export const zh = {
   // Cross-document reading return labels / 跨文档阅读返回标签
   readingReturnAction: '返回阅读位置',
   readingReturnAriaLabel: '返回“{title}”的阅读位置',
+  readingReturnDismiss: '关闭返回阅读位置按钮',
   // Route error recovery copy / 路由错误恢复文案
   errorTitle: '页面加载失败',
   errorCode: '500',

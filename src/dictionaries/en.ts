@@ -33,6 +33,7 @@ export const en = {
   // Cross-document reading return labels / 跨文档阅读返回标签
   readingReturnAction: 'Return to reading position',
   readingReturnAriaLabel: 'Return to your reading position in “{title}”',
+  readingReturnDismiss: 'Dismiss return to reading position',
   // Route error recovery copy / 路由错误恢复文案
   errorTitle: 'Page Failed to Load',
   errorCode: '500',

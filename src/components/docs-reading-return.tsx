@@ -3,7 +3,7 @@
 // 跨文档阅读返回点：记录正文链接跳转，并通过紧凑悬浮操作恢复来源页的准确滚动位置。
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -36,6 +36,7 @@ interface ReadingRestorePoint {
 interface DocsReadingReturnProps {
   actionLabel: string;
   ariaLabelTemplate: string;
+  dismissLabel: string;
 }
 
 function normalizePathname(pathname: string): string {
@@ -154,7 +155,11 @@ function resolveElementPath(root: Element, path: number[]): HTMLElement | null {
   return current instanceof HTMLElement ? current : null;
 }
 
-export function DocsReadingReturn({ actionLabel, ariaLabelTemplate }: DocsReadingReturnProps) {
+export function DocsReadingReturn({
+  actionLabel,
+  ariaLabelTemplate,
+  dismissLabel,
+}: DocsReadingReturnProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [returnPoint, setReturnPoint] = useState<ReadingReturnPoint | null>(null);
@@ -282,26 +287,41 @@ export function DocsReadingReturn({ actionLabel, ariaLabelTemplate }: DocsReadin
     router.back();
   };
 
+  const handleDismiss = () => {
+    removeStoredValue(RETURN_POINT_STORAGE_KEY);
+    setReturnPoint(null);
+  };
+
   if (!returnPoint) return null;
 
   const ariaLabel = ariaLabelTemplate.replace('{title}', returnPoint.sourceTitle);
 
   return createPortal(
-    <button
-      aria-label={ariaLabel}
-      className="docs-reading-return"
-      data-reading-return=""
-      onClick={handleReturn}
-      title={ariaLabel}
-      type="button"
-    >
-      <span aria-hidden="true" className="docs-reading-return__icon">
-        <ArrowLeft />
-      </span>
-      <span className="docs-reading-return__action">{actionLabel}</span>
-      <span aria-hidden="true" className="docs-reading-return__divider" />
-      <span className="docs-reading-return__title">{returnPoint.sourceTitle}</span>
-    </button>,
+    <div className="docs-reading-return" data-reading-return="">
+      <button
+        aria-label={ariaLabel}
+        className="docs-reading-return__back"
+        onClick={handleReturn}
+        title={ariaLabel}
+        type="button"
+      >
+        <span aria-hidden="true" className="docs-reading-return__icon">
+          <ArrowLeft />
+        </span>
+        <span className="docs-reading-return__action">{actionLabel}</span>
+        <span aria-hidden="true" className="docs-reading-return__divider" />
+        <span className="docs-reading-return__title">{returnPoint.sourceTitle}</span>
+      </button>
+      <button
+        aria-label={dismissLabel}
+        className="docs-reading-return__dismiss"
+        onClick={handleDismiss}
+        title={dismissLabel}
+        type="button"
+      >
+        <X aria-hidden="true" />
+      </button>
+    </div>,
     document.body,
   );
 }
