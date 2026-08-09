@@ -13,6 +13,7 @@ import {
 import {
   type ContentParticleTransition,
   createContentParticleTransition,
+  prewarmContentParticleRenderer,
 } from './content-particle-transition';
 import {
   calculateRevealRadius,
@@ -21,7 +22,7 @@ import {
   resolveEventOrigin,
 } from './transition-controller';
 import { TransitionLayer } from './transition-layer';
-import { isSamePageHashNavigation, selectTransition } from './transition-policy';
+import { isDocsRoute, isSamePageHashNavigation, selectTransition } from './transition-policy';
 import type { TransitionIntent, TransitionKind } from './transition-types';
 
 interface TransitionProviderProps {
@@ -199,6 +200,22 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
     },
     [cleanup, scheduleCleanup],
   );
+
+  useEffect(() => {
+    if (!isDocsRoute(pathname)) return;
+
+    const idleWindow = window as unknown as {
+      cancelIdleCallback?: (handle: number) => void;
+      requestIdleCallback?: (callback: IdleRequestCallback) => number;
+    };
+    if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(prewarmContentParticleRenderer);
+      return () => idleWindow.cancelIdleCallback?.(idleId);
+    }
+
+    const timeoutId = window.setTimeout(prewarmContentParticleRenderer, 240);
+    return () => window.clearTimeout(timeoutId);
+  }, [pathname]);
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {

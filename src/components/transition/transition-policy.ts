@@ -24,6 +24,10 @@ function classifyRoute(pathname: string): RouteRegion {
   return 'other';
 }
 
+export function isDocsRoute(pathname: string): boolean {
+  return classifyRoute(pathname) === 'docs';
+}
+
 export function selectTransition(
   sourcePath: string,
   targetPath: string,

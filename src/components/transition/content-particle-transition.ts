@@ -22,6 +22,7 @@ type ElementImageContext = CanvasRenderingContext2D & {
 
 const CAPTURE_EXCLUDE_SELECTOR =
   'canvas, svg, img, picture, video, audio, iframe, script, object, embed, .immersive-particle-layer';
+const TRANSPARENT_PIXEL = new Uint8Array([0, 0, 0, 0]);
 const DENSITY = 2;
 const SIZE = 1.5;
 const SPREAD = 180;
@@ -120,6 +121,178 @@ void main () {
   outColor = vec4(particleColor, alpha);
 }`;
 
+interface ContentParticleRenderer {
+  canvas: HTMLCanvasElement;
+  fragment: WebGLShader;
+  gl: WebGL2RenderingContext;
+  inUse: boolean;
+  program: WebGLProgram;
+  texture: WebGLTexture;
+  uniforms: Record<string, WebGLUniformLocation>;
+  vao: WebGLVertexArrayObject;
+  vertex: WebGLShader;
+}
+
+let sharedRenderer: ContentParticleRenderer | null = null;
+
+function createRenderer(): ContentParticleRenderer | null {
+  const canvas = document.createElement('canvas');
+  canvas.className = 'nd-content-particle-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  const gl = canvas.getContext('webgl2', {
+    alpha: true,
+    antialias: false,
+    depth: false,
+    premultipliedAlpha: false,
+    stencil: false,
+  });
+  if (!gl || gl.isContextLost()) return null;
+
+  const vertex = compileShader(gl, gl.VERTEX_SHADER, DISSOLVE_VERT);
+  if (!vertex) return null;
+  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, DISSOLVE_FRAG);
+  if (!fragment) {
+    gl.deleteShader(vertex);
+    return null;
+  }
+
+  const program = gl.createProgram();
+  if (!program) {
+    gl.deleteShader(vertex);
+    gl.deleteShader(fragment);
+    return null;
+  }
+  gl.attachShader(program, vertex);
+  gl.attachShader(program, fragment);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error('Content particle program error:', gl.getProgramInfoLog(program));
+    gl.deleteProgram(program);
+    gl.deleteShader(vertex);
+    gl.deleteShader(fragment);
+    return null;
+  }
+
+  const vao = gl.createVertexArray();
+  const texture = gl.createTexture();
+  if (!vao || !texture) {
+    if (vao) gl.deleteVertexArray(vao);
+    if (texture) gl.deleteTexture(texture);
+    gl.deleteProgram(program);
+    gl.deleteShader(vertex);
+    gl.deleteShader(fragment);
+    return null;
+  }
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    1,
+    1,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    TRANSPARENT_PIXEL,
+  );
+
+  return {
+    canvas,
+    fragment,
+    gl,
+    inUse: false,
+    program,
+    texture,
+    uniforms: readUniforms(gl, program),
+    vao,
+    vertex,
+  };
+}
+
+function destroyRenderer(renderer: ContentParticleRenderer): void {
+  renderer.canvas.remove();
+  renderer.gl.deleteTexture(renderer.texture);
+  renderer.gl.deleteVertexArray(renderer.vao);
+  renderer.gl.deleteProgram(renderer.program);
+  renderer.gl.deleteShader(renderer.vertex);
+  renderer.gl.deleteShader(renderer.fragment);
+}
+
+function resizeRenderer(renderer: ContentParticleRenderer): number {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = Math.max(1, Math.round(window.innerWidth * dpr));
+  const height = Math.max(1, Math.round(window.innerHeight * dpr));
+  if (renderer.canvas.width !== width) renderer.canvas.width = width;
+  if (renderer.canvas.height !== height) renderer.canvas.height = height;
+  return dpr;
+}
+
+function acquireRenderer(): ContentParticleRenderer | null {
+  if (sharedRenderer?.gl.isContextLost()) {
+    destroyRenderer(sharedRenderer);
+    sharedRenderer = null;
+  }
+  if (!sharedRenderer) sharedRenderer = createRenderer();
+  if (sharedRenderer && !sharedRenderer.inUse) {
+    sharedRenderer.inUse = true;
+    return sharedRenderer;
+  }
+
+  const renderer = createRenderer();
+  if (renderer) renderer.inUse = true;
+  return renderer;
+}
+
+function releaseRenderer(renderer: ContentParticleRenderer): void {
+  if (renderer !== sharedRenderer || renderer.gl.isContextLost()) {
+    if (renderer === sharedRenderer) sharedRenderer = null;
+    destroyRenderer(renderer);
+    return;
+  }
+
+  const { canvas, gl, texture } = renderer;
+  canvas.remove();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    1,
+    1,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    TRANSPARENT_PIXEL,
+  );
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  renderer.inUse = false;
+}
+
+// Create and size the expensive WebGL resources while the docs page is idle.
+// 在文档页空闲阶段创建并调整高成本 WebGL 资源，避免首个粒子帧同步初始化。
+export function prewarmContentParticleRenderer(): void {
+  if (!supportsHtmlInCanvas() || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return;
+  }
+  if (sharedRenderer?.gl.isContextLost()) {
+    destroyRenderer(sharedRenderer);
+    sharedRenderer = null;
+  }
+  if (!sharedRenderer) sharedRenderer = createRenderer();
+  if (!sharedRenderer || sharedRenderer.inUse) return;
+  resizeRenderer(sharedRenderer);
+  sharedRenderer.gl.viewport(0, 0, sharedRenderer.canvas.width, sharedRenderer.canvas.height);
+  sharedRenderer.gl.clearColor(0, 0, 0, 0);
+  sharedRenderer.gl.clear(sharedRenderer.gl.COLOR_BUFFER_BIT);
+  sharedRenderer.gl.flush();
+}
+
 export function createContentParticleTransition(): ContentParticleTransition | null {
   if (!supportsHtmlInCanvas() || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     return null;
@@ -128,17 +301,9 @@ export function createContentParticleTransition(): ContentParticleTransition | n
   const page = document.querySelector<HTMLElement>('#nd-page');
   if (!page) return null;
 
-  const output = document.createElement('canvas');
-  output.className = 'nd-content-particle-canvas';
-  output.setAttribute('aria-hidden', 'true');
-  const gl = output.getContext('webgl2', {
-    alpha: true,
-    antialias: false,
-    depth: false,
-    premultipliedAlpha: false,
-    stencil: false,
-  });
-  if (!gl || gl.isContextLost()) return null;
+  const renderer = acquireRenderer();
+  if (!renderer) return null;
+  const { canvas: output, gl, program, texture, uniforms, vao } = renderer;
   const setProgram = gl.useProgram.bind(gl);
 
   const source = document.createElement('canvas') as PaintableCanvas;
@@ -146,7 +311,10 @@ export function createContentParticleTransition(): ContentParticleTransition | n
   source.setAttribute('aria-hidden', 'true');
   source.setAttribute('layoutsubtree', 'true');
   const sourceContext = source.getContext('2d') as ElementImageContext | null;
-  if (!sourceContext?.drawElementImage || !source.requestPaint) return null;
+  if (!sourceContext?.drawElementImage || !source.requestPaint) {
+    releaseRenderer(renderer);
+    return null;
+  }
 
   const clone = page.cloneNode(true) as HTMLElement;
   const contentOpacity = getComputedStyle(page.firstElementChild ?? page).opacity;
@@ -170,61 +338,11 @@ export function createContentParticleTransition(): ContentParticleTransition | n
   source.append(clone);
   document.body.append(source);
 
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const width = Math.max(1, Math.round(window.innerWidth * dpr));
-  const height = Math.max(1, Math.round(window.innerHeight * dpr));
+  const dpr = resizeRenderer(renderer);
+  const width = output.width;
+  const height = output.height;
   source.width = width;
   source.height = height;
-  output.width = width;
-  output.height = height;
-
-  const vertex = compileShader(gl, gl.VERTEX_SHADER, DISSOLVE_VERT);
-  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, DISSOLVE_FRAG);
-  if (!vertex || !fragment) {
-    source.remove();
-    return null;
-  }
-
-  const program = gl.createProgram();
-  if (!program) {
-    source.remove();
-    return null;
-  }
-  gl.attachShader(program, vertex);
-  gl.attachShader(program, fragment);
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.error('Content particle program error:', gl.getProgramInfoLog(program));
-    gl.deleteProgram(program);
-    gl.deleteShader(vertex);
-    gl.deleteShader(fragment);
-    source.remove();
-    return null;
-  }
-
-  const uniforms = readUniforms(gl, program);
-  const vao = gl.createVertexArray();
-  const texture = gl.createTexture();
-  if (!vao || !texture) {
-    source.remove();
-    return null;
-  }
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.RGBA,
-    1,
-    1,
-    0,
-    gl.RGBA,
-    gl.UNSIGNED_BYTE,
-    new Uint8Array([0, 0, 0, 0]),
-  );
 
   let frameId = 0;
   let destroyed = false;
@@ -333,17 +451,13 @@ export function createContentParticleTransition(): ContentParticleTransition | n
   return {
     canvas: output,
     destroy() {
+      if (destroyed) return;
       destroyed = true;
       window.cancelAnimationFrame(frameId);
       onFirstFrame = null;
       source.onpaint = null;
       source.remove();
-      output.remove();
-      gl.deleteTexture(texture);
-      gl.deleteVertexArray(vao);
-      gl.deleteProgram(program);
-      gl.deleteShader(vertex);
-      gl.deleteShader(fragment);
+      releaseRenderer(renderer);
     },
     play(handleFirstFrame) {
       if (destroyed) return;
