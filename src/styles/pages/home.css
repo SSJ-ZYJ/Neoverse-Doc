@@ -131,16 +131,6 @@
   overflow: hidden;
 }
 
-/* The native canvas extends behind the floating navigation, so the hero no
-   longer needs the negative offset used by the unsupported document-flow
-   fallback. This keeps its content in place while removing the plain strip
-   above the canvas.
-   原生画布会延伸到悬浮导航后方，因此 Hero 不再需要非支持浏览器文档流所用的
-   负偏移；内容位置保持不变，同时消除画布上方的纯色横条。 */
-.home-particle-scroll[data-particle-scroll-native] .home-hero {
-  margin-block-start: 0;
-}
-
 /* Animated ambient orb layer: four large blurred gradient orbs that drift
    slowly across the viewport, creating a living, breathing background that
    shifts as the user scrolls. Uses position: fixed so the orbs stay in the
@@ -318,6 +308,7 @@
   position: relative;
   z-index: 2;
   display: flex;
+  inline-size: 100%;
   max-inline-size: 66rem;
   flex-direction: column;
   align-items: center;
@@ -345,6 +336,7 @@
 }
 
 .home-hero__title {
+  inline-size: min(100%, 66rem);
   margin: 0;
   color: var(--text-primary);
   font-weight: 760;
@@ -355,8 +347,56 @@
   white-space: nowrap;
 }
 
-.rb-split-text__character {
-  display: inline-block;
+.rb-particle-text {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  block-size: clamp(5rem, min(12vw, 16svh), 9.5rem);
+  overflow: hidden;
+}
+
+.rb-particle-text__canvas,
+.rb-particle-text__fallback,
+.rb-particle-text__noscript {
+  position: absolute;
+  inset: 0;
+}
+
+.rb-particle-text__canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+/* The real heading text is hidden during normal initialization so it cannot
+   flash behind the scattered particles. It remains available for no-JS,
+   reduced-motion, and Canvas failure fallbacks.
+   正常初始化时隐藏真实标题，避免完整字形在散开粒子后闪现；
+   无 JavaScript、减少动态效果或 Canvas 失败时仍保留静态回退。 */
+.rb-particle-text__fallback,
+.rb-particle-text__noscript {
+  display: grid;
+  place-items: center;
+  color: transparent;
+  background: linear-gradient(100deg, var(--color-brand-start), var(--color-brand-end));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.rb-particle-text__fallback {
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+.rb-particle-text[data-ready] .rb-particle-text__canvas {
+  opacity: 1;
+}
+
+.rb-particle-text[data-fallback] .rb-particle-text__fallback {
+  opacity: 1;
 }
 
 .home-hero__description {
@@ -401,38 +441,6 @@
     inset 0 1px 0 color-mix(in srgb, white 72%, transparent),
     inset 0 -1px 0 color-mix(in srgb, var(--accent-tertiary) 28%, transparent),
     0 1.25rem 3rem -1.5rem var(--accent-primary);
-}
-
-/* HTML-in-Canvas clips the CTA's broad outer shadow to its capture bounds,
-   which turns the soft glow into a visible rectangle. Keep the inset edge
-   lighting in the native particle branch and let the page ambience provide
-   the surrounding glow instead.
-   HTML-in-Canvas 会把 CTA 的大范围外阴影裁切到捕获边界，使柔和光晕变成
-   可见矩形。原生粒子分支保留内侧高光，外围光感交由页面环境背景提供。 */
-.home-particle-scroll[data-particle-scroll-native] .home-cta {
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 72%, transparent),
-    inset 0 -1px 0 color-mix(in srgb, var(--accent-tertiary) 28%, transparent);
-  backdrop-filter: none;
-}
-
-/* HTML-in-Canvas splits each chapter card's backdrop-filter surface into
-   capture tiles, leaving opaque vertical blocks inside and between cards.
-   The existing refraction fill and border retain the glass hierarchy without
-   that filter in the native particle branch.
-   HTML-in-Canvas 会把章节卡片的背景模糊拆成捕获图块，在卡片内部与间隙留下
-   不透明竖块。原生粒子分支移除该滤镜后，现有折射填充与边框仍保留玻璃层级。 */
-.home-particle-scroll[data-particle-scroll-native] .chapter-card {
-  backdrop-filter: none;
-}
-
-/* HTML-in-Canvas rasterizes the community controls' backdrop blur as an
-   oversized rectangular tile. Their opaque glass fills already preserve the
-   intended contrast, so only the native capture branch drops that blur layer.
-   HTML-in-Canvas 会把共建操作按钮的背景模糊栅格化为过大的矩形图块。
-   按钮自身的玻璃填充已能保证对比度，因此仅在原生捕获分支移除该模糊层。 */
-.home-particle-scroll[data-particle-scroll-native] .home-community__actions .control-surface {
-  backdrop-filter: none;
 }
 
 /* The spectral sweep remains visually identical while its motion moves to a
@@ -1337,6 +1345,10 @@
     letter-spacing: 0.018em;
   }
 
+  .rb-particle-text {
+    block-size: clamp(4rem, 17vw, 6rem);
+  }
+
   /* The mobile hero description uses a narrower reading measure so it
      supports the brand title instead of competing with its visual width.
      移动端主视觉说明使用更窄的阅读宽度，衬托品牌标题而不与其争夺横向视觉层级。 */
@@ -1451,6 +1463,14 @@
   .chapter-card::after {
     display: none;
   }
+
+  .rb-particle-text__canvas {
+    display: none;
+  }
+
+  .rb-particle-text__fallback {
+    opacity: 1;
+  }
 }
 
 /* Pause infinite CSS animations when the tab is hidden. The ImmersiveInteraction
@@ -1486,4 +1506,52 @@ html[data-page-hidden] .ai-compute__pulse {
     content-visibility: visible;
     contain-intrinsic-block-size: none;
   }
+}
+
+/* Native HTML-in-Canvas overrides stay after the base, responsive, and reduced
+   motion rules so their higher-specificity selectors do not precede simpler
+   selectors for the same components.
+   原生 HTML-in-Canvas 覆盖集中放在基础、响应式与减少动态效果规则之后，
+   避免高特异性选择器先于同组件的简单选择器出现。 */
+
+/* The native canvas extends behind the floating navigation, so the hero no
+   longer needs the negative offset used by the unsupported document-flow
+   fallback. This keeps its content in place while removing the plain strip
+   above the canvas.
+   原生画布会延伸到悬浮导航后方，因此 Hero 不再需要非支持浏览器文档流所用的
+   负偏移；内容位置保持不变，同时消除画布上方的纯色横条。 */
+.home-particle-scroll[data-particle-scroll-native] .home-hero {
+  margin-block-start: 0;
+}
+
+/* HTML-in-Canvas clips the CTA's broad outer shadow to its capture bounds,
+   which turns the soft glow into a visible rectangle. Keep the inset edge
+   lighting in the native particle branch and let the page ambience provide
+   the surrounding glow instead.
+   HTML-in-Canvas 会把 CTA 的大范围外阴影裁切到捕获边界，使柔和光晕变成
+   可见矩形。原生粒子分支保留内侧高光，外围光感交由页面环境背景提供。 */
+.home-particle-scroll[data-particle-scroll-native] .home-cta {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 72%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--accent-tertiary) 28%, transparent);
+  backdrop-filter: none;
+}
+
+/* HTML-in-Canvas splits each chapter card's backdrop-filter surface into
+   capture tiles, leaving opaque vertical blocks inside and between cards.
+   The existing refraction fill and border retain the glass hierarchy without
+   that filter in the native particle branch.
+   HTML-in-Canvas 会把章节卡片的背景模糊拆成捕获图块，在卡片内部与间隙留下
+   不透明竖块。原生粒子分支移除该滤镜后，现有折射填充与边框仍保留玻璃层级。 */
+.home-particle-scroll[data-particle-scroll-native] .chapter-card {
+  backdrop-filter: none;
+}
+
+/* HTML-in-Canvas rasterizes the community controls' backdrop blur as an
+   oversized rectangular tile. Their opaque glass fills already preserve the
+   intended contrast, so only the native capture branch drops that blur layer.
+   HTML-in-Canvas 会把共建操作按钮的背景模糊栅格化为过大的矩形图块。
+   按钮自身的玻璃填充已能保证对比度，因此仅在原生捕获分支移除该模糊层。 */
+.home-particle-scroll[data-particle-scroll-native] .home-community__actions .control-surface {
+  backdrop-filter: none;
 }
