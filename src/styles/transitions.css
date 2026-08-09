@@ -7,6 +7,26 @@
   initial-value: 0px;
 }
 
+/* Clear cloned article surfaces before the official drawElementImage capture,
+   keeping typography and glyphs as the only particle source.
+   在官方 drawElementImage 捕获前清除克隆正文的表面，仅保留排版与字形作为粒子源。 */
+[data-particle-capture],
+[data-particle-capture] * {
+  animation-play-state: paused !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  transition: none !important;
+}
+
+[data-particle-capture] *::before,
+[data-particle-capture] *::after {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 #nd-transition-layer {
   position: fixed;
   inset: 0;
@@ -80,6 +100,36 @@
   animation: nd-layer-fade var(--nd-duration-crossfade) linear forwards;
 }
 
+/* Docs-to-docs navigation keeps the target article card and canvas visible.
+   Only the sampled old text is drawn into this transparent particle layer.
+   文档间导航保持目标正文卡片与画布可见，仅将采样后的旧文字绘制到透明粒子层。 */
+#nd-transition-layer[data-transition="content"] {
+  background: transparent;
+}
+
+.nd-content-particle-canvas {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+/* The official drawElementImage source remains laid out for one capture frame
+   but never paints into the visible page. Its cloned article keeps typography
+   while all surfaces are cleared, so only changed content becomes particles.
+   官方 drawElementImage 源画布保留一个捕获帧的布局但不绘制到可见页面；
+   克隆正文保留排版，并清除所有表面，使只有变化内容进入粒子层。 */
+.nd-content-particle-source {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  inline-size: 100vw;
+  block-size: 100vh;
+  pointer-events: none;
+  contain: strict;
+}
+
 @keyframes nd-layer-fade {
   to {
     opacity: 0;
@@ -88,8 +138,7 @@
 
 html[data-nd-route-transition="overview"] :is(.home-page, .special-page),
 html[data-nd-route-transition="surface"] :is(.home-page, .special-page),
-html[data-nd-route-transition="crossfade"] :is(.home-page, .special-page, #nd-page),
-html[data-nd-route-transition="content"] #nd-page {
+html[data-nd-route-transition="crossfade"] :is(.home-page, .special-page, #nd-page) {
   animation: nd-route-target-enter var(--motion-standard) var(--motion-ease-standard) both;
 }
 
@@ -117,8 +166,12 @@ html[data-nd-route-transition="aperture"] #nd-page {
   animation: nd-aperture-land var(--nd-duration-aperture) var(--motion-ease-emphasized) both;
 }
 
-html[data-nd-route-transition="content"] #nd-page {
-  animation-duration: var(--nd-duration-content);
+/* Fade only the new article's child content. The #nd-page glass background,
+   border, shadow, and geometry remain unchanged while old text disperses.
+   仅淡入新文章的子内容；旧文字消散期间，#nd-page 的玻璃背景、边框、阴影与
+   几何位置均保持不变。 */
+html[data-nd-route-transition="content"] #nd-page > * {
+  animation: nd-route-content-enter var(--nd-duration-content) var(--motion-ease-standard) both;
 }
 
 /* Returning from the guestbook must not transform the full homepage: its
@@ -143,6 +196,15 @@ html[data-nd-route-transition="surface"] .home-page .home-hero__content {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes nd-route-content-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -185,6 +247,10 @@ html[data-nd-route-transition="surface"] .home-page .home-hero__content {
   }
 
   html[data-nd-route-transition] :is(.home-page, .special-page, #nd-page) {
+    animation: none !important;
+  }
+
+  html[data-nd-route-transition="content"] #nd-page > * {
     animation: none !important;
   }
 

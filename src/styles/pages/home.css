@@ -110,6 +110,26 @@
     var(--background-primary);
 }
 
+/* Unsupported browsers keep the original document flow. Only an official
+   HTML-in-Canvas capable browser turns the homepage wrapper into the effect's
+   viewport-sized scroll container.
+   不支持的浏览器保持原始文档流；仅官方 HTML-in-Canvas 能力检测通过时，
+   主页封装才成为效果所需的视口尺寸滚动容器。 */
+.home-particle-scroll {
+  display: flex;
+  min-block-size: 0;
+  inline-size: 100%;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
+.home-particle-scroll[data-particle-scroll-native] {
+  block-size: calc(100dvh - var(--home-nav-height));
+  max-block-size: calc(100dvh - var(--home-nav-height));
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
 /* Animated ambient orb layer: four large blurred gradient orbs that drift
    slowly across the viewport, creating a living, breathing background that
    shifts as the user scrolls. Uses position: fixed so the orbs stay in the

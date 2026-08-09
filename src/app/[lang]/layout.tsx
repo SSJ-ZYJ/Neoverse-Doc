@@ -6,8 +6,8 @@
 
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { Metadata } from 'next';
-import DefaultSearchDialog from '@/components/search';
 import { GuestbookReturnTracker } from '@/components/guestbook-return';
+import DefaultSearchDialog from '@/components/search';
 import { TransitionProvider } from '@/components/transition/transition-provider';
 import { getPageDictionary } from '@/dictionaries';
 import { getSearchChapterTags } from '@/lib/home-sections';

@@ -9,8 +9,8 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { isPlainInternalNavigation } from '@/components/transition/transition-controller';
 import { BackLink } from '@/components/transition/back-link';
+import { isPlainInternalNavigation } from '@/components/transition/transition-controller';
 
 const GUESTBOOK_RETURN_KEY = 'neoverse-docs:guestbook-return';
 
@@ -66,11 +66,7 @@ interface GuestbookReturnLinkProps {
 // Back link that restores the recorded source docs page when present and
 // otherwise falls back to the deterministic home destination.
 // 返回链接：存在记录的来源文档页时恢复之，否则回退到既定的首页目标。
-export function GuestbookReturnLink({
-  docsLabel,
-  homeHref,
-  homeLabel,
-}: GuestbookReturnLinkProps) {
+export function GuestbookReturnLink({ docsLabel, homeHref, homeLabel }: GuestbookReturnLinkProps) {
   const [returnHref, setReturnHref] = useState<string | null>(null);
 
   useLayoutEffect(() => {

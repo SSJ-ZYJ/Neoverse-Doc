@@ -7,6 +7,10 @@ import { usePathname } from 'next/navigation';
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { TRANSITION_DURATION_MS, TRANSITION_TIMEOUT_MS } from '@/lib/motion-config';
 import {
+  type ContentParticleTransition,
+  createContentParticleTransition,
+} from './content-particle-transition';
+import {
   calculateRevealRadius,
   cloneTransitionSource,
   isPlainInternalNavigation,
@@ -24,12 +28,15 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
   const pathname = usePathname();
   const layerRef = useRef<HTMLDivElement>(null);
   const intentRef = useRef<TransitionIntent | null>(null);
+  const contentParticleRef = useRef<ContentParticleTransition | null>(null);
   const cleanupTimerRef = useRef<number | null>(null);
 
   const cleanup = useCallback(() => {
     if (cleanupTimerRef.current !== null) window.clearTimeout(cleanupTimerRef.current);
     cleanupTimerRef.current = null;
     intentRef.current = null;
+    contentParticleRef.current?.destroy();
+    contentParticleRef.current = null;
     document.documentElement.removeAttribute('data-nd-route-transition');
     document.documentElement.removeAttribute('data-nd-route-transition-pending');
     const layer = layerRef.current;
@@ -108,6 +115,18 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
           '--transition-max-radius',
           `${calculateRevealRadius(origin) + Math.min(Math.max(window.innerWidth * 0.07, 48), 140)}px`,
         );
+      } else if (layer && kind === 'content') {
+        // Capture only visible article text. The glass card, docs canvas,
+        // navigation, and TOC stay outside the particle layer.
+        // 仅采样当前可见的正文文字；玻璃卡片、文档画布、导航与目录均不进入粒子层。
+        const transition = createContentParticleTransition();
+        if (transition) {
+          contentParticleRef.current = transition;
+          layer.replaceChildren(transition.canvas);
+          layer.hidden = true;
+          layer.dataset.phase = 'preparing';
+          layer.dataset.transition = kind;
+        }
       }
 
       cleanupTimerRef.current = window.setTimeout(cleanup, TRANSITION_TIMEOUT_MS.navigation);
@@ -153,6 +172,11 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
     if (layer && resolvedKind === 'aperture') {
       layer.dataset.transition = resolvedKind;
       layer.dataset.phase = 'revealing';
+    } else if (layer && resolvedKind === 'content' && contentParticleRef.current) {
+      layer.hidden = false;
+      layer.dataset.transition = resolvedKind;
+      layer.dataset.phase = 'revealing';
+      contentParticleRef.current.play();
     }
 
     const duration = TRANSITION_DURATION_MS[resolvedKind];

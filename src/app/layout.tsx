@@ -61,9 +61,17 @@ const notoSansSC = Noto_Sans_SC({
   variable: '--font-noto-sans',
 });
 
+// Enables the HTML-in-Canvas origin trial for docs.shenshijun.space and its subdomains.
+// 为 docs.shenshijun.space 及其子域启用 HTML-in-Canvas Origin Trial。
+const HTML_IN_CANVAS_ORIGIN_TRIAL_TOKEN =
+  'Asl9H+KNGlrs0W5DtRf1ouCSdLl/pRmy4Xg6/AuxWRMADMfj8sKhuMAnubYnjc0TWGS25b/CIvMhOBnhwJX4tgEAAABueyJvcmlnaW4iOiJodHRwczovL2RvY3Muc2hlbnNoaWp1bi5zcGFjZTo0NDMiLCJmZWF0dXJlIjoiSFRNTEluQ2FudmFzIiwiZXhwaXJ5IjoxNzkyNDU0NDAwLCJpc1N1YmRvbWFpbiI6dHJ1ZX0=';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang={i18n.defaultLanguage} suppressHydrationWarning>
+      <head>
+        <meta httpEquiv="origin-trial" content={HTML_IN_CANVAS_ORIGIN_TRIAL_TOKEN} />
+      </head>
       <body className={`antialiased min-h-screen ${orbitron.variable} ${notoSansSC.variable}`}>
         {/* Disable CSS transitions only while next-themes updates the root class.
             This prevents long documents from animating every theme-sensitive code block.
