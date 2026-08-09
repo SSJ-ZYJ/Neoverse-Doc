@@ -615,6 +615,56 @@ html[data-nd-reading-restore] {
   max-inline-size: var(--docs-reading-width);
 }
 
+/* A low-cost, three-layer blur stays fixed to the viewport edge while its width
+   follows only the document card. Visibility is observer-driven, so scrolling
+   does not trigger per-frame JavaScript work or affect the separate community card.
+   低成本三层模糊固定在视口边缘，宽度只跟随正文卡片；可见性由 Observer 驱动，
+   滚动时没有逐帧 JavaScript 工作，也不会影响独立的社区卡片。 */
+.docs-page-gradual-blur {
+  position: fixed;
+  inset-block-end: 0;
+  z-index: 20;
+  contain: layout style;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+.docs-page-gradual-blur[data-visible] {
+  opacity: 1;
+}
+
+.gradual-blur__inner {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.gradual-blur__layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-page-gradual-blur {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .docs-page-gradual-blur {
+    display: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .docs-page-gradual-blur {
+    display: none;
+  }
+}
+
 /* Author meta row hosts the contributor line and the right-aligned page actions
    on a shared baseline with the divider below.
    作者元信息行让贡献者列表与右对齐的页面操作弹层共用一个基线与底部分隔线。 */

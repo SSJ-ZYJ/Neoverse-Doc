@@ -5,12 +5,19 @@
 // 底部附带 Giscus 讨论区。元信息（标题/描述）从页面 frontmatter 生成。
 
 import { findNeighbour } from 'fumadocs-core/page-tree';
-import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
+import {
+  DocsBody,
+  DocsDescription,
+  DocsPage,
+  DocsTitle,
+  PageFooter,
+} from 'fumadocs-ui/layouts/docs/page';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { DocsCommunity } from '@/components/docs-community';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
 import { DocsPageActions } from '@/components/docs-page-actions';
+import { DocsPageGradualBlur } from '@/components/docs-page-gradual-blur';
 import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { TaskListProgress } from '@/components/mdx/task-list-progress';
@@ -99,14 +106,23 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   return (
     <>
       <DocsPage
+        data-docs-page-card=""
         toc={page.data.toc}
         full={page.data.full}
-        footer={page.data.draft ? { className: 'docs-draft__footer' } : undefined}
+        footer={{
+          component: (
+            <PageFooter
+              className={page.data.draft ? 'docs-draft__footer' : undefined}
+              data-docs-page-footer=""
+            />
+          ),
+        }}
         tableOfContent={{ style: 'normal' }}
       >
         {header}
         {pageContent}
       </DocsPage>
+      <DocsPageGradualBlur />
       {/* Keep community height and scrolling outside the Fumadocs article container.
           将社区模块的高度与滚动隔离在 Fumadocs 正文容器之外。 */}
       {community}
