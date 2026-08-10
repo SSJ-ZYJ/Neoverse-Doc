@@ -166,6 +166,36 @@ function DeferredTOCProvider({ toc, children, ...props }: TOCProviderProps) {
 
 function DeferredTOC(props: ComponentProps<typeof FumadocsTOC>) {
   const phase = useContext(DeferredTocPhaseContext);
+
+  useEffect(() => {
+    if (phase === 'hidden') return;
+
+    const container = document.getElementById('nd-toc');
+    if (!container) return;
+
+    let previousScrollY = window.scrollY;
+    let direction: 'down' | 'up' = 'down';
+    container.dataset.docsTocScrollDirection = direction;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY === previousScrollY) return;
+
+      const nextDirection = currentScrollY > previousScrollY ? 'down' : 'up';
+      previousScrollY = currentScrollY;
+      if (nextDirection === direction) return;
+
+      direction = nextDirection;
+      container.dataset.docsTocScrollDirection = direction;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      delete container.dataset.docsTocScrollDirection;
+    };
+  }, [phase]);
+
   if (phase === 'hidden') {
     // Mirror the native empty-TOC placeholder so the desktop grid keeps its
     // reserved column while the real TOC is deferred.

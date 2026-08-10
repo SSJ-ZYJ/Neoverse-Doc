@@ -1768,6 +1768,33 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   transition: clip-path var(--motion-fast) var(--motion-ease-standard) !important;
 }
 
+/* Keep multiple visible headings active, but cap the highlighted path to three
+   TOC rows. Anchor the clipped segment to the thumb end for each scroll
+   direction so rapid jumps cannot stretch it across the whole list.
+   保留多个可见标题的激活状态，但将高亮轨迹限制为三个目录行；根据滚动
+   方向把裁剪后的线段固定在指示点一端，避免快速跳转时贯穿整个目录。 */
+#nd-toc {
+  --docs-toc-track-max-span: 5.0625rem;
+}
+
+#nd-toc[data-docs-toc-scroll-direction="down"] [style*="--track-bottom"] > svg {
+  clip-path: polygon(
+    0 max(var(--track-top, 0px), calc(var(--track-bottom, 0px) - var(--docs-toc-track-max-span))),
+    100% max(var(--track-top, 0px), calc(var(--track-bottom, 0px) - var(--docs-toc-track-max-span))),
+    100% var(--track-bottom, 0px),
+    0 var(--track-bottom, 0px)
+  ) !important;
+}
+
+#nd-toc[data-docs-toc-scroll-direction="up"] [style*="--track-bottom"] > svg {
+  clip-path: polygon(
+    0 var(--track-top, 0px),
+    100% var(--track-top, 0px),
+    100% min(var(--track-bottom, 0px), calc(var(--track-top, 0px) + var(--docs-toc-track-max-span))),
+    0 min(var(--track-bottom, 0px), calc(var(--track-top, 0px) + var(--docs-toc-track-max-span)))
+  ) !important;
+}
+
 #nd-toc [style*="offset-path"] {
   transition:
     offset-distance var(--motion-fast) var(--motion-ease-standard),

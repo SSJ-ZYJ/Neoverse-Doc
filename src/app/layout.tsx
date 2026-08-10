@@ -31,8 +31,8 @@ import { DeploymentSkewGuard } from '@/components/deployment-skew-guard';
 import { ImmersiveInteractionController } from '@/components/immersive-interaction-controller';
 import ImmersiveScrollbar from '@/components/immersive-scrollbar';
 import { InlineCodeWrapController } from '@/components/inline-code-wrap-controller';
-import { i18n } from '@/lib/i18n';
 import { DOCS_REFRESH_RESTORE_BOOTSTRAP } from '@/lib/docs-reading-restore';
+import { i18n } from '@/lib/i18n';
 import '@/app/globals.css';
 // Route loading styles are imported at the root CSS entry for Turbopack tracking.
 // 路由加载样式在根 CSS 入口导入，确保 Turbopack 稳定追踪。
