@@ -7,13 +7,6 @@
    authoring syntax. Normal unordered lists keep their existing typography.
    标准 GFM `- [ ]` 清单以紧凑玻璃行呈现，不改变文档编写语法；
    普通无序列表继续沿用现有排版。 */
-/* Native hash navigation keeps ownership of the final heading position; this class only
-   adds temporary motion for the progress-card action.
-   原生 Hash 导航负责标题最终位置；此类仅为进度卡片操作临时添加滚动动画。 */
-html.mdx-task-list-smooth-scroll {
-  scroll-behavior: smooth;
-}
-
 .mdx-task-progress {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -177,10 +170,6 @@ html.mdx-task-list-smooth-scroll {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html.mdx-task-list-smooth-scroll {
-    scroll-behavior: auto;
-  }
-
   .mdx-task-progress__jump,
   .mdx-task-progress__jump > svg {
     transition: none;

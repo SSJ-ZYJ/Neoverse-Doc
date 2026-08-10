@@ -10,11 +10,23 @@
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { ArrowDown, ListChecks } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { type MouseEvent, useEffect, useState } from 'react';
+import { type MouseEvent, useEffect, useRef, useState } from 'react';
 import { TASK_STATE_CHANGE_EVENT } from '@/components/mdx/interactive-task-list-item';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
-import { MOTION_DURATION_MS, prefersReducedMotion } from '@/lib/motion-config';
+import { prefersReducedMotion } from '@/lib/motion-config';
+
+const TASK_LIST_SCROLL_MAX_STEP_RATIO = 1 / 3;
+const TASK_LIST_SCROLL_ACCELERATION_FRAMES = 8;
+const TASK_LIST_SCROLL_INTERRUPT_KEYS = new Set([
+  'ArrowDown',
+  'ArrowUp',
+  'End',
+  'Home',
+  'PageDown',
+  'PageUp',
+  ' ',
+]);
 
 interface TaskProgress {
   completed: number;
@@ -67,10 +79,7 @@ function findTaskListHeadingHash(): string | null {
   return targetHeading?.id ? `#${targetHeading.id}` : null;
 }
 
-// Keep deferred MDX blocks materialized after native hash navigation so estimated heights
-// cannot move the target again; only the CSS motion class is temporary.
-// 原生 Hash 导航后持续实体化延迟 MDX 区块，避免估算高度再次移动目标；仅 CSS 动画类是临时的。
-function enableTaskListSmoothScroll(event: MouseEvent<HTMLAnchorElement>) {
+function resolveTaskListNavigation(event: MouseEvent<HTMLAnchorElement>) {
   if (
     event.defaultPrevented ||
     event.button !== 0 ||
@@ -79,28 +88,103 @@ function enableTaskListSmoothScroll(event: MouseEvent<HTMLAnchorElement>) {
     event.shiftKey ||
     event.altKey
   ) {
-    return;
+    return null;
   }
 
-  const root = document.documentElement;
-  root.dataset.ndTaskListJump = '';
-  if (!prefersReducedMotion()) root.classList.add('mdx-task-list-smooth-scroll');
-  let cleanupTimeoutId = 0;
+  const hash = event.currentTarget.getAttribute('href');
+  if (!hash?.startsWith('#')) return null;
+  const target = document.getElementById(hash.slice(1));
+  return target ? { hash, target } : null;
+}
 
-  function cleanupSmoothScroll() {
-    root.classList.remove('mdx-task-list-smooth-scroll');
-    window.removeEventListener('scrollend', cleanupSmoothScroll);
-    window.clearTimeout(cleanupTimeoutId);
+// Limit every animation frame to a fraction of the viewport. On a busy main thread
+// the animation takes longer instead of skipping headings, so Fumadocs' TOC observer
+// receives each active anchor's exit update.
+// 将每个动画帧的位移限制为视口的一部分。主线程繁忙时动画会自然延长而不是跨过标题，
+// 从而让 Fumadocs TOC 观察器收到每个活动标题的离开更新。
+function startTaskListSmoothScroll(
+  target: HTMLElement,
+  hash: string,
+  onStop: () => void,
+): () => void {
+  let frameId = 0;
+  let stopped = false;
+  let stepSize = 0;
+
+  function stop() {
+    if (stopped) return;
+    stopped = true;
+    if (frameId) window.cancelAnimationFrame(frameId);
+    window.removeEventListener('wheel', stop);
+    window.removeEventListener('touchstart', stop);
+    window.removeEventListener('pointerdown', stop);
+    window.removeEventListener('popstate', stop);
+    window.removeEventListener('keydown', handleKeyDown);
+    onStop();
   }
 
-  window.addEventListener('scrollend', cleanupSmoothScroll);
-  cleanupTimeoutId = window.setTimeout(cleanupSmoothScroll, MOTION_DURATION_MS.nativeScrollCleanup);
+  function handleKeyDown(event: KeyboardEvent) {
+    if (TASK_LIST_SCROLL_INTERRUPT_KEYS.has(event.key)) stop();
+  }
+
+  const oldURL = window.location.href;
+  if (window.location.hash !== hash) {
+    window.history.pushState(window.history.state, '', hash);
+    window.dispatchEvent(
+      new HashChangeEvent('hashchange', {
+        oldURL,
+        newURL: window.location.href,
+      }),
+    );
+  }
+
+  window.addEventListener('wheel', stop, { passive: true });
+  window.addEventListener('touchstart', stop, { passive: true });
+  window.addEventListener('pointerdown', stop, { passive: true });
+  window.addEventListener('popstate', stop);
+  window.addEventListener('keydown', handleKeyDown);
+
+  frameId = window.requestAnimationFrame(() => {
+    const scrollMarginTop = Number.parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+    const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const targetY = Math.min(
+      Math.max(0, target.getBoundingClientRect().top + window.scrollY - scrollMarginTop),
+      maxScrollY,
+    );
+    const maxStep = Math.max(1, window.innerHeight * TASK_LIST_SCROLL_MAX_STEP_RATIO);
+    const acceleration = maxStep / TASK_LIST_SCROLL_ACCELERATION_FRAMES;
+
+    function step() {
+      const distance = targetY - window.scrollY;
+      const absoluteDistance = Math.abs(distance);
+      if (absoluteDistance <= 1) {
+        window.scrollTo({ top: targetY });
+        stop();
+        return;
+      }
+
+      stepSize = Math.min(
+        maxStep,
+        stepSize + acceleration,
+        Math.sqrt(2 * acceleration * absoluteDistance),
+      );
+      window.scrollBy({
+        top: Math.sign(distance) * Math.min(absoluteDistance, Math.max(1, stepSize)),
+      });
+      frameId = window.requestAnimationFrame(step);
+    }
+
+    step();
+  });
+
+  return stop;
 }
 
 export function TaskListProgress() {
   const pathname = usePathname();
   const { locale } = useI18n();
   const copy = getPageDictionary(resolveLocale(locale));
+  const activeScrollRef = useRef<(() => void) | null>(null);
   const [progress, setProgress] = useState<TaskProgress>({
     completed: 0,
     total: 0,
@@ -118,10 +202,27 @@ export function TaskListProgress() {
     window.addEventListener(TASK_STATE_CHANGE_EVENT, syncProgress);
     return () => {
       window.removeEventListener(TASK_STATE_CHANGE_EVENT, syncProgress);
+      activeScrollRef.current?.();
+      activeScrollRef.current = null;
       delete root.dataset.ndTaskListJump;
-      root.classList.remove('mdx-task-list-smooth-scroll');
     };
   }, [pathname]);
+
+  function handleTaskListJump(event: MouseEvent<HTMLAnchorElement>) {
+    const navigation = resolveTaskListNavigation(event);
+    if (!navigation) return;
+
+    document.documentElement.dataset.ndTaskListJump = '';
+    if (prefersReducedMotion()) return;
+
+    event.preventDefault();
+    activeScrollRef.current?.();
+    let cancelScroll = () => {};
+    cancelScroll = startTaskListSmoothScroll(navigation.target, navigation.hash, () => {
+      if (activeScrollRef.current === cancelScroll) activeScrollRef.current = null;
+    });
+    activeScrollRef.current = cancelScroll;
+  }
 
   if (progress.total === 0) return null;
 
@@ -150,7 +251,7 @@ export function TaskListProgress() {
           <a
             className="mdx-task-progress__jump"
             href={progress.targetHash}
-            onClick={enableTaskListSmoothScroll}
+            onClick={handleTaskListJump}
             title={copy.taskListJumpToList}
           >
             <span>{copy.taskListJumpToList}</span>
