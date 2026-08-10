@@ -10,6 +10,7 @@ const INLINE_CODE_NODE_SELECTOR = ':not(pre) > code';
 const INLINE_CODE_SELECTOR = `${DOCS_BODY_SELECTOR} ${INLINE_CODE_NODE_SELECTOR}`;
 const WRAPPED_ATTRIBUTE = 'data-inline-code-wrapped';
 const LEGACY_MARKER_LAYER_SELECTOR = '.inline-code-continuation-layer';
+const WRAPPED_HEIGHT_RATIO = 1.5;
 
 /**
  * Checks whether an inserted or removed subtree contains a docs body.
@@ -37,7 +38,61 @@ export function InlineCodeWrapController() {
     });
 
     const observedBodies = new Set<HTMLElement>();
-    const resizeObserver = new ResizeObserver(() => scheduleUpdate());
+    const observedCodes = new Set<HTMLElement>();
+    const visibleCodes = new Set<HTMLElement>();
+    const observedBodyWidths = new WeakMap<HTMLElement, number>();
+    const resizeObserver = new ResizeObserver((entries) => {
+      const widthChanged = entries.some((entry) => {
+        const body = entry.target as HTMLElement;
+        const width = entry.contentRect.width;
+        const previousWidth = observedBodyWidths.get(body);
+        observedBodyWidths.set(body, width);
+        // A newly observed body has already been measured by the update that
+        // registered it. Only later width changes can alter inline wrapping.
+        // 新正文在注册 Observer 的同一轮更新中已经完成测量；只有后续宽度变化
+        // 才可能改变行内代码的换行状态。
+        return previousWidth !== undefined && Math.abs(previousWidth - width) > 0.5;
+      });
+      if (widthChanged) scheduleUpdate();
+    });
+
+    const measureCodes = (codes: Iterable<HTMLElement>) => {
+      // Read every visible fragment geometry before changing attributes.
+      // Interleaving each read with a write forces layout again for the next node.
+      // 先批量读取全部可见分片几何，再统一写入属性；逐节点读写交错会让后续
+      // code 节点反复触发强制同步布局。
+      const measurements = Array.from(codes, (code) => {
+        const height = code.getBoundingClientRect().height;
+        const lineHeight = Number.parseFloat(getComputedStyle(code).lineHeight);
+        return {
+          code,
+          wrapped: Number.isFinite(lineHeight) && height > lineHeight * WRAPPED_HEIGHT_RATIO,
+        };
+      });
+      for (const { code, wrapped } of measurements) {
+        if (code.hasAttribute(WRAPPED_ATTRIBUTE) === wrapped) continue;
+        code.toggleAttribute(WRAPPED_ATTRIBUTE, wrapped);
+      }
+    };
+
+    const intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        const enteringCodes: HTMLElement[] = [];
+        for (const entry of entries) {
+          const code = entry.target as HTMLElement;
+          if (entry.isIntersecting) {
+            visibleCodes.add(code);
+            enteringCodes.push(code);
+          } else {
+            visibleCodes.delete(code);
+          }
+        }
+        measureCodes(enteringCodes);
+      },
+      // Prepare one viewport ahead so wrapped decoration is ready before scroll.
+      // 提前测量上下各一屏，使换行装饰在滚入视口前准备完成。
+      { rootMargin: '100% 0px' },
+    );
 
     const updateWrappedState = () => {
       frameId = 0;
@@ -54,13 +109,24 @@ export function InlineCodeWrapController() {
         observedBodies.add(body);
       }
 
-      document.querySelectorAll<HTMLElement>(INLINE_CODE_SELECTOR).forEach((code) => {
-        const rects = [...code.getClientRects()].filter(
-          (rect) => rect.width > 0.5 && rect.height > 0.5,
-        );
-        const wrapped = rects.length > 1;
-        code.toggleAttribute(WRAPPED_ATTRIBUTE, wrapped);
-      });
+      const currentCodes = new Set(
+        Array.from(document.querySelectorAll<HTMLElement>(INLINE_CODE_SELECTOR)).filter(
+          (code) => !code.closest('[data-particle-capture]'),
+        ),
+      );
+      for (const code of observedCodes) {
+        if (currentCodes.has(code)) continue;
+        intersectionObserver.unobserve(code);
+        observedCodes.delete(code);
+        visibleCodes.delete(code);
+      }
+      for (const code of currentCodes) {
+        if (observedCodes.has(code)) continue;
+        intersectionObserver.observe(code);
+        observedCodes.add(code);
+      }
+
+      measureCodes(visibleCodes);
     };
 
     const scheduleUpdate = () => {
@@ -102,6 +168,7 @@ export function InlineCodeWrapController() {
       if (frameId) window.cancelAnimationFrame(frameId);
       mutationObserver.disconnect();
       resizeObserver.disconnect();
+      intersectionObserver.disconnect();
       window.removeEventListener('resize', scheduleUpdate);
       document.querySelectorAll<HTMLElement>(`[${WRAPPED_ATTRIBUTE}]`).forEach((code) => {
         code.removeAttribute(WRAPPED_ATTRIBUTE);

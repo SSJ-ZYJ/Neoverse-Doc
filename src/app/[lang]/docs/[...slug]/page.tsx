@@ -8,12 +8,12 @@ import { findNeighbour } from 'fumadocs-core/page-tree';
 import {
   DocsBody,
   DocsDescription,
-  DocsPage,
   DocsTitle,
   PageFooter,
 } from 'fumadocs-ui/layouts/docs/page';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { DeferredDocsPage } from '@/components/deferred-docs-page';
 import { DocsCommunity } from '@/components/docs-community';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
 import { DocsPageActions } from '@/components/docs-page-actions';
@@ -105,7 +105,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   // 使用 default TOC 风格，内置沿 SVG 路径移动的滚动追踪指示点。clerk 风格没有 thumb 元素。
   return (
     <>
-      <DocsPage
+      <DeferredDocsPage
         data-docs-page-card=""
         toc={page.data.toc}
         full={page.data.full}
@@ -121,7 +121,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       >
         {header}
         {pageContent}
-      </DocsPage>
+      </DeferredDocsPage>
       <DocsPageGradualBlur />
       {/* Keep community height and scrolling outside the Fumadocs article container.
           将社区模块的高度与滚动隔离在 Fumadocs 正文容器之外。 */}

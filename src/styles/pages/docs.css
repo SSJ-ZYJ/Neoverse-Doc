@@ -1573,6 +1573,29 @@ html[data-nd-reading-restore] {
   background: transparent !important;
 }
 
+/* Mount the TOC only after the page transition settles, then reveal it without
+   adding transform or blur work to the first interactive frame.
+   TOC 仅在页面转场结束后挂载，再以纯透明度淡入，避免首个交互帧新增
+   transform 或 blur 工作。 */
+.docs-toc-deferred-enter {
+  animation: docs-toc-deferred-enter var(--motion-fast) var(--motion-ease-standard) both;
+}
+
+@keyframes docs-toc-deferred-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-toc-deferred-enter {
+    animation: none;
+  }
+}
+
 #nd-toc a {
   color: var(--text-muted);
   transition:
