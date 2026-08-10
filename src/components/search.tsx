@@ -32,7 +32,10 @@ import { create } from 'zbsearch';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
 import { withEnhancedSearch } from '@/lib/search-client';
+import { getSelectedDocsSearchText } from '@/lib/search-selection';
 import { createMixedTokenizer } from '@/lib/search-tokenizer';
+
+const DOCS_PAGE_SELECTOR = '#nd-page';
 
 interface DefaultSearchDialogProps extends SharedProps {
   defaultTag?: string;
@@ -57,6 +60,8 @@ function initDB(locale?: string) {
 
 export default function DefaultSearchDialog({
   defaultTag,
+  open,
+  onOpenChange,
   tags = [],
   ...props
 }: DefaultSearchDialogProps) {
@@ -80,8 +85,33 @@ export default function DefaultSearchDialog({
     client: withEnhancedSearch(searchClient, locale === 'zh'),
   });
 
+  // Capture the built-in shortcut before Fumadocs opens and focuses the dialog,
+  // otherwise the document selection may collapse before it can seed the query.
+  // 在 Fumadocs 打开并聚焦弹窗前捕获内置快捷键，避免正文选区先因焦点切换而收起。
+  useEffect(() => {
+    const handleSearchShortcut = (event: KeyboardEvent) => {
+      if (open || event.key !== 'k' || (!event.ctrlKey && !event.metaKey)) return;
+
+      const selectedText = getSelectedDocsSearchText(
+        window.getSelection(),
+        document.querySelector<HTMLElement>(DOCS_PAGE_SELECTOR),
+      );
+      if (selectedText) setSearch(selectedText);
+    };
+
+    window.addEventListener('keydown', handleSearchShortcut, true);
+    return () => window.removeEventListener('keydown', handleSearchShortcut, true);
+  }, [open, setSearch]);
+
   return (
-    <SearchDialog search={search} onSearchChange={setSearch} isLoading={query.isLoading} {...props}>
+    <SearchDialog
+      search={search}
+      onSearchChange={setSearch}
+      isLoading={query.isLoading}
+      open={open}
+      onOpenChange={onOpenChange}
+      {...props}
+    >
       <SearchDialogOverlay className="!bg-transparent" />
       <SearchDialogContent>
         <SearchDialogHeader className="search-dialog__header">
