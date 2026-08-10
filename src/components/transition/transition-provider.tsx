@@ -101,12 +101,16 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
       // 哈希导航不会替换页面，可与进行中的路由转场独立执行。无动画的路由导航
       // 仍会取代旧意图，因此在浏览器或 Next.js 处理新目标前先释放旧视觉状态。
       if (isSamePageHashNavigation(window.location.href, targetUrl.href)) return;
-      // Publish route intent before reduced-motion and transition-none branches
-      // return so lightweight dependants can react at click time.
-      // 在 reduced-motion 与 transition-none 分支返回前发布路由意图，让轻量
-      // 依赖项能够在点击时立即响应。
+      // A same-path link does not start or finish a route transition. Treat it
+      // as a no-op so dependants never enter an exit state without a release.
+      // 同路径链接不会开始或结束路由转场，因此直接视为 no-op，避免依赖项
+      // 进入没有对应恢复信号的退出状态。
+      if (kind === 'none') return;
+      // Reduced-motion navigation still publishes route intent so lightweight
+      // dependants can respond immediately without playing an animation.
+      // reduced-motion 导航仍发布路由意图，让轻量依赖项无需播放动画也能立即响应。
       document.dispatchEvent(new Event(ROUTE_TRANSITION_START_EVENT));
-      if (kind === 'none' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         cleanup();
         return;
       }
