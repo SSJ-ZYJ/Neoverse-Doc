@@ -1,49 +1,34 @@
 ---
-title: 0.0 README | Where It All Begins
-description: About Neoverse-Docs
+title: 0.0 Start Here
+description: An introduction to Neoverse-Docs
 author:
   - Shenshijun(https://github.com/SSJ-ZYJ)
 ---
 
-## Welcome to Neoverse-Docs
+## 1. Welcome to Neoverse-Docs
 
-This is a document designed for computer science students in universities. It may include, but is not limited to, the following content:
+Neoverse-Docs is a continuously updated online learning document. It does not require you to know programming from the start, nor does it require you to read from the first page to the last: you can learn systematically by stage, follow a path around a specific goal, or search directly when you run into a concrete problem.
 
-- Neoverse-Docs Usage Guide
-- The Missing Semester: Things We Should Know
-  - Windows: How to use
-    - File Management and System Settings
-    - Installing and Uninstalling Programs
-    - Good Computer Usage Habits
-    - Useful Software and Tools
-  - The Art of Asking Questions
-    - Communities and Related Platforms
-    - How to Properly Ask AI Questions
-  - Text Editing
-    - Markdown and Mermaid
-    - LaTeX
-  - Shell Basics
-    - Basic Linux Commands
-    - Text Editing in Terminal
-  - Environment Configuration
-    - Setting Up C/C++ Development Environment in VS Code
-    - Package Managers
-  - Version Control
-    - Git
-    - GitHub and CNB
-  - Docker Basics
-- C/C++ Programming Language
-  - Code Quality
-  - Beyond Code: Code Style and Formatting
-  - Inside Compilation
-  - GDB Debugging
+For now, it is not a complete course on programming languages, algorithms, or computer theory, nor is it a software recommendation list to install everything from. We are gradually improving the content; contributions are welcome — see [how to contribute](/en/docs/about/guide).
 
-## Document Content Sources
+## 2. What You Can Learn So Far
 
-The documents are primarily written based on the author's subjective usage experience and learning process. For theoretical and academic content, references are made to highly recognized books and credible internet resources for verification and proofreading. AI tools are also used to assist with proofreading.
+| Content | Current status | How to use it |
+| :--- | :--- | :--- |
+| Chapter 0: Before You Begin | Readable | Get to know the project, choose a learning path, and get familiar with this site |
+| [Chapter 1: The Missing Semester](/en/docs/ch1) | Current main track, 7 Stages and 17 lessons in total | Start from file management and everyday tools, then gradually move into Shell, development environments, Git, and Docker |
+| [Chapter 2: Algorithm Primer](/en/docs/ch2) | Under construction; only the guide and a draft of high-precision arithmetic exist so far | Understand the future direction; C++ basics are required before reading the existing algorithm content |
+| [About & Contributing](/en/docs/about) | Continuously maintained | Learn about the project, contribute, or browse documentation syntax examples |
 
-## Feedback and Support
+> [!IMPORTANT] Content status is part of the content
+> This site only treats content that already exists in the repository or is taking shape as readable drafts as current content. Future directions may change with actual writing and feedback, and should not be understood as a promise of completed courses.
 
-Despite our best efforts, there may still be inadvertent omissions. If you find any issues with the content or have suggestions for improvement, please submit [issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) to the document repository for feedback.  
-If you are willing to contribute to this document, you can go to `GitHub` and submit your PR to contribute to this project.  
-See also: [Contribution Guide](./about/guide)
+## 3. How to View the Conclusions in the Documentation
+
+The site's content comes mainly from the author's and contributors' learning and hands-on experience. When commands, configurations, versions, or tool behavior are involved, we cross-check them against the current project, official sources, and reliable references, and use AI to assist with organization and proofreading.
+
+Software interfaces, versions, and platform rules keep changing. Before running an operation that deletes files, overwrites configuration, changes permissions, or affects account security, confirm the target, understand the consequences, and defer to the official documentation of the current version of the tool.
+
+## 4. Feedback and Corrections
+
+If you find factual errors, broken links, steps that are hard to follow, or wording that could be improved, feel free to leave a comment at the bottom of this page or submit feedback at [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues). Clearly describing the page, the location of the problem, what you observed, and the expected result will help corrections happen faster.

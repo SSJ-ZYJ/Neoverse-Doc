@@ -1,7 +1,7 @@
 {
-  "title": "Chapter 0: README | Where It All Begins",
-  "description": "What? Why? How?",
+  "title": "Chapter 0: Before You Begin",
+  "description": "Get to know the project, choose your path, and start reading",
   "icon": "BookMarked",
-  "pages": ["---Stage 0: Prologue---", "index"],
+  "pages": ["---Before You Begin---", "index", "learning", "usage"],
   "root": true
 }

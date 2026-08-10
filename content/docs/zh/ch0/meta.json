@@ -1,7 +1,7 @@
 {
-  "title": "Chapter 0：自述与前言",
-  "description": "Why? What? How?",
+  "title": "Chapter 0：开始之前",
+  "description": "认识项目、选择路径并开始阅读",
   "icon": "BookMarked",
-  "pages": ["---Stage 0：序---", "index"],
+  "pages": ["---开始之前---", "index", "learning", "usage"],
   "root": true
 }
