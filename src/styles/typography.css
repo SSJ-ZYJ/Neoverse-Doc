@@ -1228,6 +1228,13 @@ figure.shiki .line > span:empty::before {
   padding-top: 0.25rem;
 }
 
+/* Consecutive body paragraphs share the block's line rhythm; only the final
+   paragraph keeps the container's bottom breathing room.
+   连续正文段落沿用块内行距，仅最后一段保留容器底部留白。 */
+.markdown-details > p:has(+ p) {
+  padding-bottom: 0;
+}
+
 /* Direct ordered-list markers align with the surrounding paragraph edge.
    Nested lists retain their normal indentation hierarchy.
    直属有序列表的序号与相邻正文左边缘对齐，嵌套列表继续保留正常层级缩进。 */
