@@ -17,6 +17,10 @@ interface GradualBlurProps extends Omit<ComponentProps<'div'>, 'children'> {
   strength?: number;
 }
 
+type GradualBlurLayerStyle = CSSProperties & {
+  '--gradual-blur-radius': string;
+};
+
 const CURVE_FUNCTIONS: Record<BlurCurve, (progress: number) => number> = {
   linear: (progress) => progress,
   bezier: (progress) => progress * progress * (3 - 2 * progress),
@@ -59,10 +63,9 @@ export function GradualBlur({
     if (end <= 100) stops.push(`transparent ${end}%`);
 
     const maskImage = `linear-gradient(to bottom, ${stops.join(', ')})`;
-    const layerStyle: CSSProperties = {
-      WebkitBackdropFilter: `blur(${blur.toFixed(3)}rem)`,
+    const layerStyle: GradualBlurLayerStyle = {
+      '--gradual-blur-radius': `${blur.toFixed(3)}rem`,
       WebkitMaskImage: maskImage,
-      backdropFilter: `blur(${blur.toFixed(3)}rem)`,
       maskImage,
       opacity,
     };

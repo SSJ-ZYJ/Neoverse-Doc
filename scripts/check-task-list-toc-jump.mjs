@@ -46,7 +46,8 @@ try {
   });
   await page.waitForSelector('.mdx-task-progress__jump');
   await page.waitForFunction(
-    () => document.querySelectorAll('div[class*="[grid-area:toc]"] a[data-active="true"]').length > 0,
+    () =>
+      document.querySelectorAll('div[class*="[grid-area:toc]"] a[data-active="true"]').length > 0,
   );
 
   await page.evaluate(() => {
@@ -77,9 +78,7 @@ try {
         'div[class*="[grid-area:toc]"] svg[class*="transition-[clip-path]"]',
       );
       const clipPath = tracker ? getComputedStyle(tracker).clipPath : '';
-      const match = clipPath.match(
-        /^polygon\(0px ([\d.]+)px, 100% [\d.]+px, 100% ([\d.]+)px/,
-      );
+      const match = clipPath.match(/^polygon\(0px ([\d.]+)px, 100% [\d.]+px, 100% ([\d.]+)px/);
       return {
         clipSpan: match ? Number(match[2]) - Number(match[1]) : 0,
         scrollY,
@@ -109,9 +108,7 @@ try {
       .filter((item) => item.active);
     const tracker = toc.querySelector('svg[class*="transition-[clip-path]"]');
     const clipPath = tracker ? getComputedStyle(tracker).clipPath : '';
-    const match = clipPath.match(
-      /^polygon\(0px ([\d.]+)px, 100% [\d.]+px, 100% ([\d.]+)px/,
-    );
+    const match = clipPath.match(/^polygon\(0px ([\d.]+)px, 100% [\d.]+px, 100% ([\d.]+)px/);
 
     return {
       active,
@@ -129,9 +126,7 @@ try {
   result.maxClipSpan = maxClipSpan;
   result.reducedMotion = reducedMotion;
 
-  const motionIsValid = reducedMotion
-    ? result.scrollEventCount <= 2
-    : result.scrollEventCount >= 5;
+  const motionIsValid = reducedMotion ? result.scrollEventCount <= 2 : result.scrollEventCount >= 5;
 
   console.log(JSON.stringify(result, null, 2));
   if (

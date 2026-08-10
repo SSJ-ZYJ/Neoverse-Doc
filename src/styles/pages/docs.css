@@ -790,12 +790,6 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   z-index: 20;
   contain: layout style;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--motion-fast) var(--motion-ease-standard);
-}
-
-.docs-page-gradual-blur[data-visible] {
-  opacity: 1;
 }
 
 .gradual-blur__inner {
@@ -809,10 +803,20 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   position: absolute;
   inset: 0;
   display: block;
+  -webkit-backdrop-filter: blur(0);
+  backdrop-filter: blur(0);
+  transition:
+    -webkit-backdrop-filter var(--motion-standard) linear,
+    backdrop-filter var(--motion-standard) linear;
+}
+
+.docs-page-gradual-blur[data-visible] .gradual-blur__layer {
+  -webkit-backdrop-filter: blur(var(--gradual-blur-radius));
+  backdrop-filter: blur(var(--gradual-blur-radius));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .docs-page-gradual-blur {
+  .gradual-blur__layer {
     transition: none;
   }
 }
