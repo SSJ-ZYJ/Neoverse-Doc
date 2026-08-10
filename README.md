@@ -74,17 +74,19 @@ bun dev         # 启动开发服务器，浏览器打开 http://localhost:3000
 ### 构建部署
 
 ```bash
+bun run generate:mermaid # 在本机生成 Mermaid 静态 SVG
 bun run build   # 生产构建，产物位于 out/ 目录
 bun run start   # 本地预览静态产物
 ```
 
-构建产物为纯静态文件，可部署到任意静态托管平台。
+构建会优先复用已生成的 Mermaid 静态 SVG；如果托管环境无法启动 Chrome，缺失图表会回退到浏览器端渲染，不会阻塞静态导出。提交文档前仍应在本机运行 `bun run generate:mermaid` 并提交生成产物，以保持正常页面无需加载 Mermaid 布局引擎。构建产物为纯静态文件，可部署到任意静态托管平台。
 
 ## 可用命令
 
 | 命令 | 说明 |
 | :--- | :--- |
 | `bun dev` | 启动开发服务器 |
+| `bun run generate:mermaid` | 生成 Mermaid 静态 SVG 与资源清单 |
 | `bun run build` | 生产构建（输出至 `out/`） |
 | `bun run typecheck` | 类型检查（含 MDX 内容校验） |
 | `bun run lint` | Biome Lint |

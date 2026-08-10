@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import puppeteer, { type Page } from 'puppeteer';
+import puppeteer, { type Browser, type Page } from 'puppeteer';
 import { getMermaidSourceId, normalizeMermaidSource } from '../src/lib/mermaid-asset-id';
 import { MERMAID_CONFIG } from '../src/lib/mermaid-config';
 
@@ -18,6 +18,7 @@ const MERMAID_BROWSER_BUNDLE = path.join(
   'mermaid.min.js',
 );
 const RENDERER_VERSION = 'project-mermaid-11.16.1-site-context-v2';
+const ALLOW_CLIENT_FALLBACK = process.argv.includes('--allow-client-fallback');
 
 interface BrowserMermaidApi {
   initialize: (config: unknown) => void;
@@ -100,8 +101,7 @@ async function removeStaleGeneratedAssets(activeFileNames: ReadonlySet<string>):
   return stale.length;
 }
 
-async function createRendererPage(): Promise<Page> {
-  const browser = await puppeteer.launch();
+async function createRendererPage(browser: Browser): Promise<Page> {
   const page = await browser.newPage();
   const mermaidStyle = await readFile(MERMAID_STYLE_PATH, 'utf8');
   await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 1 });
@@ -133,6 +133,20 @@ async function createRendererPage(): Promise<Page> {
     runtime.initialize(config);
   }, MERMAID_CONFIG);
   return page;
+}
+
+async function launchRendererBrowser(): Promise<Browser | null> {
+  try {
+    return await puppeteer.launch();
+  } catch (error) {
+    if (!ALLOW_CLIENT_FALLBACK) throw error;
+
+    const summary = error instanceof Error ? error.message.split('\n')[0] : String(error);
+    console.warn(
+      `Mermaid static renderer unavailable; missing charts will use the client renderer. ${summary}`,
+    );
+    return null;
+  }
 }
 
 async function renderWithProjectMermaid(
@@ -181,6 +195,8 @@ async function main(): Promise<void> {
 
   const manifest = new Map<string, string>();
   const pending: Array<{ sourceId: string; source: string; fileName: string }> = [];
+  let generatedCount = 0;
+  let clientFallbackCount = 0;
   for (const [sourceId, source] of charts) {
     const fileName = createAssetName(source);
     manifest.set(sourceId, fileName);
@@ -192,21 +208,33 @@ async function main(): Promise<void> {
   }
 
   if (pending.length > 0) {
-    const page = await createRendererPage();
-    try {
-      for (const item of pending) {
-        const svg = await renderWithProjectMermaid(page, item.sourceId, item.source);
-        await writeFile(path.join(ASSET_ROOT, item.fileName), svg, 'utf8');
+    const browser = await launchRendererBrowser();
+    if (browser) {
+      try {
+        const page = await createRendererPage(browser);
+        for (const item of pending) {
+          const svg = await renderWithProjectMermaid(page, item.sourceId, item.source);
+          await writeFile(path.join(ASSET_ROOT, item.fileName), svg, 'utf8');
+          generatedCount += 1;
+        }
+      } finally {
+        await browser.close();
       }
-    } finally {
-      await page.browser().close();
+    } else {
+      // Do not publish manifest entries for files that were not generated.
+      // The existing browser renderer will handle only these missing charts.
+      // 不为未生成的文件发布清单项，仅让现有浏览器渲染器处理这些缺失图表。
+      for (const item of pending) manifest.delete(item.sourceId);
+      clientFallbackCount = pending.length;
     }
   }
 
   await writeFile(MANIFEST_PATH, createManifest(manifest), 'utf8');
   const removed = await removeStaleGeneratedAssets(new Set(manifest.values()));
+  const clientFallbackSummary =
+    clientFallbackCount > 0 ? `, ${clientFallbackCount} client fallback` : '';
   console.info(
-    `Mermaid assets: ${charts.size} total, ${pending.length} generated, ${charts.size - pending.length} reused, ${removed} stale removed.`,
+    `Mermaid assets: ${charts.size} total, ${generatedCount} generated, ${charts.size - pending.length} reused${clientFallbackSummary}, ${removed} stale removed.`,
   );
 }
 
