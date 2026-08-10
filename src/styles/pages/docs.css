@@ -501,7 +501,10 @@ html[data-nd-reading-restore] {
 }
 
 body:has(> [data-reading-return]) .docs-back-to-top {
-  inset-block-end: max(5.25rem, calc(env(safe-area-inset-bottom) + 4.25rem));
+  /* The reading return surface is 3rem tall; offset the 2.5rem control by
+     half their height difference so both actions share one visual row.
+     阅读返回表面高 3rem；按两者高度差的一半偏移 2.5rem 控件，使两个操作视觉居中对齐。 */
+  inset-block-end: calc(max(1rem, env(safe-area-inset-bottom)) + 0.25rem);
 }
 
 @media (hover: hover) {
