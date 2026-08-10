@@ -23,7 +23,11 @@ import {
 } from './transition-controller';
 import { TransitionLayer } from './transition-layer';
 import { isDocsRoute, isSamePageHashNavigation, selectTransition } from './transition-policy';
-import type { TransitionIntent, TransitionKind } from './transition-types';
+import {
+  ROUTE_TRANSITION_START_EVENT,
+  type TransitionIntent,
+  type TransitionKind,
+} from './transition-types';
 
 interface TransitionProviderProps {
   children: ReactNode;
@@ -97,6 +101,11 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
       // 哈希导航不会替换页面，可与进行中的路由转场独立执行。无动画的路由导航
       // 仍会取代旧意图，因此在浏览器或 Next.js 处理新目标前先释放旧视觉状态。
       if (isSamePageHashNavigation(window.location.href, targetUrl.href)) return;
+      // Publish route intent before reduced-motion and transition-none branches
+      // return so lightweight dependants can react at click time.
+      // 在 reduced-motion 与 transition-none 分支返回前发布路由意图，让轻量
+      // 依赖项能够在点击时立即响应。
+      document.dispatchEvent(new Event(ROUTE_TRANSITION_START_EVENT));
       if (kind === 'none' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         cleanup();
         return;

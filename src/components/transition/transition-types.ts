@@ -1,6 +1,8 @@
 // Shared finite-state and route-transition contracts.
 // 统一的有限状态与路由转场契约。
 
+export const ROUTE_TRANSITION_START_EVENT = 'nd-route-transition-start';
+
 export type TransitionPhase = 'idle' | 'preparing' | 'navigating' | 'revealing' | 'settling';
 
 export type TransitionKind =

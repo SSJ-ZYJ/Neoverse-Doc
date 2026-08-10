@@ -1577,8 +1577,13 @@ html[data-nd-reading-restore] {
    adding transform or blur work to the first interactive frame.
    TOC 仅在页面转场结束后挂载，再以纯透明度淡入，避免首个交互帧新增
    transform 或 blur 工作。 */
-.docs-toc-deferred-enter {
+.docs-toc-deferred-entering {
   animation: docs-toc-deferred-enter var(--motion-fast) var(--motion-ease-standard) both;
+}
+
+.docs-toc-deferred-exiting {
+  pointer-events: none;
+  animation: docs-toc-deferred-exit var(--motion-fast) var(--motion-ease-standard) both;
 }
 
 @keyframes docs-toc-deferred-enter {
@@ -1590,9 +1595,27 @@ html[data-nd-reading-restore] {
   }
 }
 
+@keyframes docs-toc-deferred-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .docs-toc-deferred-enter {
+  .docs-toc-deferred-entering,
+  .docs-toc-deferred-exiting {
     animation: none;
+  }
+
+  .docs-toc-deferred-entering {
+    opacity: 1;
+  }
+
+  .docs-toc-deferred-exiting {
+    opacity: 0;
   }
 }
 
