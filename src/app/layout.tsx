@@ -25,12 +25,14 @@
 //   - Maple Mono NF CN：代码块字体（本地字体）
 
 import { Noto_Sans_SC, Orbitron } from 'next/font/google';
+import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
 import { DeploymentSkewGuard } from '@/components/deployment-skew-guard';
 import { ImmersiveInteractionController } from '@/components/immersive-interaction-controller';
 import ImmersiveScrollbar from '@/components/immersive-scrollbar';
 import { InlineCodeWrapController } from '@/components/inline-code-wrap-controller';
 import { i18n } from '@/lib/i18n';
+import { DOCS_REFRESH_RESTORE_BOOTSTRAP } from '@/lib/docs-reading-restore';
 import '@/app/globals.css';
 // Route loading styles are imported at the root CSS entry for Turbopack tracking.
 // 路由加载样式在根 CSS 入口导入，确保 Turbopack 稳定追踪。
@@ -71,6 +73,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang={i18n.defaultLanguage} suppressHydrationWarning>
       <head>
         <meta httpEquiv="origin-trial" content={HTML_IN_CANVAS_ORIGIN_TRIAL_TOKEN} />
+        <Script id="docs-refresh-restore" strategy="beforeInteractive">
+          {DOCS_REFRESH_RESTORE_BOOTSTRAP}
+        </Script>
       </head>
       <body className={`antialiased min-h-screen ${orbitron.variable} ${notoSansSC.variable}`}>
         {/* Disable CSS transitions only while next-themes updates the root class.

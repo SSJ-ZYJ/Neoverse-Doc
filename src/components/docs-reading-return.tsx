@@ -5,14 +5,17 @@
 
 import { ArrowLeft, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { isPlainInternalNavigation } from '@/components/transition/transition-controller';
+import { DOCS_REFRESH_POINT_STORAGE_KEY } from '@/lib/docs-reading-restore';
 
 const RETURN_POINT_STORAGE_KEY = 'neoverse-docs:reading-return';
 const RESTORE_POINT_STORAGE_KEY = 'neoverse-docs:reading-restore';
 const RETURN_POINT_LIFETIME_MS = 30 * 60 * 1000;
 const RESTORE_SETTLE_MS = 120;
+const REFRESH_RESTORE_SETTLE_MS = 500;
+const RESTORE_MAX_WAIT_MS = 2500;
 
 interface ReadingReturnPoint {
   createdAt: number;
@@ -27,6 +30,14 @@ interface ReadingReturnPoint {
 
 interface ReadingRestorePoint {
   previousScrollRestoration: ScrollRestoration;
+  sourceAnchorPath: number[];
+  sourceAnchorViewportTop: number;
+  sourcePath: string;
+  sourceScrollY: number;
+}
+
+interface ReadingRefreshPoint {
+  createdAt: number;
   sourceAnchorPath: number[];
   sourceAnchorViewportTop: number;
   sourcePath: string;
@@ -85,6 +96,17 @@ function isReadingRestorePoint(value: unknown): value is ReadingRestorePoint {
   );
 }
 
+function isReadingRefreshPoint(value: unknown): value is ReadingRefreshPoint {
+  return (
+    isRecord(value) &&
+    typeof value.createdAt === 'number' &&
+    isElementPath(value.sourceAnchorPath) &&
+    typeof value.sourceAnchorViewportTop === 'number' &&
+    typeof value.sourcePath === 'string' &&
+    typeof value.sourceScrollY === 'number'
+  );
+}
+
 function readStoredValue<T>(key: string, validate: (value: unknown) => value is T): T | null {
   try {
     const serialized = window.sessionStorage.getItem(key);
@@ -101,7 +123,10 @@ function readStoredValue<T>(key: string, validate: (value: unknown) => value is 
   }
 }
 
-function writeStoredValue(key: string, value: ReadingReturnPoint | ReadingRestorePoint): boolean {
+function writeStoredValue(
+  key: string,
+  value: ReadingReturnPoint | ReadingRestorePoint | ReadingRefreshPoint,
+): boolean {
   try {
     window.sessionStorage.setItem(key, JSON.stringify(value));
     return true;
@@ -155,6 +180,25 @@ function resolveElementPath(root: Element, path: number[]): HTMLElement | null {
   return current instanceof HTMLElement ? current : null;
 }
 
+function isReloadNavigation(): boolean {
+  const navigation = performance.getEntriesByType('navigation')[0] as
+    | PerformanceNavigationTiming
+    | undefined;
+  return navigation?.type === 'reload';
+}
+
+function findViewportAnchor(root: Element): HTMLElement | null {
+  const referenceTop = Math.min(192, Math.max(96, window.innerHeight * 0.2));
+  const children = Array.from(root.children).filter(
+    (child): child is HTMLElement => child instanceof HTMLElement,
+  );
+  return (
+    children.find((child) => child.getBoundingClientRect().bottom >= referenceTop) ??
+    children.at(-1) ??
+    null
+  );
+}
+
 export function DocsReadingReturn({
   actionLabel,
   ariaLabelTemplate,
@@ -163,6 +207,38 @@ export function DocsReadingReturn({
   const pathname = usePathname();
   const router = useRouter();
   const [returnPoint, setReturnPoint] = useState<ReadingReturnPoint | null>(null);
+  const restoreCleanupTimerRef = useRef(0);
+
+  // Save a stable body-child anchor immediately before the document leaves.
+  // A subsequent reload can restore its viewport offset even when deferred
+  // blocks or Mermaid placeholders above it resolve to different heights.
+  // 文档离开前保存稳定的正文直属锚点；刷新后即使上方延迟区块或 Mermaid
+  // 占位解析为不同高度，也能恢复该锚点在视口中的原始偏移。
+  useEffect(() => {
+    const captureRefreshPoint = () => {
+      const sourceScrollY = window.scrollY;
+      if (sourceScrollY <= 0) {
+        removeStoredValue(DOCS_REFRESH_POINT_STORAGE_KEY);
+        return;
+      }
+
+      const docsBody = document.querySelector<HTMLElement>('[data-docs-body]');
+      const anchor = docsBody ? findViewportAnchor(docsBody) : null;
+      const sourceAnchorPath = docsBody && anchor ? createElementPath(anchor, docsBody) : null;
+      if (!anchor || !sourceAnchorPath) return;
+
+      writeStoredValue(DOCS_REFRESH_POINT_STORAGE_KEY, {
+        createdAt: Date.now(),
+        sourceAnchorPath,
+        sourceAnchorViewportTop: anchor.getBoundingClientRect().top,
+        sourcePath: normalizePathname(window.location.pathname),
+        sourceScrollY,
+      });
+    };
+
+    window.addEventListener('pagehide', captureRefreshPoint);
+    return () => window.removeEventListener('pagehide', captureRefreshPoint);
+  }, []);
 
   // Capture only plain same-origin links inside the MDX body that lead to a
   // different document; external, modified, download, and same-page links stay native.
@@ -201,16 +277,34 @@ export function DocsReadingReturn({
     return () => document.removeEventListener('click', handleDocumentLink, { capture: true });
   }, []);
 
-  // Temporarily materialize deferred MDX blocks and hide the returned article
-  // while its exact offset settles, preventing both placeholder drift and visible scrolling.
-  // 恢复期间临时展开延迟 MDX 区块并隐藏正文，在精确位置稳定后再显示，
-  // 同时避免占位高度偏差和可见滚动。
+  // Temporarily materialize deferred MDX blocks and hide the returned or
+  // refreshed article while its exact offset settles. Refreshed articles keep
+  // their measured blocks materialized for this route's remaining lifetime.
+  // 恢复期间临时展开延迟 MDX 区块并隐藏返回或刷新的正文，待精确位置稳定后
+  // 再显示；刷新页面会在当前路由的剩余生命周期内保留已测量区块。
   useLayoutEffect(() => {
+    window.clearTimeout(restoreCleanupTimerRef.current);
+    restoreCleanupTimerRef.current = 0;
     const currentPath = normalizePathname(pathname);
-    const restorePoint = readStoredValue(RESTORE_POINT_STORAGE_KEY, isReadingRestorePoint);
-    if (restorePoint?.sourcePath !== currentPath) return;
-
+    const returnRestorePoint = readStoredValue(RESTORE_POINT_STORAGE_KEY, isReadingRestorePoint);
+    const refreshPoint = isReloadNavigation()
+      ? readStoredValue(DOCS_REFRESH_POINT_STORAGE_KEY, isReadingRefreshPoint)
+      : null;
+    const restorePoint =
+      returnRestorePoint?.sourcePath === currentPath
+        ? returnRestorePoint
+        : refreshPoint?.sourcePath === currentPath
+          ? refreshPoint
+          : null;
     const root = document.documentElement;
+    if (!restorePoint) {
+      root.removeAttribute('data-nd-reading-restore');
+      root.removeAttribute('data-nd-refresh-restored');
+      if (refreshPoint) removeStoredValue(DOCS_REFRESH_POINT_STORAGE_KEY);
+      return;
+    }
+
+    const isRefreshRestore = restorePoint === refreshPoint;
     const previousScrollBehavior = root.style.scrollBehavior;
     root.dataset.ndReadingRestore = '';
     root.style.scrollBehavior = 'auto';
@@ -229,32 +323,69 @@ export function DocsReadingReturn({
     };
     let finished = false;
     let settleObserver: ResizeObserver | null = null;
+    let settleTimer = 0;
+    let maxTimer = 0;
+    const settleDelay = isRefreshRestore ? REFRESH_RESTORE_SETTLE_MS : RESTORE_SETTLE_MS;
     const finishRestore = () => {
       if (finished) return;
       finished = true;
       restoreScroll();
       settleObserver?.disconnect();
-      removeStoredValue(RESTORE_POINT_STORAGE_KEY);
+      window.clearTimeout(settleTimer);
+      window.clearTimeout(maxTimer);
+      if (isRefreshRestore) {
+        root.dataset.ndRefreshRestored = '';
+        removeStoredValue(DOCS_REFRESH_POINT_STORAGE_KEY);
+      } else {
+        removeStoredValue(RESTORE_POINT_STORAGE_KEY);
+        if ('previousScrollRestoration' in restorePoint) {
+          window.history.scrollRestoration = restorePoint.previousScrollRestoration;
+        }
+      }
       root.style.scrollBehavior = previousScrollBehavior;
       root.removeAttribute('data-nd-reading-restore');
-      window.history.scrollRestoration = restorePoint.previousScrollRestoration;
+    };
+
+    const scheduleFinish = () => {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(finishRestore, settleDelay);
     };
 
     restoreScroll();
+    let secondLayoutFrame = 0;
     const layoutFrame = window.requestAnimationFrame(() => {
       restoreScroll();
-      window.requestAnimationFrame(restoreScroll);
+      secondLayoutFrame = window.requestAnimationFrame(restoreScroll);
     });
     if (docsBody && typeof ResizeObserver !== 'undefined') {
-      settleObserver = new ResizeObserver(restoreScroll);
+      settleObserver = new ResizeObserver(() => {
+        restoreScroll();
+        scheduleFinish();
+      });
       settleObserver.observe(docsBody);
     }
-    const settleTimer = window.setTimeout(finishRestore, RESTORE_SETTLE_MS);
+    scheduleFinish();
+    maxTimer = window.setTimeout(finishRestore, RESTORE_MAX_WAIT_MS);
 
     return () => {
       window.cancelAnimationFrame(layoutFrame);
+      if (secondLayoutFrame) window.cancelAnimationFrame(secondLayoutFrame);
       window.clearTimeout(settleTimer);
-      finishRestore();
+      window.clearTimeout(maxTimer);
+      settleObserver?.disconnect();
+      restoreCleanupTimerRef.current = window.setTimeout(() => {
+        if (isRefreshRestore) {
+          removeStoredValue(DOCS_REFRESH_POINT_STORAGE_KEY);
+        } else {
+          removeStoredValue(RESTORE_POINT_STORAGE_KEY);
+          if ('previousScrollRestoration' in restorePoint) {
+            window.history.scrollRestoration = restorePoint.previousScrollRestoration;
+          }
+        }
+        root.style.scrollBehavior = previousScrollBehavior;
+        root.removeAttribute('data-nd-reading-restore');
+        root.removeAttribute('data-nd-refresh-restored');
+      }, 0);
     };
   }, [pathname]);
 
