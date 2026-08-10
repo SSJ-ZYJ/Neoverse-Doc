@@ -20,8 +20,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import { MOTION_DURATION_MS } from '@/lib/motion-config';
 import { ROUTE_TRANSITION_START_EVENT } from '@/components/transition/transition-types';
+import { MOTION_DURATION_MS } from '@/lib/motion-config';
 
 const ROUTE_TRANSITION_ATTRIBUTES = [
   'data-nd-route-transition',
@@ -106,10 +106,7 @@ function DeferredTOCProvider({ toc, children, ...props }: TOCProviderProps) {
         startExit();
         return;
       }
-      if (
-        stateRef.current.path === pathnameRef.current &&
-        stateRef.current.phase === 'visible'
-      ) {
+      if (stateRef.current.path === pathnameRef.current && stateRef.current.phase === 'visible') {
         return;
       }
       if (exitTimerId) window.clearTimeout(exitTimerId);

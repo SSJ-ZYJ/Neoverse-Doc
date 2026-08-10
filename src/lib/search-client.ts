@@ -1,5 +1,6 @@
 import type { SortedResult } from 'fumadocs-core/search';
 import type { SearchClient } from 'fumadocs-core/search/client';
+import { addSearchSpotlightParams } from '@/lib/search-spotlight';
 import { createPinyinSearchQuery, unmarkPinyinIndexContent } from '@/lib/search-tokenizer';
 
 const MAX_RESULTS = 60;
@@ -56,7 +57,10 @@ export function withEnhancedSearch(client: SearchClient, pinyinEnabled: boolean)
     async search(query) {
       const pinyinQuery = pinyinEnabled ? createPinyinSearchQuery(query) : undefined;
       if (!pinyinQuery) {
-        return preferSearchResultAnchors(cleanSearchResultContent(await client.search(query)));
+        return addSearchSpotlightParams(
+          preferSearchResultAnchors(cleanSearchResultContent(await client.search(query))),
+          query,
+        );
       }
 
       const [literalResults, pinyinResults] = await Promise.all([
@@ -64,9 +68,12 @@ export function withEnhancedSearch(client: SearchClient, pinyinEnabled: boolean)
         client.search(pinyinQuery),
       ]);
 
-      return mergePinyinSearchResults(
-        preferSearchResultAnchors(cleanSearchResultContent(literalResults)),
-        preferSearchResultAnchors(cleanSearchResultContent(pinyinResults)),
+      return addSearchSpotlightParams(
+        mergePinyinSearchResults(
+          preferSearchResultAnchors(cleanSearchResultContent(literalResults)),
+          preferSearchResultAnchors(cleanSearchResultContent(pinyinResults)),
+        ),
+        query,
       );
     },
   };

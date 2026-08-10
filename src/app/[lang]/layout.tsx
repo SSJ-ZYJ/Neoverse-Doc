@@ -6,8 +6,10 @@
 
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { GuestbookReturnTracker } from '@/components/guestbook-return';
 import DefaultSearchDialog from '@/components/search';
+import { SearchSpotlight } from '@/components/search-spotlight';
 import { TransitionProvider } from '@/components/transition/transition-provider';
 import { getPageDictionary } from '@/dictionaries';
 import { getSearchChapterTags } from '@/lib/home-sections';
@@ -59,6 +61,9 @@ export default async function LangLayout({ params, children }: LayoutProps<'/[la
             link can restore the exact origin document.
             进入留言板前记录来源页面，使返回链接可还原精确的原始文档。 */}
         <GuestbookReturnTracker />
+        <Suspense fallback={null}>
+          <SearchSpotlight />
+        </Suspense>
         {children}
       </TransitionProvider>
     </RootProvider>

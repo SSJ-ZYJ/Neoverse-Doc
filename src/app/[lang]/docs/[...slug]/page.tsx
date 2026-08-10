@@ -5,12 +5,7 @@
 // 底部附带 Giscus 讨论区。元信息（标题/描述）从页面 frontmatter 生成。
 
 import { findNeighbour } from 'fumadocs-core/page-tree';
-import {
-  DocsBody,
-  DocsDescription,
-  DocsTitle,
-  PageFooter,
-} from 'fumadocs-ui/layouts/docs/page';
+import { DocsBody, DocsDescription, DocsTitle, PageFooter } from 'fumadocs-ui/layouts/docs/page';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { DeferredDocsPage } from '@/components/deferred-docs-page';

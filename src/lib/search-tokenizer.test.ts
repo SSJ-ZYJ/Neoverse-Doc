@@ -6,6 +6,7 @@ import {
   mergePinyinSearchResults,
   preferSearchResultAnchors,
 } from './search-client';
+import { addSearchSpotlightParams } from './search-spotlight';
 import {
   createMixedTokenizer,
   createPinyinSearchQuery,
@@ -115,6 +116,23 @@ describe('Pinyin result merging', () => {
     assert.deepEqual(
       preferSearchResultAnchors(results).map((result) => result.url),
       ['/docs/a#search', '/docs/a#search', '/docs/b', '/docs/b'],
+    );
+  });
+
+  it('carries the matched text to the destination without replacing its anchor', () => {
+    const results = [
+      { id: 'page', url: '/docs/page#search', type: 'page' as const, content: 'Page' },
+      {
+        id: 'text',
+        url: '/docs/page#search',
+        type: 'text' as const,
+        content: 'Find the <mark>keyword</mark> here.',
+      },
+    ];
+
+    assert.deepEqual(
+      addSearchSpotlightParams(results, 'keyword').map((result) => result.url),
+      ['/docs/page?_searchSpotlight=keyword#search', '/docs/page?_searchSpotlight=keyword#search'],
     );
   });
 });

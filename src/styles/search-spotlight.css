@@ -1,0 +1,42 @@
+/* Search-result spotlight: the focus outline and its expanded shade share one
+   rounded shape, keeping the cutout consistent with the site's surface language.
+   搜索结果聚光灯：焦点描边与扩展遮罩共用同一圆角轮廓，
+   使灯孔与站点表面语言保持一致。 */
+.search-spotlight {
+  --search-spotlight-shade: rgb(5 16 28 / 54%);
+  --search-spotlight-edge: color-mix(in srgb, var(--accent-primary) 72%, var(--edge-light));
+
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+.dark .search-spotlight {
+  --search-spotlight-shade: rgb(0 3 10 / 68%);
+}
+
+.search-spotlight[data-visible] {
+  opacity: 1;
+}
+
+.search-spotlight__focus {
+  position: absolute;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--search-spotlight-edge) 74%, transparent);
+  border-radius: var(--radius-md);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--edge-light) 28%, transparent),
+    0 0 1.65rem color-mix(in srgb, var(--accent-primary) 48%, transparent),
+    inset 0 0 1.1rem color-mix(in srgb, var(--accent-primary) 11%, transparent),
+    0 0 0 100vmax var(--search-spotlight-shade);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-spotlight {
+    transition: none;
+  }
+}
