@@ -6,7 +6,7 @@ author:
   - "Shenshijun(https://github.com/SSJ-ZYJ)"
 ---
 > [!DETAILS-AI] 本章 AI 摘要
-> 本章包含 7 个阶段、17 节已发布内容，覆盖文件管理、Windows 设置、浏览器与常用工具，以及文本编辑、Markdown、LaTeX、Shell、开发环境、Git 和 Docker。既可以按阶段系统学习，也可以从当前问题对应的小节开始查阅。
+> 本章包含 7 个阶段、18 节已发布内容，覆盖文件管理、Windows 设置、浏览器与常用工具，以及文本编辑、Markdown、LaTeX、Shell、开发环境、Git、Docker 与 Kubernetes。既可以按阶段系统学习，也可以从当前问题对应的小节开始查阅。
 
 ## 一、前言
 
@@ -65,9 +65,10 @@ flowchart TD
         S6_2["1.16 GitHub 与 CNB<br/>代码托管与协作"]
     end
 
-    subgraph S7[Stage 7：Docker 基础]
+    subgraph S7[Stage 7：容器化与编排]
         direction TB
         S7_1["1.17 Docker 基础<br/>容器化开发环境"]
+        S7_2["1.18 Kubernetes 基础<br/>容器编排入门"]
     end
 
     S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7
@@ -121,11 +122,12 @@ flowchart TD
 | [1.15 版本控制 Git](./ch1/1.15-Version-Control-Git) | 理解 Git 模型，掌握分支、合并、撤销与远程操作 |
 | [1.16 GitHub 与 CNB](./ch1/1.16-GitHub-CNB) | 完成账号、SSH、仓库与 Fork + Pull Request 协作流程 |
 
-### Stage 7：Docker 基础
+### Stage 7：容器化与编排
 
 | 小节 | 目标 |
 | :------------------------------------- | :----------------------------------- |
 | [1.17 Docker 基础](./ch1/1.17-Docker-Basics) | 使用镜像、容器、Dockerfile 与 Compose 管理可复现环境 |
+| [1.18 Kubernetes 基础](./ch1/1.18-Kubernetes-Basics) | 了解集群架构与 Pod、Deployment、Service 等编排概念 |
 
 以上七个阶段覆盖了从基础操作到开发工具链的核心内容。不必一口气读完：第一次阅读可以先建立全局认识，遇到实际问题时再回到对应小节复习和练习。
 
@@ -141,4 +143,4 @@ flowchart TD
 - [ ] 完成 Stage 4：[主流操作系统](./ch1/1.11-Operating-Systems)、[Shell 基础](./ch1/1.12-Shell-Basics)、[Shell 中的文本编辑](./ch1/1.13-Shell-Text-Editing)
 - [ ] 完成 Stage 5：[环境配置](./ch1/1.14-Environment-Setup)
 - [ ] 完成 Stage 6：[版本控制 Git](./ch1/1.15-Version-Control-Git)、[GitHub 与 CNB](./ch1/1.16-GitHub-CNB)
-- [ ] 完成 Stage 7：[Docker 基础](./ch1/1.17-Docker-Basics)
+- [ ] 完成 Stage 7：[Docker 基础](./ch1/1.17-Docker-Basics)、[Kubernetes 基础](./ch1/1.18-Kubernetes-Basics)

@@ -27,8 +27,9 @@
     "---Stage 6：版本控制---",
     "1.15-Version-Control-Git",
     "1.16-GitHub-CNB",
-    "---Stage 7：Docker 基础---",
-    "1.17-Docker-Basics"
+    "---Stage 7：容器化与编排---",
+    "1.17-Docker-Basics",
+    "1.18-Kubernetes-Basics"
   ],
   "root": true
 }
