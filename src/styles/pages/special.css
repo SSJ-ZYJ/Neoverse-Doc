@@ -12,6 +12,15 @@
     var(--background-primary);
 }
 
+/* Pull only the guestbook backdrop beneath HomeLayout's translucent nav while
+   preserving the content's existing visual offset with matching padding.
+   仅将留言板背景延伸到 HomeLayout 的半透明导航下方，并通过等量内边距
+   保持正文原有的视觉位置。 */
+.guestbook-page {
+  margin-block-start: calc(-1 * var(--home-nav-height));
+  padding-block-start: calc(8rem + var(--home-nav-height));
+}
+
 .guestbook-page__inner {
   inline-size: min(100%, 48rem);
   margin-inline: auto;
