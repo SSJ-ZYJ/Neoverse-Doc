@@ -1,18 +1,17 @@
-// Custom tokenizer that supports mixed Chinese/English content with proper case-insensitive search.
-// Wraps @orama/tokenizers/mandarin and adds lowercase normalization for English tokens.
-// 自定义分词器，支持中英文混合内容，并正确处理英文大小写不敏感搜索。
-// 包装 @orama/tokenizers/mandarin，为英文 token 添加小写规范化。
+// Custom tokenizer for mixed Chinese/English content and namespaced Pinyin aliases.
+// The aliases are indexed only for explicitly selected Chinese titles and headings.
+// 自定义中英文混合分词器，并为显式选中的中文标题与小节标题生成带命名空间的拼音别名。
 
 import type { DefaultTokenizer } from '@orama/orama';
 import { createTokenizer } from '@orama/tokenizers/mandarin';
+import { pinyin } from 'pinyin-pro';
 
-/**
- * Check if a token contains ASCII letters (English text).
- * 检查 token 是否包含 ASCII 字母（英文文本）。
- */
-function hasEnglishLetters(token: string): boolean {
-  return /[a-zA-Z]/.test(token);
-}
+const PINYIN_QUERY_PREFIX = '\u0000pinyin:';
+const PINYIN_INDEX_PREFIX = '\uE000';
+const PINYIN_TOKEN_PREFIX = 'neoversepinyin';
+const MAX_PINYIN_SEGMENT_SPAN = 8;
+const HAN_PATTERN = /\p{Script=Han}/u;
+const PINYIN_QUERY_PATTERN = /^[a-zA-Z\s-]+$/;
 
 /**
  * Normalize token for case-insensitive search.
@@ -22,60 +21,134 @@ function hasEnglishLetters(token: string): boolean {
  * 英文 token 转换为小写，中文 token 保持不变。
  */
 function normalizeTokenCase(token: string): string {
-  if (hasEnglishLetters(token)) {
-    return token.toLowerCase();
+  return /[a-zA-Z]/.test(token) ? token.toLowerCase() : token;
+}
+
+function namespacePinyinToken(token: string): string {
+  return `${PINYIN_TOKEN_PREFIX}${token}`;
+}
+
+function addKeyboardUmlautVariant(tokens: Set<string>, token: string): void {
+  tokens.add(token);
+  if (token.includes('v')) tokens.add(token.replaceAll('v', 'u'));
+}
+
+function getPinyinAliases(input: string, baseTokens: string[]): string[] {
+  const aliases = new Set<string>();
+  const chineseSegments = baseTokens.filter((token) => HAN_PATTERN.test(token));
+  const candidates = new Set([input, ...chineseSegments]);
+
+  // Add bounded adjacent spans so a continuous query can match a phrase inside
+  // a numbered heading, without producing unbounded aliases for long content.
+  // 添加有界相邻片段，使连续全拼能匹配带编号标题中的短语，
+  // 同时避免为长内容生成无界数量的别名。
+  for (let start = 0; start < chineseSegments.length; start++) {
+    const endLimit = Math.min(chineseSegments.length, start + MAX_PINYIN_SEGMENT_SPAN);
+    for (let end = start + 2; end <= endLimit; end++) {
+      candidates.add(chineseSegments.slice(start, end).join(''));
+    }
   }
-  return token;
+
+  for (const segment of candidates) {
+    if (!HAN_PATTERN.test(segment)) continue;
+
+    const syllables = pinyin(segment, {
+      removeNonZh: true,
+      toneType: 'none',
+      type: 'array',
+      v: true,
+    });
+    if (syllables.length === 0) continue;
+
+    for (const syllable of syllables) addKeyboardUmlautVariant(aliases, syllable);
+    addKeyboardUmlautVariant(aliases, syllables.join(''));
+
+    if (syllables.length >= 2) {
+      addKeyboardUmlautVariant(aliases, syllables.map((syllable) => syllable[0]).join(''));
+    }
+  }
+
+  return Array.from(aliases, namespacePinyinToken);
+}
+
+function tokenizePinyinQuery(raw: string): string[] {
+  const query = raw.slice(PINYIN_QUERY_PREFIX.length).trim().toLowerCase();
+  if (!PINYIN_QUERY_PATTERN.test(query)) return [];
+
+  return query
+    .split(/[\s-]+/)
+    .filter(Boolean)
+    .map(namespacePinyinToken);
 }
 
 /**
- * Create a custom tokenizer that handles mixed Chinese/English content.
- * The Mandarin tokenizer uses Intl.Segmenter for CJK word segmentation,
- * but doesn't normalize English tokens to lowercase. This wrapper adds
- * that behavior for better search experience.
+ * Wrap a user query so the tokenizer searches only the namespaced Pinyin aliases.
+ * Returns undefined for unsupported input and one-letter queries.
  *
- * 创建一个支持中英文混合内容的自定义分词器。
- * Mandarin 分词器使用 Intl.Segmenter 进行 CJK 词分割，
- * 但不会将英文 token 规范化为小写。此包装器添加了该行为，
- * 以提供更好的搜索体验。
+ * 包装用户查询，使分词器仅搜索带命名空间的拼音别名。
+ * 不支持的输入和单字母查询返回 undefined。
+ */
+export function createPinyinSearchQuery(query: string): string | undefined {
+  const normalized = query.trim();
+  if (!PINYIN_QUERY_PATTERN.test(normalized)) return;
+
+  const letterCount = normalized.replace(/[^a-zA-Z]/g, '').length;
+  if (letterCount < 2) return;
+
+  return `${PINYIN_QUERY_PREFIX}${normalized}`;
+}
+
+export function markPinyinIndexContent(content: string): string {
+  return `${PINYIN_INDEX_PREFIX}${content}`;
+}
+
+export function unmarkPinyinIndexContent(content: string): string {
+  return content.startsWith(PINYIN_INDEX_PREFIX)
+    ? content.slice(PINYIN_INDEX_PREFIX.length)
+    : content;
+}
+
+/**
+ * Create the mixed tokenizer used by both the static index and browser search.
+ * The server marks only titles and headings so they receive Pinyin aliases;
+ * the browser uses the same alias format to query the exported database.
+ *
+ * 创建静态索引与浏览器搜索共用的混合分词器。
+ * 服务端仅标记标题和小节标题，使其生成拼音别名；
+ * 浏览器使用相同别名格式查询导出的数据库。
  */
 export function createMixedTokenizer(): DefaultTokenizer {
   const baseTokenizer = createTokenizer();
-
-  // Store the original functions
   const originalNormalizeToken = baseTokenizer.normalizeToken;
   const originalTokenize = baseTokenizer.tokenize;
 
-  // Override normalizeToken to add lowercase normalization for English tokens
   baseTokenizer.normalizeToken = function (
     this: DefaultTokenizer,
     prop: string,
     token: string,
     withCache?: boolean,
   ): string {
-    // First apply the original normalization
-    let normalized = originalNormalizeToken.call(this, prop, token, withCache);
-
-    // Then apply lowercase for English tokens
-    if (normalized) {
-      normalized = normalizeTokenCase(normalized);
-    }
-
-    return normalized;
+    const normalized = originalNormalizeToken.call(this, prop, token, withCache);
+    return normalized ? normalizeTokenCase(normalized) : normalized;
   };
 
-  // Override tokenize to ensure tokens are lowercased before indexing
   baseTokenizer.tokenize = function (
     this: DefaultTokenizer,
     input: string,
     language?: string,
     prop?: string,
   ): string[] {
-    // Call the original tokenize function
-    const tokens = originalTokenize.call(this, input, language, prop);
+    if (input.startsWith(PINYIN_QUERY_PREFIX)) return tokenizePinyinQuery(input);
 
-    // Normalize each token for case-insensitive search
-    return tokens.map((token) => normalizeTokenCase(token));
+    const shouldIndexPinyin = input.startsWith(PINYIN_INDEX_PREFIX);
+    const content = unmarkPinyinIndexContent(input);
+    const tokens = originalTokenize
+      .call(this, content, language, prop)
+      .map((token) => normalizeTokenCase(token));
+
+    if (!shouldIndexPinyin || !HAN_PATTERN.test(content)) return tokens;
+
+    return Array.from(new Set([...tokens, ...getPinyinAliases(content, tokens)]));
   };
 
   return baseTokenizer;

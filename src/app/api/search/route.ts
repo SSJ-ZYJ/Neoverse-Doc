@@ -1,10 +1,10 @@
-// Static search API with custom mixed tokenizer for Chinese/English support.
-// Uses @orama/tokenizers/mandarin for CJK segmentation + lowercase normalization for English.
-// 静态搜索 API，使用自定义混合分词器支持中英文搜索。
-// 使用 @orama/tokenizers/mandarin 进行 CJK 分词，并为英文添加小写规范化。
+// Static search API with Chinese/English tokenization and namespaced Pinyin aliases.
+// Pinyin aliases are limited to Chinese page titles and headings.
+// 静态搜索 API，支持中英文分词与带命名空间的拼音别名。
+// 拼音别名仅写入中文页面标题与小节标题。
 
 import { createFromSource } from 'fumadocs-core/search/server';
-import { createMixedTokenizer } from '@/lib/search-tokenizer';
+import { createMixedTokenizer, markPinyinIndexContent } from '@/lib/search-tokenizer';
 import { source } from '@/lib/source';
 
 export const dynamic = 'force-static';
@@ -15,12 +15,23 @@ const { staticGET } = createFromSource(source, {
   // 将内容首级 slug 写入 Fumadocs 标签，使客户端可限定单章搜索，
   // 同时避免额外维护章节映射。
   buildIndex(page) {
+    const pinyinEnabled = page.locale === 'zh';
+    const structuredData = pinyinEnabled
+      ? {
+          ...page.data.structuredData,
+          headings: page.data.structuredData.headings.map((heading) => ({
+            ...heading,
+            content: markPinyinIndexContent(heading.content),
+          })),
+        }
+      : page.data.structuredData;
+
     return {
       id: page.url,
-      title: page.data.title,
+      title: pinyinEnabled ? markPinyinIndexContent(page.data.title) : page.data.title,
       description: page.data.description,
       url: page.url,
-      structuredData: page.data.structuredData,
+      structuredData,
       tag: page.slugs[0],
     };
   },

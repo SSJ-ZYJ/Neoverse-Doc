@@ -1,7 +1,7 @@
-// Static search dialog for SSG. Uses ZBSearch static client with i18n locale support.
-// Custom mixed tokenizer handles both Chinese (CJK segmentation) and English (case-insensitive).
-// 静态搜索对话框（用于 SSG）。使用 ZBSearch 静态客户端，支持 i18n 语言切换。
-// 自定义混合分词器同时处理中文（CJK 分词）和英文（大小写不敏感）。
+// Static search dialog for SSG with locale-aware tokenization and Pinyin fallback.
+// Leading page results inherit the best matching section anchor when available.
+// 用于 SSG 的静态搜索对话框，支持多语言分词与拼音回退。
+// 每组首位文章结果会在可用时继承最相关的小节锚点。
 'use client';
 
 import { useDocsSearch } from 'fumadocs-core/search/client';
@@ -31,6 +31,7 @@ import { useEffect, useState } from 'react';
 import { create } from 'zbsearch';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
+import { withEnhancedSearch } from '@/lib/search-client';
 import { createMixedTokenizer } from '@/lib/search-tokenizer';
 
 interface DefaultSearchDialogProps extends SharedProps {
@@ -70,12 +71,13 @@ export default function DefaultSearchDialog({
     setTag(defaultTag);
   }, [defaultTag]);
 
+  const searchClient = staticClient({
+    initDB,
+    locale,
+    tag: tag || undefined,
+  });
   const { search, setSearch, query } = useDocsSearch({
-    client: staticClient({
-      initDB,
-      locale,
-      tag: tag || undefined,
-    }),
+    client: withEnhancedSearch(searchClient, locale === 'zh'),
   });
 
   return (
