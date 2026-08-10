@@ -465,17 +465,17 @@ export function ImmersiveInteractionController() {
         source?.closest<HTMLElement>(INTERACTIVE_SELECTOR);
       if (!target || target.matches(':disabled, [aria-disabled="true"]')) return;
 
-      // Chromium can stop dispatching the touch sequence as soon as composited
-      // particle descendants are inserted into an HTML-in-Canvas link. Skip
-      // that transient feedback before it mutates the experimental subtree;
-      // mouse input and non-navigation controls retain the full effect.
-      // Chromium 在 HTML-in-Canvas 链接中插入合成粒子后可能立即停止分发
-      // 后续触摸事件，因此在修改实验性子树前跳过该瞬时反馈；鼠标输入与
-      // 非导航控件仍保留完整效果。
-      const nativeCanvasTouchNavigation =
-        (event.pointerType === 'touch' || event.pointerType === 'pen') &&
-        source?.closest('a[href]')?.closest(NATIVE_PARTICLE_SCROLL_SELECTOR);
-      if (nativeCanvasTouchNavigation) return;
+      // Chromium can crash when a navigation unmounts an HTML-in-Canvas subtree
+      // while composited particle descendants are still attached to its link.
+      // Skip transient feedback for every pointer type before mutating that
+      // experimental subtree; non-navigation controls retain the full effect.
+      // 当导航卸载 HTML-in-Canvas 子树时，若链接内仍挂载合成粒子后代，
+      // Chromium 可能崩溃。因此所有指针类型都在修改实验性子树前跳过该
+      // 瞬时反馈；非导航控件仍保留完整效果。
+      const nativeCanvasNavigation = source
+        ?.closest('a[href]')
+        ?.closest(NATIVE_PARTICLE_SCROLL_SELECTOR);
+      if (nativeCanvasNavigation) return;
 
       const geometry = readParticleGeometry(target);
       const rect = geometry.rect;
