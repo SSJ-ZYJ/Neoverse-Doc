@@ -27,6 +27,7 @@ export const zh = {
   pageActionsOpenGithub: '在 GitHub 中打开',
   backToDocs: '返回文档',
   backToHome: '返回首页',
+  backToTop: '返回文章顶部',
   // Search scope labels / 搜索范围标签
   searchScopeLabel: '搜索范围',
   searchAllChapters: '全部章节',

@@ -33,6 +33,7 @@ export interface Dictionary {
   pageActionsOpenGithub: string;
   backToDocs: string;
   backToHome: string;
+  backToTop: string;
   // Search scope labels / 搜索范围标签
   searchScopeLabel: string;
   searchAllChapters: string;

@@ -27,6 +27,7 @@ export const en = {
   pageActionsOpenGithub: 'Open in GitHub',
   backToDocs: 'Back to Docs',
   backToHome: 'Back to Home',
+  backToTop: 'Back to top',
   // Search scope labels / 搜索范围标签
   searchScopeLabel: 'Search scope',
   searchAllChapters: 'All chapters',

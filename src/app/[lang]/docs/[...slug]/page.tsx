@@ -9,6 +9,7 @@ import { DocsBody, DocsDescription, DocsTitle, PageFooter } from 'fumadocs-ui/la
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { DeferredDocsPage } from '@/components/deferred-docs-page';
+import { DocsBackToTop } from '@/components/docs-back-to-top';
 import { DocsCommunity } from '@/components/docs-community';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
 import { DocsPageActions } from '@/components/docs-page-actions';
@@ -118,6 +119,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
         {pageContent}
       </DeferredDocsPage>
       <DocsPageGradualBlur />
+      <DocsBackToTop key={slugKey} label={dict.backToTop} />
       {/* Keep community height and scrolling outside the Fumadocs article container.
           将社区模块的高度与滚动隔离在 Fumadocs 正文容器之外。 */}
       {community}

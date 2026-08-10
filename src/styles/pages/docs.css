@@ -438,6 +438,111 @@ html[data-nd-reading-restore] {
   }
 }
 
+/* The article back-to-top action prefers the canvas beside the card when space
+   permits, while remaining clear of the centered reading return action.
+   文章返回顶部操作在空间允许时优先使用正文卡片外侧画布，并避开底部居中的阅读返回操作。 */
+.docs-back-to-top {
+  position: fixed;
+  z-index: 35;
+  inset-block-end: max(1rem, env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 42%, var(--glass-border-hairline));
+  border-radius: var(--radius-xs);
+  padding: 0;
+  color: var(--text-primary);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent-primary) 14%, transparent),
+      transparent 58%
+    ),
+    var(--glass-refraction-fill),
+    color-mix(in srgb, var(--surface-elevated) 88%, var(--accent-soft));
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(0.5rem) scale(0.96);
+  cursor: pointer;
+  transition:
+    inset-block-end var(--motion-fast) var(--motion-ease-standard),
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard),
+    opacity var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-fast) var(--motion-ease-standard),
+    visibility 0s linear var(--motion-fast);
+}
+
+.docs-back-to-top::before {
+  position: absolute;
+  inset: -0.25rem;
+  content: "";
+}
+
+.docs-back-to-top[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  transition-delay: 0s;
+}
+
+.docs-back-to-top > svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+body:has(> [data-reading-return]) .docs-back-to-top {
+  inset-block-end: max(5.25rem, calc(env(safe-area-inset-bottom) + 4.25rem));
+}
+
+@media (hover: hover) {
+  .docs-back-to-top:hover {
+    border-color: var(--border-interactive);
+    color: var(--accent-primary);
+    background: var(--glass-refraction-fill), var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+    transform: translateY(-2px);
+  }
+}
+
+.docs-back-to-top:focus-visible {
+  outline: 2px solid var(--border-interactive);
+  outline-offset: 2px;
+}
+
+.docs-back-to-top:active {
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-back-to-top {
+    transform: none;
+    transition: none;
+  }
+
+  .docs-back-to-top:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .docs-back-to-top {
+    backdrop-filter: none;
+    background: var(--surface-elevated);
+  }
+}
+
 #nd-docs-layout {
   --fd-layout-width: 100rem;
   --docs-reading-width: var(--reading-max);
