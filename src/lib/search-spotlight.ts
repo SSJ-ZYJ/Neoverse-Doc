@@ -7,6 +7,18 @@ const HTML_TAG_PATTERN = /<[^>]+>/g;
 const MARKDOWN_DECORATION_PATTERN = /[`*_~#]/g;
 const MAX_SPOTLIGHT_TEXT_LENGTH = 120;
 
+interface SpotlightVerticalRect {
+  top: number;
+  height: number;
+}
+
+export function getSpotlightScrollDelta(
+  rect: SpotlightVerticalRect,
+  viewportHeight: number,
+): number {
+  return rect.top + rect.height / 2 - viewportHeight / 2;
+}
+
 function cleanSpotlightText(content: string): string {
   return content
     .replace(HTML_TAG_PATTERN, '')

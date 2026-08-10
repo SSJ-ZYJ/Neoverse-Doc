@@ -12,9 +12,63 @@ export function cleanSearchResultContent(results: SortedResult[]): SortedResult[
   }));
 }
 
+const RESULT_TYPE_PRIORITY: Record<SortedResult['type'], number> = {
+  page: 0,
+  heading: 1,
+  text: 2,
+};
+
+interface SearchResultGroup {
+  index: number;
+  priority: number;
+  results: SortedResult[];
+}
+
+function hasHighlight(result: SortedResult): boolean {
+  return result.content.includes('<mark>');
+}
+
+function getGroupPriority(results: SortedResult[]): number {
+  const page = results.find((result) => result.type === 'page');
+  if (page && hasHighlight(page)) return 0;
+  if (results.some((result) => result.type === 'heading')) return 1;
+  return 2;
+}
+
+export function rankSearchResultGroups(results: SortedResult[]): SortedResult[] {
+  const groups: SearchResultGroup[] = [];
+  let group: Array<{ index: number; result: SortedResult }> = [];
+
+  const flushGroup = () => {
+    if (group.length === 0) return;
+    group.sort(
+      (left, right) =>
+        RESULT_TYPE_PRIORITY[left.result.type] - RESULT_TYPE_PRIORITY[right.result.type] ||
+        left.index - right.index,
+    );
+    const groupResults = group.map(({ result }) => result);
+    groups.push({
+      index: groups.length,
+      priority: getGroupPriority(groupResults),
+      results: groupResults,
+    });
+    group = [];
+  };
+
+  for (const result of results) {
+    if (result.type === 'page' && group.length > 0) flushGroup();
+    group.push({ index: group.length, result });
+  }
+  flushGroup();
+
+  groups.sort((left, right) => left.priority - right.priority || left.index - right.index);
+  return groups.flatMap(({ results: groupResults }) => groupResults);
+}
+
 export function preferSearchResultAnchors(results: SortedResult[]): SortedResult[] {
   return results.map((result, index) => {
     if (result.type !== 'page') return result;
+    if (hasHighlight(result)) return result;
 
     const pageUrl = result.url.split('#', 1)[0];
     for (let childIndex = index + 1; childIndex < results.length; childIndex++) {
@@ -58,7 +112,9 @@ export function withEnhancedSearch(client: SearchClient, pinyinEnabled: boolean)
       const pinyinQuery = pinyinEnabled ? createPinyinSearchQuery(query) : undefined;
       if (!pinyinQuery) {
         return addSearchSpotlightParams(
-          preferSearchResultAnchors(cleanSearchResultContent(await client.search(query))),
+          preferSearchResultAnchors(
+            rankSearchResultGroups(cleanSearchResultContent(await client.search(query))),
+          ),
           query,
         );
       }
@@ -70,8 +126,12 @@ export function withEnhancedSearch(client: SearchClient, pinyinEnabled: boolean)
 
       return addSearchSpotlightParams(
         mergePinyinSearchResults(
-          preferSearchResultAnchors(cleanSearchResultContent(literalResults)),
-          preferSearchResultAnchors(cleanSearchResultContent(pinyinResults)),
+          preferSearchResultAnchors(
+            rankSearchResultGroups(cleanSearchResultContent(literalResults)),
+          ),
+          preferSearchResultAnchors(
+            rankSearchResultGroups(cleanSearchResultContent(pinyinResults)),
+          ),
         ),
         query,
       );

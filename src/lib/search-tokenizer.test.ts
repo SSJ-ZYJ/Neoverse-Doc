@@ -5,8 +5,9 @@ import {
   cleanSearchResultContent,
   mergePinyinSearchResults,
   preferSearchResultAnchors,
+  rankSearchResultGroups,
 } from './search-client';
-import { addSearchSpotlightParams } from './search-spotlight';
+import { addSearchSpotlightParams, getSpotlightScrollDelta } from './search-spotlight';
 import {
   createMixedTokenizer,
   createPinyinSearchQuery,
@@ -119,6 +120,78 @@ describe('Pinyin result merging', () => {
     );
   });
 
+  it('keeps a matched page title at the article heading', () => {
+    const results = [
+      {
+        id: 'page',
+        url: '/docs/page',
+        type: 'page' as const,
+        content: '<mark>Windows</mark> settings',
+      },
+      {
+        id: 'text',
+        url: '/docs/page#table',
+        type: 'text' as const,
+        content: '<mark>Windows</mark>',
+      },
+    ];
+
+    assert.equal(preferSearchResultAnchors(results)[0].url, '/docs/page');
+  });
+
+  it('ranks headings before body matches while preserving document order', () => {
+    const results = [
+      { id: 'page', url: '/docs/page', type: 'page' as const, content: 'Page' },
+      { id: 'text-a', url: '/docs/page#first', type: 'text' as const, content: 'Body' },
+      { id: 'heading-a', url: '/docs/page#second', type: 'heading' as const, content: 'Second' },
+      { id: 'heading-b', url: '/docs/page#third', type: 'heading' as const, content: 'Third' },
+      { id: 'text-b', url: '/docs/page#third', type: 'text' as const, content: 'More body' },
+    ];
+
+    const ranked = rankSearchResultGroups(results);
+    assert.deepEqual(
+      ranked.map((result) => result.id),
+      ['page', 'heading-a', 'heading-b', 'text-a', 'text-b'],
+    );
+    assert.equal(preferSearchResultAnchors(ranked)[0].url, '/docs/page#second');
+  });
+
+  it('ranks page-title groups before heading and body-only groups', () => {
+    const results = [
+      { id: 'body-page', url: '/docs/body', type: 'page' as const, content: 'Body page' },
+      {
+        id: 'body-match',
+        url: '/docs/body#match',
+        type: 'text' as const,
+        content: '<mark>Windows</mark>',
+      },
+      { id: 'heading-page', url: '/docs/heading', type: 'page' as const, content: 'Heading page' },
+      {
+        id: 'heading-match',
+        url: '/docs/heading#match',
+        type: 'heading' as const,
+        content: 'Using <mark>Windows</mark>',
+      },
+      {
+        id: 'title-page',
+        url: '/docs/title',
+        type: 'page' as const,
+        content: '<mark>Windows</mark> settings',
+      },
+      {
+        id: 'title-body',
+        url: '/docs/title#match',
+        type: 'text' as const,
+        content: '<mark>Windows</mark> body',
+      },
+    ];
+
+    assert.deepEqual(
+      rankSearchResultGroups(results).map((result) => result.id),
+      ['title-page', 'title-body', 'heading-page', 'heading-match', 'body-page', 'body-match'],
+    );
+  });
+
   it('carries the matched text to the destination without replacing its anchor', () => {
     const results = [
       { id: 'page', url: '/docs/page#search', type: 'page' as const, content: 'Page' },
@@ -134,5 +207,9 @@ describe('Pinyin result merging', () => {
       addSearchSpotlightParams(results, 'keyword').map((result) => result.url),
       ['/docs/page?_searchSpotlight=keyword#search', '/docs/page?_searchSpotlight=keyword#search'],
     );
+  });
+
+  it('centers the exact matched range instead of its containing element', () => {
+    assert.equal(getSpotlightScrollDelta({ top: 343, height: 18 }, 600), 52);
   });
 });
