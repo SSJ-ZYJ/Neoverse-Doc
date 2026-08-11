@@ -31,4 +31,4 @@ Neoverse-Docs 是一份持续更新的在线学习文档。它不会要求你一
 
 ## 四、反馈与修正
 
-如果你发现事实错误、失效链接、难以理解的步骤或可以改进的表达，欢迎在当前页面下方留言，或前往 [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) 提交反馈。清楚说明页面、问题位置、你看到的现象和期望结果，会让修正更快发生。
+如果你发现事实错误、失效链接、难以理解的步骤或可以改进的表达，欢迎在当前页面下方留言，或前往 [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) 提交反馈。清楚说明页面、问题位置、你看到的现象和期望结果，有助于我们更快地修正。

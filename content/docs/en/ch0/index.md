@@ -31,4 +31,4 @@ Software interfaces, versions, and platform rules keep changing. Before running 
 
 ## 4. Feedback and Corrections
 
-If you find factual errors, broken links, steps that are hard to follow, or wording that could be improved, feel free to leave a comment at the bottom of this page or submit feedback at [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues). Clearly describing the page, the location of the problem, what you observed, and the expected result will help corrections happen faster.
+If you find factual errors, broken links, steps that are hard to follow, or wording that could be improved, feel free to leave a comment at the bottom of this page or submit feedback at [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues). Clearly describing the page, the location of the problem, what you observed, and the expected result will help us correct faster.
