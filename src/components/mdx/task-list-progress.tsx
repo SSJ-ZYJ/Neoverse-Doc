@@ -15,9 +15,9 @@ import { TASK_STATE_CHANGE_EVENT } from '@/components/mdx/interactive-task-list-
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
 import { prefersReducedMotion } from '@/lib/motion-config';
+import { getTaskListScrollDuration, getTaskListScrollProgress } from '@/lib/task-list-scroll';
 
-const TASK_LIST_SCROLL_MAX_STEP_RATIO = 1 / 3;
-const TASK_LIST_SCROLL_ACCELERATION_FRAMES = 8;
+const TASK_LIST_SCROLL_MAX_STEP_RATIO = 1 / 4;
 const TASK_LIST_SCROLL_INTERRUPT_KEYS = new Set([
   'ArrowDown',
   'ArrowUp',
@@ -109,7 +109,6 @@ function startTaskListSmoothScroll(
 ): () => void {
   let frameId = 0;
   let stopped = false;
-  let stepSize = 0;
 
   function stop() {
     if (stopped) return;
@@ -144,37 +143,38 @@ function startTaskListSmoothScroll(
   window.addEventListener('popstate', stop);
   window.addEventListener('keydown', handleKeyDown);
 
-  frameId = window.requestAnimationFrame(() => {
+  frameId = window.requestAnimationFrame((startedAt) => {
     const scrollMarginTop = Number.parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
     const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     const targetY = Math.min(
       Math.max(0, target.getBoundingClientRect().top + window.scrollY - scrollMarginTop),
       maxScrollY,
     );
+    const startY = window.scrollY;
+    const distance = targetY - startY;
+    const duration = getTaskListScrollDuration(distance);
     const maxStep = Math.max(1, window.innerHeight * TASK_LIST_SCROLL_MAX_STEP_RATIO);
-    const acceleration = maxStep / TASK_LIST_SCROLL_ACCELERATION_FRAMES;
 
-    function step() {
-      const distance = targetY - window.scrollY;
-      const absoluteDistance = Math.abs(distance);
-      if (absoluteDistance <= 1) {
+    function step(timestamp: number) {
+      const elapsed = timestamp - startedAt;
+      const progress = duration === 0 ? 1 : Math.min(1, elapsed / duration);
+      const easedProgress = getTaskListScrollProgress(progress);
+      const desiredY = startY + distance * easedProgress;
+      const remainingDistance = targetY - window.scrollY;
+      if (progress === 1 && Math.abs(remainingDistance) <= 1) {
         window.scrollTo({ top: targetY });
         stop();
         return;
       }
 
-      stepSize = Math.min(
-        maxStep,
-        stepSize + acceleration,
-        Math.sqrt(2 * acceleration * absoluteDistance),
-      );
+      const frameDistance = (progress === 1 ? targetY : desiredY) - window.scrollY;
       window.scrollBy({
-        top: Math.sign(distance) * Math.min(absoluteDistance, Math.max(1, stepSize)),
+        top: Math.sign(frameDistance) * Math.min(Math.abs(frameDistance), maxStep),
       });
       frameId = window.requestAnimationFrame(step);
     }
 
-    step();
+    step(startedAt);
   });
 
   return stop;
