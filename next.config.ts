@@ -19,6 +19,11 @@ const GISCUS_THEME_ASSET_PATHS = ['/giscus-light.css', '/giscus-dark.css'] as co
 // generateStaticParams 中预生成的路径直接抛 "missing param" 错，无法走 not-found
 // 兜底。dev 下关闭它即可保留正常的 404 行为，生产产物仍是纯静态导出。
 const nextConfig: NextConfig = {
+  // Limit build concurrency for memory-constrained static hosting runners.
+  // 限制构建并发，避免内存受限的静态托管环境触发 OOM。
+  experimental: {
+    cpus: 2,
+  },
   ...(process.env.NODE_ENV === 'production'
     ? { output: 'export' as const }
     : {
