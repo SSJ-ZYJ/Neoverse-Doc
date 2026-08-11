@@ -81,7 +81,13 @@ function readTransitionRect(element: Element): MaximizeTransitionRect {
 }
 
 function readTransitionContentRect(wrapper: HTMLElement) {
-  const content = wrapper.querySelector('.mermaid-svg-host');
+  // Measure the active visual content rather than falling back to the wrapper.
+  // A short code view occupies only a small fraction of the fullscreen canvas;
+  // using wrapper height ratios would therefore shrink it far below its actual
+  // in-page width during the FLIP transition.
+  // 测量当前实际内容而不是回退到 wrapper。短代码只占全屏画布很小一部分，
+  // 若使用 wrapper 高度比例，FLIP 过渡会把它缩得远小于页面内的实际宽度。
+  const content = wrapper.querySelector('.mermaid-svg-host, .mermaid-code-view');
   return content ? readTransitionRect(content) : null;
 }
 
@@ -111,11 +117,11 @@ function getMaximizeTransitionStyle(
   let translateY: number;
 
   if (canAlignContent && origin.content && targetContent) {
-    // Both SVG hosts share the same natural aspect ratio, so a single scale
-    // aligns them without deforming the diagram. Position the transformed
-    // fullscreen host directly over the preserved in-page host.
-    // 两端 SVG host 具有相同自然宽高比，使用单一比例即可无变形对齐；平移量
-    // 直接把变换后的全屏 host 覆盖到保留的页面内 host 上。
+    // Align active content by width with a single scale. SVG hosts share the
+    // same aspect ratio, while code views keep their readable width from being
+    // dominated by the much smaller wrapper-height ratio.
+    // 使用单一比例按宽度对齐当前内容。SVG host 具有相同宽高比；代码视图则
+    // 避免被远小于宽度比例的 wrapper 高度比例主导，保持可读的返回尺寸。
     scale = origin.content.width / targetContent.width;
     const scaledTargetLeft = target.left + (targetContent.left - target.left) * scale;
     const scaledTargetTop = target.top + (targetContent.top - target.top) * scale;
@@ -137,6 +143,9 @@ function getMaximizeTransitionStyle(
     '--mermaid-maximize-x': `${translateX}px`,
     '--mermaid-maximize-y': `${translateY}px`,
     '--mermaid-maximize-scale': scale,
+    '--mermaid-maximize-inverse-scale': scale > 0 ? 1 / scale : 1,
+    '--mermaid-maximize-origin-content-width': `${origin.content?.width ?? origin.width}px`,
+    '--mermaid-maximize-target-content-width': `${targetContent?.width ?? target.width}px`,
     '--mermaid-maximize-origin-radius': origin.borderRadius,
   } as CSSProperties;
 }

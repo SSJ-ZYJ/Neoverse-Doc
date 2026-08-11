@@ -1999,6 +1999,44 @@
   animation: mermaid-maximized-wrapper-out var(--motion-standard) var(--motion-ease-standard) both;
 }
 
+/* The fullscreen wrapper must scale to return to its saved page rectangle, but
+   scaling a textarea also shrinks its glyphs. Counter-scale only the code
+   editor and animate its layout width to the saved content width. The parent
+   still performs the shared FLIP movement while code remains readable and
+   hands off at the same font size as the retained in-page editor.
+   全屏 wrapper 必须缩放回保存的页面矩形，但 textarea 随父级缩放会同时缩小
+   字形。这里只对代码编辑器做反向缩放，并把布局宽度动画到保存的内容宽度；
+   父级继续执行共享 FLIP 位移，代码保持可读并以页面内编辑器的字号完成交接。 */
+.mermaid-wrapper[data-maximized]:is(
+    [data-transition="preparing"],
+    [data-transition="entering"],
+    [data-transition="exiting"]
+  )
+  .mermaid-canvas[data-view="code"]
+  .mermaid-code-view {
+  overflow: visible;
+}
+
+.mermaid-wrapper[data-maximized][data-transition="preparing"]
+  .mermaid-canvas[data-view="code"]
+  .mermaid-code-editor {
+  width: var(--mermaid-maximize-origin-content-width, 100%);
+  transform: scale(var(--mermaid-maximize-inverse-scale, 1));
+  transform-origin: top left;
+}
+
+.mermaid-wrapper[data-maximized][data-transition="entering"]
+  .mermaid-canvas[data-view="code"]
+  .mermaid-code-editor {
+  animation: mermaid-code-editor-in var(--motion-standard) var(--motion-ease-standard) both;
+}
+
+.mermaid-wrapper[data-maximized][data-transition="exiting"]
+  .mermaid-canvas[data-view="code"]
+  .mermaid-code-editor {
+  animation: mermaid-code-editor-out var(--motion-standard) var(--motion-ease-standard) both;
+}
+
 .mermaid-maximized-backdrop[data-transition="measuring"],
 .mermaid-maximized-backdrop[data-transition="preparing"],
 .mermaid-toolbar[data-portaled="maximized"][data-transition="measuring"],
@@ -2040,6 +2078,32 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes mermaid-code-editor-in {
+  from {
+    width: var(--mermaid-maximize-origin-content-width, 100%);
+    transform: scale(var(--mermaid-maximize-inverse-scale, 1));
+    transform-origin: top left;
+  }
+  to {
+    width: var(--mermaid-maximize-target-content-width, 100%);
+    transform: scale(1);
+    transform-origin: top left;
+  }
+}
+
+@keyframes mermaid-code-editor-out {
+  from {
+    width: var(--mermaid-maximize-target-content-width, 100%);
+    transform: scale(1);
+    transform-origin: top left;
+  }
+  to {
+    width: var(--mermaid-maximize-origin-content-width, 100%);
+    transform: scale(var(--mermaid-maximize-inverse-scale, 1));
+    transform-origin: top left;
   }
 }
 
