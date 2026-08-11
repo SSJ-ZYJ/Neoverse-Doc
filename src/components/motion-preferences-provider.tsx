@@ -14,9 +14,9 @@ import { supportsExperimentalMotion } from '@/lib/experimental-motion-support';
 import {
   applyMotionPreferences,
   DEFAULT_MOTION_PREFERENCES,
+  MOTION_PREFERENCES_STORAGE_KEY,
   type MotionLevel,
   type MotionPreferences,
-  MOTION_PREFERENCES_STORAGE_KEY,
   parseMotionPreferences,
   readMotionPreferences,
   resolveEffectiveExperimentalMotion,

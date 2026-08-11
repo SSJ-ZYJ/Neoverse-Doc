@@ -1442,7 +1442,10 @@ html[data-nd-motion-level="low"]
     transform: none;
   }
 
-  #nd-sidebar div:has(> button[data-theme-toggle]) > button[data-motion-settings-trigger]:hover > svg {
+  #nd-sidebar
+    div:has(> button[data-theme-toggle])
+    > button[data-motion-settings-trigger]:hover
+    > svg {
     filter: drop-shadow(0 0 0.4rem color-mix(in srgb, var(--accent-primary) 42%, transparent));
     transform: rotate(-5deg) scale(1.08);
   }
@@ -1463,7 +1466,10 @@ html[data-nd-motion-level="low"]
   transform: none;
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-motion-settings-trigger]:active > svg {
+#nd-sidebar
+  div:has(> button[data-theme-toggle])
+  > button[data-motion-settings-trigger]:active
+  > svg {
   transform: scale(0.94);
 }
 
@@ -1489,9 +1495,9 @@ html[data-nd-motion-level="low"]
    侧栏底部父工具条：悬浮主题切换器时保持基础玻璃面，
    避免父级 :has(button:hover) 再叠一层矩形 hover 背景。 */
 #nd-sidebar
-  .bg-fd-secondary\/50:has(
-    > :is(button[data-theme-toggle], button[data-motion-settings-trigger]):hover
-  ) {
+.bg-fd-secondary\/50:has(
+  > :is(button[data-theme-toggle], button[data-motion-settings-trigger]):hover
+) {
   background-color: var(--glass-tint) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),

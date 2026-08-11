@@ -34,14 +34,10 @@ function DocsMotionSettings() {
   const experimentalNoteId = useId();
   const motionLevelName = useId();
   const experimentalUnavailable =
-    preferences.level === 'low' ||
-    systemReducedMotion ||
-    experimentalMotionSupported === false;
+    preferences.level === 'low' || systemReducedMotion || experimentalMotionSupported === false;
   const experimentalNotices = [
     preferences.level === 'low' ? dict.experimentalMotionUnavailableLow : null,
-    experimentalMotionSupported === false
-      ? dict.experimentalMotionUnavailableUnsupported
-      : null,
+    experimentalMotionSupported === false ? dict.experimentalMotionUnavailableUnsupported : null,
     systemReducedMotion ? dict.systemReducedMotionNotice : null,
   ].filter((notice): notice is string => notice !== null);
   const experimentalDescribedBy = [

@@ -22,7 +22,9 @@ export function HeroTitle({ id }: { id: string }) {
         particleSize={1.8}
         pointerRepel={18}
         repelRadius={96}
+        roundedCharacters="O"
         scatter={108}
+        shortenedCharacters="C"
         stagger={MOTION_DURATION_MS.fast}
         text={HOME_TITLE}
         trigger="mount"

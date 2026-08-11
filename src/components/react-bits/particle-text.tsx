@@ -23,7 +23,9 @@ interface ParticleTextProps {
   particleSize?: number;
   pointerRepel?: number;
   repelRadius?: number;
+  roundedCharacters?: string;
   scatter?: number;
+  shortenedCharacters?: string;
   stagger?: number;
   style?: CSSProperties;
   text?: string;
@@ -50,6 +52,19 @@ interface Particle {
   y: number;
 }
 
+interface GlyphBounds {
+  maxX: number;
+  maxY: number;
+  minX: number;
+  minY: number;
+  radius: number;
+}
+
+const GLYPH_ALPHA_THRESHOLD = 40;
+const ROUNDED_GLYPH_RADIUS_RATIO = 0.22;
+const SHORTENED_GLYPH_ARM_RATIO = 0.1;
+const SHORTENED_GLYPH_CAP_ZONE_RATIO = 0.28;
+
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
@@ -64,6 +79,33 @@ function mixRgb(from: RgbColor, to: RgbColor, amount: number): RgbColor {
 
 function rgbToCss({ r, g, b }: RgbColor) {
   return `rgb(${r}, ${g}, ${b})`;
+}
+
+function isOutsideRoundedCorner(x: number, y: number, bounds: GlyphBounds) {
+  const { maxX, maxY, minX, minY, radius } = bounds;
+  if (x < minX || x > maxX || y < minY || y > maxY) return false;
+
+  const inLeftCorner = x < minX + radius;
+  const inRightCorner = x > maxX - radius;
+  const inTopCorner = y < minY + radius;
+  const inBottomCorner = y > maxY - radius;
+  if (!(inLeftCorner || inRightCorner) || !(inTopCorner || inBottomCorner)) return false;
+
+  const centerX = inLeftCorner ? minX + radius : maxX - radius;
+  const centerY = inTopCorner ? minY + radius : maxY - radius;
+  return (x - centerX) ** 2 + (y - centerY) ** 2 > radius ** 2;
+}
+
+function isInsideShortenedArm(x: number, y: number, bounds: GlyphBounds) {
+  const { maxX, maxY, minX, minY } = bounds;
+  if (x < minX || x > maxX || y < minY || y > maxY) return false;
+
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const inCap =
+    y < minY + height * SHORTENED_GLYPH_CAP_ZONE_RATIO ||
+    y > maxY - height * SHORTENED_GLYPH_CAP_ZONE_RATIO;
+  return inCap && x > maxX - width * SHORTENED_GLYPH_ARM_RATIO;
 }
 
 function resolveColor(value: string, container: HTMLElement): { css: string; rgb: RgbColor } {
@@ -135,7 +177,9 @@ export function ParticleText({
   particleSize = 2,
   pointerRepel = 40,
   repelRadius = 120,
+  roundedCharacters = '',
   scatter = 180,
+  shortenedCharacters = '',
   stagger = 420,
   style,
   text = 'React Bits',
@@ -381,22 +425,93 @@ export function ParticleText({
       offscreenContext.fillText(content, padding - left, padding + ascent);
 
       const imageData = offscreenContext.getImageData(0, 0, offscreen.width, offscreen.height);
-      const targets: Array<{ alpha: number; x: number; y: number }> = [];
-      const step = Math.max(2, Math.floor(density * (mediumMotion ? Math.SQRT2 : 1)));
-      let minTargetY = Number.POSITIVE_INFINITY;
-      let maxTargetY = Number.NEGATIVE_INFINITY;
+      const targets: Array<{ x: number; y: number }> = [];
+      let glyphMinY = Number.POSITIVE_INFINITY;
+      let glyphMaxY = Number.NEGATIVE_INFINITY;
 
-      for (let y = 0; y < offscreen.height; y += step) {
+      // Align the sampling rows within the real glyph bounds so curved bottoms
+      // are not truncated by an arbitrary grid origin on small screens.
+      // 在真实字形边界内对齐采样行，避免小屏下底部曲线被任意网格起点削平。
+      for (let y = 0; y < offscreen.height; y += 1) {
+        for (let x = 0; x < offscreen.width; x += 1) {
+          const alpha = imageData.data[(y * offscreen.width + x) * 4 + 3];
+          if (alpha > GLYPH_ALPHA_THRESHOLD) {
+            glyphMinY = Math.min(glyphMinY, y);
+            glyphMaxY = Math.max(glyphMaxY, y);
+          }
+        }
+      }
+
+      if (!Number.isFinite(glyphMinY) || !Number.isFinite(glyphMaxY)) {
+        showFallback();
+        return;
+      }
+
+      const glyphHeight = glyphMaxY - glyphMinY;
+      // Small glyphs need one extra sample between strokes to preserve details
+      // such as the straight side of D versus the double curve of O. Motion
+      // preferences change animation intensity, never the finished wordmark.
+      // 小字形需要在笔画间增加一级采样，以保留 D 的直边与 O 的双侧曲线；
+      // 动效偏好只调整动画强度，不降低最终字标的清晰度。
+      const samplingScale = glyphHeight < 48 ? 0.75 : 1;
+      const step = Math.max(2, Math.round(density * samplingScale));
+      const firstSampleY = glyphMinY + Math.floor((glyphHeight % step) / 2);
+      const verticalOffset = height / 2 - (glyphMinY + glyphMaxY) / 2;
+      const roundedCharacterSet = new Set(Array.from(roundedCharacters));
+      const shortenedCharacterSet = new Set(Array.from(shortenedCharacters));
+      const characters = Array.from(content);
+      const drawableCharacters = characters.filter((character) => !/^\s$/u.test(character));
+      const glyphRuns: Array<{ maxX: number; minX: number }> = [];
+      let runStart: number | null = null;
+
+      for (let x = 0; x < offscreen.width; x += 1) {
+        let columnHasInk = false;
+        for (let y = glyphMinY; y <= glyphMaxY; y += 1) {
+          const alpha = imageData.data[(y * offscreen.width + x) * 4 + 3];
+          if (alpha > GLYPH_ALPHA_THRESHOLD) {
+            columnHasInk = true;
+            break;
+          }
+        }
+
+        if (columnHasInk && runStart === null) runStart = x;
+        if (!columnHasInk && runStart !== null) {
+          glyphRuns.push({ maxX: x - 1, minX: runStart });
+          runStart = null;
+        }
+      }
+      if (runStart !== null) glyphRuns.push({ maxX: offscreen.width - 1, minX: runStart });
+
+      const glyphBounds =
+        glyphRuns.length === drawableCharacters.length
+          ? glyphRuns.map<GlyphBounds>(({ maxX, minX }) => ({
+              maxX,
+              maxY: glyphMaxY,
+              minX,
+              minY: glyphMinY,
+              radius: Math.min(maxX - minX, glyphHeight) * ROUNDED_GLYPH_RADIUS_RATIO,
+            }))
+          : [];
+      const roundedGlyphBounds = glyphBounds.filter((_, index) =>
+        roundedCharacterSet.has(drawableCharacters[index] ?? ''),
+      );
+      const shortenedGlyphBounds = glyphBounds.filter((_, index) =>
+        shortenedCharacterSet.has(drawableCharacters[index] ?? ''),
+      );
+
+      for (let y = firstSampleY; y <= glyphMaxY; y += step) {
         for (let x = 0; x < offscreen.width; x += step) {
           const alpha = imageData.data[(y * offscreen.width + x) * 4 + 3];
-          if (alpha > 40) {
-            const targetY = height / 2 - offscreen.height / 2 + y;
-            minTargetY = Math.min(minTargetY, targetY);
-            maxTargetY = Math.max(maxTargetY, targetY);
+          const outsideRoundedGlyph = roundedGlyphBounds.some((bounds) =>
+            isOutsideRoundedCorner(x, y, bounds),
+          );
+          const insideShortenedArm = shortenedGlyphBounds.some((bounds) =>
+            isInsideShortenedArm(x, y, bounds),
+          );
+          if (alpha > GLYPH_ALPHA_THRESHOLD && !outsideRoundedGlyph && !insideShortenedArm) {
             targets.push({
-              alpha: alpha / 255,
               x: width / 2 - offscreen.width / 2 + x,
-              y: targetY,
+              y: verticalOffset + y,
             });
           }
         }
@@ -406,11 +521,6 @@ export function ParticleText({
         if (currentBuild === buildId) showFallback();
         return;
       }
-
-      // Center the sampled glyph pixels rather than the asymmetric font metrics box.
-      // 按实际采样字形像素居中，而不是按上下不对称的字体度量框居中。
-      const verticalCorrection = height / 2 - (minTargetY + maxTargetY) / 2;
-      for (const target of targets) target.y += verticalCorrection;
 
       const base = resolveColor(color, container);
       const highlight = resolveColor(highlightColor, container);
@@ -436,7 +546,7 @@ export function ParticleText({
           delay: seed * stagger,
           depth,
           seed,
-          size: Math.max(0.6, particleSize * (0.75 + target.alpha * 0.45)),
+          size: Math.max(0.6, particleSize),
           startX,
           startY,
           targetX: target.x,
@@ -552,7 +662,9 @@ export function ParticleText({
     particleSize,
     pointerRepel,
     repelRadius,
+    roundedCharacters,
     scatter,
+    shortenedCharacters,
     stagger,
     text,
     trigger,
