@@ -20,6 +20,7 @@ export const DOCS_REFRESH_RESTORE_BOOTSTRAP = `(() => {
     if (!point || point.sourcePath !== pathname) return;
 
     document.documentElement.dataset.ndReadingRestore = '';
+    document.documentElement.dataset.ndRefreshRestore = '';
   } catch {
     // Storage and navigation timing are optional browser capabilities.
     // 存储与导航计时在受限浏览环境中可能不可用。

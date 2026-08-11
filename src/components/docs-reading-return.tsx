@@ -277,11 +277,12 @@ export function DocsReadingReturn({
     return () => document.removeEventListener('click', handleDocumentLink, { capture: true });
   }, []);
 
-  // Temporarily materialize deferred MDX blocks and hide the returned or
-  // refreshed article while its exact offset settles. Refreshed articles keep
-  // their measured blocks materialized for this route's remaining lifetime.
-  // 恢复期间临时展开延迟 MDX 区块并隐藏返回或刷新的正文，待精确位置稳定后
-  // 再显示；刷新页面会在当前路由的剩余生命周期内保留已测量区块。
+  // Temporarily materialize deferred MDX blocks while the exact offset settles.
+  // Returned articles remain hidden during correction. On refresh, the article
+  // surface stays visible while its contents fade in after correction, and its
+  // measured blocks remain materialized for this route.
+  // 恢复期间临时展开延迟 MDX 区块并校正精确位置。返回的正文仍会暂时隐藏；
+  // 刷新时保留正文卡片表面，校正结束后淡入内容，并持续保留已测量区块。
   useLayoutEffect(() => {
     window.clearTimeout(restoreCleanupTimerRef.current);
     restoreCleanupTimerRef.current = 0;
@@ -299,6 +300,7 @@ export function DocsReadingReturn({
     const root = document.documentElement;
     if (!restorePoint) {
       root.removeAttribute('data-nd-reading-restore');
+      root.removeAttribute('data-nd-refresh-restore');
       root.removeAttribute('data-nd-refresh-restored');
       if (refreshPoint) removeStoredValue(DOCS_REFRESH_POINT_STORAGE_KEY);
       return;
@@ -307,6 +309,8 @@ export function DocsReadingReturn({
     const isRefreshRestore = restorePoint === refreshPoint;
     const previousScrollBehavior = root.style.scrollBehavior;
     root.dataset.ndReadingRestore = '';
+    if (isRefreshRestore) root.dataset.ndRefreshRestore = '';
+    else root.removeAttribute('data-nd-refresh-restore');
     root.style.scrollBehavior = 'auto';
     const docsBody = document.querySelector<HTMLElement>('[data-docs-body]');
     const readingAnchor = docsBody
@@ -344,6 +348,7 @@ export function DocsReadingReturn({
       }
       root.style.scrollBehavior = previousScrollBehavior;
       root.removeAttribute('data-nd-reading-restore');
+      root.removeAttribute('data-nd-refresh-restore');
     };
 
     const scheduleFinish = () => {
@@ -384,6 +389,7 @@ export function DocsReadingReturn({
         }
         root.style.scrollBehavior = previousScrollBehavior;
         root.removeAttribute('data-nd-reading-restore');
+        root.removeAttribute('data-nd-refresh-restore');
         root.removeAttribute('data-nd-refresh-restored');
       }, 0);
     };

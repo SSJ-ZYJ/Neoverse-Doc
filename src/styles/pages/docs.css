@@ -404,16 +404,28 @@
   opacity: 0.8;
 }
 
-/* Exact reading restoration keeps the returning article invisible while
-   deferred blocks materialize and the saved viewport offset settles.
-   精确阅读恢复会在延迟区块完成真实布局、保存的视口位置稳定前隐藏正文。 */
+/* Exact reading restoration disables native anchoring while deferred blocks
+   materialize. History returns hide the article; refreshes retain the card
+   surface, hide only its contents, then fade them in after correction.
+   精确阅读恢复会在延迟区块完成真实布局时禁用原生锚定。历史返回会暂时隐藏
+   正文；刷新时保留卡片表面，仅隐藏内部内容，并在校正结束后淡入。 */
 html[data-nd-reading-restore] {
   overflow-anchor: none;
   scroll-behavior: auto !important;
 }
 
-:where(html[data-nd-reading-restore]) #nd-page {
+:where(html[data-nd-reading-restore]:not([data-nd-refresh-restore])) #nd-page {
   visibility: hidden;
+}
+
+:where(html[data-nd-refresh-restored]) #nd-page > * {
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+:where(html[data-nd-refresh-restore]) #nd-page > * {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 @media (max-width: 36rem) {
@@ -434,6 +446,10 @@ html[data-nd-reading-restore] {
   }
 
   .docs-reading-return__dismiss {
+    transition: none;
+  }
+
+  :where(html[data-nd-refresh-restored]) #nd-page > * {
     transition: none;
   }
 }
