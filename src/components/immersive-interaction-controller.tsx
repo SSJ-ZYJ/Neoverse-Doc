@@ -13,6 +13,12 @@ import { getEffectiveMotionLevel } from '@/lib/motion-preferences';
 const MOBILE_SIDEBAR_UTILITY_LINK_SELECTOR =
   '#nd-sidebar-mobile > div:first-child > div.flex > div:first-child > a';
 
+// Sidebar document groups are frequent navigation controls rather than
+// immersive action surfaces, so they keep native disclosure interactions.
+// 侧栏文档组属于高频导航控件，不参与沉浸式粒子反馈并保留原生展开交互。
+const SIDEBAR_DOCUMENT_GROUP_TRIGGER_SELECTOR =
+  ':is(#nd-sidebar, #nd-sidebar-mobile) button[data-state][aria-expanded]:not([aria-haspopup])';
+
 const CONTROL_SELECTOR = [
   '.control-surface',
   '.chapter-card',
@@ -482,6 +488,7 @@ export function ImmersiveInteractionController() {
         source?.closest<HTMLElement>(MOBILE_TITLE_PARTICLE_HOST_SELECTOR) ??
         source?.closest<HTMLElement>(INTERACTIVE_SELECTOR);
       if (!target || target.matches(':disabled, [aria-disabled="true"]')) return;
+      if (target.matches(SIDEBAR_DOCUMENT_GROUP_TRIGGER_SELECTOR)) return;
       if (prefersReducedMotion()) return;
 
       // Chromium can crash when a navigation unmounts an HTML-in-Canvas subtree

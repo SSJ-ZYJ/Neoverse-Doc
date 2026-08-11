@@ -646,6 +646,52 @@ body:has(> [data-reading-return]) .docs-back-to-top {
     border-color var(--motion-fast) var(--motion-ease-standard) !important;
 }
 
+/* Sidebar document groups are disclosure controls, not immersive action
+   buttons. Their hierarchy stays quieter than the active document while using
+   the same navigation tint on desktop and mobile.
+   侧栏文档组属于展开控件而非沉浸式操作按钮；桌面端与移动端统一复用导航
+   背景，同时保持低于当前文档的视觉层级。 */
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  button[data-state][aria-expanded]:not([aria-haspopup]) {
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  button[data-state="open"][aria-expanded="true"]:not([aria-haspopup]) {
+  color: var(--text-primary) !important;
+  background: var(--docs-sidebar-hover-background) !important;
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  button[data-state="open"][aria-expanded="true"]:not([aria-haspopup])
+  > svg[data-icon] {
+  color: var(--accent-primary);
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  button[data-state][aria-expanded]:not([aria-haspopup]):focus-visible {
+  color: var(--text-primary) !important;
+  background: var(--docs-sidebar-hover-background) !important;
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+  box-shadow: none !important;
+}
+
+@media (hover: hover) {
+  :is(#nd-sidebar, #nd-sidebar-mobile)
+    button[data-state][aria-expanded]:not([aria-haspopup]):hover {
+    color: var(--text-primary) !important;
+    background: var(--docs-sidebar-hover-background) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
+
 #nd-sidebar a:not([data-active="true"]):not(:has(.site-brand-title)):hover,
 #nd-sidebar-mobile a:not([data-active="true"]):not(:has(.site-brand-title)):hover {
   color: var(--text-primary) !important;
@@ -692,6 +738,75 @@ body:has(> [data-reading-return]) .docs-back-to-top {
 #nd-sidebar-mobile a[data-active="true"]::before,
 #nd-sidebar-mobile a[aria-current="page"]::before {
   opacity: 1;
+}
+
+/* Nested document items share their folder's hierarchy guide instead of
+   drawing a second active rail. Their hover/active surface starts after that
+   guide, so the hierarchy remains visible without splitting the highlight.
+   嵌套文档条目复用文档组层级线，不再绘制第二根激活竖线；悬浮与激活底色
+   从层级线右侧开始，避免覆盖层越过层级提示。 */
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  div[data-state]:has(> button[data-state][aria-expanded]:not([aria-haspopup]))
+  > div[data-state]:has(a[data-active="true"], a[aria-current="page"])::before {
+  inline-size: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-primary);
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  div[data-state]:has(> button[data-state][aria-expanded]:not([aria-haspopup]))
+  > div[data-state]
+  a:not(:has(.site-brand-title)) {
+  isolation: isolate;
+  background: transparent !important;
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  div[data-state]:has(> button[data-state][aria-expanded]:not([aria-haspopup]))
+  > div[data-state]
+  a:not(:has(.site-brand-title))::before {
+  display: none !important;
+  content: none !important;
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  div[data-state]:has(> button[data-state][aria-expanded]:not([aria-haspopup]))
+  > div[data-state]
+  a:not(:has(.site-brand-title))::after {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 1rem 0;
+  z-index: -1;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  content: "";
+  pointer-events: none;
+  transition:
+    opacity var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard);
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  div[data-state]:has(> button[data-state][aria-expanded]:not([aria-haspopup]))
+  > div[data-state]
+  a:is([data-active="true"], [aria-current="page"]):not(:has(.site-brand-title))::after {
+  background: var(--docs-sidebar-active-background);
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  div[data-state]:has(> button[data-state][aria-expanded]:not([aria-haspopup]))
+  > div[data-state]
+  a:not([data-active="true"]):not([aria-current="page"]):not(:has(.site-brand-title)):focus-visible::after {
+  background: var(--docs-sidebar-hover-background);
+}
+
+@media (hover: hover) {
+  :is(#nd-sidebar, #nd-sidebar-mobile)
+    div[data-state]:has(> button[data-state][aria-expanded]:not([aria-haspopup]))
+    > div[data-state]
+    a:not([data-active="true"]):not([aria-current="page"]):not(:has(.site-brand-title)):hover::after {
+    background: var(--docs-sidebar-hover-background);
+  }
 }
 
 /* Desktop footer and mobile-header icon links are utility controls rather than
