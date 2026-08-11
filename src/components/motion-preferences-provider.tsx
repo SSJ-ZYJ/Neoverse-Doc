@@ -63,7 +63,7 @@ export function MotionPreferencesProvider({ children }: { children: ReactNode })
     (level: MotionLevel) => {
       const current = preferencesRef.current;
       const enableExperimentalWithHigh =
-        current.level === 'low' &&
+        current.level !== 'high' &&
         level === 'high' &&
         experimentalMotionSupportedRef.current;
       commitPreferences({
