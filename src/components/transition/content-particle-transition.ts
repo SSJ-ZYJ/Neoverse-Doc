@@ -2,7 +2,7 @@
 // docs-to-docs navigation. Unsupported browsers keep the lightweight fade.
 // 仅用于文档间导航的官方 HTML-in-Canvas 捕获与 WebGL 粒子消散；不支持时保留轻量淡入。
 
-import { supportsHtmlInCanvas } from '@/components/canvasui/particle-scroll';
+import { supportsExperimentalMotion } from '@/lib/experimental-motion-support';
 import { TRANSITION_DURATION_MS } from '@/lib/motion-config';
 import { getEffectiveMotionLevel, isExperimentalMotionEnabled } from '@/lib/motion-preferences';
 
@@ -269,7 +269,7 @@ function releaseRenderer(renderer: ContentParticleRenderer): void {
 // Create and size the expensive WebGL resources while the docs page is idle.
 // 在文档页空闲阶段创建并调整高成本 WebGL 资源，避免首个粒子帧同步初始化。
 export function prewarmContentParticleRenderer(): void {
-  if (!supportsHtmlInCanvas() || !isExperimentalMotionEnabled()) {
+  if (!supportsExperimentalMotion() || !isExperimentalMotionEnabled()) {
     return;
   }
   if (sharedRenderer?.gl.isContextLost()) {
@@ -286,7 +286,7 @@ export function prewarmContentParticleRenderer(): void {
 }
 
 export function createContentParticleTransition(): ContentParticleTransition | null {
-  if (!supportsHtmlInCanvas() || !isExperimentalMotionEnabled()) {
+  if (!supportsExperimentalMotion() || !isExperimentalMotionEnabled()) {
     return null;
   }
 

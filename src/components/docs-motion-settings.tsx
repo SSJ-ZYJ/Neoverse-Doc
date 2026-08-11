@@ -22,11 +22,34 @@ export function DocsThemeAndMotionSettings(props: ThemeSwitchProps) {
 function DocsMotionSettings() {
   const { locale } = useI18n();
   const dict = getPageDictionary(resolveLocale(locale));
-  const { preferences, setExperimental, setLevel, systemReducedMotion } = useMotionPreferences();
+  const {
+    experimentalMotionSupported,
+    preferences,
+    setExperimental,
+    setLevel,
+    systemReducedMotion,
+  } = useMotionPreferences();
   const descriptionId = useId();
   const experimentalDescriptionId = useId();
+  const experimentalNoteId = useId();
   const motionLevelName = useId();
-  const experimentalUnavailable = preferences.level === 'low' || systemReducedMotion;
+  const experimentalUnavailable =
+    preferences.level === 'low' ||
+    systemReducedMotion ||
+    experimentalMotionSupported === false;
+  const experimentalNotices = [
+    preferences.level === 'low' ? dict.experimentalMotionUnavailableLow : null,
+    experimentalMotionSupported === false
+      ? dict.experimentalMotionUnavailableUnsupported
+      : null,
+    systemReducedMotion ? dict.systemReducedMotionNotice : null,
+  ].filter((notice): notice is string => notice !== null);
+  const experimentalDescribedBy = [
+    experimentalDescriptionId,
+    experimentalNotices.length > 0 ? experimentalNoteId : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
   const levelLabels: Record<MotionLevel, string> = {
     high: dict.motionLevelHigh,
     low: dict.motionLevelLow,
@@ -80,7 +103,7 @@ function DocsMotionSettings() {
           </div>
           <button
             aria-checked={preferences.experimental}
-            aria-describedby={experimentalDescriptionId}
+            aria-describedby={experimentalDescribedBy}
             aria-label={dict.experimentalMotionLabel}
             className="docs-motion-switch"
             data-checked={preferences.experimental ? '' : undefined}
@@ -93,12 +116,9 @@ function DocsMotionSettings() {
           </button>
         </div>
 
-        {preferences.level === 'low' ? (
-          <p className="docs-motion-settings-note">{dict.experimentalMotionUnavailableLow}</p>
-        ) : null}
-        {systemReducedMotion ? (
-          <p className="docs-motion-settings-note" role="status">
-            {dict.systemReducedMotionNotice}
+        {experimentalNotices.length > 0 ? (
+          <p className="docs-motion-settings-note" id={experimentalNoteId} role="status">
+            {experimentalNotices.join(' ')}
           </p>
         ) : null}
       </PopoverContent>

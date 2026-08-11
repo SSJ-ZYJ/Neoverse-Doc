@@ -5,6 +5,7 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { supportsExperimentalMotion } from '@/lib/experimental-motion-support';
 import {
   getEffectiveMotionLevel,
   isExperimentalMotionEnabled,
@@ -237,15 +238,6 @@ void main () {
   if (a < 0.01) discard;
   outColor = vec4(tex.rgb, a);
 }`;
-
-export function supportsHtmlInCanvas(): boolean {
-  if (typeof document === 'undefined') return false;
-  const probe = document.createElement('canvas') as PaintableCanvas;
-  const ctx = probe.getContext('2d') as ElementImageContext | null;
-  return Boolean(
-    ctx && typeof ctx.drawElementImage === 'function' && typeof probe.requestPaint === 'function',
-  );
-}
 
 export function createParticleScroll(
   elements: ParticleScrollElements,
@@ -687,7 +679,7 @@ export interface ParticleScrollProps extends ParticleScrollOptions {
 type ParticleMotionMode = 'off' | 'medium' | 'high';
 
 function readParticleMotionMode(): ParticleMotionMode {
-  if (!supportsHtmlInCanvas() || !isExperimentalMotionEnabled()) return 'off';
+  if (!supportsExperimentalMotion() || !isExperimentalMotionEnabled()) return 'off';
   return getEffectiveMotionLevel() === 'medium' ? 'medium' : 'high';
 }
 

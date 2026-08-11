@@ -77,13 +77,20 @@ export function resolveEffectiveMotionLevel(
 export function resolveEffectiveExperimentalMotion(
   preferences: MotionPreferences,
   systemReducedMotion: boolean,
+  experimentalMotionSupported: boolean,
 ): boolean {
-  return !systemReducedMotion && preferences.level !== 'low' && preferences.experimental;
+  return (
+    experimentalMotionSupported &&
+    !systemReducedMotion &&
+    preferences.level !== 'low' &&
+    preferences.experimental
+  );
 }
 
 export function applyMotionPreferences(
   preferences: MotionPreferences,
   systemReducedMotion: boolean,
+  experimentalMotionSupported: boolean,
 ): void {
   if (typeof document === 'undefined') return;
 
@@ -92,10 +99,14 @@ export function applyMotionPreferences(
   root.dataset.ndExperimentalMotion = resolveEffectiveExperimentalMotion(
     preferences,
     systemReducedMotion,
+    experimentalMotionSupported,
   )
     ? 'on'
     : 'off';
   root.dataset.ndSystemReducedMotion = systemReducedMotion ? 'true' : 'false';
+  root.dataset.ndExperimentalMotionSupport = experimentalMotionSupported
+    ? 'supported'
+    : 'unsupported';
   document.dispatchEvent(new Event(MOTION_PREFERENCES_CHANGE_EVENT));
 }
 
@@ -126,4 +137,4 @@ export function prefersReducedMotion(): boolean {
 // 在 hydration 前恢复偏好，避免已保存的低动效设置首帧闪现默认高动效。
 export const MOTION_PREFERENCES_BOOTSTRAP = `(()=>{const k=${JSON.stringify(
   MOTION_PREFERENCES_STORAGE_KEY,
-)};let l='high',e=true;try{const v=JSON.parse(localStorage.getItem(k)||'null');if(v&&['low','medium','high'].includes(v.level))l=v.level;if(v&&typeof v.experimental==='boolean')e=v.experimental}catch{}if(l==='low')e=false;const s=matchMedia('(prefers-reduced-motion: reduce)').matches,r=document.documentElement;r.dataset.ndMotionLevel=s?'low':l;r.dataset.ndExperimentalMotion=!s&&l!=='low'&&e?'on':'off';r.dataset.ndSystemReducedMotion=s?'true':'false'})()`;
+)};let l='high',e=true;try{const v=JSON.parse(localStorage.getItem(k)||'null');if(v&&['low','medium','high'].includes(v.level))l=v.level;if(v&&typeof v.experimental==='boolean')e=v.experimental}catch{}if(l==='low')e=false;let p=false;try{const c=document.createElement('canvas'),x=c.getContext('2d'),w=document.createElement('canvas'),g=w.getContext('webgl2');p=!!(x&&typeof x.drawElementImage==='function'&&typeof c.requestPaint==='function'&&g);g?.getExtension('WEBGL_lose_context')?.loseContext()}catch{}const s=matchMedia('(prefers-reduced-motion: reduce)').matches,r=document.documentElement;r.dataset.ndMotionLevel=s?'low':l;r.dataset.ndExperimentalMotion=p&&!s&&l!=='low'&&e?'on':'off';r.dataset.ndSystemReducedMotion=s?'true':'false';r.dataset.ndExperimentalMotionSupport=p?'supported':'unsupported'})()`;

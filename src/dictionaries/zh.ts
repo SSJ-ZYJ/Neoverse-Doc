@@ -38,6 +38,7 @@ export const zh = {
   experimentalMotionLabel: '实验性动效',
   experimentalMotionDescription: '使用依赖实验性浏览器图形能力的增强效果。',
   experimentalMotionUnavailableLow: '低动效强度下不可用。',
+  experimentalMotionUnavailableUnsupported: '当前浏览器或图形环境不支持所需的实验性能力。',
   systemReducedMotionNotice: '系统当前要求减少动态效果，本站已按低档运行。',
   // Search scope labels / 搜索范围标签
   searchScopeLabel: '搜索范围',

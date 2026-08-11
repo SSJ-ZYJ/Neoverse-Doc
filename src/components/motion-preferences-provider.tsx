@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { supportsExperimentalMotion } from '@/lib/experimental-motion-support';
 import {
   applyMotionPreferences,
   DEFAULT_MOTION_PREFERENCES,
@@ -26,6 +27,7 @@ import {
 interface MotionPreferencesContextValue {
   effectiveExperimental: boolean;
   effectiveLevel: MotionLevel;
+  experimentalMotionSupported: boolean | null;
   preferences: MotionPreferences;
   setExperimental: (enabled: boolean) => void;
   setLevel: (level: MotionLevel) => void;
@@ -39,14 +41,22 @@ export function MotionPreferencesProvider({ children }: { children: ReactNode })
     ...DEFAULT_MOTION_PREFERENCES,
   });
   const [systemReducedMotion, setSystemReducedMotion] = useState(false);
+  const [experimentalMotionSupported, setExperimentalMotionSupported] = useState<boolean | null>(
+    null,
+  );
   const preferencesRef = useRef(preferences);
   const systemReducedMotionRef = useRef(systemReducedMotion);
+  const experimentalMotionSupportedRef = useRef(false);
 
   const commitPreferences = useCallback((next: MotionPreferences) => {
     preferencesRef.current = next;
     setPreferences(next);
     writeMotionPreferences(next);
-    applyMotionPreferences(next, systemReducedMotionRef.current);
+    applyMotionPreferences(
+      next,
+      systemReducedMotionRef.current,
+      experimentalMotionSupportedRef.current,
+    );
   }, []);
 
   const setLevel = useCallback(
@@ -74,23 +84,34 @@ export function MotionPreferencesProvider({ children }: { children: ReactNode })
   useLayoutEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const stored = readMotionPreferences();
+    const supported = supportsExperimentalMotion();
     preferencesRef.current = stored;
     systemReducedMotionRef.current = motionQuery.matches;
+    experimentalMotionSupportedRef.current = supported;
     setPreferences(stored);
     setSystemReducedMotion(motionQuery.matches);
-    applyMotionPreferences(stored, motionQuery.matches);
+    setExperimentalMotionSupported(supported);
+    applyMotionPreferences(stored, motionQuery.matches, supported);
 
     const handleSystemPreferenceChange = (event: MediaQueryListEvent) => {
       systemReducedMotionRef.current = event.matches;
       setSystemReducedMotion(event.matches);
-      applyMotionPreferences(preferencesRef.current, event.matches);
+      applyMotionPreferences(
+        preferencesRef.current,
+        event.matches,
+        experimentalMotionSupportedRef.current,
+      );
     };
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== MOTION_PREFERENCES_STORAGE_KEY && event.key !== null) return;
       const next = parseMotionPreferences(event.newValue);
       preferencesRef.current = next;
       setPreferences(next);
-      applyMotionPreferences(next, systemReducedMotionRef.current);
+      applyMotionPreferences(
+        next,
+        systemReducedMotionRef.current,
+        experimentalMotionSupportedRef.current,
+      );
     };
 
     motionQuery.addEventListener('change', handleSystemPreferenceChange);
@@ -103,14 +124,19 @@ export function MotionPreferencesProvider({ children }: { children: ReactNode })
 
   const value = useMemo<MotionPreferencesContextValue>(
     () => ({
-      effectiveExperimental: resolveEffectiveExperimentalMotion(preferences, systemReducedMotion),
+      effectiveExperimental: resolveEffectiveExperimentalMotion(
+        preferences,
+        systemReducedMotion,
+        experimentalMotionSupported === true,
+      ),
       effectiveLevel: resolveEffectiveMotionLevel(preferences, systemReducedMotion),
+      experimentalMotionSupported,
       preferences,
       setExperimental,
       setLevel,
       systemReducedMotion,
     }),
-    [preferences, setExperimental, setLevel, systemReducedMotion],
+    [experimentalMotionSupported, preferences, setExperimental, setLevel, systemReducedMotion],
   );
 
   return (

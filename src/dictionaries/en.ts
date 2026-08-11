@@ -39,6 +39,8 @@ export const en = {
   experimentalMotionLabel: 'Experimental motion',
   experimentalMotionDescription: 'Use enhancements that depend on experimental browser graphics.',
   experimentalMotionUnavailableLow: 'Unavailable at low motion intensity.',
+  experimentalMotionUnavailableUnsupported:
+    'Your browser or graphics environment does not support the required experimental capabilities.',
   systemReducedMotionNotice:
     'Your system currently requests reduced motion, so the site is running at low intensity.',
   // Search scope labels / 搜索范围标签

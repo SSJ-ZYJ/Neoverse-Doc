@@ -74,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       data-nd-experimental-motion="on"
+      data-nd-experimental-motion-support="checking"
       data-nd-motion-level="high"
       data-nd-system-reduced-motion="false"
       lang={i18n.defaultLanguage}

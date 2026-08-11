@@ -44,6 +44,7 @@ export interface Dictionary {
   experimentalMotionLabel: string;
   experimentalMotionDescription: string;
   experimentalMotionUnavailableLow: string;
+  experimentalMotionUnavailableUnsupported: string;
   systemReducedMotionNotice: string;
   // Search scope labels / 搜索范围标签
   searchScopeLabel: string;
