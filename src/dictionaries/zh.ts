@@ -9,7 +9,7 @@ import type { Dictionary } from './index';
 
 export const zh = {
   siteTitle: 'Neoverse-Docs',
-  tagline: '面向计算机学习者的开放知识网络',
+  tagline: '一份面向 CSer 的技术文档',
   loading: '加载中…',
   // Visual loading marquee label.
   // 可视化加载跑马灯标签。
@@ -42,7 +42,7 @@ export const zh = {
   experimentalMotionDescription: '使用依赖实验性浏览器图形能力的增强效果。',
   experimentalMotionUnavailableLow: '低动效强度下不可用。',
   experimentalMotionUnavailableUnsupported: '当前浏览器或图形环境不支持所需的实验性能力。',
-  systemReducedMotionNotice: '系统当前要求减少动态效果，本站已按低档运行。',
+  systemReducedMotionNotice: '系统当前要求减少动态效果，本站已按低档动效强度运行。',
   // Search scope labels / 搜索范围标签
   searchScopeLabel: '搜索范围',
   searchAllChapters: '全部章节',
@@ -65,7 +65,7 @@ export const zh = {
   draftBadge: '前方施工',
   draftTitle: '这篇文档还在撰写中',
   draftDescription:
-    '内容正在加紧编写和反复打磨。你可以先去上一篇，也可以悄悄掀开围挡，看看现在写到哪了——半成品还请“轻拿轻放”。',
+    '内容正在加紧编写和反复打磨。你可以先去上一篇，也可以悄悄掀开围挡，看看现在写到哪了……草稿状态下的文章内可能含各种各样的错误内容，仅供满足好奇心，勿作为正式参考。',
   draftPrevious: '先看上一篇',
   draftHome: '返回知识地图',
   draftReveal: '我就偷看一眼👀',

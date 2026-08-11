@@ -9,7 +9,7 @@ import type { Dictionary } from './index';
 
 export const en = {
   siteTitle: 'Neoverse-Docs',
-  tagline: 'An open knowledge network for computer science learners',
+  tagline: 'A technical document for CSers',
   loading: 'Loading…',
   // Visual loading marquee label.
   // 可视化加载跑马灯标签。
@@ -46,7 +46,7 @@ export const en = {
   experimentalMotionUnavailableUnsupported:
     'Your browser or graphics environment does not support the required experimental capabilities.',
   systemReducedMotionNotice:
-    'Your system currently requests reduced motion, so the site is running at low intensity.',
+    'Your system currently requests reduced motion, so the site is running at low motion intensity.',
   // Search scope labels / 搜索范围标签
   searchScopeLabel: 'Search scope',
   searchAllChapters: 'All chapters',
@@ -70,7 +70,7 @@ export const en = {
   draftBadge: 'Under construction',
   draftTitle: 'This document is still being written',
   draftDescription:
-    'We are still writing, testing, and smoothing out the rough edges. Head back to the previous page, or peek behind the barrier to see how far the work has come.',
+    'We are still writing, testing, and smoothing out the rough edges. Head back to the previous page, or peek behind the barrier to see how far the work has come……Draft content may contain errors, and is not intended for official reference.',
   draftPrevious: 'Read the previous page',
   draftHome: 'Back to the knowledge map',
   draftReveal: 'Just one quick peek 👀',
