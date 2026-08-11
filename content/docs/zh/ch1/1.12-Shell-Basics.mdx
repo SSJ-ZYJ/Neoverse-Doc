@@ -182,7 +182,7 @@ SSJ    @  ubuntu  :  ~/projects       $
 选项通常以 `-`（短选项）或 `--`（长选项）开头，多个短选项可合并：`ls -la` 等同于 `ls -l -a`。
 
 > [!DETAILS-HINT] 从本机帮助开始
-> 许多 GNU 命令支持 `--help`，例如 GNU/Linux 上的 `ls --help`；
+> 许多 GNU 命令支持 `--help`，例如 GNU/Linux 上的 `ls --help`。
 >
 > Shell 内建命令可尝试 `help 命令`，POSIX 系统也常用 `man 命令`。
 >
@@ -560,7 +560,7 @@ chmod u+x scripts/backup.sh    # 给文件所有者添加执行权限
 >
 > `#!/bin/bash` 直接写死解释器的绝对路径；`#!/usr/bin/env bash` 则先在 `PATH` 中查找 `bash`，兼容不同系统上解释器位置的差异，更常用。
 > 
-> 没有 shebang 时也可以手动指定解释器运行，比如 `bash script.sh`。但如果没有 shebang 时也可以手动指定解释器运行，比如 `bash script.sh`；但如果直接执行 `./script.sh`，操作系统就需要靠 shebang 来挑选解释器。
+> 没有 shebang 时也可以手动指定解释器运行，比如 `bash script.sh`。但如果直接执行 `./script.sh`，操作系统就需要靠 shebang 来挑选解释器。
 
 ### 9.2 用脚本理解数据流向
 

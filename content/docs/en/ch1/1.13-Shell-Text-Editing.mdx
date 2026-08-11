@@ -34,7 +34,7 @@ flowchart LR
 >
 > `Vim`: press `Esc` to return to normal mode, then type `:q`.
 
-## 1. Choose an Editor First
+## 1. Choosing an Editor
 
 Both `nano` and `Vim` can handle terminal text editing, but they differ in learning cost and suitable use cases.
 
@@ -95,7 +95,7 @@ Here, `^` stands for `Ctrl`, and `M-` stands for `Meta`; on most keyboards and t
 > [!DETAILS-EXAMPLE] Practice: Create and Check Your First Terminal Note
 > Run `nano shell-note.txt`, write three lines of the commands you just learned, save, and exit. Then run `cat shell-note.txt` to check the content, open the file again, and try using `Ctrl + W` to search for one of the commands.
 
-## 3. Understanding `Vim` Modes
+## 3. `Vim` Modes
 
 The core of `Vim` is not memorizing a large number of shortcuts, but understanding that "different modes handle different tasks". After opening a file, you are in normal mode by default; keys are then interpreted as editing commands rather than typed text directly.
 
@@ -119,7 +119,7 @@ flowchart LR
 > [!TIP] Treat Normal Mode as a "Safe Spot"
 > When you are not sure which mode you are in, press `Esc` first. Sometimes you need to press it twice; if you are already in normal mode, `Vim` will at most beep and won't modify the file.
 
-## 4. Give `Vim` a Try
+## 4. Basic `Vim` Operations
 
 ### 4.1 Open, Save, and Exit
 
@@ -215,7 +215,7 @@ In `:%s/old/new/g`, `old` is a Vim regular expression and `new` is the replaceme
 
 After entering visual mode, you can extend the selection with movement commands, then press `y` to copy or `d` to delete.
 
-## 5. Have Fun with `vimtutor`
+## 5. The `vimtutor` Interactive Tutorial
 
 Instead of memorizing all the commands at once, use the interactive tutorial that ships with `Vim`:
 
@@ -223,12 +223,12 @@ Instead of memorizing all the commands at once, use the interactive tutorial tha
 vimtutor
 ```
 
-The tutorial guides you through moving, deleting, inserting, undoing, and searching in an editable practice file. The content and the time required may vary between versions; it is recommended to practice through it once in full — it's a lot of fun 🙂.
+The tutorial guides you through moving, deleting, inserting, undoing, and searching in an editable practice file. The content and the time required may vary between versions; it is recommended to practice through it once in full.
 
 > [!TIP] Can't Find `vimtutor`
 > `vimtutor` is usually installed with the full `Vim` package. If the system says the command does not exist, first check whether you only installed the minimal `vi`, then install `Vim` using your distribution's package management.
 
-## 6. Configure a Restrained `.vimrc`
+## 6. `.vimrc` Configuration
 
 After mastering the basics, you can add a few settings to `~/.vimrc` to improve the default experience:
 
@@ -257,7 +257,7 @@ After changing the configuration, you can reload it in an already-open `Vim`:
 > [!DETAILS-HINT] Keep the Configuration Simple First
 > Plugins and complex mappings increase the cost of migration and troubleshooting. First build stable habits with default features; only introduce the corresponding configuration or plugins when you clearly keep running into the same problem.
 
-## 7. Setting the Default Terminal Editor
+## 7. The Default Terminal Editor
 
 Some commands open an editor on their own, such as `git commit` without `-m`. You can set the editor for `Git` only:
 
