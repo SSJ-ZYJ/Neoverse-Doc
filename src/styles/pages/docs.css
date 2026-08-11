@@ -1443,12 +1443,17 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   }
 
   /* Materialize deferred blocks during exact reading restoration, for the
-     remainder of a refreshed page, and after task-list navigation. Keeping
-     refreshed blocks measured prevents intrinsic-size estimates from replacing
-     the pre-refresh layout above the restored reading anchor.
-     在精确阅读恢复期间、刷新后的当前页面生命周期以及任务清单跳转后展开延迟
-     区块，避免固有尺寸估算替换阅读锚点上方的刷新前真实布局。 */
-  :is(html[data-nd-reading-restore], html[data-nd-refresh-restored], html[data-nd-task-list-jump])
+     remainder of a returned or refreshed page, and after task-list navigation.
+     Keeping restored blocks measured prevents intrinsic-size estimates from
+     replacing the previous layout above the restored reading anchor.
+     在精确阅读恢复期间、返回或刷新后的当前页面生命周期以及任务清单跳转后
+     展开延迟区块，避免固有尺寸估算替换阅读锚点上方的原有真实布局。 */
+  :is(
+    html[data-nd-reading-restore],
+    html[data-nd-reading-restored],
+    html[data-nd-refresh-restored],
+    html[data-nd-task-list-jump]
+  )
     #nd-page
     [data-docs-body]
     > :is(
