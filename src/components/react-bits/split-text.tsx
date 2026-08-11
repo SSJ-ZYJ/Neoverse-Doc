@@ -4,6 +4,7 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
+import { useMotionPreferences } from '@/components/motion-preferences-provider';
 import { MOTION_DURATION_MS, MOTION_EASING } from '@/lib/motion-config';
 
 interface SplitTextProps {
@@ -15,7 +16,9 @@ interface SplitTextProps {
 }
 
 export function SplitText({ className, text, variant = 'reveal' }: SplitTextProps) {
-  const reduceMotion = useReducedMotion();
+  const systemReducedMotion = useReducedMotion();
+  const { effectiveLevel } = useMotionPreferences();
+  const reduceMotion = systemReducedMotion || effectiveLevel === 'low';
   const characters = Array.from(text);
   const isPulse = variant === 'pulse';
 

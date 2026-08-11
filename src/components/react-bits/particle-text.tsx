@@ -5,6 +5,7 @@
 'use client';
 
 import { type CSSProperties, useEffect, useRef } from 'react';
+import { useMotionPreferences } from '@/components/motion-preferences-provider';
 
 type ParticleTextTrigger = 'mount' | 'hover' | 'click';
 
@@ -140,6 +141,9 @@ export function ParticleText({
   text = 'React Bits',
   trigger = 'mount',
 }: ParticleTextProps) {
+  const { effectiveLevel } = useMotionPreferences();
+  const mediumMotion = effectiveLevel === 'medium';
+
   const containerRef = useRef<HTMLSpanElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -164,9 +168,9 @@ export function ParticleText({
     let width = 0;
     let height = 0;
     let highlightCss = highlightColor;
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
-    let reducedMotion = motionQuery.matches;
+    const reducedMotion = effectiveLevel === 'low';
+    const intensityScale = mediumMotion ? 0.6 : 1;
 
     const pointer = {
       active: false,
@@ -198,7 +202,7 @@ export function ParticleText({
     const startGather = (fromScatter = true) => {
       if (!particles.length || reducedMotion) return;
 
-      const spread = Math.max(0, scatter);
+      const spread = Math.max(0, scatter * intensityScale);
       for (const particle of particles) {
         if (fromScatter) {
           const angle = particle.seed * Math.PI * 2;
@@ -274,8 +278,10 @@ export function ParticleText({
           const dx = baseX - pointer.smoothX;
           const dy = baseY - pointer.smoothY;
           const distance = Math.hypot(dx, dy);
-          if (distance > 0 && distance < repelRadius) {
-            const force = (1 - distance / repelRadius) ** 2 * pointerRepel;
+          const effectiveRepelRadius = repelRadius * (mediumMotion ? 0.8 : 1);
+          if (distance > 0 && distance < effectiveRepelRadius) {
+            const force =
+              (1 - distance / effectiveRepelRadius) ** 2 * pointerRepel * intensityScale;
             baseX += (dx / distance) * force;
             baseY += (dy / distance) * force;
           }
@@ -376,7 +382,7 @@ export function ParticleText({
 
       const imageData = offscreenContext.getImageData(0, 0, offscreen.width, offscreen.height);
       const targets: Array<{ alpha: number; x: number; y: number }> = [];
-      const step = Math.max(2, Math.floor(density));
+      const step = Math.max(2, Math.floor(density * (mediumMotion ? Math.SQRT2 : 1)));
       let minTargetY = Number.POSITIVE_INFINITY;
       let maxTargetY = Number.NEGATIVE_INFINITY;
 
@@ -418,9 +424,12 @@ export function ParticleText({
         const depth = 0.45 + (((index * 233 + 97) % 1000) / 1000) * 0.9;
         const blend = clamp(target.x / Math.max(1, width) + (seed - 0.5) * 0.22, 0, 1);
         const angle = seed * Math.PI * 2;
-        const distance = scatter * (0.35 + depth * 0.75);
-        const startX = target.x + Math.cos(angle) * distance + (seed - 0.5) * scatter * 0.4;
-        const startY = target.y + Math.sin(angle) * distance + (depth - 0.9) * scatter * 0.4;
+        const effectiveScatter = scatter * intensityScale;
+        const distance = effectiveScatter * (0.35 + depth * 0.75);
+        const startX =
+          target.x + Math.cos(angle) * distance + (seed - 0.5) * effectiveScatter * 0.4;
+        const startY =
+          target.y + Math.sin(angle) * distance + (depth - 0.9) * effectiveScatter * 0.4;
 
         return {
           color: rgbToCss(mixRgb(base.rgb, highlight.rgb, blend)),
@@ -480,11 +489,6 @@ export function ParticleText({
       }
     };
 
-    const handleMotionChange = () => {
-      reducedMotion = motionQuery.matches;
-      void sampleText();
-    };
-
     const handleHoverChange = () => {
       if (hoverQuery.matches) {
         canvas.addEventListener('pointerenter', handlePointerEnter);
@@ -498,7 +502,6 @@ export function ParticleText({
       }
     };
 
-    motionQuery.addEventListener('change', handleMotionChange);
     hoverQuery.addEventListener('change', handleHoverChange);
     canvas.addEventListener('click', handleClick);
     handleHoverChange();
@@ -526,7 +529,6 @@ export function ParticleText({
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
       themeObserver.disconnect();
-      motionQuery.removeEventListener('change', handleMotionChange);
       hoverQuery.removeEventListener('change', handleHoverChange);
       canvas.removeEventListener('pointerenter', handlePointerEnter);
       canvas.removeEventListener('pointermove', handlePointerMove);
@@ -538,6 +540,7 @@ export function ParticleText({
   }, [
     color,
     density,
+    effectiveLevel,
     fontFamily,
     fontSize,
     fontWeight,
@@ -545,6 +548,7 @@ export function ParticleText({
     glow,
     highlightColor,
     idleDrift,
+    mediumMotion,
     particleSize,
     pointerRepel,
     repelRadius,

@@ -8,6 +8,7 @@
 
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { Sidebar, SidebarTrigger, useSidebar } from 'fumadocs-ui/layouts/docs/slots/sidebar';
+import { DocsThemeAndMotionSettings } from '@/components/docs-motion-settings';
 import { DocsReadingReturn } from '@/components/docs-reading-return';
 import { DocsSidebarSeparator } from '@/components/docs-sidebar-separator';
 import { SidebarProvider } from '@/components/sidebar-provider';
@@ -39,6 +40,7 @@ export default async function Layout({ params, children }: LayoutProps<'/[lang]/
         },
       }}
       slots={{
+        themeSwitch: DocsThemeAndMotionSettings,
         sidebar: {
           provider: SidebarProvider,
           root: Sidebar,

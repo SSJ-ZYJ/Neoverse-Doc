@@ -2,6 +2,8 @@
 // tokens and keeps route, particle, and component timing in one place.
 // JavaScript 动效配置与语义化 CSS 时长 Token 对齐，集中管理转场、粒子与组件节奏。
 
+export { prefersReducedMotion } from '@/lib/motion-preferences';
+
 export const MOTION_DURATION_MS = {
   instant: 0,
   fast: 260,
@@ -50,8 +52,3 @@ export const TRANSITION_TIMEOUT_MS = {
   navigation: 8_000,
   settleBuffer: 140,
 } as const;
-
-export function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}

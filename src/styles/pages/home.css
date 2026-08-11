@@ -75,6 +75,26 @@
   pointer-events: auto;
 }
 
+/* High motion gives the mobile top bar a clearer view of the page beneath.
+   The narrower viewport keeps the same restrained refraction layer while
+   increasing live blur only at the highest motion tier.
+   高动效档位让移动端顶栏更清晰地透出后方页面；窄视口继续保留克制的
+   折射层，并仅在最高动效档位启用实时模糊。 */
+@media (max-width: 768px) {
+  html[data-nd-motion-level="high"]
+    :is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"])
+    :is(#nd-nav, [data-nd-transition-source-id="nd-nav"])
+    > div {
+    background: var(--glass-refraction-fill), var(--glass-mobile-header-high-surface) !important;
+    -webkit-backdrop-filter: blur(var(--glass-mobile-header-high-blur))
+      saturate(calc(var(--glass-saturate) + 10%)) brightness(var(--glass-brightness))
+      contrast(var(--glass-contrast)) !important;
+    backdrop-filter: blur(var(--glass-mobile-header-high-blur))
+      saturate(calc(var(--glass-saturate) + 10%)) brightness(var(--glass-brightness))
+      contrast(var(--glass-contrast)) !important;
+  }
+}
+
 /* Dark mode: black drop shadows vanish on the navy canvas, so the floating
    pill gets luminous ambient glow layers instead to preserve the lifted feel.
    深色模式：黑色投影在海军蓝画布上不可见，改用明亮的环境辉光层，
@@ -1471,6 +1491,55 @@
   .rb-particle-text__fallback {
     opacity: 1;
   }
+}
+
+/* Medium motion keeps short navigation and state feedback but removes the
+   homepage's continuous ambient loops. Experimental particles are scaled in JS.
+   中档保留短暂导航与状态反馈，同时停用首页持续环境循环；实验粒子由 JS 缩放。 */
+html[data-nd-motion-level="medium"] .rb-light-rays__beam,
+html[data-nd-motion-level="medium"] .home-page::before,
+html[data-nd-motion-level="medium"] .home-hero__network::before,
+html[data-nd-motion-level="medium"] .home-cta::before,
+html[data-nd-motion-level="medium"] .ai-compute__pulse {
+  animation: none !important;
+  will-change: auto;
+}
+
+html[data-nd-motion-level="low"] .home-route-shell--enter,
+html[data-nd-motion-level="low"] .rb-light-rays__beam,
+html[data-nd-motion-level="low"] .home-page::before,
+html[data-nd-motion-level="low"] .home-hero__network::before,
+html[data-nd-motion-level="low"] .home-cta::before,
+html[data-nd-motion-level="low"] .home-section::before,
+html[data-nd-motion-level="low"] .ai-compute__buses path,
+html[data-nd-motion-level="low"] .ai-compute__chip,
+html[data-nd-motion-level="low"] .ai-compute__memory,
+html[data-nd-motion-level="low"] .ai-compute__nodes,
+html[data-nd-motion-level="low"] .ai-compute__pulse {
+  animation: none !important;
+}
+
+html[data-nd-motion-level="low"] .home-section__reveal,
+html[data-nd-motion-level="low"] .home-section__reveal > * {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+html[data-nd-motion-level="low"] :is(.rb-magnet, .chapter-card) {
+  transform: none !important;
+}
+
+html[data-nd-motion-level="low"] :is(.chapter-card::before, .chapter-card::after) {
+  display: none;
+}
+
+html[data-nd-motion-level="low"] .rb-particle-text__canvas {
+  display: none;
+}
+
+html[data-nd-motion-level="low"] .rb-particle-text__fallback {
+  opacity: 1;
 }
 
 /* Pause infinite CSS animations when the tab is hidden. The ImmersiveInteraction

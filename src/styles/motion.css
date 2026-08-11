@@ -38,3 +38,34 @@
     transition: none;
   }
 }
+
+/* A reader-selected low level behaves like application-level reduced motion.
+   Near-zero durations preserve animation fill states without leaving elements
+   stuck at their hidden keyframe, while continuous effects run only once.
+   读者选择低档时按应用级减少动态效果处理。极短时长保留动画终态，
+   避免元素停在隐藏关键帧；持续动画则只运行一次。 */
+html[data-nd-motion-level="low"] {
+  scroll-behavior: auto !important;
+}
+
+html[data-nd-motion-level="low"] *,
+html[data-nd-motion-level="low"] *::before,
+html[data-nd-motion-level="low"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
+}
+
+html[data-nd-motion-level="low"] [data-animated-content] {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+html[data-nd-motion-level="low"] #nd-transition-layer,
+html[data-nd-motion-level="low"] .immersive-particle-layer,
+html[data-nd-motion-level="low"] .immersive-particle {
+  display: none !important;
+}

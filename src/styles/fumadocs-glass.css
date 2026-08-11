@@ -1086,9 +1086,9 @@ button[data-theme-toggle]:focus-visible {
 #nd-sidebar div:has(> button[data-theme-toggle]) {
   block-size: var(--glass-sidebar-control-height);
   border-radius: var(--radius-sm) !important;
-  gap: calc(var(--spacing) * 1);
+  gap: 0;
   overflow: hidden;
-  padding-inline-end: calc(var(--spacing) * 0.5) !important;
+  padding-inline-end: 0 !important;
 }
 
 #nd-sidebar div:has(> button[data-theme-toggle]) > a {
@@ -1111,6 +1111,349 @@ button[data-theme-toggle]:focus-visible {
   transform: none;
 }
 
+/* Motion settings occupy the compact segment after the direct theme switcher,
+   next to the language popover action, using the same utility-control hierarchy.
+   动效设置位于直接主题切换之后，与语言弹层操作相邻，复用同一工具控件层级。 */
+:is(#nd-sidebar, #nd-sidebar-mobile) button[data-motion-settings-trigger] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  color: var(--text-primary);
+  cursor: pointer;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--glass-icon-button-radius);
+  background: var(--glass-control-surface);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  transition: var(--nd-theme-transition-control);
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  button[data-motion-settings-trigger][aria-haspopup="dialog"]
+  > svg {
+  inline-size: var(--glass-sidebar-control-icon-size);
+  block-size: var(--glass-sidebar-control-icon-size);
+  pointer-events: none;
+  transition:
+    color var(--theme-transition-duration) ease,
+    filter var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) var(--motion-ease-emphasized);
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile) button[data-motion-settings-trigger]:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  :is(#nd-sidebar, #nd-sidebar-mobile) button[data-motion-settings-trigger]:hover {
+    color: var(--accent-primary);
+    background: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+
+  :is(#nd-sidebar, #nd-sidebar-mobile)
+    button[data-motion-settings-trigger][aria-haspopup="dialog"]:hover
+    > svg {
+    filter: drop-shadow(0 0 0.4rem color-mix(in srgb, var(--accent-primary) 36%, transparent));
+    transform: rotate(-7deg) scale(1.06);
+  }
+}
+
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  button[data-motion-settings-trigger][aria-haspopup="dialog"]:active
+  > svg {
+  transform: rotate(5deg) scale(0.94);
+}
+
+/* Motion settings popover follows the project's compact secondary-surface
+   rhythm instead of introducing a separate form-card visual language.
+   动效设置弹层沿用项目紧凑的二级表面节奏，不引入另一套表单卡片样式。 */
+.docs-motion-settings-popover {
+  display: grid;
+  inline-size: min(20rem, calc(100vw - 2rem));
+  min-inline-size: 0;
+  gap: 1rem;
+  padding: 1rem;
+  border-color: var(--glass-border-hairline);
+  border-radius: var(--glass-secondary-radius);
+  background: var(--glass-refraction-fill), var(--glass-language-popover-surface);
+  box-shadow: var(--glass-language-popover-shadow);
+}
+
+.docs-motion-settings-heading {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.docs-motion-experimental strong,
+.docs-motion-settings-fieldset > legend {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.docs-motion-settings-heading > strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.docs-motion-settings-heading > p,
+.docs-motion-experimental p,
+.docs-motion-settings-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.docs-motion-settings-fieldset {
+  display: grid;
+  min-inline-size: 0;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.docs-motion-settings-fieldset > legend {
+  padding: 0;
+}
+
+.docs-motion-levels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-subtle) 78%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 46%, transparent);
+}
+
+.docs-motion-levels > label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2rem;
+  padding-inline: 0.625rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: 0;
+  border-radius: var(--glass-secondary-inner-radius);
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) var(--motion-ease-emphasized);
+}
+
+.docs-motion-levels > label > input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.docs-motion-levels > label[data-active] {
+  color: var(--text-primary);
+  background: var(--glass-control-active-tint);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 0.35rem 1rem -0.75rem color-mix(in srgb, var(--accent-primary) 55%, transparent);
+}
+
+@media (hover: hover) {
+  .docs-motion-levels > label:not([data-active]):hover {
+    color: var(--text-primary);
+    background: var(--glass-control-hover-tint);
+  }
+}
+
+.docs-motion-levels > label:has(input:focus-visible),
+.docs-motion-switch:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 2px;
+}
+
+.docs-motion-experimental {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.docs-motion-experimental > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.docs-motion-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  inline-size: 2.5rem;
+  block-size: 1.375rem;
+  flex: 0 0 auto;
+  padding: 0.1875rem;
+  cursor: pointer;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text-muted) 18%, var(--surface-subtle));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 54%, transparent);
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+.docs-motion-switch > .docs-motion-switch-thumb {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  border-radius: 50%;
+  background: var(--text-muted);
+  box-shadow: 0 0.2rem 0.55rem -0.3rem color-mix(in srgb, var(--foreground) 50%, transparent);
+  transform: translateX(0);
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) var(--motion-ease-emphasized);
+}
+
+.docs-motion-switch[data-checked] {
+  border-color: color-mix(in srgb, var(--accent-primary) 42%, var(--glass-border-hairline));
+  background: color-mix(in srgb, var(--accent-primary) 34%, var(--surface-elevated));
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 0 0.85rem -0.55rem var(--accent-primary);
+}
+
+.docs-motion-switch[data-checked] > .docs-motion-switch-thumb {
+  background: color-mix(in srgb, white 82%, var(--accent-primary));
+  box-shadow: 0 0 0.5rem color-mix(in srgb, var(--accent-primary) 52%, transparent);
+  transform: translateX(1.0625rem);
+}
+
+.docs-motion-switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.docs-motion-settings-note {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, var(--glass-border-hairline));
+  border-radius: var(--radius-xs);
+  background: color-mix(in srgb, var(--accent-primary) 7%, var(--surface-subtle));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(#nd-sidebar, #nd-sidebar-mobile)
+    button[data-motion-settings-trigger][aria-haspopup="dialog"]
+    > svg,
+  .docs-motion-levels > label,
+  .docs-motion-switch,
+  .docs-motion-switch > .docs-motion-switch-thumb {
+    transition: none;
+  }
+
+  :is(#nd-sidebar, #nd-sidebar-mobile)
+    button[data-motion-settings-trigger][aria-haspopup="dialog"]:is(:hover, :active)
+    > svg {
+    transform: none;
+  }
+}
+
+html[data-nd-motion-level="low"]
+  :is(#nd-sidebar, #nd-sidebar-mobile)
+  button[data-motion-settings-trigger][aria-haspopup="dialog"]
+  > svg,
+html[data-nd-motion-level="low"] .docs-motion-levels > label,
+html[data-nd-motion-level="low"] .docs-motion-switch,
+html[data-nd-motion-level="low"] .docs-motion-switch > .docs-motion-switch-thumb {
+  transition: none;
+}
+
+html[data-nd-motion-level="low"]
+  :is(#nd-sidebar, #nd-sidebar-mobile)
+  button[data-motion-settings-trigger][aria-haspopup="dialog"]:is(:hover, :active)
+  > svg {
+  transform: none;
+}
+
+#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-motion-settings-trigger] {
+  position: relative;
+  flex: 0 0 var(--glass-sidebar-control-height);
+  inline-size: var(--glass-sidebar-control-height);
+  min-inline-size: var(--glass-sidebar-control-height);
+  block-size: var(--glass-sidebar-control-height);
+  margin-inline-start: 0;
+  padding: 0;
+  border-block-width: 0;
+  border-inline-start: 1px solid var(--glass-border-hairline) !important;
+  border-inline-end-width: 0;
+  border-radius: 0;
+  background: transparent !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none !important;
+}
+
+@media (hover: hover) {
+  #nd-sidebar div:has(> button[data-theme-toggle]) > button[data-motion-settings-trigger]:hover {
+    color: var(--accent-primary) !important;
+    background: color-mix(
+      in srgb,
+      var(--glass-control-hover-tint) 88%,
+      var(--accent-primary) 12%
+    ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent),
+      inset 1px 0 0 var(--glass-border-hairline) !important;
+    transform: none;
+  }
+
+  #nd-sidebar div:has(> button[data-theme-toggle]) > button[data-motion-settings-trigger]:hover > svg {
+    filter: drop-shadow(0 0 0.4rem color-mix(in srgb, var(--accent-primary) 42%, transparent));
+    transform: rotate(-5deg) scale(1.08);
+  }
+}
+
+#nd-sidebar
+  div:has(> button[data-theme-toggle])
+  > button[data-motion-settings-trigger][data-state="open"] {
+  color: var(--accent-primary);
+  background: color-mix(
+    in srgb,
+    var(--glass-control-hover-tint) 88%,
+    var(--accent-primary) 12%
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent),
+    inset 1px 0 0 var(--glass-border-hairline) !important;
+  transform: none;
+}
+
+#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-motion-settings-trigger]:active > svg {
+  transform: scale(0.94);
+}
+
 #nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]::before {
   position: absolute;
   inset-block: 0.375rem;
@@ -1121,11 +1464,21 @@ button[data-theme-toggle]:focus-visible {
   pointer-events: none;
 }
 
+/* Motion settings are a separate system entry, while the adjacent sun and
+   moon remain direct theme choices. Keep a boundary between both controls.
+   动效设置是独立的系统入口，相邻日/月仍是直接主题选项，因此保留控件边界。 */
+#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]::before {
+  display: block;
+}
+
 /* Sidebar footer parent toolbar: keep the base surface when hovering the theme switcher,
    otherwise the parent's :has(button:hover) rule creates a second rectangular hover layer.
    侧栏底部父工具条：悬浮主题切换器时保持基础玻璃面，
    避免父级 :has(button:hover) 再叠一层矩形 hover 背景。 */
-#nd-sidebar .bg-fd-secondary\/50:has(> button[data-theme-toggle]:hover) {
+#nd-sidebar
+  .bg-fd-secondary\/50:has(
+    > :is(button[data-theme-toggle], button[data-motion-settings-trigger]):hover
+  ) {
   background-color: var(--glass-tint) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -1924,6 +2277,29 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
   box-shadow: var(--glass-language-popover-shadow) !important;
 }
 
+/* High motion enables the most refractive Popover surface: a lighter tint
+   and restrained blur reveal the page beneath while preserving legibility.
+   Reduced-transparency and unsupported-filter fallbacks in a11y.css retain
+   precedence. 高动效档位为 Popover 启用更通透的折射玻璃：降低底色不透明度
+   并控制模糊强度，让后方内容仍可辨认，同时维持文字与控件可读性。 */
+html[data-nd-motion-level="high"] {
+  --glass-language-popover-surface: var(--glass-popover-high-surface);
+}
+
+html[data-nd-motion-level="high"]
+  [data-radix-popper-content-wrapper]
+  > :is([role="dialog"], [role="listbox"], [role="menu"])[data-side][data-state="open"] {
+  background: var(--glass-refraction-fill), var(--glass-popover-high-surface) !important;
+  -webkit-backdrop-filter: blur(var(--glass-popover-high-blur))
+    saturate(calc(var(--glass-saturate) + 10%)) brightness(var(--glass-brightness))
+    contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-popover-high-blur)) saturate(calc(var(--glass-saturate) + 10%))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-language-popover-shadow) !important;
+}
+
 /* Language popover header: keep the localized label available to assistive tech
    while removing the visual caption that made the menu read like a large card.
    语言弹层标题：保留本地化标题供辅助技术读取，同时移除视觉标题，避免菜单呈现为大卡片。 */
@@ -2259,6 +2635,26 @@ button:has(
   transform: none !important;
 }
 
+#nd-sidebar-mobile > div:first-child > div.flex > button[data-motion-settings-trigger] {
+  order: 3;
+  flex: 0 0 var(--glass-sidebar-control-height);
+  inline-size: var(--glass-sidebar-control-height);
+  min-inline-size: var(--glass-sidebar-control-height);
+  max-inline-size: var(--glass-sidebar-control-height);
+  block-size: 100%;
+  padding: 0;
+  border: 1px solid var(--glass-border-hairline) !important;
+  border-radius: var(--glass-icon-button-radius) !important;
+  background: var(--glass-tint-soft) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow) !important;
+}
+
 #nd-sidebar-mobile > div:first-child > div.flex > button[data-theme-toggle] > svg {
   inline-size: var(--glass-sidebar-theme-item-size) !important;
   block-size: var(--glass-sidebar-theme-item-size) !important;
@@ -2271,7 +2667,7 @@ button:has(
    the drawer control is simply the additional mobile-only final segment.
    语言与侧栏操作补齐桌面式分段节奏，侧栏按钮仅作为移动端专属的末端分段。 */
 #nd-sidebar-mobile > div:first-child > div.flex > button:has(svg.lucide-languages) {
-  order: 3;
+  order: 4;
 }
 
 #nd-sidebar-mobile
@@ -2280,7 +2676,7 @@ button:has(
   > button.inline-flex.items-center:has(
     > svg:is(.lucide-panel-left, .lucide-panel-left-close, .lucide-sidebar)
   ) {
-  order: 4;
+  order: 5;
 }
 
 #nd-sidebar-mobile > div:first-child > div.flex > button:has(svg.lucide-languages),
@@ -2336,6 +2732,7 @@ button:has(
   }
 
   #nd-sidebar-mobile > div:first-child > div.flex > div:first-child > a:hover,
+  #nd-sidebar-mobile > div:first-child > div.flex > button[data-motion-settings-trigger]:hover,
   #nd-sidebar-mobile > div:first-child > div.flex > button:has(svg.lucide-languages):hover,
   #nd-sidebar-mobile
     > div:first-child

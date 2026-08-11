@@ -31,8 +31,10 @@ import { DeploymentSkewGuard } from '@/components/deployment-skew-guard';
 import { ImmersiveInteractionController } from '@/components/immersive-interaction-controller';
 import ImmersiveScrollbar from '@/components/immersive-scrollbar';
 import { InlineCodeWrapController } from '@/components/inline-code-wrap-controller';
+import { MotionPreferencesProvider } from '@/components/motion-preferences-provider';
 import { DOCS_REFRESH_RESTORE_BOOTSTRAP } from '@/lib/docs-reading-restore';
 import { i18n } from '@/lib/i18n';
+import { MOTION_PREFERENCES_BOOTSTRAP } from '@/lib/motion-preferences';
 import '@/app/globals.css';
 // Route loading styles are imported at the root CSS entry for Turbopack tracking.
 // 路由加载样式在根 CSS 入口导入，确保 Turbopack 稳定追踪。
@@ -70,11 +72,20 @@ const HTML_IN_CANVAS_ORIGIN_TRIAL_TOKEN =
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={i18n.defaultLanguage} suppressHydrationWarning>
+    <html
+      data-nd-experimental-motion="on"
+      data-nd-motion-level="high"
+      data-nd-system-reduced-motion="false"
+      lang={i18n.defaultLanguage}
+      suppressHydrationWarning
+    >
       <head>
         <meta httpEquiv="origin-trial" content={HTML_IN_CANVAS_ORIGIN_TRIAL_TOKEN} />
         <Script id="docs-refresh-restore" strategy="beforeInteractive">
           {DOCS_REFRESH_RESTORE_BOOTSTRAP}
+        </Script>
+        <Script id="motion-preferences" strategy="beforeInteractive">
+          {MOTION_PREFERENCES_BOOTSTRAP}
         </Script>
       </head>
       <body className={`antialiased min-h-screen ${orbitron.variable} ${notoSansSC.variable}`}>
@@ -88,17 +99,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           disableTransitionOnChange
           enableSystem
         >
-          <DeploymentSkewGuard />
-          {/* Scoped light and particles provide activation feedback without page-level cursor tracking.
-              局部光感与粒子提供激活反馈，不进行页面级光标跟踪。 */}
-          <ImmersiveInteractionController />
-          {/* Responsive inline-code detection distinguishes wrapped continuation fragments.
-              响应式行内代码检测用于区分发生换行的续接片段。 */}
-          <InlineCodeWrapController />
-          {/* Custom viewport scrollbar removes the browser's default white gutter.
-              自定义视口滚动条移除浏览器默认白色滚动槽。 */}
-          <ImmersiveScrollbar />
-          {children}
+          <MotionPreferencesProvider>
+            <DeploymentSkewGuard />
+            {/* Scoped light and particles provide activation feedback without page-level cursor tracking.
+                局部光感与粒子提供激活反馈，不进行页面级光标跟踪。 */}
+            <ImmersiveInteractionController />
+            {/* Responsive inline-code detection distinguishes wrapped continuation fragments.
+                响应式行内代码检测用于区分发生换行的续接片段。 */}
+            <InlineCodeWrapController />
+            {/* Custom viewport scrollbar removes the browser's default white gutter.
+                自定义视口滚动条移除浏览器默认白色滚动槽。 */}
+            <ImmersiveScrollbar />
+            {children}
+          </MotionPreferencesProvider>
         </ThemeProvider>
       </body>
     </html>

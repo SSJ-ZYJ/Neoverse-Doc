@@ -28,6 +28,19 @@ export const en = {
   backToDocs: 'Back to Docs',
   backToHome: 'Back to Home',
   backToTop: 'Back to top',
+  // Motion settings labels / 动效设置文案
+  motionSettingsLabel: 'Motion settings',
+  motionSettingsDescription:
+    'Adjust visual feedback and experimental enhancements across the site.',
+  motionLevelLabel: 'Motion intensity',
+  motionLevelLow: 'Low',
+  motionLevelMedium: 'Medium',
+  motionLevelHigh: 'High',
+  experimentalMotionLabel: 'Experimental motion',
+  experimentalMotionDescription: 'Use enhancements that depend on experimental browser graphics.',
+  experimentalMotionUnavailableLow: 'Unavailable at low motion intensity.',
+  systemReducedMotionNotice:
+    'Your system currently requests reduced motion, so the site is running at low intensity.',
   // Search scope labels / 搜索范围标签
   searchScopeLabel: 'Search scope',
   searchAllChapters: 'All chapters',

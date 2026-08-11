@@ -28,6 +28,17 @@ export const zh = {
   backToDocs: '返回文档',
   backToHome: '返回首页',
   backToTop: '返回文章顶部',
+  // Motion settings labels / 动效设置文案
+  motionSettingsLabel: '动效设置',
+  motionSettingsDescription: '调整本站的视觉反馈与实验性增强效果。',
+  motionLevelLabel: '动效强度',
+  motionLevelLow: '低',
+  motionLevelMedium: '中',
+  motionLevelHigh: '高',
+  experimentalMotionLabel: '实验性动效',
+  experimentalMotionDescription: '使用依赖实验性浏览器图形能力的增强效果。',
+  experimentalMotionUnavailableLow: '低动效强度下不可用。',
+  systemReducedMotionNotice: '系统当前要求减少动态效果，本站已按低档运行。',
   // Search scope labels / 搜索范围标签
   searchScopeLabel: '搜索范围',
   searchAllChapters: '全部章节',

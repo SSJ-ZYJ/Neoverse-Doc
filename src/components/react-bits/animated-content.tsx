@@ -4,6 +4,7 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef } from 'react';
+import { prefersReducedMotion } from '@/lib/motion-preferences';
 
 interface AnimatedContentProps {
   children: ReactNode;
@@ -16,7 +17,7 @@ export function AnimatedContent({ children, className = '' }: AnimatedContentPro
   useEffect(() => {
     const node = rootRef.current;
     if (!node) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (prefersReducedMotion()) {
       node.dataset.visible = 'true';
       return;
     }

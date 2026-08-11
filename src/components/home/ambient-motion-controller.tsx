@@ -4,7 +4,8 @@
 'use client';
 
 import { type ReactNode, useEffect } from 'react';
-import { MOTION_FRAME_RATE, prefersReducedMotion } from '@/lib/motion-config';
+import { useMotionPreferences } from '@/components/motion-preferences-provider';
+import { MOTION_FRAME_RATE } from '@/lib/motion-config';
 
 const MILLISECONDS_PER_SECOND = 1_000;
 const HOME_AMBIENT_FRAME_INTERVAL_MS = MILLISECONDS_PER_SECOND / MOTION_FRAME_RATE.homepageAmbient;
@@ -40,8 +41,10 @@ function isHomepageAmbientAnimation(animation: Animation): animation is CSSAnima
 }
 
 export function AmbientMotionController({ children }: AmbientMotionControllerProps) {
+  const { effectiveLevel } = useMotionPreferences();
+
   useEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (effectiveLevel !== 'high') return;
 
     const controlledAnimations = new Map<CSSAnimation, AmbientAnimationState>();
     let frameId = 0;
@@ -152,7 +155,7 @@ export function AmbientMotionController({ children }: AmbientMotionControllerPro
       }
       controlledAnimations.clear();
     };
-  }, []);
+  }, [effectiveLevel]);
 
   return children;
 }

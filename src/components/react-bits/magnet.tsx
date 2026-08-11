@@ -4,6 +4,7 @@
 'use client';
 
 import { type PointerEvent, type ReactNode, useEffect, useRef } from 'react';
+import { prefersReducedMotion } from '@/lib/motion-preferences';
 
 interface MagnetProps {
   children: ReactNode;
@@ -22,10 +23,7 @@ export function Magnet({ children, className = '' }: MagnetProps) {
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (
-      event.pointerType !== 'mouse' ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
+    if (event.pointerType !== 'mouse' || prefersReducedMotion()) {
       return;
     }
 

@@ -34,6 +34,17 @@ export interface Dictionary {
   backToDocs: string;
   backToHome: string;
   backToTop: string;
+  // Motion settings labels / 动效设置文案
+  motionSettingsLabel: string;
+  motionSettingsDescription: string;
+  motionLevelLabel: string;
+  motionLevelLow: string;
+  motionLevelMedium: string;
+  motionLevelHigh: string;
+  experimentalMotionLabel: string;
+  experimentalMotionDescription: string;
+  experimentalMotionUnavailableLow: string;
+  systemReducedMotionNotice: string;
   // Search scope labels / 搜索范围标签
   searchScopeLabel: string;
   searchAllChapters: string;

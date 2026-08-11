@@ -2158,6 +2158,20 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   #nd-docs-layout > #nd-subnav {
     background: var(--docs-canvas-surface) !important;
   }
+
+  /* The highest motion tier can afford one live header filter on mobile.
+     Keep medium and low on the opaque performance fallback above.
+     高动效档位在移动端启用一层实时顶栏滤镜；中、低档继续使用上方的
+     不透明性能降级。 */
+  html[data-nd-motion-level="high"] #nd-docs-layout > #nd-subnav {
+    background: var(--glass-refraction-fill), var(--glass-mobile-header-high-surface) !important;
+    -webkit-backdrop-filter: blur(var(--glass-mobile-header-high-blur))
+      saturate(calc(var(--glass-saturate) + 10%)) brightness(var(--glass-brightness))
+      contrast(var(--glass-contrast)) !important;
+    backdrop-filter: blur(var(--glass-mobile-header-high-blur))
+      saturate(calc(var(--glass-saturate) + 10%)) brightness(var(--glass-brightness))
+      contrast(var(--glass-contrast)) !important;
+  }
 }
 
 /* Code block language icons: PowerShell and CMD/Batch ship fixed brand colors

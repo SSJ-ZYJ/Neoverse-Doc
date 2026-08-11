@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import {
   MOTION_DURATION_MS,
+  prefersReducedMotion,
   TRANSITION_DURATION_MS,
   TRANSITION_TIMEOUT_MS,
 } from '@/lib/motion-config';
@@ -110,7 +111,7 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
       // dependants can respond immediately without playing an animation.
       // reduced-motion 导航仍发布路由意图，让轻量依赖项无需播放动画也能立即响应。
       document.dispatchEvent(new Event(ROUTE_TRANSITION_START_EVENT));
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (prefersReducedMotion()) {
         cleanup();
         return;
       }

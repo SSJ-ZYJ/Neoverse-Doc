@@ -13,6 +13,8 @@
      shadows to remain visibly refractive without an accent-colored outline.
      浅色语言控件使用更有密度的底板、中性细边与抬升阴影，在保持折射感的同时避免强调色描边。 */
   --glass-language-popover-surface: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+  --glass-popover-high-surface: rgb(244 250 255 / 10%);
+  --glass-mobile-header-high-surface: rgb(244 250 255 / 18%);
   --glass-language-popover-border: var(--glass-border-hairline);
   --glass-language-popover-shadow: var(--shadow-edge), var(--shadow-popover);
   --border-subtle: rgb(15 23 42 / 11%);
@@ -62,6 +64,8 @@
      hairline, and luminous ambient depth.
      深色语言控件保留现有石墨表面、克制细边与明亮环境层次。 */
   --glass-language-popover-surface: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+  --glass-popover-high-surface: rgb(8 15 28 / 12%);
+  --glass-mobile-header-high-surface: rgb(8 15 28 / 20%);
   --glass-language-popover-border: var(--glass-border-hairline);
   --glass-language-popover-shadow: var(--shadow-edge), var(--glass-shadow);
   --border-subtle: rgb(226 232 240 / 13%);
@@ -354,6 +358,8 @@
   --glass-ambient-c: var(--ambient-violet);
   --glass-blur: 14px;
   --glass-blur-strong: 18px;
+  --glass-popover-high-blur: 8px;
+  --glass-mobile-header-high-blur: var(--glass-blur);
   --glass-blur-soft: 8px;
   --glass-blur-backdrop: 8px;
   --glass-blur-search: 16px;

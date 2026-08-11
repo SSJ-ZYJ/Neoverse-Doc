@@ -6,6 +6,7 @@
 import { ArrowUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { prefersReducedMotion } from '@/lib/motion-preferences';
 
 const CARD_SELECTOR = '[data-docs-page-card]';
 const TITLE_SELECTOR = '[data-docs-title]';
@@ -59,8 +60,11 @@ export function DocsBackToTop({ label }: DocsBackToTopProps) {
   }, []);
 
   const handleClick = () => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: 0, left: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+    });
   };
 
   if (!portalRoot) return null;

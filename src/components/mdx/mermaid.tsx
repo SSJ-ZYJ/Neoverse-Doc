@@ -36,6 +36,7 @@ import { useMermaidViewMode } from '@/lib/hooks/use-mermaid-view-mode';
 import { DEFAULT_SCALE, ORIGIN, useZoomAndPan } from '@/lib/hooks/use-zoom-and-pan';
 import { resolveLocale } from '@/lib/i18n';
 import { promoteMermaidChart } from '@/lib/mermaid-render-scheduler';
+import { prefersReducedMotion } from '@/lib/motion-preferences';
 
 // Promote the chart well before it enters the viewport so the reader reaches
 // an already-rendered canvas: promotion only reorders the idle queue, and the
@@ -68,10 +69,6 @@ type MaximizeTransitionRect = {
   width: number;
   height: number;
 };
-
-function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
 
 function readTransitionRect(element: Element): MaximizeTransitionRect {
   const rect = element.getBoundingClientRect();

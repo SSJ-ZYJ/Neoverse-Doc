@@ -4,6 +4,7 @@
 
 import { supportsHtmlInCanvas } from '@/components/canvasui/particle-scroll';
 import { TRANSITION_DURATION_MS } from '@/lib/motion-config';
+import { getEffectiveMotionLevel, isExperimentalMotionEnabled } from '@/lib/motion-preferences';
 
 export interface ContentParticleTransition {
   canvas: HTMLCanvasElement;
@@ -23,11 +24,22 @@ type ElementImageContext = CanvasRenderingContext2D & {
 const CAPTURE_EXCLUDE_SELECTOR =
   'canvas, svg, img, picture, video, audio, iframe, script, object, embed, .immersive-particle-layer';
 const TRANSPARENT_PIXEL = new Uint8Array([0, 0, 0, 0]);
-const DENSITY = 2;
-const SIZE = 1.5;
-const SPREAD = 180;
-const GRAVITY = -0.18;
-const SWIRL = 28;
+const PARTICLE_PRESETS = {
+  high: {
+    density: 2,
+    gravity: -0.18,
+    size: 1.5,
+    spread: 180,
+    swirl: 28,
+  },
+  medium: {
+    density: 2 * Math.SQRT2,
+    gravity: -0.12,
+    size: 1.35,
+    spread: 118,
+    swirl: 17,
+  },
+} as const;
 
 const HASH = `
 float hash (vec2 p) {
@@ -257,7 +269,7 @@ function releaseRenderer(renderer: ContentParticleRenderer): void {
 // Create and size the expensive WebGL resources while the docs page is idle.
 // 在文档页空闲阶段创建并调整高成本 WebGL 资源，避免首个粒子帧同步初始化。
 export function prewarmContentParticleRenderer(): void {
-  if (!supportsHtmlInCanvas() || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (!supportsHtmlInCanvas() || !isExperimentalMotionEnabled()) {
     return;
   }
   if (sharedRenderer?.gl.isContextLost()) {
@@ -274,7 +286,7 @@ export function prewarmContentParticleRenderer(): void {
 }
 
 export function createContentParticleTransition(): ContentParticleTransition | null {
-  if (!supportsHtmlInCanvas() || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (!supportsHtmlInCanvas() || !isExperimentalMotionEnabled()) {
     return null;
   }
 
@@ -283,6 +295,8 @@ export function createContentParticleTransition(): ContentParticleTransition | n
 
   const renderer = acquireRenderer();
   if (!renderer) return null;
+  const particlePreset =
+    getEffectiveMotionLevel() === 'medium' ? PARTICLE_PRESETS.medium : PARTICLE_PRESETS.high;
   const { canvas: output, gl, program, texture, uniforms, vao } = renderer;
   const setProgram = gl.useProgram.bind(gl);
 
@@ -336,7 +350,7 @@ export function createContentParticleTransition(): ContentParticleTransition | n
     if (destroyed || !ready) return;
     const progress = Math.min(Math.max((now - startedAt) / TRANSITION_DURATION_MS.content, 0), 1);
     const density = Math.max(
-      DENSITY,
+      particlePreset.density,
       Math.sqrt((window.innerWidth * window.innerHeight) / 800_000),
     );
     const gridX = Math.ceil(window.innerWidth / density);
@@ -360,11 +374,11 @@ export function createContentParticleTransition(): ContentParticleTransition | n
       (Math.max(pageRect.top, 0) + Math.min(pageRect.bottom, window.innerHeight)) / 2,
     );
     gl.uniform1f(uniforms.uDensity, density);
-    gl.uniform1f(uniforms.uSpread, SPREAD);
-    gl.uniform1f(uniforms.uGravity, GRAVITY);
-    gl.uniform1f(uniforms.uSwirl, SWIRL);
+    gl.uniform1f(uniforms.uSpread, particlePreset.spread);
+    gl.uniform1f(uniforms.uGravity, particlePreset.gravity);
+    gl.uniform1f(uniforms.uSwirl, particlePreset.swirl);
     gl.uniform1f(uniforms.uProgress, progress);
-    gl.uniform1f(uniforms.uSize, SIZE);
+    gl.uniform1f(uniforms.uSize, particlePreset.size);
     gl.uniform1f(uniforms.uDpr, dpr);
     gl.uniform1f(uniforms.uTime, now / 1000);
     gl.uniform1f(uniforms.uDark, document.documentElement.classList.contains('dark') ? 1 : 0);

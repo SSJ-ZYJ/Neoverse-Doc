@@ -5,6 +5,11 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  getEffectiveMotionLevel,
+  isExperimentalMotionEnabled,
+  MOTION_PREFERENCES_CHANGE_EVENT,
+} from '@/lib/motion-preferences';
 
 export interface ParticleScrollOptions {
   /** Viewport fraction of the formation line. Content assembles as it scrolls up past this line and dissolves back below it. */
@@ -679,14 +684,36 @@ export interface ParticleScrollProps extends ParticleScrollOptions {
   style?: React.CSSProperties;
 }
 
-function supportsParticleScroll(): boolean {
-  return supportsHtmlInCanvas() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+type ParticleMotionMode = 'off' | 'medium' | 'high';
+
+function readParticleMotionMode(): ParticleMotionMode {
+  if (!supportsHtmlInCanvas() || !isExperimentalMotionEnabled()) return 'off';
+  return getEffectiveMotionLevel() === 'medium' ? 'medium' : 'high';
 }
 
 function subscribeParticleSupport(callback: () => void): () => void {
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   motionQuery.addEventListener('change', callback);
-  return () => motionQuery.removeEventListener('change', callback);
+  document.addEventListener(MOTION_PREFERENCES_CHANGE_EVENT, callback);
+  return () => {
+    motionQuery.removeEventListener('change', callback);
+    document.removeEventListener(MOTION_PREFERENCES_CHANGE_EVENT, callback);
+  };
+}
+
+function resolveParticleOptions(
+  options: ParticleScrollOptions,
+  mode: ParticleMotionMode,
+): ParticleScrollOptions {
+  if (mode !== 'medium') return options;
+  return {
+    ...options,
+    density: (options.density ?? DEFAULTS.density) * Math.SQRT2,
+    drift: (options.drift ?? DEFAULTS.drift) * 0.5,
+    size: (options.size ?? DEFAULTS.size) * 0.9,
+    spread: (options.spread ?? DEFAULTS.spread) * 0.65,
+    swirl: (options.swirl ?? DEFAULTS.swirl) * 0.6,
+  };
 }
 
 export function ParticleScroll({ children, className, style, ...options }: ParticleScrollProps) {
@@ -694,15 +721,16 @@ export function ParticleScroll({ children, className, style, ...options }: Parti
   const contentRef = useRef<HTMLDivElement>(null);
   const outputRef = useRef<HTMLCanvasElement>(null);
   const instanceRef = useRef<ParticleScrollInstance | null>(null);
-  const [initialOptions] = useState(options);
+  const initialOptionsRef = useRef(options);
   const [failed, setFailed] = useState(false);
 
-  const supported = useSyncExternalStore(
+  const motionMode = useSyncExternalStore(
     subscribeParticleSupport,
-    supportsParticleScroll,
-    () => false,
+    readParticleMotionMode,
+    () => 'off' as const,
   );
-  const native = supported && !failed;
+  const native = motionMode !== 'off' && !failed;
+  const effectiveOptions = resolveParticleOptions(options, motionMode);
 
   useEffect(() => {
     if (!native) return;
@@ -711,7 +739,10 @@ export function ParticleScroll({ children, className, style, ...options }: Parti
     const output = outputRef.current;
     if (!source || !content || !output) return;
     try {
-      instanceRef.current = createParticleScroll({ source, content, output }, initialOptions);
+      instanceRef.current = createParticleScroll(
+        { source, content, output },
+        resolveParticleOptions(initialOptionsRef.current, motionMode),
+      );
     } catch (error) {
       console.error('ParticleScroll initialization error:', error);
       setFailed(true);
@@ -722,10 +753,10 @@ export function ParticleScroll({ children, className, style, ...options }: Parti
       instanceRef.current?.destroy();
       instanceRef.current = null;
     };
-  }, [initialOptions, native]);
+  }, [motionMode, native]);
 
   useEffect(() => {
-    instanceRef.current?.setOptions(options);
+    instanceRef.current?.setOptions(effectiveOptions);
   });
 
   return (

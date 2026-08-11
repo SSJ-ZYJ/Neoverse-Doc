@@ -5,6 +5,7 @@
 
 import { useEffect } from 'react';
 import { MOTION_DURATION_MS, prefersReducedMotion } from '@/lib/motion-config';
+import { getEffectiveMotionLevel } from '@/lib/motion-preferences';
 
 // Mobile sidebar's GitHub action is an anchor rather than a button, so include
 // only that utility link in the shared particle interaction system.
@@ -109,6 +110,8 @@ interface ParticleSession {
   rect: ControlRect;
   target: HTMLElement;
   token: string;
+  travelScale: number;
+  maxParticles: number;
 }
 
 interface PendingMove {
@@ -238,8 +241,8 @@ function getLayer(target: HTMLElement, rect: ControlRect, reset = false) {
   return layer;
 }
 
-function trimLayer(layer: HTMLElement) {
-  while (layer.childElementCount > MAX_PARTICLES_PER_TARGET) {
+function trimLayer(layer: HTMLElement, maxParticles: number) {
+  while (layer.childElementCount > maxParticles) {
     layer.firstElementChild?.remove();
   }
 }
@@ -247,20 +250,33 @@ function trimLayer(layer: HTMLElement) {
 function burstConfig(pointerType: string, target: HTMLElement) {
   const touchLike = pointerType === 'touch' || pointerType === 'pen';
   const surface = target.matches(SURFACE_SELECTOR);
+  const medium = getEffectiveMotionLevel() === 'medium';
+  const scaleCount = (count: number) => (medium ? Math.max(1, Math.round(count * 0.5)) : count);
+  const scaleDistance = (distance: number) => (medium ? distance * 1.5 : distance);
+  const shared = {
+    maxParticles: medium ? Math.round(MAX_PARTICLES_PER_TARGET * 0.5) : MAX_PARTICLES_PER_TARGET,
+    travelScale: medium ? 0.65 : 1,
+  };
   if (surface) {
     return {
-      dragCount: touchLike ? TOUCH_SURFACE_DRAG_PARTICLE_COUNT : SURFACE_DRAG_PARTICLE_COUNT,
-      emitDistance: touchLike ? TOUCH_SURFACE_DRAG_EMIT_DISTANCE_PX : SURFACE_DRAG_EMIT_DISTANCE_PX,
-      initialCount: touchLike
-        ? TOUCH_SURFACE_INITIAL_PARTICLE_COUNT
-        : SURFACE_INITIAL_PARTICLE_COUNT,
+      ...shared,
+      dragCount: scaleCount(
+        touchLike ? TOUCH_SURFACE_DRAG_PARTICLE_COUNT : SURFACE_DRAG_PARTICLE_COUNT,
+      ),
+      emitDistance: scaleDistance(
+        touchLike ? TOUCH_SURFACE_DRAG_EMIT_DISTANCE_PX : SURFACE_DRAG_EMIT_DISTANCE_PX,
+      ),
+      initialCount: scaleCount(
+        touchLike ? TOUCH_SURFACE_INITIAL_PARTICLE_COUNT : SURFACE_INITIAL_PARTICLE_COUNT,
+      ),
     };
   }
 
   return {
-    dragCount: touchLike ? TOUCH_DRAG_PARTICLE_COUNT : DRAG_PARTICLE_COUNT,
-    emitDistance: touchLike ? TOUCH_DRAG_EMIT_DISTANCE_PX : DRAG_EMIT_DISTANCE_PX,
-    initialCount: touchLike ? TOUCH_INITIAL_PARTICLE_COUNT : INITIAL_PARTICLE_COUNT,
+    ...shared,
+    dragCount: scaleCount(touchLike ? TOUCH_DRAG_PARTICLE_COUNT : DRAG_PARTICLE_COUNT),
+    emitDistance: scaleDistance(touchLike ? TOUCH_DRAG_EMIT_DISTANCE_PX : DRAG_EMIT_DISTANCE_PX),
+    initialCount: scaleCount(touchLike ? TOUCH_INITIAL_PARTICLE_COUNT : INITIAL_PARTICLE_COUNT),
   };
 }
 
@@ -268,6 +284,7 @@ function emitBursts(
   target: HTMLElement,
   rect: ControlRect,
   emissions: ParticleEmission[],
+  motion: Pick<ParticleSession, 'maxParticles' | 'travelScale'>,
   reset = false,
 ) {
   const lastEmission = emissions[emissions.length - 1];
@@ -288,11 +305,12 @@ function emitBursts(
   // The homepage CTA starts from a tighter ring so its compact button does not
   // look fully expanded on the first frame, while other surfaces keep their scale.
   // 首页 CTA 使用更紧凑的出生圆环，避免小按钮首帧看起来已经完全拓开；其他表面保持原比例。
-  const initialSpread = target.matches('.home-cta')
-    ? clamp(shortestSide * CTA_INITIAL_BURST_SPREAD_RATIO, 2.5, 6)
-    : clamp(shortestSide * INITIAL_BURST_SPREAD_RATIO, 5, 14);
+  const initialSpread =
+    (target.matches('.home-cta')
+      ? clamp(shortestSide * CTA_INITIAL_BURST_SPREAD_RATIO, 2.5, 6)
+      : clamp(shortestSide * INITIAL_BURST_SPREAD_RATIO, 5, 14)) * motion.travelScale;
   const minTravel = clamp(shortestSide * (0.2 + longAxisBoost * 0.06), 10, 30);
-  const travelCap = clamp(shortestSide * 0.62, 24, 72);
+  const travelCap = clamp(shortestSide * 0.62, 24, 72) * motion.travelScale;
   let cleanupDelay = 0;
 
   // Interpolated pointer samples share one fragment, append, trim, and cleanup
@@ -348,7 +366,7 @@ function emitBursts(
       const travel = Math.min(edgeTravel, travelCap * randomBetween(0.72, 1.08));
       const dx = Math.cos(angle) * travel;
       const dy = Math.sin(angle) * travel;
-      const sway = randomBetween(-shortestSide * 0.12, shortestSide * 0.12);
+      const sway = randomBetween(-shortestSide * 0.12, shortestSide * 0.12) * motion.travelScale;
       const midX = clamp(startX + dx * 0.56 - Math.sin(angle) * sway, PARTICLE_SAFE_INSET_PX, maxX);
       const midY = clamp(startY + dy * 0.56 + Math.cos(angle) * sway, PARTICLE_SAFE_INSET_PX, maxY);
       const alpha = randomBetween(0.42, 0.82);
@@ -370,7 +388,7 @@ function emitBursts(
   }
 
   layer.append(fragment);
-  trimLayer(layer);
+  trimLayer(layer, motion.maxParticles);
   window.setTimeout(() => {
     for (const particle of particles) particle.remove();
   }, cleanupDelay);
@@ -444,7 +462,7 @@ export function ImmersiveInteractionController() {
               originY: point.y,
             });
           }
-          emitBursts(session.target, session.rect, emissions);
+          emitBursts(session.target, session.rect, emissions, session);
         }
         session.lastX = move.clientX;
         session.lastY = move.clientY;
@@ -464,6 +482,7 @@ export function ImmersiveInteractionController() {
         source?.closest<HTMLElement>(MOBILE_TITLE_PARTICLE_HOST_SELECTOR) ??
         source?.closest<HTMLElement>(INTERACTIVE_SELECTOR);
       if (!target || target.matches(':disabled, [aria-disabled="true"]')) return;
+      if (prefersReducedMotion()) return;
 
       // Chromium can crash when a navigation unmounts an HTML-in-Canvas subtree
       // while composited particle descendants are still attached to its link.
@@ -496,14 +515,13 @@ export function ImmersiveInteractionController() {
       target.classList.remove('immersive--active');
       target.classList.add('immersive--tracking');
       target.style.setProperty('--immersive-radius', geometry.radius);
-      if (!prefersReducedMotion()) {
-        emitBursts(
-          target,
-          rect,
-          [{ count: config.initialCount, originX: point.x, originY: point.y }],
-          true,
-        );
-      }
+      emitBursts(
+        target,
+        rect,
+        [{ count: config.initialCount, originX: point.x, originY: point.y }],
+        config,
+        true,
+      );
 
       sessions.set(event.pointerId, {
         ...config,
