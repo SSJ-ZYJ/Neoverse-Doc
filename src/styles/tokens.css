@@ -336,6 +336,11 @@
   --glass-control-surface: var(--surface-subtle);
   --glass-control-active-tint: var(--accent-soft);
   --glass-control-hover-tint: color-mix(in srgb, var(--surface-subtle) 78%, var(--accent-soft));
+  /* Popover rows sit on a translucent surface, so light mode needs a denser
+     accent and stronger secondary text than standalone glass controls.
+     弹层选项位于半透明表面上，因此浅色模式需要更明确的强调色与次级文字。 */
+  --glass-popover-item-hover-tint: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  --glass-popover-item-hover-muted-foreground: var(--text-secondary);
   --glass-refraction-line: linear-gradient(
     118deg,
     color-mix(in srgb, var(--edge-light) 76%, transparent),
@@ -414,6 +419,8 @@
   --glass-shadow: var(--shadow-float);
   --glass-shadow-hover: var(--shadow-interactive);
   --glass-control-hover-tint: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  --glass-popover-item-hover-tint: var(--glass-control-hover-tint);
+  --glass-popover-item-hover-muted-foreground: var(--text-muted);
   --glass-rim-glow: color-mix(in srgb, var(--accent-primary) 64%, transparent);
   /* Dark documentation shifts from saturated navy glows to quiet graphite glass.
      Accent colors remain as low-opacity ambient cues instead of large color fields.

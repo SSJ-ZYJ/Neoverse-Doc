@@ -2284,7 +2284,8 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
   :is(#nd-nav, #nd-docs-layout, body)
     [role="dialog"][data-state="open"]:not(:has(input))
     :is(a:hover, button:hover, button[type="button"][aria-label]:hover) {
-    background-color: var(--glass-control-hover-tint) !important;
+    --color-fd-muted-foreground: var(--glass-popover-item-hover-muted-foreground);
+    background-color: var(--glass-popover-item-hover-tint) !important;
   }
 
   :is(#nd-nav, #nd-docs-layout, body)
