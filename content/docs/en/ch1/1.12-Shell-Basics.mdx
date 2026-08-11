@@ -1,0 +1,668 @@
+---
+title: 1.12 Shell Basics
+description: Shell concepts, common commands, redirection and pipes, permissions and users, and scripting basics
+todoProgress: true
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Section
+> This section distinguishes the terminal from the Shell, and introduces file operations, searching, permissions, pipes, redirection, and Bash scripts. The focus is not on memorizing commands but on understanding arguments, input and output, and execution results, and on confirming the target before modifying files.
+
+> [!INFO]
+> GUIs are good for interactive operations, but when batch-processing files, managing remote servers, or repeating workflows, the Shell makes it easier to combine commands and record steps.
+
+## 1. Shell and the Terminal
+
+The Shell is a program that reads and executes commands. It parses commands, expands variables and wildcards, then launches the corresponding program or runs built-in commands; the terminal is responsible for displaying input and output. The two are often used together, but they are not the same concept.
+
+### 1.1 The Relationship Between Shell and Terminal
+
+| Concept | Description |
+| :--- | :--- |
+| Terminal | The program or session that carries command-line input and output |
+| Shell | The command interpreter running in the terminal (bash, zsh, fish) |
+| Console | Originally the operator console connected directly to the computer; today it is also often used broadly to mean a local terminal interface |
+
+You can think of the terminal as an "interaction window" and the Shell as the "command interpreter" running in that window.
+
+### 1.2 Common Shells
+
+| Shell | Description |
+| :--- | :--- |
+| bash | Common on many Linux distributions and the runtime environment for a large number of scripts |
+| zsh | The default interactive Shell on macOS, rich in completion and customization capabilities |
+| fish | Works out of the box with strong auto-completion, but its syntax is incompatible with bash |
+| PowerShell | A modern shell on Windows, object-oriented, with an independent syntax |
+
+> [!TIP] Before Learning
+> This section uses **bash** as the baseline. zsh's interactive behavior shares a lot with bash, but script syntax and extensions are not fully compatible; scripts should specify the interpreter explicitly and be tested in the target environment.
+
+### 1.3 Modern Interactive Shells and the Prompt
+
+`bash` is suitable for learning general-purpose commands and writing portable scripts; `zsh` and `fish` lean more toward interactive use. When choosing an interactive Shell, keep the "script interpreter" and the "everyday command-line environment" separate: a script file specifies `bash` or another interpreter through its shebang, and its syntax does not automatically change just because the current terminal runs zsh or fish.
+
+| Shell | Best for | Config entry | Watch out for |
+| :--- | :--- | :--- | :--- |
+| `bash` | General-purpose scripts, servers | `~/.bashrc` | Startup file loading rules differ across systems |
+| `zsh` | Interactive completion, history search, customizable prompts | `~/.zshrc` | Similar to Bash but not fully compatible |
+| `fish` | Syntax highlighting, completion, history search out of the box | `~/.config/fish/config.fish` | Does not follow POSIX syntax |
+
+#### 1.3.1 zsh
+
+On Ubuntu / Debian, install the version provided by your distribution:
+
+```bash
+sudo apt update
+sudo apt install zsh
+zsh --version
+```
+
+macOS usually ships with zsh; Homebrew users can also install or update it as required by the project. On first use, run `zsh` to try it out, and only after confirming the toolchain and startup configuration work, consider changing your login Shell with `chsh -s "$(command -v zsh)"`. Before changing it, confirm that the path is already listed in `/etc/shells`, and keep a working Bash session as a recovery entry point. It is similar to Bash but not fully compatible: interactive configuration usually goes in `~/.zshrc`, while login configuration also involves files such as `~/.zprofile`; you cannot directly copy Bash configuration over.
+
+#### 1.3.2 fish
+
+```bash
+sudo apt update
+sudo apt install fish
+fish --version
+fish
+```
+
+fish's configuration file is `~/.config/fish/config.fish`. It uses `set` to set variables, parentheses for command substitution, and the exit status is read from `$status`; for example:
+
+```fish
+vim --version >/dev/null 2>&1
+if test $status -eq 0
+    echo "Vim is available"
+end
+```
+
+The fish official documentation explicitly states that it does not follow the POSIX standard. When you need to run Bash commands or scripts, call `bash` explicitly, for example `bash -c 'printf "%s\n" "$HOME"'` or `bash scripts/build.sh`; don't copy Bash configuration files directly into fish's config. The configuration file is also read in non-interactive contexts, so when adding output content or launching interactive programs to it, guard with `status is-interactive` to avoid affecting commands such as SSH and SCP.
+
+#### 1.3.3 Starship: A Cross-Shell Prompt
+
+[Starship](https://starship.rs/) is a prompt program independent of any particular Shell; it can display the current directory, Git branch, and working tree status in Bash, zsh, fish, and other environments. It only changes the prompt; it does not turn Bash, zsh, and fish into the same scripting language. The terminal needs to be able to display the corresponding symbols; when using an icon theme, you should also install and enable a suitable Nerd Font.
+
+Follow the [Starship official guide](https://starship.rs/guide/) for installation. Ubuntu, macOS, and Windows use different package management; prefer a trustworthy package source for the current system. After installing, first confirm the command is available:
+
+```bash
+starship --version
+```
+
+Add the corresponding initialization line to the Shell configuration file you are using:
+
+```bash
+# Bash: ~/.bashrc
+eval "$(starship init bash)"
+
+# zsh: ~/.zshrc
+eval "$(starship init zsh)"
+```
+
+fish uses its own pipe and `source` syntax:
+
+```fish
+# ~/.config/fish/config.fish
+starship init fish | source
+```
+
+Starship uses `~/.config/starship.toml` by default, and the config format is TOML. The following config keeps only the directory, Git branch, Git status, and command-result prompt, which is a good starting point:
+
+```toml
+# ~/.config/starship.toml
+"$schema" = "https://starship.rs/config-schema.json"
+add_newline = false
+format = "$directory$git_branch$git_status$character"
+
+[directory]
+truncation_length = 3
+
+[git_branch]
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+
+[character]
+success_symbol = "[➜](bold green) "
+error_symbol = "[✗](bold red) "
+```
+
+You can keep the config file in your personal configuration repository, but don't commit tokens, passwords, or machine-specific paths along with it. After modifying, reopen the Shell or reload the config in the way your current Shell does; if the prompt misbehaves, run `bash --noprofile --norc`, `zsh -f`, or `fish --no-config` to tell whether the problem comes from the startup config or the prompt program.
+
+### 1.4 Opening the Terminal
+
+| System | How |
+| :--- | :--- |
+| Windows | Windows Terminal / Git Bash / WSL... |
+| Linux | Open the terminal from the app menu of your desktop environment; some desktop environments support `Ctrl + Alt + T` |
+| macOS | Launchpad → Terminal, or press `Cmd + Space` and search "terminal" |
+
+> [!IMPORTANT] Command Environment
+> The commands in this section are bash-based (Linux / macOS / WSL / Git Bash). Windows CMD and PowerShell have different syntax and are out of scope for this section. It is recommended to practice with [WSL](/en/docs/ch1/1.14-Environment-Setup) or Git Bash.
+
+## 2. The Prompt and Command Structure
+
+### 2.1 The Prompt
+
+When you open a terminal, you will see a prompt like this:
+
+```text
+SSJ@ubuntu:~/projects$
+```
+
+What each part means:
+
+```text
+SSJ    @  ubuntu  :  ~/projects       $
+ ↓          ↓           ↓             ↓
+ username  hostname   current path   prompt for regular users
+```
+
+- `~` means your home directory (`/home/SSJ` in the example)
+- `$` means a regular user, `#` means the root user (administrator)
+
+### 2.2 Command Structure
+
+The basic structure of a command:
+
+```text
+command [options] [arguments]
+```
+
+For example, `ls -l /home`:
+
+| Part | Content | Meaning |
+| :--- | :--- | :--- |
+| Command | `ls` | List the directory |
+| Option | `-l` | long format, showing detailed information |
+| Argument | `/home` | The directory to list |
+
+Options usually start with `-` (short options) or `--` (long options), and multiple short options can be combined: `ls -la` is equivalent to `ls -l -a`.
+
+> [!DETAILS-HINT] Start with Local Help
+> Many GNU commands support `--help`, for example `ls --help` on GNU/Linux;
+>
+> For Shell built-ins, try `help command`; POSIX systems also commonly use `man command`.
+>
+> Different systems and implementations may support different options; when in doubt about a command, check the help of your current environment first.
+
+
+## 3. Common Commands in Detail
+
+### 3.1 File and Directory Operations
+
+> [!DETAILS-EXAMPLE+] Quick Reference for File and Directory Commands
+> The following is the complete usage of common commands such as `pwd`, `ls`, `cd`, `mkdir`, `cp`, `mv`, `rm`, and more; consult as needed.
+>
+> ```bash
+> pwd                       # view the current path
+> ls                        # list directory contents
+> ls -l                     # detailed info (permissions, size, time)
+> ls -a                     # show hidden files (starting with .)
+> ls -la                    # combined: detailed + all
+> ls -lh                    # show sizes in human-readable units (KB, MB)
+> cd /home/SSJ              # switch to an absolute path
+> cd projects               # enter a subdirectory (relative path)
+> cd ..                     # go up one level
+> cd ~                      # go to the home directory
+> cd -                      # go back to the previous directory
+> mkdir notes               # create a directory
+> mkdir -p a/b/c            # recursively create nested directories
+> touch test.txt            # create an empty file (or update the timestamp)
+> cp file.txt backup.txt    # copy a file
+> cp -r folder folder_backup # recursively copy a directory
+> mv old.txt new.txt        # rename
+> mv file.txt ../           # move up one level
+> rm file.txt               # delete a file
+> rm -r folder              # delete a directory and its contents
+> rm -f file.txt            # force delete without prompting
+> rm -ri folder             # recursively delete after confirming each item
+> ```
+
+> [!CAUTION] Dangerous Commands
+> Recursive deletion usually bypasses the recycle bin. Before running, use `pwd` and `ls -- target-path` to confirm the location and contents; be especially careful when variables or wildcards are part of the path. As a beginner, prefer `rm -i` or `rm -ri` for item-by-item confirmation, and don't copy high-privilege deletion commands of unknown origin.
+
+### 3.2 Viewing File Contents
+
+| Command | Purpose |
+| :--- | :--- |
+| `cat file.txt` | Print the entire contents |
+| `bat file.txt` | A viewer with syntax highlighting and line numbers; can invoke a pager in interactive terminals (the Debian / Ubuntu package may install the command as `batcat`) |
+| `less file.txt` | Page through the file (press q to quit, `/` to search) |
+| `head -n 20 file.txt` | First 20 lines |
+| `tail -n 20 file.txt` | Last 20 lines |
+| `tail -f log.txt` | Continuously follow the end of the file; often used to watch logs |
+
+### 3.3 Searching
+
+```bash
+find . -name "*.cpp"           # all .cpp files under the current directory
+find /home -name "*.md"        # search in a given directory
+find /var/log -type f -mtime +30   # rounded to whole 24-hour periods, matches regular files unmodified for at least about 31 days
+grep "error" log.txt           # search for "error" in a file
+grep -r "TODO" .               # search the current directory recursively
+grep -i "error" log.txt        # case-insensitive
+grep -n "error" log.txt        # show line numbers
+grep -v "info" log.txt         # inverse: show lines that don't match
+grep -c "error" log.txt        # print only the matching line count
+grep -l "error" logs/*.txt     # print only the names of files containing matches
+which python                   # where the python command is
+whereis gcc                    # location of gcc-related files
+```
+
+> [!DETAILS-HINT] Optional Search Tools
+> [fd](https://github.com/sharkdp/fd) searches paths with regex patterns, and [ripgrep](https://github.com/BurntSushi/ripgrep) (the `rg` command) searches file contents recursively.
+> 
+> Both respect `.gitignore` and skip hidden paths by default. They need to be installed separately, and their matching rules are not the same as `find -name` and `grep`. Read each one's `--help` first, then pick a tool based on your repository and search target.
+
+### 3.4 Text Processing
+
+| Command | Purpose |
+| :--- | :--- |
+| `wc -l file.txt` | Count lines |
+| `wc -w file.txt` | Count words |
+| `sort file.txt` | Sort |
+| `sort file.txt \| uniq` | Sort, then remove duplicates |
+| `sort file.txt \| uniq -c` | Remove duplicates and count the occurrences of each item |
+| `sed 's/old/new/g' file.txt` | Replace all old with new in the file |
+| `sed -i 's/old/new/g' file.txt` | GNU `sed` modifies the original file in place; BSD/macOS `sed` uses a different `-i` syntax |
+| `cut -d',' -f2 data.csv` | Split by commas and take column 2 |
+| `awk '{print $1}' file.txt` | Take the 1st field of each line |
+
+### 3.5 System Information
+
+```bash
+whoami              # current user
+date                # current time
+uptime              # system uptime
+df -h               # disk usage
+free -h             # memory usage
+top                 # real-time processes (press q to quit)
+ps aux              # list all processes
+kill PID            # terminate the given process (PID is the process ID)
+```
+
+### 3.6 echo: Printing Text
+
+`echo` prints its arguments to standard output (usually the screen). The two most common special cases are variable substitution and command substitution:
+
+```bash
+echo "Hello, Shell"
+NAME="Alice"
+echo "Hello, $NAME"          # prints Hello, Alice (variable substitution)
+echo "It is now $(date)"     # prints the result of the date command (command substitution)
+echo 'Price is $100'         # single quotes disable expansion, prints Price is $100 as-is
+echo -n "no newline"         # print without a trailing newline
+echo "First" > file.txt      # combined with redirection, creates a file
+```
+
+- `$variable` and `$(command)` inside double quotes are expanded; **content inside single quotes is printed as-is**, which is suitable for printing special characters like `$` and backticks.
+- For creating an empty file, `touch` is more common, but `echo -n > empty.txt` also works.
+
+### 3.7 man and tldr: Looking Up Command Manuals
+
+When you forget how a command is used, here are two common sources of help:
+
+| Source | Description |
+| :--- | :--- |
+| `man command` | Traditional man pages, the most complete; `/keyword` to search, `n` for next, `q` to quit |
+| `tldr command` | Community-maintained simplified manuals based on common examples; suitable for complex commands like `tar`, `ffmpeg`, `git` |
+
+`tldr` needs to be installed separately; the common package name is `tldr`. It is more efficient to know roughly what a command does before reading its manual, then look up the options.
+
+## 4. Redirection and Pipes
+
+### 4.1 Redirection
+
+By default, command output goes to the screen (standard output). Use `>` to redirect it to a file:
+
+```bash
+ls -l > files.txt        # write output to a file (overwrite)
+ls -l >> files.txt       # append output to a file
+echo "hello" > greet.txt # write a string to a file
+sort < unsorted.txt      # read from a file and sort
+command 2> error.log     # write error messages to a file
+command > out.log 2>&1   # write both standard output and errors to the same file
+```
+
+| Symbol | Purpose |
+| :--- | :--- |
+| `>` | Write standard output to a file, overwriting it |
+| `>>` | Append standard output to a file |
+| `<` | Read input from a file |
+| `2>` | Write standard error to a file |
+| `2>&1` | Merge standard error into standard output |
+
+`tee` can write output to both the screen and a file at the same time, which is suitable for "watching while archiving":
+
+```bash
+verbose_command | tee log.txt          # output goes to both screen and file
+verbose_command | tee log.txt | grep "ERROR"   # keep filtering while saving to disk
+```
+
+### 4.2 Pipes
+
+The pipe `|` connects the standard output of the previous command to the standard input of the next, allowing multiple text-processing steps to be combined:
+
+```bash
+ls -l | grep "note"                              # find files containing "note"
+ps aux | grep python                             # find python-related processes
+find . -name "*.cpp" | wc -l                     # count cpp files in the current directory
+history | awk '{print $2}' | sort | uniq -c | sort -rn | head -5  # top 5 history commands
+```
+
+> [!TIP] The Unix Philosophy
+> Many Unix tools focus on one text-processing task and are combined through standard input and standard output. That is exactly where the value of pipes lies: confirm the input and output of each step first, then chain simple commands into a complete pipeline.
+
+## 5. Environment Variables
+
+### 5.1 Viewing Environment Variables
+
+```bash
+echo $PATH          # view a single variable
+env                 # view all environment variables
+echo $HOME          # user home directory
+echo $USER          # username
+```
+
+### 5.2 Setting Environment Variables
+
+```bash
+export MY_VAR="hello"              # temporary setting (only effective in the current terminal)
+echo $MY_VAR                       # view the variable just set
+export PATH="$HOME/mybin:$PATH"     # prepend your personal command directory to PATH
+```
+
+### 5.3 Making It Permanent
+
+Put the `export` command into a Shell configuration file so it runs automatically on every startup:
+
+| Shell | Config file |
+| :--- | :--- |
+| bash | Interactive non-login Shells usually read `~/.bashrc`; login Shells read the first existing file among `~/.bash_profile`, `~/.bash_login`, `~/.profile` |
+| zsh | Interactive Shells usually read `~/.zshrc`; other startup files depend on how the Shell is started |
+
+```bash
+nano ~/.bashrc                     # edit the config file
+# append to the end of the file: export PATH="$HOME/mybin:$PATH"
+source ~/.bashrc                   # make the current Shell reload the config
+```
+
+**Verify the config:**
+
+```bash
+echo $PATH                         # check whether the new path is in effect
+```
+
+> [!DETAILS-HINT] `source` and Restarting the Terminal
+> `source ~/.bashrc` makes the config take effect immediately in the current terminal, without closing and reopening it. But other already-open terminals are not affected; you need to restart them or run `source` in those terminals too.
+
+## 6. Permissions and Users
+
+### 6.1 File Permissions
+
+Linux file permissions are split into three groups: owner (user), group, and others (other). Each group has read (r), write (w), and execute (x) permissions.
+
+```text
+$ ls -l script.sh
+-rwxr-xr-- 1 SSJ SSJ 120 Jun 27 10:00 script.sh
+```
+
+Interpreting the permission bits `-rwxr-xr--`:
+
+```text
+-        rwx       r-x       r--
+type     owner     group     other
+file     rwx       r-x       r--
+```
+
+### 6.2 Changing Permissions
+
+Use the `chmod` command; there are numeric and symbolic ways:
+
+```bash
+chmod 755 script.sh    # rwxr-xr-x (owner has full permissions, others can read and execute)
+chmod 644 config.txt   # rw-r--r-- (owner can read/write, others read-only)
+chmod u+x script.sh    # add execute permission for the file owner (symbolic way)
+chown SSJ:SSJ file.txt # change the owner
+```
+
+| Number | Permissions | Meaning |
+| :--- | :--- | :--- |
+| 7 | rwx | read/write/execute |
+| 6 | rw- | read/write |
+| 5 | r-x | read/execute |
+| 4 | r-- | read-only |
+
+### 6.3 Escalating Privileges with sudo
+
+Some operations (installing software, modifying system files) require root privileges. Use `sudo` to escalate temporarily:
+
+```bash
+sudo apt update          # run as root
+sudoedit /etc/hosts        # safely edit a system file with your current editor
+```
+
+> [!CAUTION] sudo Risks
+> `sudo` runs commands with higher privileges; a wrong path or argument could overwrite system configuration, delete files, or change permissions. Before running, confirm where the command comes from, the target path, and how to recover; don't mechanically prepend `sudo` just because of a "permission denied" message.
+
+## 7. Installing Software
+
+Different distributions use different package managers:
+
+| Distribution | Package manager | Example |
+| :--- | :--- | :--- |
+| Ubuntu / Debian | apt | `sudo apt install git` |
+| Fedora | dnf | `sudo dnf install git` |
+| CentOS Stream / Rocky Linux | dnf | `sudo dnf install git` |
+| Arch | pacman | `sudo pacman -S git` |
+
+Common Ubuntu operations:
+
+```bash
+sudo apt update              # update the list of software sources
+sudo apt upgrade             # upgrade installed software
+sudo apt install package-name # install
+sudo apt remove package-name  # uninstall
+apt search keyword            # search
+```
+
+**Verify the installation:**
+
+```bash
+git --version             # check the software version
+```
+
+## 8. Productivity Tips
+
+### 8.1 Command History
+
+| Action | Purpose |
+| :--- | :--- |
+| `↑` / `↓` | Scroll through history commands |
+| `Ctrl + R` | Reverse search history (type a fragment to match) |
+| `!!` | Expand and immediately run the previous command; confirm the history content first |
+| `!keyword` | Expand and immediately run the matching history command; not recommended for beginners |
+| `history` | View all history |
+
+### 8.2 Auto-Completion
+
+Press `Tab` to complete commands, filenames, and paths; pressing `Tab` twice usually lists candidates. After completion, still review the full command, especially before deletion, moves, and privilege-escalation operations.
+
+### 8.3 Aliases
+
+In interactive Shells you can set short aliases for common commands and write them into `~/.bashrc`. Scripts should not rely on interactive aliases:
+
+```bash
+alias ll='ls -la'      # use ll instead of ls -la
+alias gs='git status'  # use gs instead of git status
+alias cls='clear'      # clear the screen with cls
+```
+
+### 8.4 Wildcards
+
+| Wildcard | Meaning | Example |
+| :--- | :--- | :--- |
+| `*` | Matches any number of characters | `*.cpp` (all .cpp files) |
+| `?` | Matches a single character | `file?.txt` (file1.txt, file2.txt) |
+| `[]` | Matches any one character inside the brackets | `project[123]` (project1, project2, project3) |
+
+```bash
+printf '%s\n' *.tmp  # preview the files the wildcard will match first
+cp -- *.md backup/   # copy after confirming, using -- to end option parsing
+```
+
+Note that wildcards only match filenames; they are not regular expressions. Regexes can describe more complex patterns (such as "any digit" or "start of line") and have broader uses; see [1.7 Text Editing](/en/docs/ch1/1.7-Text-Editing#53-regular-expressions).
+
+## 9. Scripting Basics
+
+Putting multiple commands into a file turns it into a Shell script (`.sh`), which can be run repeatedly.
+
+### 9.1 Your First Script
+
+```bash
+#!/usr/bin/env bash
+# scripts/backup.sh
+# Back up the notes directory to a timestamped archive.
+# Back up the notes directory to a timestamped archive.
+set -euo pipefail
+
+source_dir="${HOME}/notes"
+backup_dir="${HOME}/backups"
+date_tag="$(date +%Y%m%d-%H%M%S)"
+archive="${backup_dir}/notes-${date_tag}.tar.gz"
+
+if [[ ! -d "$source_dir" ]]; then
+  printf 'Directory does not exist: %s\n' "$source_dir" >&2
+  exit 1
+fi
+
+mkdir -p "$backup_dir"
+tar -czf "$archive" -C "$HOME" notes
+printf 'Backup complete: %s\n' "$archive"
+```
+
+How to use it:
+
+```bash
+chmod u+x scripts/backup.sh    # add execute permission for the file owner
+./scripts/backup.sh            # run it
+```
+
+The first line is the shebang, which selects the bash that can be found from the current `PATH`. `set -euo pipefail` surfaces some common errors early, but it cannot replace argument validation, logging, and testing.
+
+> [!DETAILS-FAQ] What Is the Shebang (`#!`)?
+> It is pronounced `/ˈʃiːbæŋ/`, roughly like "shay-bang". It is a combination of how the two symbols `#` and `!` are read: `#` is called "hash" in English, and `!` is "bang"; together they are "hash bang", which became "shebang" when run together.
+> 
+> `#!` is written at the very beginning of the first line of a script to tell the operating system **which interpreter should execute this file**. It must be at the very start of the file, with no spaces or blank lines before it.
+>
+> `#!/bin/bash` hardcodes the absolute path of the interpreter; `#!/usr/bin/env bash` first looks up `bash` in `PATH`, accommodating differences in interpreter location across systems, and is more commonly used.
+> 
+> Without a shebang, you can still run the script by specifying the interpreter manually, for example `bash script.sh`. But without a shebang, you can still run the script by specifying the interpreter manually, for example `bash script.sh`; however, if you execute `./script.sh` directly, the operating system relies on the shebang to pick the interpreter.
+
+### 9.2 Using Scripts to Understand Data Flow
+
+Shell scripts are often used to stream data from one stage to the next, which is very similar to the flow of "working tree → staging area → repository" in version control:
+
+```mermaid
+flowchart LR
+    A[Find C++ files] --> B[Extract TODO]
+    B --> C[Count lines]
+    C --> D[Write report]
+    D --> E[Print result]
+```
+
+The script below demonstrates how to chain three commands with pipes to complete the flow of "counting TODO occurrences in cpp files and writing a report":
+
+```bash
+#!/usr/bin/env bash
+# scripts/todo_count.sh
+# Count TODO occurrences in C++ source files and write a report.
+# Count TODO occurrences in C++ source files and write a report.
+set -euo pipefail
+
+todo_count="$(
+  { grep -Roh --include='*.cpp' -o 'TODO' . || true; } | wc -l
+)"
+printf 'Total TODO count: %s\n' "$todo_count" > todo_report.txt
+cat todo_report.txt
+```
+
+### 9.3 Conditionals and Loops
+
+Conditionals: `[[ ... ]]` is safer than `[ ... ]` and supports more features; prefer it in bash scripts:
+
+```bash
+if [[ -f "config.txt" ]]; then
+    echo "File exists"
+else
+    echo "File does not exist"
+fi
+
+if [[ "$NAME" == "Alice" ]]; then
+    echo "Hi Alice"
+fi
+```
+
+Common test conditions include: `-f` (regular file), `-d` (directory), `-z` (empty string), `==` / `!=` (string comparison), and `-eq` / `-lt` / `-gt` (numeric comparison).
+
+Loops:
+
+```bash
+# iterate over files; skip the literal *.txt when nothing matches
+for file in *.txt; do
+    [[ -e "$file" ]] || continue
+    printf 'Processing %s\n' "$file"
+done
+
+# iterate over a fixed number sequence (Bash)
+for i in {1..5}; do
+    printf 'Round %s\n' "$i"
+done
+
+# while loop
+i=0
+while [[ $i -lt 5 ]]; do
+    printf 'i=%s\n' "$i"
+    i=$((i + 1))
+done
+```
+
+### 9.4 Running in the Background
+
+Time-consuming commands can be put in the background so the terminal is not blocked:
+
+```bash
+sleep 100 &             # run in the background
+last_pid=$!             # save the PID of this background process immediately
+jobs                    # view background jobs managed by the current Shell
+kill "$last_pid"        # terminate that process by PID
+```
+
+> [!NOTE] Learning Path
+> You don't need to master Shell scripting all at once; being able to read and modify simple scripts is enough to start. When you find yourself repeatedly typing the same set of commands, that is the time to write scripts. Later, [1.13 Text Editing in the Shell](/en/docs/ch1/1.13-Shell-Text-Editing) introduces how to edit script files in the terminal.
+
+## 10. TODO Checklist
+
+- [ ] Understand the difference between the terminal and the Shell
+- [ ] Use `pwd`, `ls`, and `--help` / `man` / `tldr` fluently to confirm context before executing
+- [ ] Use `echo` fluently to print variable and command-substitution results, and distinguish single from double quotes
+- [ ] Understand combining pipes and redirection with read-only commands, and the difference between overwrite and append; try using `tee` to watch while archiving
+- [ ] Quote variables safely: `"$variable"`
+- [ ] Understand the interactive configs and script interpreters of Bash, zsh, and fish
+- [ ] Understand the shebang, `set -euo pipefail`, and script exit status
+- [ ] Know `if`, `for`, and `while` well enough to write simple conditionals and loops
+- [ ] Preview targets before deletion, moves, or privilege escalation, and only run after confirming
+- [ ] Try installing and initializing Starship; look into `starship.toml` and configure it
+
+## 11. Questions Worth Thinking About
+
+> [!DETAILS-FAQ] Why Do the Examples Always Emphasize "Preview First"?
+> The Shell faithfully executes the expanded paths and arguments, but variables, wildcards, or the current directory may not be what you expect. Running a read-only command to inspect the target before performing any write or delete is the most worthwhile command-line habit to build.
+
+> [!DETAILS-FAQ] How Do I Tell Whether an Unfamiliar Command Is Reliable?
+> First confirm which program the command comes from, then check its local `--help`, `man` page, or the project's official documentation. Also distinguish the current operating system, Shell, and command implementation; commands with the same name may have different options in GNU, BSD, and BusyBox environments.
+>
+> Command-line examples especially need verification — rely on the official `--help` output and actual run results, and don't trust unverified snippets; for anything involving deletion, moves, and privilege escalation, make sure you understand it before running.

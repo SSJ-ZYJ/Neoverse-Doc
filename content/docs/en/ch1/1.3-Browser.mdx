@@ -1,0 +1,283 @@
+---
+title: 1.3 Browser
+description: Browser selection, tab and bookmark management, extensions, search operators, privacy and security, and developer tools
+todoProgress: true
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Section
+> This section covers browser selection criteria and a comparison of major browsers, tab and bookmark management, clever uses of the address bar, choosing extensions and managing their permissions, efficient search techniques (search operators and tips), privacy and security (cookies, Incognito mode, password management), and an introduction to developer tools (DevTools). After learning this, you can significantly improve your information retrieval and web debugging efficiency.
+
+> [!INFO]
+> For us, the browser is probably the program with the longest daily usage time — checking documentation, writing algorithms, searching for error messages, watching videos, chatting with AI... Almost all learning happens in the browser.
+>
+> Making good use of the browser and efficient extensions can significantly improve learning and development efficiency as well as everyday experience.
+>
+> The content in this section mainly targets Windows PC browsers; some content may differ from mobile browsers.
+
+## 1. Browser Categories
+
+There is no single answer that fits everyone when it comes to browsers. For most ordinary users, Microsoft Edge, built into Windows, is a good choice.
+
+| Browser | Engine | Key features | Trade-offs |
+| :--- | :--- | :--- | :--- |
+| Chrome | Blink(Chromium) | Mature extension ecosystem, abundant developer tools resources | Account sync and extension installation restricted due to network environment |
+| Edge | Blink(Chromium) | Integrated with Windows, supports Chromium extensions | Heavy default services and news ads; needs configuration |
+| Firefox | Gecko | Open source, rich privacy control options | A few sites tested only against Chromium may have compatibility issues |
+
+> [!INFO] Some domestic Chromium-based browsers are not recommended
+>
+> These browsers generally bundle push ads and carry complex redundant components, with deeply hidden blocking and disabling options and cumbersome configuration.
+> Their kernel updates also lag behind, posing security risks.
+
+## 2. Tab Management
+
+Today, many browsers support both horizontal tabs and vertical tabs; you can freely choose according to your preference.
+
+At the same time, some browsers also support tab grouping, pinned tabs, and other features, making tab management more convenient.
+
+### 2.1 Tab Shortcuts
+
+| Shortcut | Action |
+| :--- | :--- |
+| `Ctrl + T` | New tab |
+| `Ctrl + W` | Close the current tab |
+| `Ctrl + Shift + T` | Restore the tab you just closed (can be pressed multiple times) |
+| `Ctrl + Tab` | Switch to the next tab |
+| `Ctrl + number key` | Switch to the Nth tab |
+| `Ctrl + Shift + N` | Open an Incognito window |
+
+### 2.2 Other Common Shortcuts
+
+| Shortcut | Action |
+| :--- | :--- |
+| `Ctrl + D` | Bookmark the current page |
+| `Ctrl + F` | Find keywords within the page |
+| `Ctrl + +` / `Ctrl + -` | Zoom in / zoom out the page |
+| `Ctrl + 0` | Restore 100% zoom |
+| `F5` / `Ctrl + R` | Refresh the page |
+| `Ctrl + F5` | Force refresh (ignore cache) |
+| `F11` | Fullscreen mode |
+| `F12` | Open developer tools |
+
+**Try the shortcuts:**
+
+- [ ] Open any webpage, press `Ctrl + T` to create a new tab, then `Ctrl + W` to close it, and finally `Ctrl + Shift + T` to restore it; if the restore works, the shortcuts are working
+
+## 3. Address Bar and Search Bar
+
+The address bar is usually located at the top of the browser window and is used to enter URLs or search keywords. It contains the URL (commonly called the "web address") of the current page.
+
+In most browsers today, the address bar can also be used for searching; the two have been merged.
+
+> [!INFO] Difference between the address bar and the search bar:
+> The input box on search engine websites is usually called the "search bar".
+> It is mainly used to enter keywords for searching, rather than directly entering a URL and navigating to the corresponding page like the browser address bar does.
+
+## 4. Bookmark Management
+
+### 4.1 Set Up a Folder Structure
+
+The browser bookmarks bar is just like a file system: if you pile things up without categorization, you will inevitably end up in a state of "can't find it, can't bear to delete it". It is recommended to build a two-level folder structure by purpose:
+
+<Files>
+  <Folder name="Bookmarks bar" defaultOpen>
+    <Folder name="Study" defaultOpen>
+      <Folder name="Course materials" disabled title="Official course sites, courseware platforms" />
+      <Folder name="Programming study" disabled title="Luogu, LeetCode, Codeforces" />
+      <Folder name="Papers" disabled title="Google Scholar, CNKI" />
+    </Folder>
+    <Folder name="Tools" defaultOpen>
+      <Folder name="Online tools" disabled title="remove.bg, image conversion" />
+      <Folder name="Code platforms" disabled title="GitHub, CNB" />
+      <Folder name="AI" disabled title="ChatGPT, Kimi, GLM" />
+    </Folder>
+    <Folder name="Entertainment" defaultOpen>
+      <Folder name="Video/Music" disabled />
+    </Folder>
+    <Folder name="Temporary" disabled title="e.g. localhost:3000" />
+  </Folder>
+</Files>
+
+> [!NOTE] Combine with the approach in [1.1 File Management](/en/docs/ch1/1.1-File-Management#3-organizing-folders)
+> Bookmark management follows the same idea as file management: categorize by hierarchy, archive regularly.
+> Good bookmark organization lets us quickly find the websites we want to visit.
+
+### 4.2 Regular Cleanup
+
+Every two weeks, spend a few minutes cleaning up your bookmarks: organize or delete the contents of the "Temporary" folder, check for dead links, and remove websites you no longer use.
+Develop good usage habits.
+
+## 5. Extensions
+
+### 5.1 A Few Useful Extensions
+
+| Category | Tools to consider | Notes |
+| :--- | :--- | :--- |
+| Content filtering (recommended) | uBlock Origin / AdGuard ad blockers, etc. | Filters ads, trackers, pop-ups, and other content |
+| Dark mode | Dark Reader | Disable per site when a site displays abnormally |
+| User scripts (recommended) | Tampermonkey and other script managers | Review each script's source and matched site scope individually |
+| Dev assistance | Wappalyzer | Identifies the tech stack used by a website |
+| ... | ... | ... |
+
+### 5.2 Installation and Management
+
+Chrome extension store: [Chrome Web Store](https://chromewebstore.google.com/)
+Edge extension store: [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons)
+Firefox extension store: [Firefox Browser Add-ons](https://addons.mozilla.org/)
+
+You can manage installed extensions at `chrome://extensions`, `edge://extensions`, or `about:addons`.
+Or simply click Settings and go to the extension management page.
+
+> [!WARNING] Extension permission risks
+> Extensions can read and modify webpage content.
+> Before installing, review the publisher, the last update time, the source code or privacy statement, and permissions such as "read data on all websites".
+
+### 5.3 Regularly Clean Up Unused Extensions
+
+Every so often, check your extension list: remove extensions you no longer use, and restrict extensions used only on specific sites to those sites.
+
+## 6. Efficient Search
+
+### 6.1 Choosing a Search Engine
+
+| Search engine | Features | Best for |
+| :--- | :--- | :--- |
+| Google | Most accurate results, comprehensive English resources | Programming problems, English documentation |
+| Bing | Directly accessible in China, decent result quality | Daily searches |
+
+### 6.2 Search Operators
+
+Mastering a few search operators can improve our search precision:
+
+| Operator | Function | Example |
+| :--- | :--- | :--- |
+| `"exact match"` | Search for a complete phrase | `"segmentation fault"` |
+| `site:domain` | Restrict to a website | `c++ site:cppreference.com` |
+| `filetype:extension` | Restrict to a file type | `operating system filetype:pdf` |
+| `-keyword` | Exclude a word | `python -snake` |
+| `intitle:keyword` | Keyword in the title | `intitle:tutorial` |
+| `..` | Number range | `laptop 5000..8000` |
+
+### 6.3 Combined Usage Examples
+
+- Search only GitHub issues about Vue
+  ```text
+  "vue 3" site:github.com
+  ```
+
+- Find PDF courseware for an operating system course
+  ```text
+  operating system course filetype:pdf
+  ```
+
+- Exclude Chinese tutorials on Baidu Knows
+  ```text
+  java tutorial -site:zhidao.baidu.com
+  ```
+
+**Try the search operators:**
+
+- [ ] Type `"segmentation fault" site:stackoverflow.com` in the address bar; if only relevant results from Stack Overflow are returned, the operators are working
+
+## 7. Privacy and Security
+
+### 7.1 Cookies and Cache
+
+| Concept | Description | How to clear |
+| :--- | :--- | :--- |
+| Cookie | Keeps us logged in to websites, etc. | You can set "clear cookies when the browser is closed" or clean them up regularly |
+| Cache | Temporary copies of webpage resources (images, scripts) that speed up repeat visits | After a site updates, use `Ctrl + F5` to force refresh |
+
+Clearing path (using Edge as an example): `Settings` → `Clear browsing data` (shortcut `Ctrl + Shift + Del`)
+
+### 7.2 Incognito Mode
+
+Incognito mode (InPrivate / private mode) does not save history, cookies, or form data. Good for:
+
+- Logging into accounts on public computers
+- Testing how a webpage behaves without cache
+- Searching for content you don't want recorded by recommendation algorithms
+
+> [!IMPORTANT] Incognito mode is not fully anonymous
+> Incognito mode only avoids saving records locally; websites and ISPs can still see our browsing activity.
+> True anonymity requires VPN or Tor. Don't assume nobody knows what we're doing just because Incognito is on 👀.
+
+### 7.3 Password Management
+
+The password manager built into the browser can save and auto-fill passwords, which is much safer than writing passwords in a notepad.
+
+You can also use more professional password managers, such as [Bitwarden](https://bitwarden.com/), which supports cross-browser and cross-device sync.
+If you like tinkering and happen to have your own server resources, you can also try self-hosting a password manager for personal use.
+
+> [!WARNING] 
+> Regularly changing passwords and setting strong passwords (long enough, containing uppercase letters, lowercase letters, numbers, and symbols) are important measures to prevent password leaks.
+
+## 8. A First Look at Developer Tools
+
+Press `F12` or `Ctrl + Shift + I` to open the developer tools (DevTools). This is the core tool for front-end development and web debugging. Given where this chapter is in the curriculum, we only provide a brief introduction here without going into detail.
+
+| Panel | Function |
+| :--- | :--- |
+| Elements | View and modify HTML / CSS |
+| Console | Run JavaScript, view logs |
+| Network | View requests and responses, debug APIs |
+| Application | View cookies, LocalStorage, etc. |
+| Sources | View and debug webpage source code with breakpoints |
+
+## 9. TODO Checklist
+
+- [ ] Memorize common shortcuts such as `Ctrl + T`, `Ctrl + R`, `Ctrl + Shift + T`, and `Ctrl + F`
+- [ ] Installed extensions such as ad blockers, and reviewed their permissions
+- [ ] Understand and try combined searches with operators such as `site:`, `filetype:`, and `-`
+- [ ] When encountering programming errors, copy the English error message and combine tech-stack keywords to search
+- [ ] Understand the difference between cookies and cache, and know that `Ctrl + Shift + Del` clears browsing **cache**
+- [ ] Understand the limitations of Incognito mode, and try Edge's Microsoft Password Manager or another password manager
+- [ ] Set strong passwords for important websites and enabled Authenticator 2FA (two-factor authentication)
+
+## 10. Questions Worth Thinking About
+
+> [!DETAILS-FAQ] Why does `F5` sometimes fail to refresh, while `Ctrl + F5` works?
+> `F5` first uses the local cache and sends a conditional request to the server (such as `If-Modified-Since`); if the server determines the resource has not changed, it returns `304 Not Modified`, and the page directly reuses the cache.
+>
+> `Ctrl + F5` skips cache validation and forces all resources to be downloaded again. If styles or scripts refuse to update after a site redesign, the cache is most likely not refreshed; in that case, try `Ctrl + F5` first.
+
+> [!DETAILS-FAQ] Why does the same webpage look different in different browsers?
+> Different browsers use different rendering engines (Chrome / Edge use Blink, Firefox uses Gecko). Their support for CSS standards and new APIs, as well as implementation details, differ; combined with differences in font rendering and zoom, the final rendering will differ.
+>
+> This is why we should care about the "engine" rather than just the "brand", and why websites need to be tested in multiple browsers during development.
+
+> [!DETAILS-FAQ] Why do some websites force the use of "Chrome" or "Edge"?
+> These sites are usually only tested against the Chromium engine, or rely on certain Blink features / private APIs (such as some online banking and government platforms). Non-Chromium browsers may experience missing features or broken interactions.
+>
+> For critical scenarios such as course selection and exams, confirm the platform's browser requirements in advance to avoid being unable to access it at a critical moment.
+> 
+> **Microsoft Edge or Google Chrome already meets the needs of the vast majority of websites.**
+
+> [!DETAILS-FAQ] How do extensions like `AdGuard` and `uBlock Origin` block ads and other content?
+> Ad blockers like AdGuard and uBlock Origin essentially **block requests, hide elements, or modify page behavior** according to filter rules while the browser loads a webpage.
+>
+> There are mainly three mechanisms:
+>
+> 1. **Network request blocking**
+> 
+> When a browser visits a webpage, it continues to request resources such as images, scripts, and ad endpoints. Ad blockers judge whether a request comes from an ad or tracking domain according to filter rules; if it matches a rule, they prevent that request from being sent or loaded.
+>
+> 2. **Page element hiding**
+>
+> Some ad content and page content come from the same website, so the entire request cannot simply be blocked. In this case, the extension hides the corresponding elements with CSS selectors. For example:
+>
+> ```css
+> .advertisement {
+>   display: none !important;
+> }
+> ```
+> 
+> The corresponding filter rule might look like: `example.com##.advertisement`
+> 
+> 3. **Script intervention**
+>
+> Some websites dynamically generate ads, or detect whether the user has an ad blocker enabled. Extensions can inject scripts to modify the JavaScript execution environment, block specific function calls, or handle anti-ad-blocking logic such as "please disable your ad blocker".
+>
+> These rules usually come from filter lists such as EasyList and AdGuard Filters, and users are also allowed to add rules of their own.

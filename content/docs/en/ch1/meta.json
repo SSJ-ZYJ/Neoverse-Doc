@@ -1,0 +1,25 @@
+{
+  "title": "Chapter 1: The Missing Semester",
+  "description": "The things we should know",
+  "icon": "GraduationCap",
+  "pages": [
+    "---Stage 1: Windows and Everyday Tools---",
+    "1.1-File-Management",
+    "1.2-Windows-Settings",
+    "1.3-Browser",
+    "1.4-Common-Tools",
+    "---Stage 2: Asking and Community---",
+    "1.5-Asking-Questions",
+    "1.6-Community-Platforms",
+    "---Stage 3: Text Editing---",
+    "1.7-Text-Editing",
+    "1.8-Markdown",
+    "1.9-LaTeX",
+    "1.10-Mermaid",
+    "---Stage 4: Systems and Shell---",
+    "1.11-Operating-Systems",
+    "1.12-Shell-Basics",
+    "1.13-Shell-Text-Editing"
+  ],
+  "root": true
+}

@@ -1,0 +1,379 @@
+---
+title: 1.8 Markdown
+description: Master the Markdown markup language to write structured documents efficiently in plain text
+todoProgress: true
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Section
+> This section introduces Markdown, a lightweight markup language: basic syntax such as headings, paragraphs, emphasis, lists, links, images, code blocks, tables, and blockquotes, as well as GFM extensions and the project's enhanced syntax (callouts, collapsible blocks). After finishing it, you can write structured documents in plain text.
+
+> [!INFO]
+> GitHub READMEs, tech blogs, API documentation, and even the document you are reading right now—they are all Markdown underneath.
+> It adds headings, lists, links, and code blocks to plain text with a handful of markers; the syntax is easy to pick up and friendly to version control. This section is the foundation for later writing technical documents, course notes, and project READMEs.
+
+## 1. What Is Markdown
+
+Markdown is a lightweight markup language: with a handful of symbols such as `#`, `*`, `-`, and `[ ]`, you can add structure like headings, lists, links, and code blocks to plain text. The source file is still plain text (usually with a `.md` extension), and it renders into a well-formatted document.
+
+It is precisely this "plain text, yet structured" property that makes it almost the default choice in technical writing:
+
+- **Notes**: lighter than Word, more structured than TXT
+- **Documents**: READMEs, API documentation, and technical proposals often use it
+- **Blogs**: tools like GitHub Pages, Hexo, and Hugo can all use Markdown as the content source
+
+> [!INFO] Markdown vs Word
+> Markdown is not a replacement for Word; its goal is to "give structure to plain text".
+> It is not suitable for complex layout (posters, magazines), but it is great for technical documents, notes, and READMEs.
+
+## 2. Basic Syntax
+
+### 2.1 Headings
+
+Use `#` for headings; the count corresponds to the level:
+
+```markdown
+# Level-1 Heading
+## Level-2 Heading
+### Level-3 Heading
+#### Level-4 Heading
+```
+
+> [!NOTE] This Project's Heading Convention
+> This project requires document headings to start from H2 (`##`), because H1 is rendered from the `title` field in the frontmatter. See [Contributing Guide](/en/docs/about/contributing) for details.
+
+### 2.2 Paragraphs and Line Breaks
+
+In Markdown, paragraphs need to be separated by **a blank line**. A single Enter press (without a blank line) is treated as a soft break inside the same paragraph and may be merged when rendered.
+
+```markdown
+This is the first paragraph.
+
+This is the second paragraph.
+```
+
+### 2.3 Emphasis
+
+| Syntax | Effect | Use |
+| :--- | :--- | :--- |
+| `**bold**` | **bold** | Emphasize key points |
+| `*italic*` | *italic* | Quote terms |
+| `` `inline code` `` | `inline code` | Mark code |
+| `~~strikethrough~~` | ~~strikethrough~~ | Mark as obsolete |
+
+### 2.4 Lists
+
+Use `-`, `*`, or `+` for unordered lists:
+
+```markdown
+- First item
+- Second item
+    - Nested subitem (indented after the parent list content)
+    - Another subitem
+- Third item
+```
+
+Use numbers followed by a period for ordered lists:
+
+```markdown
+1. First step
+2. Second step
+3. Third step
+```
+
+> [!TIP] Automatic Numbering of Ordered Lists
+> Even if you write the ordered list as `1. 1. 1.`, it renders automatically as `1. 2. 3.`. But for source readability, it is recommended to write them in order.
+
+### 2.5 Links and Images
+
+```markdown
+[Link text](https://example.com)
+![Image description](image path or URL)
+```
+
+Image syntax is link syntax with one more `!`. The image description is used as alt text, and the path can be a relative path or a URL; when the path contains special characters such as spaces, escape or encode it according to the rules of the target renderer.
+
+### 2.6 Blockquotes
+
+Use `>` for blockquotes:
+
+```markdown
+> This is a blockquote.
+> It can span multiple lines.
+```
+
+Result:
+
+> This is a blockquote.
+> It can span multiple lines.
+
+### 2.7 Horizontal Rules
+
+Use three or more `-` or `*`:
+
+```markdown
+---
+```
+
+Technical documents often use code blocks and tables; both are explained below.
+
+## 3. Code Blocks
+
+### 3.1 Inline Code
+
+Wrap with backticks: `` `code` `` renders as `code`.
+
+### 3.2 Code Blocks
+
+Wrap with three backticks and specify the language on the first line to enable syntax highlighting:
+
+````markdown
+```python
+def hello():
+    print("Hello, World!")
+```
+````
+
+Result:
+
+```python
+def hello():
+    print("Hello, World!")
+```
+
+> [!WARNING] Always Specify the Language
+> Specifying the language (e.g., `python`, `cpp`, `bash`) lets the renderer highlight correctly and greatly improves readability. This project has requirements for the language tags of all code blocks; see [Contributing Guide](/en/docs/about/contributing) for details.
+
+### 3.3 Showing Backticks Inside a Code Block
+
+When the code content itself contains triple backticks, wrap it with four backticks on the outside:
+
+`````markdown
+````markdown
+```python
+print("inner code block")
+```
+````
+`````
+
+## 4. Tables
+
+Common extensions such as GFM separate columns with `|` and use a separator row to distinguish the header from the content:
+
+```markdown
+| Name | Age | Major |
+| :--- | :---: | ---: |
+| SSJ | 20 | Computer Science |
+| SSSJ | 21 | Software Engineering |
+```
+
+Result:
+
+| Name | Age | Major |
+| :--- | :---: | ---: |
+| SSJ | 20 | Computer Science |
+| SSSJ | 21 | Software Engineering |
+
+Alignment:
+
+| Syntax | Alignment |
+| :--- | :--- |
+| `:---` | Left |
+| `:---:` | Center |
+| `---:` | Right |
+
+> [!DETAILS-HINT] Table Formatting Tip
+> There is no need to manually align the spacing of `|`; the renderer handles it automatically. Aligning the source helps readability; if you use a formatting extension, confirm the publisher, permissions, and the project's formatting conventions before installing.
+
+## 5. Task Lists
+
+```markdown
+- [x] Completed task
+- [ ] Uncompleted task
+- [ ] Another uncompleted task
+```
+
+They suit to-do lists and practice checklists.
+
+## 6. Escape Characters
+
+Markdown supports escaping some ASCII punctuation with a backslash. Whether a character can or needs to be escaped depends on the syntactic position; for example, `|` in a table usually needs escaping:
+
+```markdown
+\*This is not italic\*    \# This is not a heading
+```
+
+Result: \*This is not italic\* \# This is not a heading
+
+| Characters that need escaping | Escaped form |
+| :--- | :--- |
+| `*` | `\*` |
+| `#` | `\#` |
+| `|` | `\|` |
+| `` ` `` | `` \` `` |
+| `_` | `\_` |
+
+Different platforms add extensions such as tables, task lists, and math formulas on top of the core syntax; compatibility depends on the target renderer.
+
+## 7. Extended Syntax
+
+Different Markdown renderers support different extended syntax; this section introduces a few common ones.
+
+### 7.1 GitHub Flavored Markdown (GFM)
+
+GitHub Flavored Markdown (GFM) adds a set of extensions on top of CommonMark; this project also enables the common GFM syntax, including:
+
+- **Task lists** (see above)
+- **Tables** (see above)
+- **Strikethrough** (`~~text~~`)
+- **Autolinks** (URLs become links automatically)
+
+### 7.2 Alerts / Callouts
+
+This project uses GitHub-style alerts; different types map to different styles:
+
+```markdown
+> [!NOTE]
+> This is a note.
+
+> [!TIP]
+> This is a tip.
+
+> [!WARNING]
+> This is a warning.
+
+> [!IMPORTANT]
+> This is important information.
+```
+
+### 7.3 Collapsible Details Blocks
+
+This project also provides collapsible blocks suitable for answers, supplementary explanations, and longer examples:
+
+```markdown
+> [!DETAILS-HINT] View the hint
+> Put supplementary information that does not affect the main reading flow here.
+
+> [!DETAILS-ANSWER] View the answer
+> Put the exercise answer or reference implementation here.
+```
+
+> [!DETAILS-HINT] When to Use Collapsible Blocks?
+> Content that the main reading flow must know should be written directly in the body or in a regular callout; answers, long examples, and optional background knowledge suit folding, so that the body is not interrupted by secondary information.
+
+### 7.4 Math Formulas
+
+Some platforms (including this project) support math formulas written in LaTeX syntax, wrapped with `$`:
+
+```markdown
+Inline formula: $E = mc^2$
+
+Block formula:
+$$
+\int_0^1 x^2 dx = \frac{1}{3}
+$$
+```
+
+> [!NOTE] Compatibility of Math Formulas
+> Math formulas are not supported by every Markdown renderer. GitHub supports them, but some platforms need additional plugins. Before writing a document, confirm whether the target platform supports them.
+
+Besides correct syntax, technical documents also need a clear structure and verifiable examples.
+
+## 8. Writing Conventions
+
+### 8.1 Clear Structure
+
+- Use only one H1 per article (this project does not use H1; it starts from H2)
+- Do not skip levels (going straight from H2 to H4 is a bad habit)
+- Each section focuses on one topic; do not cram too much
+
+### 8.2 Chinese-English Typography
+
+Add a half-width space between Chinese and English or digits to improve readability:
+
+```markdown
+# Good
+Write programs with Python 3.12
+
+# Bad
+Write programs with Python3.12
+```
+
+This is also this project's convention; see [Contributing Guide](/en/docs/about/contributing) for details.
+
+### 8.3 Examples and Explanations Working Together
+
+Commands, configurations, and API behavior are best shown with runnable examples, while keeping the necessary prerequisites, risks, and expected results. With only descriptions and no examples, readers often find it hard to verify whether an operation is correct.
+
+**Good approach** — write a lead-in sentence, followed by a code block:
+
+Use `git status` to check the status:
+
+```bash
+git status
+```
+
+**Bad approach** — describe in words what could have been shown with code:
+
+> We can check the status of the current repository by typing git followed by the status subcommand in the terminal.
+
+### 8.4 Use Descriptive Link Text, Not "Here"
+
+```markdown
+# Good
+See the [Contributing Guide](/en/docs/about/contributing)
+
+# Bad
+See the contributing guide, [click here](/en/docs/about/contributing)
+```
+
+> [!CAUTION] Avoid Vague Link Text
+> Text like "click here" or "this link" carries no information; readers cannot tell what it points to at a glance. Link text should describe the target content so readers can judge at a glance whether they need to click it.
+
+## 9. Recommended Tools
+
+| Tool | Use | Features |
+| :--- | :--- | :--- |
+| VS Code | Source editing and Markdown preview | Great for editing alongside code, configuration, and project documents |
+| Typora | WYSIWYG editor | Suitable for long-form writing; paid |
+| Obsidian | Personal knowledge management | Supports bidirectional links; good for building a knowledge base |
+
+> [!TIP]
+> Open a `.md` file in VS Code, press `Ctrl + Shift + V` to open the preview, or press `Ctrl + K` then `V` for the side-by-side preview, and see the result as you write.
+
+## 10. Further Reading
+
+For more syntax examples, see this project's [Markdown Syntax Examples](/en/docs/about/contributing/syntax-example). To learn the project's specific conventions, see the [Contributing Guide](/en/docs/about/contributing).
+
+When you need to write complex math formulas or fully typeset documents, continue with [1.9 LaTeX](/en/docs/ch1/1.9-LaTeX); for complex diagrams, use [1.10 Mermaid](/en/docs/ch1/1.10-Mermaid) to draw flowcharts and sequence diagrams directly in Markdown.
+
+> [!NOTE] The Core of Markdown
+> Markdown has little syntax; the point is to "express content with structure". Before writing, think about how many sections the article has and what each covers, then organize the content with headings, lists, and diagrams.
+
+## 11. TODO Checklist
+
+- [ ] Can organize a short article with headings, lists, links, images, tables, and code blocks
+- [ ] All code blocks are tagged with the correct language
+- [ ] Remember that heading levels must be consecutive, and link text describes the target content
+- [ ] Can choose between a regular callout and a collapsible details block based on content importance
+- [ ] Try previewing and checking the final result in the target renderer
+
+## 12. Questions Worth Thinking About
+
+> [!DETAILS-FAQ] Why does the same Markdown produce different **rendering results** across platforms?
+> The original Markdown spec did not cover every parsing detail, and later multiple implementations emerged. CommonMark provides a clear spec and test cases for the core syntax, while platform extensions such as GFM add tables, task lists, and more on top of the common syntax, so different renderers can still produce differences.
+>
+> When writing, prefer common syntax and CommonMark features; when you really need platform extensions, first confirm the target platform's support, or do an actual render check in the target environment before publishing.
+
+> [!DETAILS-FAQ] Why does the same Markdown look different in **rendering styles** across platforms?
+> Markdown rendering happens in two steps: it is first parsed into HTML (which determines the **structure** of the content), then each platform's CSS determines the **appearance**. Parsing results are basically guaranteed consistent by specs such as CommonMark / GFM, but fonts, spacing, code highlighting, and light / dark themes are all the platform's own styles, so the same document looking different across sites is normal.
+>
+> When writing, judge "whether the syntax is supported" and "how the style is presented" separately: use common syntax to guarantee compatibility of structure and semantics, and leave appearance differences to each platform's theme; when you really need special components or extended syntax, do an actual render check on the target platform.
+
+> [!DETAILS-FAQ] Why does some syntax in this project render as plain text with different styles on other platforms?
+> This project (Neoverse-Docs) is an example of both questions above:
+>
+> On top of Fumadocs, we extended GitHub Alert-style callouts (`[!NOTE]`, `[!WARNING]`, etc.) and the `[!DETAILS]` family of collapsible blocks (FAQ, ANSWER, EXAMPLE, HINT, AI), rendered with a liquid glass theme and custom code block styles.
+>
+> Among them, the `[!DETAILS]` family is implemented by the project's own Remark plugin: on this site it shows as expandable collapsible cards, while on platforms such as GitHub that only implement basic GFM, this syntax is not recognized and degrades to a plain blockquote; `[!NOTE]` and similar are native GitHub syntax with icons and colors on both sides, differing only in style details.

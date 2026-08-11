@@ -1,0 +1,457 @@
+---
+title: 1.1 File Management
+description: Learn about the Windows file system, file naming conventions, file management, common file extensions, and file search and compression
+todoProgress: true
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+> [!DETAILS-AI] AI Summary of This Section:
+> This section introduces the drive letters and directory tree of the Windows file system, the user directory, absolute and relative paths, file naming conventions and recommended naming templates, folder organization by purpose with a separate workspace and archive, showing file extensions and a cheat sheet of common types, File Explorer search and Everything full-drive search, and compression and extraction with 7-Zip and Bandizip. After finishing it, you'll be able to organize your study materials and code projects properly.
+
+> [!INFO]
+> Windows is the operating system with the highest market share and the widest range of applications, so let's start with Windows, beginning with Windows file management, and gradually get to know the computer in front of us.
+
+> [!CAUTION]
+> <br/>
+> <div className="text-center text-xl"> ***Data is priceless, proceed with caution!***</div>
+> <br/>
+> <div className="text-center text-xl"> ***Data is priceless, proceed with caution!***</div>
+> <br/>
+> <div className="text-center text-xl"> ***Data is priceless, proceed with caution!***</div>
+
+## 1. Windows File System
+
+### 1.1.1 Drive Letters and Directory Structure
+
+Windows uses letters to represent disk partitions; the most common are `C:` (the system drive) and data drives such as `D:` and `E:`. Under each drive is a directory tree, in which directories are separated by backslashes `\`.
+
+Below is the typical directory structure of the system drive (hover over a folder to see its purpose):
+
+<Files>
+  <Folder name="C:" defaultOpen>
+    <Folder name="Program Files" disabled title="Default installation location for 64-bit software" />
+    <Folder name="Program Files (x86)" disabled title="Default installation location for 32-bit software" />
+    <Folder name="ProgramData" disabled title="Shared program data directory" />
+    <Folder name="Windows" disabled title="Windows system files directory" />
+    <Folder name="Users" defaultOpen>
+      <Folder name="your-username" disabled title="User directory" />
+    </Folder>
+  </Folder>
+</Files>
+
+> [!INFO] The relationship between drive letters and partitions:
+>
+> `C:` is always the system drive, but `D:` is not necessarily a second physical drive — it may just be another partition on the same drive.
+
+> [!TIP] About partitions:
+>
+> For a new computer, it's recommended to create at least two partitions, keeping the system and data separate.
+>
+> For a drive with a total capacity `≤ 2TB`, two partitions (system and data) are enough. Too many partitions reduce space utilization and add management hassle.
+>
+> Depending on the total disk space, a system partition of `200GB - 500GB` is usually enough; leave the remaining space for the data partition.
+
+### 1.1.2 The User Directory
+
+Open `This PC`, go to the `C:` drive, double-click the `Users` folder, select your username, and enter the user directory.
+
+Typically, it contains several system-preset subdirectories by default (hover over a folder to see its purpose):
+
+<Files>
+  <Folder name="C:" defaultOpen>
+    <Folder name="..." disabled title="..." />
+    <Folder name="Users" defaultOpen>
+      <Folder name="your-username" defaultOpen title="User directory">
+        <Folder name="Desktop" disabled title="Desktop" />
+        <Folder name="Documents" disabled title="Documents" />
+        <Folder name="Downloads" disabled title="Downloads" />
+        <Folder name="Pictures" disabled title="Pictures" />
+        <Folder name="Musics" disabled title="Music" />
+        <Folder name="Videos" disabled title="Videos" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+| Folder | Purpose |
+| :--- | :--- |
+| `Desktop` | Temporarily holds files being worked on and shortcuts to various programs |
+| `Documents` | Default location for documents, notes, and chat history |
+| `Downloads` | Default location for browser downloads |
+| `Pictures` | Screenshots and image assets |
+| `Music`, `Videos` | Media files |
+
+> [!WARNING] Note:
+> Folders like the Desktop are essentially the folder `C:\Users\your-username\Desktop` (taking the Desktop as an example), which lives on the system drive `C:`.
+> If the system crashes and needs reinstalling, Desktop files are easily lost. Put important files on the data drive and create shortcuts to the corresponding folders.
+
+> [!NOTE] Getting the current user directory path:
+>
+> ```cmd
+> echo %USERPROFILE%  & REM outputs the current user directory, e.g., C:\Users\Shenshijun
+> ```
+>
+> > `&`: executes multiple commands in a single line (such as the `echo` output and `REM` comment above).
+> >
+> > `REM`: used to comment out command-line code; it has no practical effect.
+
+> [!TIP] Changing the Desktop folder's storage location:
+>
+> You can right-click the `Desktop` folder in the sidebar of File Explorer, choose `Properties`, and change its storage location in the `Location` tab at the top.
+>
+> Other system category folders (such as `Documents`, `Downloads`, `Pictures`, `Music`, `Videos`, etc.) can be changed in the same way.
+
+### 1.1.3 Paths: Absolute Paths and Relative Paths
+
+<Files>
+  <Folder name="C:" defaultOpen>
+    <Folder name="..." disabled title="..." />
+    <Folder name="Users" defaultOpen>
+      <Folder name="your-username" defaultOpen title="User directory">
+        <Folder name="Documents" defaultOpen>
+          <Folder name="CS" defaultOpen title="Course directory">
+            <Folder name="Data-Structure" defaultOpen title="Data Structure directory">
+              <File name="Notes.md" disabled title="Notes" />
+            </Folder>
+            <Folder name="Algorithms" defaultOpen title="Algorithms directory">
+              <File name="template.md" disabled title="Template" />
+            </Folder>
+          </Folder>
+        </Folder>
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+An **absolute path** is a complete address starting from a drive letter; it can precisely locate a file from anywhere, for example:
+
+```text
+C:\Users\Shenshijun\Documents\CS\data-structures\notes.md
+```
+
+A **relative path** is an address starting from the current location. Suppose we're in the `CS` folder and want to reference `notes.md` in the `Data-Structure` folder; we only need to write:
+
+```text
+data-structures\notes.md
+```
+
+> [!TIP] Two special symbols
+> `.` refers to the current directory, and `..` refers to the parent directory.
+> For example, to reference `template.md` in the `Algorithms` folder from `data-structures`, you can write `..\Algorithms\template.md`.
+> These two symbols are extremely common in command lines and code.
+
+## 2. File Naming Conventions
+
+### 1.2.1 Naming Principles
+
+Good naming lets you know what a file contains at a glance; avoid names like `New folder`, `New folder (2)`, `New Microsoft Word Document (3).docx`, or `final final v2`.
+Here are some suggestions:
+
+| Suggestion | Explanation | Example |
+| :--- | :--- | :--- |
+| Meaningful names | The name reflects the file's content | `2026Fall-DataStructure-LabReport1.md` |
+| Avoid special characters | Don't use `\ / : * ? " < > \|` | These characters have special meanings in Windows |
+| Be cautious with spaces and Chinese | Extra quotes are needed on the command line | Use hyphens or underscores to separate English filenames |
+| Manage versions with numbers | Use `v1`, `v2`, or dates | Don't pile up "final" and "really final" |
+
+> [!CAUTION] List of forbidden characters:
+> These characters **must never** appear in Windows filenames: `\ / : * ? " < > |`. Including them will cause renaming to fail or files to become unopenable.
+>
+> Spaces are legal, but they often cause problems on the command line and in programming; it's recommended to use `-` or `_` instead (except for system-conventional directories like `Program Files`).
+
+> [!TIP] About naming with Chinese characters:
+> Chinese characters are supported in Windows, but it's recommended to avoid them when naming folders, because problems may arise on the command line, in programming, and during the installation of some programs.
+>
+> For example, the famous ~~brain-and-hand puzzle competition~~ entertainment program service platform `Steam` does not support installation into directories whose paths contain Chinese characters.
+
+### 1.2.2 Recommended Naming Templates
+
+Different scenarios call for different templates; here are some for reference:
+
+```text
+# Course materials
+{Year}-{Term}-{Course}-{Material type}.{extension}
+Example: 2026Fall-DataStructure-Notes.tex
+
+# Lab report
+{Course}-Lab{Number}-{Your name}.{extension}
+Example: DataStructure-Lab3-ZhangSan.tex
+
+# Project code (all lowercase English, separated by hyphens or underscores)
+Example: student-management-system.cpp
+```
+
+> [!DETAILS-FAQ] Why should code projects be named in English?
+> Many development tools don't support Chinese paths well, and the shorter the path, the easier it is to switch to it in a terminal.
+> For example, code projects are better placed at `D:\Projects\my-first-app` rather than `C:\Users\SSSJ\Desktop\MyFiles\NewFolder\my first app`.
+
+## 3. Organizing Folders
+
+### 1.3.1 Organize by Purpose
+
+It's recommended to organize study materials in the `Year → Term → Course → Type` hierarchy, so a clear path lets you locate things quickly.
+
+<details className="markdown-details markdown-details-example">
+  <summary className="markdown-details-summary markdown-details-type-example">
+    Example directory structure layered by academic year:
+  </summary>
+
+  The following example shows how to organize the `Documents` directory by `Year → Term → Course → Type`:
+
+  <Files>
+    <Folder name="Documents" defaultOpen>
+      <Folder name="CS" defaultOpen title="Root directory for computer-related materials">
+        <Folder name="2026 Spring" defaultOpen>
+          <Folder name="CPP-Programming" defaultOpen>
+            <Folder name="Courseware" disabled />
+            <Folder name="Assignments" disabled />
+            <Folder name="Lab reports" disabled />
+            <Folder name="Notes" disabled />
+          </Folder>
+          <Folder name="Advanced Mathematics" disabled />
+          <Folder name="College English" disabled />
+        </Folder>
+        <Folder name="2026 Fall" defaultOpen>
+          <Folder name="Operating Systems" disabled />
+          <Folder name="Computer Networks" disabled />
+        </Folder>
+      </Folder>
+      <Folder name="Projects" defaultOpen title="Personal projects">
+        <Folder name="Blog" disabled />
+        <Folder name="Algorithms" disabled />
+      </Folder>
+      <Folder name="Archive" defaultOpen title="Archive, for content no longer active but worth keeping">
+        <Folder name="2025 Fall" disabled />
+      </Folder>
+    </Folder>
+  </Files>
+</details>
+
+### 1.3.2 Separate Workspace from Archive
+
+At the end of each semester, move all materials from the previous semester into the `Archive` folder. This way the workspace only ever holds what's currently in use and never accumulates.
+
+> [!TIP] *~~That day's archive — archive it!~~* When to archive:
+> Spend 10 minutes archiving before the semester starts: create the folder structure for the new semester's courses, and move the previous semester's content into the `Archive` folder.
+> Keep the workspace tidy all year round.
+
+### 1.3.3 Manage Code Projects Separately
+
+Code projects are better placed in a dedicated `Projects` folder, with paths as short as possible, all English, and no spaces.
+
+```text
+# Recommended code storage path
+D:\Projects\my-first-app
+
+# Not recommended path
+C:\Users\ZhangSan\Desktop\MyFiles\NewFolder\my first app
+```
+
+## 4. File Extensions and Types
+
+### 1.4.1 Show File Extensions
+
+Windows hides extensions for known file types by default, which causes two problems:
+
+First, you can't quickly tell the file type;
+
+second, it gives malicious programs an opportunity (for example, `virus.exe` disguised as `report.pdf.exe` looks like `report.pdf` once the extension is hidden).
+
+#### Method 1: Explorer Settings (for Windows 10 and later)
+
+Windows 10: open any folder → switch to the `View` tab at the top → check `File name extensions`.
+
+Windows 11: open any folder → in the toolbar at the top, click `View` → `Show` → `File name extensions`.
+
+#### Method 2: Folder Options
+
+`Win + R` → type `control folders` → switch to the `View` tab at the top → in the advanced settings below, **uncheck** `Hide extensions for known file types`.
+
+> [!IMPORTANT]
+> Showing extensions is the first line of defense against disguised viruses. Files with double extensions like `report.pdf.exe` are likely malicious programs.
+>
+> Executable `.exe` files of unknown origin should also be handled with caution.
+>
+> At the same time, showing file extensions also helps identify file types, which is helpful for understanding what files contain.
+
+### 1.4.2 Common Extensions Cheat Sheet
+
+| Extension | Type | Description |
+| :--- | :--- | :--- |
+| `.txt` | Plain text | Openable in any editor |
+| `.md` | Markdown | Lightweight markup language, the first choice for notes |
+| `.docx` | Word document | Commonly used for lab reports |
+| `.tex` | LaTeX document | Commonly used for papers and reports |
+| `.pdf` | PDF | Courseware, papers, e-books |
+| `.zip` / `.7z` / `.rar` | Archive | Compress and package multiple files for transfer |
+| `.exe` | Executable program | Runs on double-click; click cautiously if the source is unknown |
+
+File extensions related to computer development:
+
+| Extension | Type |
+| :--- | :--- |
+| `.c` / `.cpp` / `.h` / `.hpp` | C / C++ source code, header files |
+| `.java` / `.class` / `.jar` | Java source code, class files, JAR packages |
+| `.py` | Python source code |
+| `.rs` / `.cargo`| Rust source code, package management files |
+| `.html` | HTML documents, web page files |
+| `.css` | CSS stylesheets, used for web layout, colors, etc. |
+| `.js` | JavaScript interaction scripts, used for dynamic web effects |
+| `.json` | JSON data files, used to store and exchange data |
+| `.xml` | XML documents, used to store and exchange data |
+| `.sql` | SQL database files |
+| `.db` | Database files |
+| `.log` | Log files |
+| `.csv` | CSV documents, used to store tabular data |
+
+## 5. Finding and Searching Files
+
+### 1.5.1 Search in File Explorer
+
+Typing keywords into the search box at the top-right of File Explorer searches the current folder and its subfolders. Supported search syntax:
+
+| Syntax | Function | Example |
+| :--- | :--- | :--- |
+| `keyword` | Search by filename | `experiment` |
+| `ext:.extension` | Filter by extension | `ext:.pdf` |
+| `datemodified:date` | Filter by modification time | `datemodified:today` |
+| `size:>size` | Filter by file size | `size:>50MB` |
+
+> [!NOTE] Search scope
+> File Explorer search only covers the current folder and its subfolders.
+> To search the whole drive, search in "This PC" or in the `Everything` program.
+
+### 1.5.2 Everything: A Full-Drive Search Tool
+
+Windows' built-in search is slow; it's recommended to install the free tool [Everything](https://www.voidtools.com/). It can scan all files on a drive instantly and show results as soon as you type a keyword.
+
+#### Method 1: Keyword Search
+
+```text
+Enter "lab report pdf"   # instantly lists all PDF files whose names contain "lab report"
+```
+
+#### Method 2: Path-Limited Search
+
+```text
+path:"D:\Projects" ext:cpp   # finds C++ source files in the specified project directory
+```
+
+#### Method 3: Regex Search
+
+Everything supports enabling regular expressions with the `regex:` prefix to match whole filenames by naming pattern:
+
+```text
+regex:^\d{4} exam      # filenames starting with four digits (e.g., 2024 exam.pdf)
+regex:report\d+\.pdf   # names containing "report" ending in .pdf (e.g., report1.pdf, report2.pdf)
+```
+
+For the basics of wildcards and regular expressions, see [1.7 Text Editing](/en/docs/ch1/1.7-Text-Editing#53-regular-expressions). The regex engine Everything uses differs slightly from other tools, so verify the matching scope with small examples before using them in bulk.
+
+> [!TIP] Setting a global hotkey for Everything
+> `Win + S` opens Windows Search; it does not bring up Everything by default.
+>
+> To open Everything at any time, set a "Show window" or "Toggle window" hotkey in `Tools` → `Options` → `Hotkeys`;
+>
+> For the hotkey to work, Everything needs to be running in the background.
+
+## 6. File Compression and Extraction
+
+### 1.6.1 When to Compress
+
+| Scenario | Purpose |
+| :--- | :--- |
+| Transferring multiple files | Package an entire folder into one file for easy sending |
+| Reducing size | Compression usually reduces the size by 30% to 70% |
+| Backup and archiving | Compress rarely used materials and archive them to save space |
+
+### 1.6.2 Common Compression Formats
+
+| Format | Features | Recommended for |
+| :--- | :--- | :--- |
+| `.zip` | Best compatibility, natively supported by Windows | Submitting assignments, sharing materials |
+| `.7z` | High compression ratio | Backing up large files |
+| `.rar` | Fairly common, requires WinRAR | Extracting archives sent by others |
+
+### 1.6.3 Install and Use 7-Zip
+
+[7-Zip](https://www.7-zip.org/) is a free, open-source, ad-free compression tool that can extract almost every common format.
+
+**Steps:**
+
+1. Visit [7-zip.org](https://www.7-zip.org/) and download the matching version (choose `.exe` 64-bit on a 64-bit system)
+2. Double-click the installer and follow the prompts to complete the installation
+3. Right-click any file → if you see the `7-Zip` menu item, the installation succeeded
+
+> [!TIP] Compressing and extracting
+>
+> - **Compress**: right-click the file → `7-Zip` → `Add to archive` → choose a format (`.zip` is recommended for the best compatibility)
+> - **Extract**: right-click the archive → `7-Zip` → `Extract here`, or double-click the archive and drag the files out
+
+> [!IMPORTANT] Check the contents before extracting
+> Before extracting, double-click to open the archive and make sure the files inside are what you expect, to avoid extracting a bunch of messy files that pollute the current directory.
+> Archives of unknown origin in particular may contain malicious scripts.
+
+### 1.6.4 Install and Use Bandizip (Subjective Recommendation)
+
+[Bandizip](https://www.bandisoft.com/bandizip/) has a bit of advertising in the "evaluation version" compared to `7-Zip`, but it offers more features and a more modern, polished UI.
+
+SSJ believes it's more suitable for users new to computers, and the ads in the evaluation version won't appear during everyday compression and extraction.
+
+**Steps:**
+
+1. Visit [Bandizip](https://www.bandisoft.com/bandizip/) to download it
+2. Double-click the installer, choose the "evaluation version", and follow the prompts to complete the installation
+3. Right-click any file → if you see the `Bandizip` option, the installation succeeded
+
+> [!TIP] Compressing and extracting
+>
+> - **Compress**: right-click the file → `Bandizip` → `Compress to xxx .zip` / `Compress to xxx .7z`
+> - **Extract**: right-click the archive → `Bandizip` → `Smart extract here`
+>
+> About its **smart extract** feature:
+>
+> It automatically creates a folder structure based on the archive's contents; for example, if the archive contains multiple files, it automatically creates a folder with the same name as the archive
+>
+> preventing a large number of messy files from polluting the current directory when extracted here.
+
+## 7. TODO Checklist
+
+- [ ] Can distinguish absolute paths from relative paths
+- [ ] File extension display has been enabled
+- [ ] Can name files with consistent, searchable rules
+- [ ] Has good file management habits, such as archiving old files and backing up important ones
+- [ ] Can locate files by name and extension with File Explorer or the `Everything` program
+- [ ] Checks the source and directory structure of archives before extracting
+- [ ] Can compress and extract files proficiently
+- [ ] Try using [Format Factory](https://www.pcgeshi.com/) or another audio format conversion tool to convert any `.flac` file to `.mp3` or another audio format
+- [ ] Try using [Format Factory](https://www.pcgeshi.com/) or another video format conversion tool to convert any `.mkv` file to `.mp4` or another video format
+
+## 8. Questions Worth Thinking About
+
+> [!DETAILS-FAQ] Can changing the extension directly convert a file format?
+> No.
+>
+> The extension mainly tells the system which program to use to open the file;
+> Renaming `report.txt` to `report.pdf` won't convert the text to PDF.
+> You need the corresponding conversion feature of the right program to complete a format conversion.
+
+> [!DETAILS-FAQ] Why can some audio, video, and image files still open and preview after their extensions are changed?
+> Some media files still open after their extensions are changed because many programs don't just trust the extension; they recognize the data format inside the file (Magic Number / file header).
+>
+> For example, the file header of an image file in `png` format (extension) is usually `89 50 4E 47 (HEX)`.
+>
+> Even if we change the file extension to `jpg` (whose header is actually usually `FF D8 FF (HEX)`),
+> most image viewers will recognize from the file header that it's not a `jpg` image but a `png` image,
+> and open and preview it normally.
+
+> [!DETAILS-FAQ] What should I do if I accidentally delete an important file?
+> 1. Stop immediately to avoid the data being overwritten.
+> 2. Check the Recycle Bin; if it hasn't been emptied, you can restore the file directly.
+> 3. If it doesn't appear in the Recycle Bin either, it has been permanently deleted and professional data recovery software is needed.
+>
+> - For Office documents (such as `.docx`, `.xlsx`, `.pptx`, etc.), if accidentally deleted, you can look for recent backup files in the directory of the program's `AutoSave` feature.
+>
+>   - In WPS Office, go to `File` -> `Backup and Restore` -> `Backup Center` at the top-left to view recent backup files.
+>
+>   - In Microsoft Office, go to the `C:\Users\Shenshijun\AppData\Roaming\Microsoft\` directory and look inside subfolders such as `Word`, `Excel`, `PowerPoint` for the most recent cache files (with the `.tmp` extension); rename them to the corresponding format (e.g., `.docx`, `.xlsx`, `.pptx`, etc.) to open and preview.

@@ -1,0 +1,252 @@
+---
+title: 1.2 Windows Settings
+description: Learn common system configuration such as display, power, storage, accounts, app management, environment variables, and terminal
+todoProgress: true
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+> [!DETAILS-AI] AI Summary of This Section
+> This section covers the key configuration of the Windows system: ways to open Settings, resolution and scaling, dark mode, power and sleep settings, storage management (changing save locations, Storage Sense, Disk Cleanup), app management (uninstalling, startup items, installation cautions), accounts and sign-in (PIN, fingerprint), environment variables and PATH changes, determining the processor architecture, and system updates and security. After finishing it, you can keep your computer in a state suitable for development.
+
+> [!INFO]
+> Good settings can make our future development and daily use more convenient.
+>
+> This section focuses on the more important settings and those that get hyped by marketing accounts, to help us understand the computer in front of us.
+
+## 1. Opening Settings
+
+| Method | Action | Notes |
+| :--- | :--- | :--- |
+| Shortcut key | `Win + I` | Most recommended; opens instantly at any time |
+| Start menu | Click `Start` → gear icon | Good for mouse users |
+| Search | Press the `Win` key and type "Settings" | Quick and convenient |
+| Command | Run `start ms-settings:` in a terminal | For scripting scenarios |
+
+## 2. Display and Personalization
+
+### 2.1 Resolution and Scaling
+
+Settings path: `Settings` → `System` → `Display`
+
+| Item | Suggested value | Notes |
+| :--- | :--- | :--- |
+| Resolution | The option marked "(Recommended)" | Usually the display's native resolution |
+| Scaling | 100% for 1080P generally; 125% or 150% for 2K and above | Adjust based on screen size and personal preference |
+
+### 2.2 Dark Mode
+
+Staring at a screen for a long time causes eye strain; dark mode can relieve some of the discomfort.
+
+Settings path: `Settings` → `Personalization` → `Colors` → `Choose your mode` → `Dark`
+
+> [!NOTE] Third-party app recommendation:
+> [Auto Dark Mode](https://github.com/AutoDarkMode/Windows-Auto-Night-Mode) is an app that can be deeply configured to automatically switch between dark/light modes based on sunrise and sunset times.
+>
+> Try it if you're interested.
+
+### 2.3 Desktop Icons
+
+By default, the Windows desktop only shows the Recycle Bin. To display icons like "This PC", do the following:
+
+Right-click the desktop → `Personalization` → `Themes` → `Desktop icon settings` → check the icons you want → `Apply` → `OK`.
+
+## 3. Power and Sleep
+
+### 3.1 Setting the Sleep Timer
+
+| Scenario | Turn off screen | Sleep |
+| :--- | :--- | :--- |
+| On power | 10 minutes | 30 minutes |
+| On battery (laptop) | 5 minutes | 15 minutes |
+
+Settings path: `Settings` → `System` → `Power & battery` (`Power & sleep` on Windows 10).
+
+### 3.2 Lid Close Behavior (Laptop)
+
+Laptops sleep by default when the lid is closed, but if you're downloading large files or running long tasks, you can temporarily set it to "Do nothing":
+
+Settings path: `Settings` → `System` → `Power & battery` → `Lid, power and sleep button controls` → `When I close the lid` → `Do nothing`
+
+> [!WARNING] The risk of doing nothing when the lid is closed:
+> Doing nothing when the lid is closed will keep the laptop heating up in the bag, and in severe cases may damage the hardware. When carrying it around for a long time, be sure to switch back to **"Sleep"** or simply shut it down.
+
+## 4. Storage Management
+
+### 4.1 Checking Disk Usage
+
+Settings path: `Settings` → `System` → `Storage`
+
+Here you can see the used and free space of each drive; clicking in also shows how much "Apps", "Temporary files", and "Documents" each occupy. When the C: drive is nearly full, come here first to find out what's taking up space.
+
+### 4.2 Changing Where Files and Apps Are Saved
+
+When installing apps, prefer the location options provided by the installer or the app store, and install to another drive (such as the `D:` drive).
+If you really need to move user folders such as `Desktop`, `Documents`, or `Downloads`, back them up first, then use the folder's `Properties` → `Location` → `Move`; after moving, check that the software you use regularly can still find the original files.
+
+> [!CAUTION] Don't cut system directories directly!
+> `C:\Windows`, `C:\Program Files`, `C:\Program Files (x86)`, and the entire user directory should not be cut to other drives. Such operations may break permissions, updates, or uninstallation.
+
+### 4.3 Storage Sense: Automatic Cleanup
+
+Storage Sense can clean up temporary files and Recycle Bin contents on the system drive. By default, it only manages the system drive;
+whether the `Downloads` folder and cloud files are processed depends on the specific configuration in Storage Sense, so after enabling it for the first time, check the cleanup schedule item by item.
+
+Settings path: `Settings` → `System` → `Storage` → `Storage Sense`
+
+### 4.4 Disk Cleanup
+
+To free up space manually, use the built-in "Disk Cleanup" tool:
+
+Search for "Disk Cleanup" in the Start menu → select the drive to clean → check the file types to delete.
+
+## 5. App Management
+
+### 5.1 Installing and Uninstalling
+
+| Action | Path |
+| :--- | :--- |
+| View installed apps | `Settings` → `Apps` → `Installed apps` |
+| Uninstall an app | Find the app → click `…` on the right → `Uninstall` |
+| Change default apps | `Settings` → `Apps` → `Default apps` |
+
+> [!WARNING] The right way to uninstall software:
+> Use the uninstall feature provided by the system, the software itself, or the installation platform; don't delete the installation folder directly.
+>
+> ***Especially, don't consider deleting the shortcut as uninstalling the software.***
+
+
+### 5.2 Managing Startup Items
+
+Too much software **starting automatically at boot** will severely slow down the computer's startup, especially on lower-end machines. We should manage auto-start software and disable auto-start for unnecessary programs.
+
+Settings path: `Settings` → `Apps` → `Startup` → turn off apps that don't need to start at boot.
+
+Task Manager can also manage startup items:
+
+`Ctrl + Shift + Esc` to open Task Manager → switch to the `Startup apps` tab (Windows 10) or the `Startup` icon on the left (Windows 11).
+
+### 5.3 Cautions When Installing Software
+
+| Caution | Notes |
+| :--- | :--- |
+| Download from official sites | Don't download from third-party download sites; they usually bundle rogue software |
+| Choose custom installation | Uncheck "Recommended additional software" |
+| Watch the installation path | Large software can be installed on the `D:` drive to avoid bloating the C: drive |
+| Be wary of `.exe` sources | Executables of unknown origin may contain viruses |
+
+> [!CAUTION] Security reminder
+> See the "Software Acquisition and Safe Installation" section in [1.4 Common Tools and Software](/en/docs/ch1/1.4-Common-Tools#1-getting-and-installing-software).
+> Downloading **cracked software** is a major route to viruses and rogue ad pop-ups; it's recommended to use open-source alternatives or apply for free licenses through a student pack.
+
+## 6. Accounts and Sign-in
+
+### 6.1 Microsoft Account vs. Local Account
+
+| Type | Pros | Cons |
+| :--- | :--- | :--- |
+| Microsoft account | OneDrive sync, cross-device settings sync, app store | Requires online sign-in; network in China is unstable and some services are restricted |
+| Local account | No internet required, better privacy | Loses sync features |
+
+Considering that most users are already forced to sign in with a Microsoft account when activating a new machine, no recommendation is made here.
+
+If you want to change it, you can switch to a local account in `Settings` → `Accounts` → `Your info`.
+
+### 6.2 Setting Up a PIN or Fingerprint
+
+Passwords are too long and tedious to type every time; it's recommended to set up a PIN or fingerprint (if supported): `Settings` → `Accounts` → `Sign-in options`.
+
+> [!INFO] A PIN is more secure than a password
+> A PIN only works on this device; even if leaked, it can't be used to sign in to our account on another device, making it more secure than a password.
+> If your device supports **Windows Hello** fingerprint/face recognition, you can enable it too for a better unlocking experience😊.
+
+## 7. Environment Variables
+
+### 7.1 What Are Environment Variables
+
+Environment variables are system-level configuration values, most commonly used to tell the system where a program is.
+
+For example, you install Python, but typing `python` in the terminal says "is not recognized as an internal or external command..."; this is usually because Python's path wasn't added to the `PATH` environment variable.
+
+### 7.2 Viewing and Modifying
+
+| Action | Method |
+| :--- | :--- |
+| Temporarily view | Run `echo %PATH%` (CMD) or `$env:PATH` (PowerShell) in a terminal |
+| Modify permanently | `Win + R` → type `sysdm.cpl` → `Advanced` → `Environment Variables` |
+
+> [!NOTE] Two kinds of environment variables
+> Environment variables are divided into "user variables" and "system variables". User variables only apply to the current user, while system variables apply to all users. For configuring your own development tools, adding them to "user variables" is enough; avoid touching system variables so other users aren't affected.
+
+### 7.3 The PATH Variable in Detail
+
+`PATH` is the most important environment variable; it's a list of directory paths separated by semicolons. When we type a command (such as `python`) in the terminal, the system searches these directories in order for the matching executable; it runs it if found and reports an error if not.
+
+**Adding a new program to PATH:**
+
+1. Find the directory containing the program's executable, e.g., `D:\Python\Python314`
+2. Type "Environment Variables" in Windows Search → click `Edit the system environment variables` → in the System Properties window that pops up, click `Environment Variables` → find `Path` under system variables and double-click to open it
+3. Click `New` → paste the directory path → `OK`
+4. **Reopen** the terminal (old terminal windows won't pick up the change)
+
+> [!TIP] Check `Add to PATH` during installation
+> Many programs will configure it automatically when you check `Add to PATH` during installation; no manual configuration is needed.
+> If you forgot to check it, just follow the steps above to add it.
+
+### 7.4 How to Determine the Processor Architecture
+
+When downloading software, you often need to know whether the system is 64-bit or 32-bit, and whether it's x64 or ARM:
+
+| Method | Action | Example output |
+| :--- | :--- | :--- |
+| Via Settings | `Settings` → `System` → `System info` → `System type` | `64-bit operating system, x64-based processor` |
+| Via command | Run `echo %PROCESSOR_ARCHITECTURE%` in a terminal | `AMD64` (i.e., x64) |
+
+> [!IMPORTANT] Confirm the architecture before downloading software
+> When downloading tools such as **Git, Node.js, Python**, choose the installer for the matching architecture.
+> Most Windows computers today are `x64` (AMD64); Apple Silicon devices running Windows are `ARM64`.
+
+## 8. Windows Update
+
+### 8.1 Why Update
+
+System updates aren't just about new features; more importantly, they patch security vulnerabilities. Ransomware and trojans often exploit old vulnerabilities that were already patched.
+
+Nowadays, with good computer habits, even "running naked" (not using third-party security software and disabling the system's own security features) greatly reduces the risk of infection.
+Considering that Windows updates have had some negative impact on performance and daily use recently, you may choose to download updates automatically and then install them manually, rather than installing them automatically.
+
+### 8.2 Update Settings
+
+Settings path: `Settings` → `Windows Update`
+
+| Action | Recommendation |
+| :--- | :--- |
+| Automatic updates | Optional; keeps the system up to date |
+| Active hours | Set the hours you usually use the computer to avoid forced restarts during that period |
+| Before important events | Manually check for updates and complete restarts in advance when needed |
+
+## 9. TODO Checklist
+
+- [ ] Resolution and scaling are kept at the system-recommended values or match personal preference
+- [ ] Sleep, lid, and power policies match the current usage scenario and personal habits
+- [ ] Storage Sense is enabled with its cleanup scope and schedule configured
+- [ ] Only necessary startup items are kept
+- [ ] Can confidently install software to non-system drives, and proactively reviews custom options and unchecks unnecessary ones before installing
+- [ ] Can distinguish user variables from system variables and knows how to modify the `PATH` variable
+- [ ] The latest security updates are installed and the necessary restarts are done
+
+## 10. Questions Worth Thinking About
+
+> [!DETAILS-FAQ] Why can't software be uninstalled by directly deleting its shortcut?
+> In Windows, an ordinary shortcut is essentially a file with the `.lnk` extension.
+>
+> It doesn't store the actual content of the target file; instead, it records the target's location, startup arguments, and other information.
+
+> [!DETAILS-FAQ] Why do some programs report errors when installed in directories containing Chinese characters?
+> Windows itself supports Chinese paths. The errors usually occur because the program or its dependencies don't handle Unicode characters properly, causing the path to get garbled when read, passed, or saved.
+>
+> Therefore, when installing development tools, games, and command-line programs, it's recommended to prefer pure-English paths.
+
+> [!DETAILS-FAQ] After installing a system update, the system suffers severe performance drops or daily lag. How do I uninstall the update?
+> You can uninstall recently installed updates via `Settings` → `Windows Update` → `Update history` → click `Uninstall updates` under the related settings at the bottom.
+>
+> Note: after uninstalling an update, the system may restart automatically; save all files you're working on before the restart.

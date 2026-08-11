@@ -1,0 +1,377 @@
+---
+title: 1.7 Text Editing
+description: Understand plain text, character encoding, and line endings; master VS Code installation, basic operations, common editing techniques, and regular expressions
+todoProgress: true
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Section
+> This section introduces plain text, character encoding, and line endings, and uses VS Code to demonstrate file encoding recovery, multi-cursor editing, find and replace, regular expressions, code snippets, and settings sync. The regular expression part also introduces common metacharacters and capture groups, which can be used to batch-match and replace structured text. For environment setup such as compilers, toolchains, and SSH, see [1.14 Environment Setup](/en/docs/ch1/1.14-Environment-Setup).
+
+> [!INFO]
+> Source code, configuration files, and Markdown documents all use text as their primary carrier. When editing these files, you not only need to know how to type content, but also understand the character encoding and line-ending rules used by the files.
+>
+> Building on this, this section focuses on the installation and common features of the VS Code editor; for compilers, toolchains, and SSH configuration, see [1.14 Environment Setup](/en/docs/ch1/1.14-Environment-Setup).
+
+## 1. File Content and Document Formats
+
+### 1.1 Plain Text, Rich Text, and Typesetting Documents
+
+Files are not just divided into "plain text" and "rich text" categories. The files we encounter in daily life generally come in the following three forms:
+
+| Type | Characteristics | Typical files | Suitable for |
+| :--- | :--- | :--- | :--- |
+| Plain text | Stores character sequences directly, without recording fonts or page layout | `.txt`, `.md`, `.py`, `.cpp` | Code, configuration, notes |
+| Rich text | Stores both text and formats such as fonts and colors | `.docx`, `.rtf` | Reports, resumes, collaborative documents |
+| Typesetting document | Focuses on storing the page rendering result | `.pdf` | Publishing, printing, archiving |
+
+## 2. Character Encoding
+
+### 2.1 Characters, Encoding, and Decoding
+
+Character encoding defines the mapping between characters and byte sequences. Converting characters to bytes is called **encoding**, converting bytes back to characters is called **decoding**, and converting text from one encoding to another is called **transcoding**.
+
+Correct transcoding first decodes according to the source encoding, then re-encodes according to the target encoding. For example, when converting a GBK file to UTF-8, you must first confirm that the source file really is GBK; reading GBK bytes directly as UTF-8 is not transcoding but erroneous decoding.
+
+### 2.2 Comparison of Common Encodings
+
+| Encoding | Length | Supported range | Usage |
+| :--- | :--- | :--- | :--- |
+| ASCII | 1 byte per character, highest bit is `0` | 128 characters, including English letters, digits, punctuation, and control characters | Still widely used as a compatible subset of many text formats; does not support Chinese |
+| GB2312 | 1 byte for characters in the ASCII range, usually 2 bytes for Chinese characters and others | Mainly the commonly used simplified Chinese characters | Old-style simplified Chinese encoding, with a smaller character range than GBK |
+| GBK | 1 byte for characters in the ASCII range, usually 2 bytes for Chinese characters and others | Extends GB2312, covering more Chinese characters and symbols | Commonly found in old Windows Chinese software and historical files |
+| UTF-8 | 1-4 bytes per Unicode scalar value | Unicode | The mainstream encoding for Web and cross-platform text; ASCII bytes remain unchanged |
+| UTF-16 | 1 or 2 16-bit code units per Unicode scalar value | Unicode | Commonly found in Windows APIs and some language runtime interfaces; byte order must be determined by the protocol, BOM, or encoding name |
+
+> [!NOTE] "Character count" is not necessarily "byte count"
+> In UTF-8, ASCII characters take 1 byte, common Chinese characters usually take 3 bytes, and the single code point of many emoji takes 4 bytes. In UTF-16, common Chinese characters usually use 1 16-bit code unit, while supplementary characters such as many emoji require a pair of code units. A single glyph the user sees may also consist of multiple Unicode code points, so you cannot generally fix "one character" to a certain number of bytes.
+
+### 2.3 How Mojibake Occurs
+
+Feeding the same byte sequence to different decoders may produce completely different text, or may cause errors because the byte sequence is invalid. The arrows in the table below indicate **erroneous decoding**, not correct transcoding; the results depend on the decoder's error-handling strategy, here using the common "replace undecodable bytes with U+FFFD" as an example.
+
+| Original text and actual bytes | Erroneous decoding | Typical result |
+| :--- | :--- | :--- |
+| UTF-8 bytes of `你好`: `E4 BD A0 E5 A5 BD` | UTF-8 bytes erroneously decoded as GBK | `浣犲ソ` |
+| UTF-8 bytes of `中文`: `E4 B8 AD E6 96 87` | UTF-8 bytes erroneously decoded as GBK | `涓�鏂�` |
+| GBK bytes of `你好`: `C4 E3 BA C3` | GBK bytes erroneously decoded as UTF-8 | `���` |
+| GBK bytes of `中文`: `D6 D0 CE C4` | GBK bytes erroneously decoded as UTF-8 | `����` |
+
+When UTF-8 bytes are erroneously decoded as GBK, some byte combinations happen to map to GBK characters, so readable but meaningless Chinese characters such as `浣犲ソ` often appear; invalid or unpaired bytes may still display as `�`. When GBK bytes are erroneously decoded as UTF-8, many byte sequences do not conform to UTF-8 rules, and the editor may report an error, refuse to open the file, or display one or more `�`; the result cannot be summarized as a fixed number of replacement characters.
+
+> [!DETAILS-EXAMPLE] Recovering from an Encoding Error in VS Code
+> After spotting mojibake, do not save immediately. Click the encoding name in the status bar, choose "Reopen with Encoding", and try the project's agreed encoding or the known source encoding one by one; once the content looks right, choose "Save with Encoding" to convert to the target encoding.
+>
+> "Reopen" only changes how the current bytes are interpreted without rewriting the file; "Save" regenerates the bytes according to the selected encoding. If the mojibake content has already overwritten the original file, especially when the original bytes were replaced with `�` and then saved, the lost information usually cannot be recovered by switching encodings; recover it from Git, a backup, or the original data source.
+
+> [!DETAILS-HINT] "锟斤拷" and "烫烫烫"
+> Two consecutive replacement characters `��` correspond to `EF BF BD EF BF BD` when saved as UTF-8; when these 6 bytes are then erroneously decoded as GBK, you get "锟斤拷". The 3 bytes of a single `�` cannot be fully decoded into these three Chinese characters.
+>
+> "烫烫烫" comes from another path: the Microsoft C/C++ debug runtime fills some uninitialized memory with `0xCC`, and in GBK `CC CC` corresponds to "烫". It reflects debug memory fill values being read as text, and is not part of UTF-8/GBK conversion.
+
+### 2.4 Encoding Conventions and BOM
+
+BOM (Byte Order Mark) is a group of special bytes written at the beginning of a file to mark the encoding. The UTF-16 BOM is used to distinguish byte order: starting with `FF FE` means UTF-16 LE, and starting with `FE FF` means UTF-16 BE. UTF-8 has no byte-order issue; its BOM (`EF BB BF`) only serves as an encoding signature, helping tools identify the file as UTF-8.
+
+- Prefer UTF-8 for new projects; VS Code defaults to UTF-8 without BOM
+- Whether to use a BOM depends on the file format, protocol, and toolchain requirements; UTF-8 has no byte-order issue, and the BOM only serves as an encoding signature
+- Teams should make the encoding explicit through project documentation, editor configuration, or the toolchain; `.editorconfig` only takes effect when the repository actually adopts it and relevant tools support it
+- Legacy tools, course grading systems, or historical files may require encodings such as GBK; do not convert them to UTF-8 in bulk without confirmation
+
+> [!WARNING] Do Not Rely on the Editor's Encoding Guess
+> Text without a BOM usually does not contain enough information to uniquely determine the encoding, and automatic detection can only give a guess. Newer versions of Windows Notepad and VS Code default to UTF-8, but old files and legacy tools may still use the local code page. When submitting assignments or processing historical data, follow the explicit requirements of the course, project, or data source, and verify in the target tool.
+
+## 3. Line Endings
+
+### 3.1 Common Line Endings
+
+There are two common line-ending sequences for text files:
+
+| Sequence | Name | Common environments |
+| :--- | :--- | :--- |
+| `\n` | LF (Line Feed) | Linux, modern macOS, many cross-platform projects |
+| `\r\n` | CRLF (Carriage Return + Line Feed) | Windows native tools and some Windows projects |
+
+Inconsistent line endings will not cause mojibake, but they may make Git treat every line as modified. If the shebang of a Shell script (see [1.12 Shell Basics](/en/docs/ch1/1.12-Shell-Basics#91-your-first-script)) or the end of a command carries a stray `\r`, errors such as `bad interpreter` and `command not found` may also occur in Unix-like environments.
+
+### 3.2 Handling Cross-Platform Collaboration
+
+A project can specify line-ending rules with a `.gitattributes` file in the root directory. Since this file is committed with the repository, it is easier to keep consistent than configuring individually per member:
+
+```gitattributes
+# Automatically detect text files and normalize to LF in the Git index
+* text=auto
+# When checking out to the working tree, Shell scripts use LF, batch files use CRLF
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+```
+
+`eol` controls the line endings used when files are checked out to the working tree; files recognized as text are normalized to LF in the Git index. When the repository has no convention, the personal `core.autocrlf` setting participates in deciding the conversion behavior. You can check the current value before modifying global settings:
+
+```bash
+# May produce no output when not configured
+git config --global --get core.autocrlf
+```
+
+> [!NOTE] Changing the Rules Does Not Automatically Rewrite All Tracked Files
+> After adding or modifying `.gitattributes`, the repository maintainer can run `git add --renormalize .` in a clean working tree to check which files need normalization, and commit the line-ending changes as a separate commit. Do not normalize the entire repository while other uncommitted changes exist.
+
+## 4. VS Code: Download, Installation, and First Use
+
+This section only covers the installation and basic use of VS Code; environment setup such as compilers will be covered in [1.14 Environment Setup](/en/docs/ch1/1.14-Environment-Setup).
+
+### 4.1 Download and Installation
+
+Go to the [VS Code download page](https://code.visualstudio.com/Download) and choose x64 or Arm64 according to the CPU architecture. Download the **System Installer** package.
+
+> [!INFO] How to Determine the CPU Architecture
+> Press `Win + I` to open "Settings", go to "System → About", and check "System type":
+> Choose x64 if it says "x64-based processor", and Arm64 if it says "ARM-based processor".
+>
+> You can also run `echo %PROCESSOR_ARCHITECTURE%` in Command Prompt; `AMD64` means x64, and this historical name is used even if the processor is from Intel.
+
+Run the installer and read the options at each step. It is recommended to check "Add 'Open with Code' action to Windows Explorer file context menu" and "Add 'Open with Code' action to Windows Explorer directory context menu".
+
+The installer adds the `code` command to `PATH` by default; after installation, you need to reopen the terminal before `code .` can open the current folder. Shortcuts and file associations can be chosen as needed.
+
+**Verify the installation:** launch VS Code from the Start menu; you can also reopen the terminal and run `code --version` to check whether the command is available.
+
+### 4.2 Install the Chinese Language Pack
+
+Readers who are used to the English interface can skip this section. For the rest:
+
+1. Open the "Extensions" panel in the sidebar (`Ctrl + Shift + X`)
+2. Search for `Chinese (Simplified) (简体中文) Language Pack for Visual Studio Code`
+3. Click "Install"; when done, click `Change Language And Restart`, and VS Code will restart automatically and switch to Simplified Chinese
+
+### 4.3 Interface Overview and Common Entry Points
+
+| Area | Purpose |
+| :--- | :--- |
+| Activity Bar | The leftmost icon column for switching between Explorer, Search, Source Control, etc. |
+| Side Bar | Shows the content of the currently active panel, such as the file tree |
+| Editor Area | The central area where open files are edited; supports multiple tabs |
+| Panel | The bottom area hosting the integrated terminal, output, debug, etc. |
+| Status Bar | The status strip at the bottom, showing encoding, line endings, line numbers, and more |
+
+Common entry points:
+
+- Open folder: `Ctrl + K`, then press `Ctrl + O` after releasing ("File → Open Folder")
+- Integrated terminal: `` Ctrl + ` `` ("Terminal → New Terminal")
+- Command palette: `Ctrl + Shift + P` (see below)
+
+> [!DETAILS-HINT] The "Trust Publisher" Popup When Installing Extensions
+> The publisher name or verification mark alone does not prove an extension is safe. Before installing, check the extension ID, publisher, permission statements, privacy policy, release notes, and project homepage, and only install extensions you actually need for your current work. Devices managed by an organization should also follow the organization's extension allowlist.
+
+## 5. VS Code Advanced Tips
+
+### 5.1 Multi-Cursor Editing
+
+Multi-cursor lets you edit multiple places at once. The following are the default Windows keybindings; shortcuts may be overridden by GPU drivers, system tools, or custom keybindings:
+
+| Action | Effect |
+| :--- | :--- |
+| `Alt + Click` | Add a cursor at the clicked position |
+| `Ctrl + Alt + ↑/↓` | Add cursors on the lines above/below (column editing) |
+| `Ctrl + D` | Select the next word identical to the current selection |
+| `Ctrl + Shift + L` | Select all words identical to the current selection |
+| `Shift + Alt + Drag` | Rectangular selection |
+
+For example, when you need to change several occurrences of the same text, select one and press `Ctrl + D` to add matches one by one; when you reach a position that should not be changed, press `Ctrl + K`, release, then press `Ctrl + D` to skip the current match. Only type the replacement after confirming all selections are correct.
+
+> [!WARNING] Do Not Replace Semantic Refactoring with Text Substitution
+> When renaming variables, functions, or types, prefer `F2` to invoke the language service's rename feature. Multi-cursor and find-and-replace only match text, and may wrongly modify comments, strings, or unrelated symbols that share the same name.
+
+### 5.2 Find and Replace
+
+| Shortcut | Effect |
+| :--- | :--- |
+| `Ctrl + F` | Find in the current file |
+| `Ctrl + H` | Replace in the current file |
+| `Ctrl + Shift + F` | Find in the opened folder or workspace |
+| `Ctrl + Shift + H` | Replace in the opened folder or workspace |
+
+Clicking the `.*` icon in the find box enables regular expressions. For example, the following rule can match simple `console.log(...)` calls that are **on a single line and whose arguments contain no right parenthesis**, while keeping the content inside the parentheses:
+
+```text
+Find: console\.log\(([^\r\n()]*)\)
+Replace: console.debug($1)
+```
+
+This is not a general-purpose JavaScript transformation rule: cases such as `console.log(fn())`, arguments spanning multiple lines, or right parentheses inside strings may not be handled correctly.
+Check the preview before running a project-wide replace; when code structure is involved, use the language service, AST tools, or confirm item by item.
+
+### 5.3 Regular Expressions
+
+The advanced way of find and replace is the **regular expression**, which describes matching patterns with symbols and can match a whole class of text at once instead of searching character by character. The `.*` icon in the upper-right corner of the VS Code find box is the toggle for regular expressions.
+
+Common metacharacters:
+
+| Syntax | Meaning | Example |
+| :--- | :--- | :--- |
+| `.` | Any single character (except line breaks) | `a.c` matches `abc`, `a2c` |
+| `\d` | Any digit | `\d\d` matches two digits |
+| `\w` | A letter, digit, or underscore | `\w+` matches a word |
+| `\s` | Whitespace (space, tab, line break) | `a\s+b` matches the whitespace between `a` and `b` |
+| `[abc]` | Any character in the brackets | `[0-9]` matches any digit |
+| `{n}` | The preceding element repeated n times | `\d{4}` matches four digits |
+| `*` | The preceding element repeated 0 or more times | `ab*` matches `ab`, `abbb` (also `a`) |
+| `+` | The preceding element repeated 1 or more times | `\d+` matches one or more digits |
+| `?` | The preceding element appears 0 or 1 times | `colou?r` matches `color`, `colour` |
+| `^` | Start of line | `^TODO` matches `TODO` at the start of a line |
+| `$` | End of line | `TODO$` matches `TODO` at the end of a line |
+| `\|` | OR | `cat\|dog` matches `cat` or `dog` |
+| `( ... )` | Group and save a capture group | `(ab)+` matches `abab` |
+| `\` | Escape the next character | `\.` matches a literal period `.` |
+
+Key points:
+
+- `.`, `*`, `(`, `|`, `\`, etc. have special meanings in regular expressions; to match the symbol itself, escape it with a preceding `\` (e.g., `\.`, `\(`).
+- `( ... )` stores the matched content in a **capture group**, referenced in the replacement as `$1`, `$2`, and so on. For example, to change the date format from `2024-11-15` to `2024/11/15`:
+
+```text
+Find: (\d{4})-(\d{2})-(\d{2})
+Replace: $1/$2/$3
+```
+
+- Wildcards are not regular expressions. The `*.cpp` in [1.12 Shell Basics](/en/docs/ch1/1.12-Shell-Basics#84-wildcards) matches a whole segment of a file name, while regular expressions match any text fragment and can describe more complex patterns with `\d+`, `(ab)+`, and so on.
+- Regular expression syntax is not identical across tools: VS Code uses the Rust regex engine, where `.` does not match newlines; `grep` uses "basic regular expressions (BRE)" by default, where `+`, `(`, etc. only have special meanings when written as `\+`, `\(`. Check the syntax documentation of a tool before using it.
+
+> [!CAUTION] Regular Expressions Are Not a Universal Parser
+> Regular expressions suit well-structured, single-line text. When dealing with paired parentheses, HTML tags, or content spanning multiple lines, it is easy to write a pattern that "looks right but is actually wrong"; switch to a language parser or a dedicated tool instead.
+
+### 5.4 Code Snippets
+
+Code blocks you type repeatedly can be turned into snippets: type a few letters and press Tab to expand automatically. In VS Code: `Ctrl + Shift + P` → `Configure User Snippets` → choose a language.
+
+For example, create a quick output snippet for C++:
+
+```jsonc
+// cpp.json
+{
+  // Quickly insert a cout statement
+  "Print": {
+    "prefix": "cout",
+    "body": ["std::cout << ${1:content} << std::endl;"],
+    "description": "Quickly insert a cout statement"
+  }
+}
+```
+
+After that, type `cout` and press Tab, and it expands automatically, placing the cursor at `${1:content}` waiting for your input.
+
+> [!DETAILS-HINT] About Snippet Extensions
+> The VS Code extension marketplace offers many prebuilt snippets, but extensions also increase the permission scope, maintenance cost, and potential conflicts.
+> A few stable templates are better written directly into user or project snippets; only install an extension when you already have many snippets and the source is trustworthy.
+
+### 5.5 Command Palette
+
+`Ctrl + Shift + P` opens the command palette. It lists all commands registered in the current environment, which is convenient for finding settings entries and actions by keyword without memorizing every menu level.
+
+> [!INFO]
+> The keybindings listed here are the Windows defaults. After installing a keymap extension or modifying `keybindings.json`, the actual shortcuts may differ. You can run "Preferences: Open Keyboard Shortcuts" in the command palette to view and modify them.
+
+### 5.6 Quick Overview of Other Common Shortcuts
+
+The following actions can be invoked with default shortcuts or the command palette:
+
+| Shortcut | Effect |
+| :--- | :--- |
+| `Ctrl + P` | Quickly jump to a file by name |
+| `Alt + ↑` / `Alt + ↓` | Move the current line up / down |
+| `Shift + Alt + ↓` | Copy the current line downward |
+| `Ctrl + /` | Toggle line comment |
+| `Ctrl + B` | Show / hide the side bar |
+| `` Ctrl + ` `` | Show / hide the integrated terminal |
+| `F2` | Rename a symbol via the available language service |
+| `Shift + Alt + F` | Format the document with the formatter available for the current language |
+| `Ctrl + K Z` | Zen mode (full-screen focus; press `Esc` twice to exit) |
+
+Common settings can apply only to the current user or be shared with the project.
+
+## 6. Editor Configuration and Sync
+
+### 6.1 JSON Configuration Files
+
+VS Code provides both a graphical settings UI and JSON configuration files. JSON is suitable for precise editing, reviewing diffs, and sharing workspace configuration:
+
+- User settings: `Ctrl + Shift + P` → `Preferences: Open User Settings (JSON)`
+- Workspace settings: the project's `.vscode/settings.json`, which only applies to the current project
+
+Common configuration examples:
+
+```jsonc
+// .vscode/settings.json
+{
+  // Font size
+  "editor.fontSize": 14,
+  // Indent width
+  "editor.tabSize": 4,
+  // Format on save
+  "editor.formatOnSave": true,
+  // Word wrap
+  "editor.wordWrap": "on",
+  // Auto-save after delay
+  "files.autoSave": "afterDelay",
+  // Terminal font size
+  "terminal.integrated.fontSize": 13
+}
+```
+
+### 6.2 Settings Sync
+
+After signing in with a GitHub or Microsoft account, you can enable Settings Sync as needed.
+The items that can be synced depend on the current version's UI, and usually include settings, keybindings, user snippets, and extension information, each of which can be enabled or disabled separately.
+It does not include project files and cannot replace Git or backups; remote extensions in WSL, SSH, and dev containers also need to be verified in the corresponding target environment.
+
+## 7. Other Editors
+
+This section uses VS Code; you can also use other editors and IDEs.
+
+### 7.1 Editor vs IDE
+
+| Type | Characteristics | Examples |
+| :--- | :--- | :--- |
+| General-purpose editor | Relatively lean core features; extensions can be installed per language and task | VS Code, Sublime Text, Vim / Neovim |
+| Integrated Development Environment (IDE) | Usually integrates project model, language analysis, build, debug, test, and refactoring capabilities | Visual Studio, IntelliJ IDEA, CLion, PyCharm |
+
+The boundary between the two kinds of tools is not absolute: VS Code can provide debugging and refactoring after installing language extensions, and IDEs can also slim down their interface and plugins. The selection criteria should be project support, language toolchain, team conventions, and resource usage, not the tool category itself.
+
+### 7.2 Recommendations
+
+| Scenario | Tools to consider |
+| :--- | :--- |
+| General editing, algorithms, and course exercises | VS Code |
+| Windows-native C++ / .NET | Visual Studio |
+| Cross-platform C / C++ projects | VS Code, CLion |
+| Python development | VS Code, PyCharm |
+| Interactive data analysis | JupyterLab, VS Code's Jupyter extension |
+| Java / Kotlin projects | IntelliJ IDEA, VS Code |
+| Terminal and remote environments | Vim / Neovim, VS Code Remote SSH |
+
+Specific features, system requirements, and licensing policies change over time; check the product's official website before installing. A student license does not mean the product is free forever.
+
+> [!NOTE] Dev C++ and Red Panda C++
+> Dev C++ still appears in many beginner tutorials and course grading environments, but it has long lacked systematic maintenance and lags in support for new C++ standards (post-C++11), so it is **not recommended** as a long-term primary tool. If a course requires a Dev C++-like interface, consider switching to the open-source and continuously maintained **Red Panda C++**: [royqh.net/redpandacpp](http://royqh.net/redpandacpp/), which is compatible with Dev C++'s habits and bundles a newer GCC/MinGW toolchain.
+
+> [!CAUTION] Avoid Comparing Tools Apart from Your Needs
+> Whether the tool can reliably open your project, use your existing toolchain, and run debugging and tests matters more than the number of features or the keybinding style.
+
+## 8. TODO Checklist
+
+- [ ] Know the difference between plain text, rich text, and typesetting documents
+- [ ] Can tell encoding, decoding, and transcoding apart, and understand how UTF-8 / GBK mojibake arises
+- [ ] Can download and install VS Code on your own, and switch it to the Chinese interface
+- [ ] Can use "Reopen with Encoding" to check mojibake instead of directly overwriting and saving
+- [ ] Can view and switch a file's encoding in the editor
+- [ ] Try multi-cursor, project-wide search, and previewing replacement results
+- [ ] Try downloading and installing a JetBrains IDE such as CLion, and do some simple exploration and use ~~(for example, try something new, like a `World, Hello!`)~~.
+
+## 9. Questions Worth Thinking About
+
+> [!DETAILS-FAQ] When modifying encodings, line endings, or running a project-wide replace, how do you judge whether it is safe?
+> Before operating, confirm the Git working tree state, the source encoding, and the project conventions, and narrow the scope to the necessary files. Encoding conversion should keep an original copy or be in a reversible version-control state; project-wide replace should have each preview checked. After operating, review the diffs, then run the affected formatting, checking, or test commands.
+>
+> Encoding, line endings, and body content should not be mixed in the same batch modification, or it becomes hard to tell where a diff comes from. `.gitattributes` is suitable for maintaining repository-level line-ending conventions, but the first normalization after introducing the rules should still be reviewed and committed separately.

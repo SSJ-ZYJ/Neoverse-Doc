@@ -1,0 +1,451 @@
+---
+title: 1.9 LaTeX
+description: Learn the LaTeX typesetting system and master math formulas, document structure, cross-references, and the basic compilation workflow
+todoProgress: true
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Section
+> This section introduces LaTeX's position and basic workflow, covering inline formulas, display formulas, superscripts and subscripts, fractions, radicals, sums, integrals, matrices, piecewise functions, and aligned formulas, as well as sections, lists, figures, tables, labels, and cross-references in a full document. After finishing, you will be able to write math formulas in Markdown and read and modify a basic `.tex` document.
+
+> [!INFO]
+> LaTeX uses plain-text commands to describe document structure and math formulas, and a typesetting engine then generates PDF. It suits course reports, lab documents, papers, and mathematical derivations, and its source is easy to manage with Git. This section focuses on reading and writing the common syntax, not on learning every package and typesetting detail at once.
+
+## 1. TeX, LaTeX, and Math Formulas
+
+TeX is a typesetting system created by Donald Knuth; LaTeX builds on top of TeX with a more approachable set of document commands and a package ecosystem.
+When people say "write formulas or papers with LaTeX", they usually mean writing a LaTeX source file and handing it to some TeX engine to process.
+
+| Name | Role | Common Forms |
+| :--- | :--- | :--- |
+| TeX | Low-level typesetting system and language | TeX engines, TeX commands |
+| LaTeX | Document format and macro collection built on TeX | `.tex` source files, document classes, packages |
+| pdfLaTeX | Traditional compiler that produces PDF directly | Suitable for traditional Latin-script workflows |
+| XeLaTeX | Modern engine supporting Unicode and system fonts | Commonly used for mixed Chinese-English typesetting |
+| LuaLaTeX | Modern engine based on LuaTeX | Unicode, fonts, and programmable extensions |
+| KaTeX / MathJax | Render a subset of LaTeX math syntax on the web | Markdown, web documents |
+
+> [!IMPORTANT] Web Formulas Are Not Full LaTeX
+> The `$...$` and `$$...$$` in Markdown are usually rendered by KaTeX or MathJax, which only support math mode and the commands provided by the implementation. They cannot directly use the `\documentclass`, sections, figures, or bibliography features of a full document. A complete `.tex` document requires a TeX distribution or an online LaTeX platform to compile.
+
+LaTeX's core idea resembles Markdown: the source focuses on "what this is", and the typesetting system decides "how it is displayed". Markdown excels at general technical documents, while LaTeX is especially good at math formulas, cross-references, and long documents with consistent typesetting.
+
+## 2. Writing Formulas in Markdown
+
+This project already supports LaTeX math formulas. In Markdown or MDX, inline formulas are usually placed within a pair of `$`, and display formulas within a pair of `$$`.
+
+### 2.1 Inline Formulas
+
+```markdown
+The mass-energy equation $E = mc^2$ describes the relationship between mass and energy.
+```
+
+Effect: The mass-energy equation $E = mc^2$ describes the relationship between mass and energy.
+
+An inline formula should be part of a sentence and suits short variables, equations, and symbols. Punctuation before and after formulas still follows the semantics of the surrounding text.
+
+### 2.2 Display Formulas
+
+```markdown
+$$
+f(x) = ax^2 + bx + c
+$$
+```
+
+Effect:
+
+$$
+f(x) = ax^2 + bx + c
+$$
+
+A display formula occupies its own line and suits longer derivations or expressions that need emphasis. Support for delimiters may differ across Markdown platforms; check in the target renderer before publishing.
+
+> [!WARNING] Do Not Add Arbitrary Spaces Around Math Delimiters
+> `$x$` is a widely compatible inline form; `$ x $` may not be recognized as expected by some parsers. If a dollar sign denotes currency, escape or rewrite it according to the rules of the target platform to avoid being misjudged as a formula.
+
+## 3. Common Math Syntax
+
+LaTeX commands usually start with a backslash `\`, and curly braces `{}` delimit command arguments. The braces themselves are usually not displayed; they only tell the command which content belongs to the same group.
+
+### 3.1 Superscripts, Subscripts, and Grouping
+
+| Target | Source | Effect |
+| :--- | :--- | :--- |
+| Superscript | `$x^2$` | $x^2$ |
+| Subscript | `$a_1$` | $a_1$ |
+| Multi-character superscript | `$x^{n+1}$` | $x^{n+1}$ |
+| Multi-character subscript | `$a_{i,j}$` | $a_{i,j}$ |
+| Both at once | `$x_i^2$` | $x_i^2$ |
+
+By default, `^` and `_` apply only to the single token that follows. To include multiple characters, you must group them with curly braces. For example, `x^10` treats `1` as the superscript and leaves `0` on the baseline, while `x^{10}` means the tenth power.
+
+### 3.2 Fractions, Radicals, and Parentheses
+
+```latex
+\frac{a+b}{c+d}
+\sqrt{x}
+\sqrt[n]{x}
+\left( \frac{x+1}{x-1} \right)
+```
+
+Corresponding effect:
+
+$$
+\frac{a+b}{c+d}, \qquad
+\sqrt{x}, \qquad
+\sqrt[n]{x}, \qquad
+\left( \frac{x+1}{x-1} \right)
+$$
+
+`\frac{numerator}{denominator}` denotes a fraction, and `\sqrt[n]{expression}` denotes the $n$-th root. `\left` and `\right` make brackets automatically resize to fit the content between them.
+
+> [!NOTE] Use `\left` and `\right` in Pairs
+> The two commands usually need to appear in pairs. To show only one delimiter, use a period to represent the invisible side, for example `\left. ... \right\}`.
+
+### 3.3 Greek Letters and Common Symbols
+
+| Type | Source Example | Effect |
+| :--- | :--- | :--- |
+| Lowercase Greek letters | `\alpha`, `\beta`, `\lambda` | $\alpha$, $\beta$, $\lambda$ |
+| Uppercase Greek letters | `\Gamma`, `\Delta`, `\Omega` | $\Gamma$, $\Delta$, $\Omega$ |
+| Relation symbols | `\le`, `\ge`, `\ne`, `\approx` | $\le$, $\ge$, $\ne$, $\approx$ |
+| Set symbols | `\in`, `\subseteq`, `\cup`, `\cap` | $\in$, $\subseteq$, $\cup$, $\cap$ |
+| Logic symbols | `\forall`, `\exists`, `\land`, `\lor` | $\forall$, $\exists$, $\land$, $\lor$ |
+| Arrows | `\to`, `\Rightarrow`, `\leftrightarrow` | $\to$, $\Rightarrow$, $\leftrightarrow$ |
+
+Command names are case-sensitive: `\delta` produces $\delta$, while `\Delta` produces $\Delta$. Not every uppercase Greek letter needs a command; those whose shapes match Latin letters are usually written as ordinary letters.
+
+### 3.4 Sums, Limits, and Integrals
+
+```latex
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+
+\int_a^b f(x)\,dx
+```
+
+Effect:
+
+$$
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+$$
+
+$$
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
+
+$$
+\int_a^b f(x)\,dx
+$$
+
+Large operators such as `\sum`, `\lim`, and `\int` can take subscripts and superscripts to express ranges. In an integral, `\,` adds a small space so that the integrand is easier to distinguish from the differential; this is a typesetting convention and does not affect the mathematical meaning.
+
+### 3.5 Math Fonts and Text
+
+```latex
+\mathbf{v}
+\mathbb{R}
+\mathcal{F}
+\text{when } x > 0
+```
+
+Effect:
+
+$$
+\mathbf{v} \in \mathbb{R}^n, \qquad
+\mathcal{F}(x), \qquad
+f(x) = x^2 \text{ when } x > 0
+$$
+
+- `\mathbf{}` is often used for bold Latin letters
+- `\mathbb{}` is often used for number sets, such as the real numbers $\mathbb{R}$
+- `\mathcal{}` is often used for calligraphic uppercase letters
+- `\text{}` inserts ordinary text in math mode
+
+Whether a specific command is available depends on the renderer and the packages. For web formulas, rely on the supported list of KaTeX or MathJax; in a full document, it depends on the packages loaded in the preamble.
+
+## 4. Multi-line Formulas and Structured Expressions
+
+### 4.1 Aligned Formulas
+
+To align multiple lines of a derivation by the equals sign, use the `aligned` environment. `&` marks the alignment position, and `\\` starts a new line:
+
+```latex
+\begin{aligned}
+(a+b)^2
+  &= (a+b)(a+b) \\
+  &= a^2 + 2ab + b^2
+\end{aligned}
+```
+
+Effect:
+
+$$
+\begin{aligned}
+(a+b)^2
+  &= (a+b)(a+b) \\
+  &= a^2 + 2ab + b^2
+\end{aligned}
+$$
+
+> [!TIP] Where to Put the Alignment Point
+> A common practice is to place `&` before the equals sign, the approximately-equals sign, or the inequality on each line. Lines in the same derivation should align around the same kind of relation; do not add multiple alignment points just for visual effect.
+
+### 4.2 Matrices
+
+```latex
+A = \begin{bmatrix}
+1 & 2 \\
+3 & 4
+\end{bmatrix}
+```
+
+Effect:
+
+$$
+A = \begin{bmatrix}
+1 & 2 \\
+3 & 4
+\end{bmatrix}
+$$
+
+In matrices, `&` separates columns and `\\` separates rows. Common environments include:
+
+| Environment | Appearance |
+| :--- | :--- |
+| `matrix` | No delimiters |
+| `pmatrix` | Parentheses |
+| `bmatrix` | Square brackets |
+| `vmatrix` | Single vertical bars, often used for determinants |
+| `Vmatrix` | Double vertical bars |
+
+### 4.3 Piecewise Functions
+
+```latex
+f(x) =
+\begin{cases}
+x^2, & x \ge 0 \\
+-x, & x < 0
+\end{cases}
+```
+
+Effect:
+
+$$
+f(x) =
+\begin{cases}
+x^2, & x \ge 0 \\
+-x, & x < 0
+\end{cases}
+$$
+
+The `cases` environment usually puts the expression in the first column and the condition in the second. Ordinary words in conditions should go into `\text{}` so they are not typeset literally as variables.
+
+## 5. A Minimal LaTeX Document
+
+Formulas in Markdown only handle mathematical expressions. To produce a PDF with titles, sections, and page layout, you need to write a complete `.tex` document:
+
+```latex title="main.tex"
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\title{LaTeX Getting Started Example}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+This is the body text. An inline formula is written as $E = mc^2$.
+
+\section{An Equation}
+\begin{equation}
+  \sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+  \label{eq:sum}
+\end{equation}
+
+Equation~\ref{eq:sum} gives the sum of the first $n$ positive integers.
+
+\end{document}
+```
+
+A document consists of several parts:
+
+1. `\documentclass{article}` selects the document class
+2. `\usepackage{...}` loads packages in the preamble
+3. `\title`, `\author`, and `\date` define metadata
+4. `\begin{document}` and `\end{document}` wrap the body
+5. `\section{...}` defines the section structure
+6. The `equation` environment creates a numbered display equation
+7. `\label` and `\ref` establish stable cross-references
+
+> [!CAUTION] Do Not Hand-Write Section and Equation Numbers
+> LaTeX can number sections, equations, figures, and tables automatically. Use `\label` and `\ref` to reference objects, and the numbers update automatically after you reorder content; hand-written references like "see equation (3)" easily become invalid when content is added or removed.
+
+### 5.1 Chinese Documents
+
+Chinese documents usually use XeLaTeX or LuaLaTeX, with the `ctex` document class or package handling Chinese typesetting:
+
+```latex title="main.tex"
+\documentclass[UTF8]{ctexart}
+
+\title{Chinese Course Report}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+This is a Chinese document written with LaTeX.
+
+\end{document}
+```
+
+Whether `ctexart` is available depends on whether the corresponding package is installed in your TeX distribution. Chinese fonts, school templates, and compilation engines may have additional requirements; follow the course or template instructions first, and do not mix preamble configurations from the web without checking them.
+
+## 6. Lists, Figures, and Tables
+
+### 6.1 Lists
+
+```latex
+\begin{itemize}
+  \item First item of an unordered list
+  \item Second item of an unordered list
+\end{itemize}
+
+\begin{enumerate}
+  \item First step of an ordered list
+  \item Second step of an ordered list
+\end{enumerate}
+```
+
+`itemize` creates an unordered list and `enumerate` an ordered list; each item starts with `\item`. LaTeX handles indentation and numbering, so you do not need to type bullet symbols manually.
+
+### 6.2 Figures and Floats
+
+```latex
+\usepackage{graphicx}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/result.png}
+  \caption{Experiment Results}
+  \label{fig:result}
+\end{figure}
+```
+
+`figure` is a float: LaTeX places the figure by weighing the current position and the remaining space on the page. `[htbp]` permits trying here, top, bottom, or a float page, but does not guarantee that the figure appears exactly where it is in the source.
+
+> [!NOTE] Place `\label` After `\caption`
+> Numbers for figures and tables usually come from `\caption`. Putting `\label` after it makes cross-references more likely to pick up the correct number. File paths should be relative to the main `.tex` file, and figure resources should be managed together with the project.
+
+### 6.3 Tables
+
+```latex
+\begin{table}[htbp]
+  \centering
+  \caption{Experiment Data}
+  \label{tab:data}
+  \begin{tabular}{lcr}
+    \hline
+    Item & Count & Time \\
+    \hline
+    Plan A & 10 & 1.2 s \\
+    Plan B & 10 & 0.8 s \\
+    \hline
+  \end{tabular}
+\end{table}
+```
+
+In `tabular`, the column format `{lcr}` means left-aligned, centered, and right-aligned respectively. Like matrices, `&` separates columns and `\\` separates rows. For complex tables, keep the data clear first; do not mimic spreadsheets with many vertical rules and merged cells.
+
+## 7. Editing and Compilation Workflow
+
+### 7.1 Online and Local Tools
+
+| Method | Suitable for | Notes |
+| :--- | :--- | :--- |
+| Online LaTeX platforms | Quick start, team collaboration, course templates | Requires network; confirm document privacy and school requirements before uploading |
+| TeX Live | Full distribution for Windows, Linux, and macOS | Large in size; installation and updates take time |
+| MiKTeX | On-demand package installation on Windows | The first compilation may need to download missing packages |
+| VS Code + LaTeX Workshop | Write, compile, and preview in the editor | A local TeX distribution must still be installed first |
+
+Online platforms suit beginners and collaboration; local environments suit offline use, automated builds, and large projects. Do not install several distributions and mix them at will, because command paths, package versions, and caches may interfere with each other.
+
+### 7.2 Compilation Commands
+
+After installing a TeX distribution, you can compile from the terminal:
+
+```bash
+xelatex main.tex
+```
+
+Documents with tables of contents, cross-references, or bibliographies often need multiple compilation passes. `latexmk` automatically chooses the rounds to run based on dependencies:
+
+```bash
+latexmk -xelatex main.tex
+```
+
+A successful compilation usually produces a PDF plus auxiliary files such as `.aux`, `.log`, and `.toc`. Which files should be committed to Git depends on the project convention; usually you keep `.tex` files, figures, bibliographies, and template sources, and ignore intermediate files that can be regenerated.
+
+> [!WARNING] Do Not Ignore the First Error in the Compilation Log
+> Later LaTeX errors are often chain effects of an earlier missing brace, unknown command, or unclosed environment. When debugging, first locate the first error in the log, check the surrounding source, then recompile; do not just look at the last error message.
+
+## 8. Common Errors and Troubleshooting
+
+| Symptom | Common Cause | How to Check |
+| :--- | :--- | :--- |
+| `Undefined control sequence` | Misspelled command or missing package | Verify the command name and `\usepackage` |
+| `Missing $ inserted` | Using math symbols such as `_`, `^` directly in text | Confirm whether you should enter math mode or escape the characters |
+| `File ... not found` | Wrong path for a figure, template, or package | Check the relative path and file name case from the main file's location |
+| `Environment ... undefined` | Misspelled environment or missing package | Check `\begin` / `\end` and the package documentation |
+| References shown as `??` | Label does not exist or not enough compilation rounds | Verify the label name and compile again |
+| Missing or garbled Chinese characters | Engine, encoding, or font configuration mismatch | Use UTF-8 and choose XeLaTeX / LuaLaTeX as required by the template |
+
+Also check the following paired structures:
+
+- `{` and `}`
+- `\begin{environment}` and `\end{environment}`
+- The `$` and `$` of math mode
+- `\left` and `\right`
+
+> [!TIP] Start Troubleshooting from a Minimal Example
+> When a complex template fails to compile, copy the file, temporarily remove sections and packages unrelated to the problem, and shrink it to a minimal example that still reproduces the error. This makes it easier to tell whether the problem comes from the body, a package conflict, a resource path, or the template configuration.
+
+## 9. More Resources
+
+This section only covers the most common entry-level skills. When you meet a specific need, look up materials by problem:
+
+- [LaTeX Project](https://www.latex-project.org/): the official LaTeX project website and introduction materials
+- [CTAN](https://ctan.org/): the main archive for packages, templates, and documentation
+- [TeX Live](https://www.tug.org/texlive/): official TeX Live information
+- [KaTeX Supported Functions](https://katex.org/docs/supported): the command list supported by this project's web formulas
+
+When a course or school provides a template, read the template's README, example files, and compilation instructions first. The template may fix the document class, engine, fonts, bibliography tools, and the submission file structure; general tutorials cannot replace these conventions.
+
+The next section, [1.10 Mermaid](/en/docs/ch1/1.10-Mermaid), introduces how to use plain text to describe structured charts such as flowcharts and sequence diagrams.
+
+## 10. TODO Checklist
+
+- [ ] Can distinguish a full LaTeX document from math formulas in Markdown
+- [ ] Can correctly use superscripts, subscripts, fractions, radicals, sums, limits, and integrals
+- [ ] Understands matrices, piecewise functions, and multi-line formulas aligned by the equals sign
+- [ ] Understands `\documentclass`, the preamble, and the `document` environment
+- [ ] Can use `\label` and `\ref` to create cross-references
+- [ ] With AI assistance, can choose the correct compilation engine according to the template requirements
+- [ ] When compilation fails, locates the first error in the log first
+
+## 11. Questions Worth Thinking About
+
+> [!DETAILS-FAQ] Why doesn't LaTeX use a WYSIWYG editing approach?
+> LaTeX separates content structure from final typesetting. Authors express the semantic relationships between sections, formulas, references, and figures in the source, and the typesetting system handles numbering, spacing, and page layout uniformly. This reduces the cost of repeatedly adjusting formatting by hand in long documents and makes the source more suitable for version control and automated builds.
+>
+> The price is that you must compile to see the final result, and error messages are not always intuitive. Therefore, short documents that emphasize visual drag-and-drop may not suit LaTeX; long documents with dense formulas, many references, or a unified template better show its strengths.
