@@ -667,8 +667,7 @@ body:has(> [data-reading-return]) .docs-back-to-top {
    the same navigation tint on desktop and mobile.
    侧栏文档组属于展开控件而非沉浸式操作按钮；桌面端与移动端统一复用导航
    背景，同时保持低于当前文档的视觉层级。 */
-:is(#nd-sidebar, #nd-sidebar-mobile)
-  button[data-state][aria-expanded]:not([aria-haspopup]) {
+:is(#nd-sidebar, #nd-sidebar-mobile) button[data-state][aria-expanded]:not([aria-haspopup]) {
   color: var(--text-secondary) !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -812,7 +811,9 @@ body:has(> [data-reading-return]) .docs-back-to-top {
 :is(#nd-sidebar, #nd-sidebar-mobile)
   div[data-state]:has(> button[data-state][aria-expanded]:not([aria-haspopup]))
   > div[data-state]
-  a:not([data-active="true"]):not([aria-current="page"]):not(:has(.site-brand-title)):focus-visible::after {
+  a:not([data-active="true"]):not([aria-current="page"]):not(
+    :has(.site-brand-title)
+  ):focus-visible::after {
   background: var(--docs-sidebar-hover-background);
 }
 
@@ -820,7 +821,9 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   :is(#nd-sidebar, #nd-sidebar-mobile)
     div[data-state]:has(> button[data-state][aria-expanded]:not([aria-haspopup]))
     > div[data-state]
-    a:not([data-active="true"]):not([aria-current="page"]):not(:has(.site-brand-title)):hover::after {
+    a:not([data-active="true"]):not([aria-current="page"]):not(
+      :has(.site-brand-title)
+    ):hover::after {
     background: var(--docs-sidebar-hover-background);
   }
 }
@@ -1449,11 +1452,11 @@ body:has(> [data-reading-return]) .docs-back-to-top {
      在精确阅读恢复期间、返回或刷新后的当前页面生命周期以及任务清单跳转后
      展开延迟区块，避免固有尺寸估算替换阅读锚点上方的原有真实布局。 */
   :is(
-    html[data-nd-reading-restore],
-    html[data-nd-reading-restored],
-    html[data-nd-refresh-restored],
-    html[data-nd-task-list-jump]
-  )
+      html[data-nd-reading-restore],
+      html[data-nd-reading-restored],
+      html[data-nd-refresh-restored],
+      html[data-nd-task-list-jump]
+    )
     #nd-page
     [data-docs-body]
     > :is(

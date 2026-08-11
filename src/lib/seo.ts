@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getPageDictionary } from '@/dictionaries';
-import { i18n, LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, type Locale } from '@/lib/i18n';
+import { i18n, LANGUAGE_TAGS, type Locale, OPEN_GRAPH_LOCALES } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
 import {
   AUTHOR_GITHUB_URL,

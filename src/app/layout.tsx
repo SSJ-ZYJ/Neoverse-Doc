@@ -24,8 +24,8 @@
 //   - Noto Sans SC：正文默认字体
 //   - Maple Mono NF CN：代码块字体（本地字体）
 
-import { Noto_Sans_SC, Orbitron } from 'next/font/google';
 import type { Metadata } from 'next';
+import { Noto_Sans_SC, Orbitron } from 'next/font/google';
 import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
 import { DeploymentSkewGuard } from '@/components/deployment-skew-guard';
