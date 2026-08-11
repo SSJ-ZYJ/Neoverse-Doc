@@ -8,7 +8,7 @@ author:
 > [!DETAILS-AI] AI Summary of This Chapter
 > You can contribute to Neoverse-Docs through Issues, documentation fixes, translations, or Pull Requests. Confirm the problem and scope before making changes, keep Static-first, Server-first, Fumadocs-first, and the existing design language; after making changes, run `bun lint`, `bun typecheck`, Mermaid asset generation, or a production build according to the impact. `bun check` writes to the workspace and should not be treated as a read-only check.
 
-## 1. Ways to Contribute
+## 1. About Contributing
 
 Contributing means more than committing code. The following improvements are all valuable:
 
@@ -196,21 +196,35 @@ The PR description should let reviewers answer: why the change is made, what cha
 
 ### Commit Messages
 
-The current repository recommends:
+Commit messages follow the format: `<type>(<scope or file name>): <summary>`. When a change touches multiple files, use the name of the functional module as the scope.
+
+Common types include:
+
+- `feat`: new feature;
+- `fix`: bug fix;
+- `docs`: documentation change;
+- `style`: formatting change (does not affect code behavior);
+- `refactor`: code refactoring (does not affect behavior);
+- `test`: test change (does not affect behavior);
+- `chore`: build process or auxiliary tool change (does not affect behavior);
+- `ci`: continuous integration change (does not affect behavior);
+- `revert`: roll back to a previous version.
+
+Write the summary in Chinese and briefly describe what this commit changes, keeping it within 10 English words. When there are many changes, put the core change in the summary and list the rest in the body; when a body exists, keep a blank line between the summary line and the body.
+
+For example:
 
 ```text
-<type>(<scope>): <summary>
-```
+docs(about): 重写贡献指南
 
-Common types include `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, and `revert`. For example:
+补充验证范围表格，并更新提交信息与协作准则。
+```
 
 ```text
-docs(about): rewrite the contributing guide
-fix(search): fix the chapter filter state
-feat(mdx): add a learning path component
+fix(search): 修复章节筛选状态
 ```
 
-Keep the summary short; when additional background is needed, add the body after a blank line. PR titles can follow the same format.
+PR titles can follow the same format.
 
 ## 9. Translation Principles
 
