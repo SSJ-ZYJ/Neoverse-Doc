@@ -1,0 +1,259 @@
+---
+title: 设计系统与主题
+description: 语义 Token、Glass 视觉体系、主题切换、Motion 分级与无障碍降级
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] 本章 AI 摘要
+> 站点视觉由语义 Token 与模块化 CSS 驱动。`tokens.css` 提供颜色、表面、圆角、阴影、间距与动效的双套变量；`glass.css` 实现统一的玻璃形态三件套与业务表面类；`theme.css` 把 CSS 变量映射到 Tailwind v4；`a11y.css` 处理减少动效、减少透明度与不支持 backdrop-filter 三层降级。主题切换通过 `next-themes` 与根元素 class 实现，切换期间暂时关闭大范围 transition 避免长文档颜色动画。
+
+## 一、样式目录结构
+
+`src/app/globals.css` 是聚合入口，实际规则按职责拆分到 `src/styles/`：
+
+```text
+src/styles/
+├── theme.css              # Tailwind / Fumadocs 基础映射
+├── tokens.css             # 颜色、表面、圆角、阴影、间距与动效
+├── motion.css             # 入场动画与 reduced-motion
+├── glass.css              # 玻璃表面和控件
+├── fumadocs-glass.css     # Fumadocs 组件覆写
+├── typography.css         # 正文、代码、引用与提示
+├── transitions.css        # 页面转场
+├── mermaid.css            # 图表主题与节点
+├── loading.css            # 路由加载
+├── giscus.css             # 评论样式
+├── mdx-files.css          # 文件层级样式
+├── search-spotlight.css   # 搜索聚光灯
+├── immersive-interactions.css # 沉浸式交互
+├── a11y.css               # 无障碍与透明度回退
+└── pages/                 # 页面级结构
+    ├── home.css
+    └── special.css
+```
+
+每个文件只承担一类职责，视觉调整优先替换 Token 或已有表面，不继续叠加第二套玻璃、Glow 或阴影体系。
+
+## 二、语义 Token 体系
+
+`src/styles/tokens.css` 是所有视觉决策的单一来源，提供浅色（`:root, .light`）与深色（`.dark`）双套变量。
+
+### Token 分类
+
+| 分类 | 示例 | 用途 |
+| :--- | :--- | :--- |
+| 颜色语义 | `--background-primary`、`--text-primary`、`--accent-primary` | 背景、文本、强调 |
+| 表面 | `--surface-elevated`、`--surface-panel` | 玻璃表面层次 |
+| 边框 | `--border-subtle`、`--border-strong` | 描边强度 |
+| 环境光 | `--ambient-ice`、`--ambient-mint`、`--ambient-violet` | 多色相径向渐变 |
+| 几何 | `--radius-xs/sm/md/lg/xl/2xl/pill` | 圆角分级 |
+| 阴影 | `--shadow-float/popover/edge/interactive` | 投影语义 |
+| 间距 | `--content-max: 72rem`、`--reading-max: 47rem`、`--page-gutter` | 内容宽度与边距 |
+| 动效 | `--motion-instant/fast/standard/expressive/scenic` | 时长分级 |
+| 缓动 | 标准、揭示、软弹簧三元组 | 曲线语义 |
+
+### 领域专属 Token
+
+除了通用 Token，还为特定场景定义专属变量：
+
+- **玻璃系统**：`--glass-tint`、`--glass-blur`、`--glass-refraction-fill/line`、`--glass-shadow-hover`
+- **文档场景**：`--docs-canvas-surface`、`--docs-circuit-node/line`、`--docs-sidebar-*`
+- **Mermaid 图表**：完整覆盖 `--mermaid-shape-*`、`--mermaid-git-branch-0..7`、`--mermaid-gantt-*`、`--mermaid-pie-*` 等语义色槽
+- **引用块**：`--docs-quote-background/border/rail/shadow`
+- **警告色**：`--color-alert-note/tip/important/warning/caution/example/hint/ai`
+
+### Fumadocs 桥接
+
+Token 通过 `--color-fd-*` 与 `--fd-primary` 别名桥接到 Fumadocs UI 的颜色系统，让 Fumadocs 组件与项目自定义组件共享同一套颜色来源。
+
+## 三、玻璃形态系统
+
+`src/styles/glass.css` 实现统一的玻璃视觉语言。
+
+### 三件套结构
+
+每个玻璃表面由 `border + backdrop-filter + box-shadow` 三件套构成：
+
+- 单层 hairline 描边（`1px` 半透明边框）；
+- 顶部 sheen 高光（`inset` box-shadow）；
+- 柔和投影（`--shadow-edge` + `--glass-shadow`）；
+- 避免多层 inset / outer ring 重影。
+
+### 业务表面类
+
+| 类名 | 用途 | contain 策略 |
+| :--- | :--- | :--- |
+| `.surface-panel` / `.surface-elevated` | 大面板、弹窗 | `contain: layout style`（刻意不用 `paint`，因为 `backdrop-filter` 需采样父级 stacking context） |
+| `.control-surface` / `.control-surface--primary` | 紧凑控件 | hover `translateY(-2px)` 反馈 |
+| `.glass-panel` / `.glass-card` / `.glass-chip` / `.glass-cta` | 大面板、弹窗、chip、CTA | 按尺寸分级 |
+| `.chapter-card` / `.mdx-doc-card` | 首页章节卡片、文档卡片 | `contain: layout style` 隔离 hover 变换与光标追踪 |
+
+### 统一悬浮系统
+
+- `.glass-interactive`：完整抬升 + 辉光 + tint 切换；
+- `.glass-interactive--chip`：不抬升（避免小元件抖动），仅 tint 与 rim glow；
+- 通过 `@media (hover: hover)` 包裹，避免触屏设备卡住悬停状态；
+- `.glass-interactive:focus-visible` 显式 outline 保证键盘焦点可见。
+
+### 全局环境光
+
+`body::before` 提供全局环境光层：
+
+- 多色相、低浓度、大半径（`50vmax`）的径向渐变；
+- `filter: blur(100px) saturate(160%)` + `contain: strict` GPU 隔离；
+- 主页通过 `body:has(.home-page)::before { display: none }` 完全隐藏，避免与主页 `.home-page::before` 双层重复；
+- 移动端（`max-width: 768px`）将 `100px` 实时模糊替换为预模糊静态渐变，降低 GPU 成本。
+
+## 四、主题入口与 Tailwind 映射
+
+`src/styles/theme.css` 是 Tailwind v4 与 Fumadocs 的接入点：
+
+```text
+@import "tailwindcss"
+@import "fumadocs-ui/css/neutral.css"
+@import "fumadocs-ui/css/preset.css"
+@plugin "tailwindcss-animate"
+```
+
+`@theme inline` 把 CSS 变量映射到 Tailwind 工具类：
+
+- `--color-background` / `--color-foreground` 映射到 `bg-background` / `text-foreground`；
+- `--font-orbitron` / `--font-noto-sans` / `--font-mono` 映射到字体工具类。
+
+主题相关表面共享同一组颜色切换节奏：`transition` 使用 `--theme-transition-duration`，`prefers-reduced-motion: reduce` 时该时长归零。
+
+## 五、主题切换机制
+
+项目使用 `next-themes` 管理浅色、深色与跟随系统三种主题。
+
+### Provider 位置
+
+`ThemeProvider` 放在根 `src/app/layout.tsx`，而不是 `[lang]/layout.tsx`。这样切换 locale 段时不会重新挂载 Provider，避免 React 19 对重新挂载脚本发出警告。
+
+Fumadocs `RootProvider` 通过 `theme={{ enabled: false }}` 关闭其内置 ThemeProvider，避免与项目 ThemeProvider 嵌套冲突。
+
+### 切换期 transition 控制
+
+主题切换会让长文档中的代码高亮、表格、图表节点同时播放颜色动画，产生明显的视觉抖动。项目通过以下方式控制：
+
+- 切换前在根元素设置 `data-theme-switching` 属性；
+- `[data-theme-switching] *` 选择器暂时关闭大范围 `transition`；
+- 切换完成后移除属性，恢复正常过渡。
+
+### Mermaid 主题适配
+
+Mermaid 静态 SVG 使用 CSS 变量和项目类名适配主题，不需要因为浅色 / 深色分别生成两份图表。`src/styles/mermaid.css` 提供完整的语义色槽，Mermaid 节点通过类名引用变量。
+
+## 六、Motion 分级与基础动画
+
+`src/styles/motion.css` 定义统一的入场动画与 reduced-motion 处理。
+
+### 三档动效
+
+项目支持 `low` / `medium` / `high` 三档动效，默认 `high`：
+
+| 档位 | 行为 |
+| :--- | :--- |
+| `high` | 完整动效，包括粒子、转场、环境动画 |
+| `medium` | 粒子密度折半，转场保留，环境动画保留 |
+| `low` | `animation-duration: 0.01ms !important`，隐藏转场层与粒子层 |
+
+档位通过 `html[data-nd-motion-level]` 属性切换。系统 `prefers-reduced-motion: reduce` 时强制降级到 `low`。
+
+### 入场动画
+
+- 统一 `nd-fade-up` 关键帧；
+- `[data-animated-content]` 配合 `[data-visible="true"]` 触发 fade-up；
+- 低动效档位隐藏转场层与粒子层。
+
+### 动效偏好提供器
+
+`src/components/motion-preferences-provider.tsx` 通过 Context 暴露 `effectiveLevel`、`effectiveExperimental`、`systemReducedMotion`、`experimentalMotionSupported`：
+
+- `useLayoutEffect` 初始化：读取 localStorage、检测 `prefers-reduced-motion`、检测实验性动效支持；
+- 监听 `matchMedia` change 与 `storage` 事件，跨标签页同步；
+- `MOTION_PREFERENCES_BOOTSTRAP` 内联脚本在 hydration 前执行，避免首帧闪现默认高动效。
+
+### 实验性动效能力检测
+
+`src/lib/experimental-motion-support.ts` 检测 HTML-in-Canvas 捕获（`drawElementImage` + `requestPaint`）与 WebGL2 支持，两者同时满足才启用实验性动效。检测结果缓存一次，让设置界面与运行时消费者一致。创建 WebGL2 上下文后立即 `loseContext()` 释放资源。
+
+### 动效配置
+
+`src/lib/motion-config.ts` 集中所有动效参数：
+
+- `MOTION_DURATION_MS`：与 CSS Token 对齐的 JS 时长（instant / fast / standard / expressive / aperture / overview / surface / content / crossfade）；
+- `MOTION_EASING`：standard / reveal / softSpring 三元组；
+- `MOTION_FRAME_RATE.homepageAmbient: 60`：共享帧率预算，避免高刷屏 GPU 开销增长；
+- `TRANSITION_TIMEOUT_MS`：navigation 8s、settleBuffer 140ms。
+
+## 七、无障碍降级
+
+`src/styles/a11y.css` 处理三层降级，保证视觉增强不可用时内容仍可阅读。
+
+### 减少动效
+
+`prefers-reduced-motion: reduce`：
+
+- 关闭非必要位移与持续动画；
+- 强制动效档位到 `low`；
+- 保留焦点环、按钮标签与关键状态。
+
+### 减少透明度
+
+`prefers-reduced-transparency: reduce`：
+
+- 所有玻璃表面退化为不透明背景；
+- 禁用 `backdrop-filter`；
+- 隐藏 `body::before` 环境光层。
+
+### 不支持 backdrop-filter
+
+`@supports not (backdrop-filter: blur(1px))`：
+
+- 与减少透明度相同的降级策略；
+- 保证旧浏览器仍能阅读内容。
+
+降级只减少装饰与过渡，不移除正文、焦点、按钮标签或关键状态。
+
+## 八、排版与正文规则
+
+`src/styles/typography.css` 定义正文、代码、引用与提示的排版规则：
+
+- 可交互任务清单（`.mdx-task-progress`）样式；
+- 玻璃代码块（`.glass-codeblock`）外壳；
+- 引用块、提示框、警告色样式；
+- 行内代码换行检测样式；
+- 折叠块内代码块显式 `margin-block: 0.5rem`，避免与块边缘重叠。
+
+## 九、视觉原则
+
+新增或修改 UI 时遵循以下优先级：
+
+```text
+内容与可读性 > 装饰
+信息层级 > 特效数量
+语义一致性 > 局部炫技
+精致收敛 > 新增第二套体系
+```
+
+Glass、Glow、粒子、Blur 和环境 Motion 作为增强效果而不是默认组件样式。新增视觉效果前优先考虑：能否复用现有视觉语言、能否替换旧效果而不是继续叠加、是否影响阅读、是否明显增加 GPU / JS 成本。
+
+任何非必要 Motion 都尊重 `prefers-reduced-motion`。
+
+## 十、关键文件
+
+| 文件 | 职责 |
+| :--- | :--- |
+| `src/styles/tokens.css` | 语义 Token 双套变量 |
+| `src/styles/theme.css` | Tailwind / Fumadocs 映射 |
+| `src/styles/glass.css` | 玻璃形态三件套与业务表面 |
+| `src/styles/motion.css` | 入场动画与三档动效 |
+| `src/styles/a11y.css` | 三层无障碍降级 |
+| `src/styles/typography.css` | 正文、代码、引用与提示 |
+| `src/styles/fumadocs-glass.css` | Fumadocs 组件覆写 |
+| `src/components/motion-preferences-provider.tsx` | 动效偏好 Context |
+| `src/lib/motion-preferences.ts` | 动效偏好解析与 bootstrap |
+| `src/lib/motion-config.ts` | 动效参数集中配置 |
+| `src/lib/experimental-motion-support.ts` | 实验性动效能力检测 |

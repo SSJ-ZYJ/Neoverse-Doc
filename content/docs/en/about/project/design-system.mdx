@@ -1,0 +1,259 @@
+---
+title: Design System and Theme
+description: Semantic tokens, the Glass visual system, theme switching, Motion tiers, and accessibility fallbacks
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Chapter
+> The site's visuals are driven by semantic tokens and modular CSS. `tokens.css` provides dual variable sets for color, surfaces, radii, shadows, spacing, and motion; `glass.css` implements the unified glassmorphism trio and business surface classes; `theme.css` maps CSS variables to Tailwind v4; `a11y.css` handles three fallback layers: reduced motion, reduced transparency, and unsupported backdrop-filter. Theme switching is done through `next-themes` and a root element class, temporarily disabling broad transitions during the switch to avoid color animations across long documents.
+
+## 1. Styles Directory Structure
+
+`src/app/globals.css` is the aggregation entry point; actual rules are split by responsibility into `src/styles/`:
+
+```text
+src/styles/
+├── theme.css              # Tailwind / Fumadocs base mapping
+├── tokens.css             # colors, surfaces, radii, shadows, spacing, and motion
+├── motion.css             # entrance animations and reduced-motion
+├── glass.css              # glass surfaces and controls
+├── fumadocs-glass.css     # Fumadocs component overrides
+├── typography.css         # body text, code, blockquotes, and callouts
+├── transitions.css        # page transitions
+├── mermaid.css            # diagram theme and nodes
+├── loading.css            # route loading
+├── giscus.css             # comment styles
+├── mdx-files.css          # file hierarchy styles
+├── search-spotlight.css   # search spotlight
+├── immersive-interactions.css # immersive interactions
+├── a11y.css               # accessibility and transparency fallbacks
+└── pages/                 # page-level structure
+    ├── home.css
+    └── special.css
+```
+
+Each file takes a single responsibility; visual tweaks prefer replacing Tokens or existing surfaces over stacking a second glass, Glow, or shadow system.
+
+## 2. Semantic Token System
+
+`src/styles/tokens.css` is the single source of truth for all visual decisions, providing dual variable sets for light (`:root, .light`) and dark (`.dark`).
+
+### Token Categories
+
+| Category | Examples | Purpose |
+| :--- | :--- | :--- |
+| Color semantics | `--background-primary`, `--text-primary`, `--accent-primary` | Background, text, accents |
+| Surfaces | `--surface-elevated`, `--surface-panel` | Glass surface hierarchy |
+| Borders | `--border-subtle`, `--border-strong` | Stroke strength |
+| Ambient light | `--ambient-ice`, `--ambient-mint`, `--ambient-violet` | Multi-hue radial gradients |
+| Geometry | `--radius-xs/sm/md/lg/xl/2xl/pill` | Radius tiers |
+| Shadows | `--shadow-float/popover/edge/interactive` | Shadow semantics |
+| Spacing | `--content-max: 72rem`, `--reading-max: 47rem`, `--page-gutter` | Content width and margins |
+| Motion | `--motion-instant/fast/standard/expressive/scenic` | Duration tiers |
+| Easing | the standard, reveal, soft-spring trio | Curve semantics |
+
+### Domain-specific Tokens
+
+Beyond the general Tokens, dedicated variables are defined for specific scenarios:
+
+- **Glass system**: `--glass-tint`, `--glass-blur`, `--glass-refraction-fill/line`, `--glass-shadow-hover`
+- **Docs scenarios**: `--docs-canvas-surface`, `--docs-circuit-node/line`, `--docs-sidebar-*`
+- **Mermaid diagrams**: full coverage of semantic color slots such as `--mermaid-shape-*`, `--mermaid-git-branch-0..7`, `--mermaid-gantt-*`, `--mermaid-pie-*`
+- **Blockquotes**: `--docs-quote-background/border/rail/shadow`
+- **Alert colors**: `--color-alert-note/tip/important/warning/caution/example/hint/ai`
+
+### Fumadocs Bridging
+
+Tokens bridge to the Fumadocs UI color system through the `--color-fd-*` and `--fd-primary` aliases, letting Fumadocs components and project custom components share the same color source.
+
+## 3. Glassmorphism System
+
+`src/styles/glass.css` implements the unified glass visual language.
+
+### The Trio Structure
+
+Each glass surface consists of the `border + backdrop-filter + box-shadow` trio:
+
+- a single hairline stroke (a `1px` semi-transparent border);
+- a top sheen highlight (`inset` box-shadow);
+- a soft shadow (`--shadow-edge` + `--glass-shadow`);
+- no stacked multi-layer inset / outer ring ghosts.
+
+### Business Surface Classes
+
+| Class | Purpose | contain strategy |
+| :--- | :--- | :--- |
+| `.surface-panel` / `.surface-elevated` | Large panels, popovers | `contain: layout style` (deliberately not `paint`, because `backdrop-filter` needs to sample the parent stacking context) |
+| `.control-surface` / `.control-surface--primary` | Compact controls | `translateY(-2px)` hover feedback |
+| `.glass-panel` / `.glass-card` / `.glass-chip` / `.glass-cta` | Large panels, popovers, chips, CTAs | Tiered by size |
+| `.chapter-card` / `.mdx-doc-card` | Home chapter cards, doc cards | `contain: layout style` isolates hover transforms and cursor tracking |
+
+### Unified Hover System
+
+- `.glass-interactive`: full lift + glow + tint switch;
+- `.glass-interactive--chip`: no lift (to avoid jitter on small elements), only tint and rim glow;
+- wrapped in `@media (hover: hover)` to avoid stuck hover states on touch devices;
+- an explicit `.glass-interactive:focus-visible` outline keeps keyboard focus visible.
+
+### Global Ambient Light
+
+`body::before` provides a global ambient light layer:
+
+- a multi-hue, low-concentration, large-radius (`50vmax`) radial gradient;
+- `filter: blur(100px) saturate(160%)` + `contain: strict` GPU isolation;
+- the home page hides it entirely via `body:has(.home-page)::before { display: none }`, avoiding double layering with the home page's `.home-page::before`;
+- on mobile (`max-width: 768px`), the live `100px` blur is replaced with a pre-blurred static gradient to reduce GPU cost.
+
+## 4. Theme Entry Point and Tailwind Mapping
+
+`src/styles/theme.css` is the integration point for Tailwind v4 and Fumadocs:
+
+```text
+@import "tailwindcss"
+@import "fumadocs-ui/css/neutral.css"
+@import "fumadocs-ui/css/preset.css"
+@plugin "tailwindcss-animate"
+```
+
+`@theme inline` maps CSS variables to Tailwind utility classes:
+
+- `--color-background` / `--color-foreground` map to `bg-background` / `text-foreground`;
+- `--font-orbitron` / `--font-noto-sans` / `--font-mono` map to font utility classes.
+
+Theme-related surfaces share the same color-switch rhythm: `transition` uses `--theme-transition-duration`, and the duration drops to zero under `prefers-reduced-motion: reduce`.
+
+## 5. Theme Switching Mechanism
+
+The project uses `next-themes` to manage light, dark, and system-following themes.
+
+### Provider Location
+
+`ThemeProvider` lives in the root `src/app/layout.tsx` rather than in `[lang]/layout.tsx`. This way the Provider is not remounted when switching locale segments, avoiding the React 19 warning about remounted scripts.
+
+The Fumadocs `RootProvider` disables its built-in ThemeProvider via `theme={{ enabled: false }}` to avoid a nested conflict with the project's ThemeProvider.
+
+### Transition Control During Switching
+
+A theme switch makes code highlighting, tables, and diagram nodes in long documents play color animations at the same time, causing noticeable visual flicker. The project controls this as follows:
+
+- set the `data-theme-switching` attribute on the root element before the switch;
+- the `[data-theme-switching] *` selector temporarily disables broad `transition`s;
+- the attribute is removed after the switch completes to restore normal transitions.
+
+### Mermaid Theme Adaptation
+
+Mermaid static SVGs adapt to the theme via CSS variables and project class names, so there is no need to generate two diagram sets for light and dark. `src/styles/mermaid.css` provides complete semantic color slots; Mermaid nodes reference variables through class names.
+
+## 6. Motion Tiers and Base Animations
+
+`src/styles/motion.css` defines the unified entrance animations and reduced-motion handling.
+
+### Three Motion Tiers
+
+The project supports the `low` / `medium` / `high` motion tiers, defaulting to `high`:
+
+| Tier | Behavior |
+| :--- | :--- |
+| `high` | Full motion, including particles, transitions, and ambient animations |
+| `medium` | Particle density halved; transitions and ambient animations kept |
+| `low` | `animation-duration: 0.01ms !important`; transition and particle layers hidden |
+
+Tiers are switched via the `html[data-nd-motion-level]` attribute. System `prefers-reduced-motion: reduce` forces a downgrade to `low`.
+
+### Entrance Animations
+
+- unified `nd-fade-up` keyframes;
+- `[data-animated-content]` triggers fade-up together with `[data-visible="true"]`;
+- the low tier hides transition and particle layers.
+
+### Motion Preferences Provider
+
+`src/components/motion-preferences-provider.tsx` exposes `effectiveLevel`, `effectiveExperimental`, `systemReducedMotion`, and `experimentalMotionSupported` through Context:
+
+- `useLayoutEffect` initialization: reads localStorage, detects `prefers-reduced-motion`, and detects experimental motion support;
+- listens to `matchMedia` change and `storage` events for cross-tab sync;
+- the `MOTION_PREFERENCES_BOOTSTRAP` inline script runs before hydration, avoiding a first-frame flash of the high default.
+
+### Experimental Motion Capability Detection
+
+`src/lib/experimental-motion-support.ts` detects HTML-in-Canvas capture (`drawElementImage` + `requestPaint`) and WebGL2 support; experimental motion is enabled only when both are present. The detection result is cached once so the settings UI and runtime consumers stay consistent. The WebGL2 context is released immediately with `loseContext()` after creation.
+
+### Motion Configuration
+
+`src/lib/motion-config.ts` centralizes all motion parameters:
+
+- `MOTION_DURATION_MS`: JS durations aligned with the CSS Tokens (instant / fast / standard / expressive / aperture / overview / surface / content / crossfade);
+- `MOTION_EASING`: the standard / reveal / softSpring trio;
+- `MOTION_FRAME_RATE.homepageAmbient: 60`: a shared frame rate budget, avoiding growing GPU cost on high refresh rate screens;
+- `TRANSITION_TIMEOUT_MS`: navigation 8s, settleBuffer 140ms.
+
+## 7. Accessibility Fallbacks
+
+`src/styles/a11y.css` handles three fallback layers so content stays readable when visual enhancements are unavailable.
+
+### Reduced Motion
+
+`prefers-reduced-motion: reduce`:
+
+- disables unnecessary displacement and continuous animations;
+- forces the motion tier to `low`;
+- keeps focus rings, button labels, and critical states.
+
+### Reduced Transparency
+
+`prefers-reduced-transparency: reduce`:
+
+- all glass surfaces fall back to opaque backgrounds;
+- `backdrop-filter` is disabled;
+- the `body::before` ambient light layer is hidden.
+
+### Unsupported backdrop-filter
+
+`@supports not (backdrop-filter: blur(1px))`:
+
+- the same fallback strategy as reduced transparency;
+- ensures older browsers can still read the content.
+
+Fallbacks only remove decoration and transitions; they never remove body text, focus, button labels, or critical states.
+
+## 8. Typography and Body Text Rules
+
+`src/styles/typography.css` defines typography rules for body text, code, blockquotes, and callouts:
+
+- interactive task list (`.mdx-task-progress`) styles;
+- the glass code block (`.glass-codeblock`) shell;
+- blockquote, callout, and alert color styles;
+- inline code line-break detection styles;
+- an explicit `margin-block: 0.5rem` on code blocks inside collapsible blocks, avoiding overlap with block edges.
+
+## 9. Visual Principles
+
+When adding or modifying UI, follow this priority:
+
+```text
+Content and readability > decoration
+Information hierarchy > number of effects
+Semantic consistency > local gimmicks
+Refined restraint > adding a second system
+```
+
+Glass, Glow, particles, Blur, and ambient Motion serve as enhancements rather than default component styles. Before adding a new visual effect, consider first: whether the existing visual language can be reused, whether an old effect can be replaced rather than stacked further, whether reading is affected, and whether GPU / JS cost increases noticeably.
+
+Any non-essential Motion respects `prefers-reduced-motion`.
+
+## 10. Key Files
+
+| File | Responsibility |
+| :--- | :--- |
+| `src/styles/tokens.css` | Dual semantic Token variable sets |
+| `src/styles/theme.css` | Tailwind / Fumadocs mapping |
+| `src/styles/glass.css` | Glass trio structure and business surfaces |
+| `src/styles/motion.css` | Entrance animations and three motion tiers |
+| `src/styles/a11y.css` | Three accessibility fallback layers |
+| `src/styles/typography.css` | Body text, code, blockquotes, and callouts |
+| `src/styles/fumadocs-glass.css` | Fumadocs component overrides |
+| `src/components/motion-preferences-provider.tsx` | Motion preferences Context |
+| `src/lib/motion-preferences.ts` | Motion preference parsing and bootstrap |
+| `src/lib/motion-config.ts` | Centralized motion configuration |
+| `src/lib/experimental-motion-support.ts` | Experimental motion capability detection |

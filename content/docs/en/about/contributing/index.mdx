@@ -1,0 +1,227 @@
+---
+title: Contributing Guide
+description: Report issues, improve content, or participate in Neoverse-Docs development
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Chapter
+> You can contribute to Neoverse-Docs through Issues, documentation fixes, translations, or Pull Requests. Confirm the problem and scope before making changes, keep Static-first, Server-first, Fumadocs-first, and the existing design language; after making changes, run `bun lint`, `bun typecheck`, Mermaid asset generation, or a production build according to the impact. `bun check` writes to the workspace and should not be treated as a read-only check.
+
+## 1. Ways to Contribute
+
+Contributing means more than committing code. The following improvements are all valuable:
+
+- Report factual errors, broken links, steps that cannot be reproduced, or display issues;
+- Improve copy, examples, diagrams, term explanations, or learning paths;
+- Add content that the current chapter truly lacks;
+- Fix accessibility, mobile, light / dark theme, or performance issues;
+- Translate existing content and keep terminology and structure consistent;
+- Participate in code review, providing verifiable reproduction information or alternatives.
+
+If a change significantly affects architecture, dependencies, public APIs, the content Schema, compatibility, or user data, first explain the background and approach via [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues). Do not submit large-scale implementations directly.
+
+## 2. Submitting an Issue
+
+### Reporting a Problem
+
+Search for an existing Issue before submitting. A processable problem report usually includes:
+
+1. The page or feature where the problem occurs;
+2. The minimal steps to reliably trigger the problem;
+3. The actual result and the expected result;
+4. Browser, operating system, and necessary version information;
+5. Screenshots, error text, or a minimal reproduction (if applicable).
+
+Do not just write "it doesn't work" or "the display is wrong". The closer to reproducible facts, the easier the problem is to locate.
+
+### Suggesting Content or Features
+
+Please state who the suggestion serves, what problem it solves, why the existing content or capability is insufficient, and what smaller alternatives you have considered. Visual effects should also state the impact on reading, mobile, light / dark themes, reduced motion, and performance.
+
+## 3. Setting Up the Development Environment
+
+### Prerequisites
+
+- Node.js 20 or higher;
+- Bun 1.0 or higher;
+- Git.
+
+### Fork and Launch
+
+```bash
+# Clone your own repository after forking
+git clone https://github.com/<your-username>/Neoverse-Doc.git
+cd Neoverse-Doc
+
+# Keep the official repository as upstream
+git remote add upstream https://github.com/SSJ-ZYJ/Neoverse-Doc.git
+
+# Install dependencies and generate Fumadocs content files
+bun install
+
+# Generate Mermaid assets and start the development server
+bun dev
+```
+
+Open `http://localhost:3000` in a browser to preview. Do not add, remove, upgrade, or replace dependencies without discussion; the current versions are based on `package.json`.
+
+### Common Commands
+
+| Command | Purpose | Writes to workspace |
+| :--- | :--- | :---: |
+| `bun dev` | Generate Mermaid assets and start the Turbopack development server | Yes |
+| `bun lint` | Run Biome Lint | No |
+| `bun typecheck` | Generate route and content types; validate MDX, Frontmatter, and TypeScript | Yes |
+| `bun run generate:mermaid` | Regenerate Mermaid static SVGs and the asset mapping | Yes |
+| `bun run build` | Generate Mermaid assets and run the production static build | Yes |
+| `bun format` | Format the workspace with Biome | Yes |
+| `bun check` | Run Biome Check with `--write` | **Yes** |
+| `bun run start` | Preview the already generated `out/` static output | No |
+
+> [!WARNING] `bun check` is not a read-only check
+> It modifies workspace files. After running `bun format`, `bun check`, type generation, Mermaid generation, or a build, check `git status` and the Diff to avoid bringing unrelated changes into a Pull Request.
+
+## 4. Project Structure
+
+<Files>
+  <Folder name="Neoverse-Doc" defaultOpen>
+    <Folder name="content/docs" defaultOpen title="Markdown / MDX content organized by locale">
+      <Folder name="zh" disabled title="Chinese content tree" />
+      <Folder name="en" disabled title="English content tree" />
+    </Folder>
+    <Folder name="public" disabled title="Static assets and Mermaid output" />
+    <Folder name="scripts" disabled title="Build-time generation scripts" />
+    <Folder name="src" defaultOpen>
+      <Folder name="app" disabled title="Next.js App Router pages" />
+      <Folder name="components" disabled title="Site and MDX components" />
+      <Folder name="dictionaries" disabled title="UI i18n dictionaries" />
+      <Folder name="generated" disabled title="Generated asset mappings" />
+      <Folder name="lib" disabled title="Configuration, content sources, and utility functions" />
+    </Folder>
+    <File name="source.config.ts" title="Content Schema and MDX plugins" />
+    <File name="next.config.ts" title="Next.js and static export configuration" />
+    <File name="package.json" title="Dependency versions and commands" />
+    <File name="AGENTS.md" title="Repository-wide modification constraints" />
+  </Folder>
+</Files>
+
+Before starting changes, read the root `AGENTS.md`, the affected files, and their callers. The README is an overview of the project's capabilities and tech stack; actual behavior is still based on the current code, configuration, and content.
+
+## 5. Implementation Constraints
+
+### Keep Changes Minimal
+
+- Only modify the files necessary to accomplish the current goal;
+- Do not format, move, or refactor unrelated code;
+- Fix the root cause first; do not mask problems with extra timers, high-specificity CSS, or duplicated state;
+- Preserve uncommitted changes in the workspace that do not belong to you.
+
+### Keep the Existing Architecture
+
+- **Static-first**: do not break the production static export, and do not make core features depend on long-running servers, databases, Server Actions, or Middleware.
+- **Server-first**: keep components as Server Components by default, adding small client boundaries only when state, interaction, or browser APIs require them.
+- **Fumadocs-first**: prefer the existing Fumadocs APIs for page trees, MDX, TOC, search, and i18n.
+- **Type safety**: do not hide real problems with `any`, `@ts-ignore`, or unsafe assertions.
+- **Existing design system first**: reuse Tokens, components, and style patterns, while also checking mobile, light / dark themes, and reduced motion.
+
+New user-visible UI text must be wired into the existing i18n system under `src/dictionaries/`, keeping the current language dictionaries in sync. Adding a dependency requires first explaining its name, purpose, version, and why the existing solutions are insufficient.
+
+## 6. Modifying Documents
+
+### Content Location and File Types
+
+Site content lives in `content/docs/{locale}/`. Use `.md` for plain Markdown; use `.mdx` when JSX components are needed. When a page already provides a title via Frontmatter, the body starts from `##`.
+
+After adding a page, it must be registered in the `meta.json` of the same directory. If a page already has both Chinese and English versions, keep them in sync when modifying core content; for pages that are currently Chinese-only, do not create an English version just for formal completeness.
+
+### Frontmatter
+
+Frontmatter must conform to the Schema in `source.config.ts`. Besides the basic Fumadocs fields, the project's current extended fields include:
+
+```yaml
+---
+title: Page Title
+description: Page Description
+author:
+  - "Main Author(https://github.com/your-name)"
+contributors:
+  - "Contributor(https://github.com/contributor-name)"
+draft: false
+todoProgress: false
+---
+```
+
+`author`, `contributor`, and `contributors` accept a single string or an array of strings; `draft` and `todoProgress` both default to `false`. Do not write custom fields that are not declared by the Schema.
+
+### Body Text Rules
+
+- Code blocks must declare the correct language; wrap commands, paths, config options, APIs, and environment variables in backticks;
+- Keep a half-width space between Chinese and English, numbers, and abbreviations in principle;
+- Use full-width quotation marks “” in Chinese body text; keep English quotation marks in code and config strings;
+- Explain unfamiliar terms near their first occurrence, and link to the detailed chapter when necessary;
+- Use absolute paths like `/zh/docs/ch1/xxx` or the path of the corresponding locale for in-site links, appending heading anchors when locating a section;
+- Use Mermaid only when a diagram is clearly better than plain text; regenerate static assets after modifying diagrams;
+- Versions, commands, paths, and behaviors in documents must be verifiable against the current repository or reliable official sources.
+
+When adding a new site MDX component, also export it in `src/components/mdx/mdx-preview-shims.tsx` and register it in `.mdx-previewrc.json` so that VS Code MDX Preview does not treat it as an unknown component.
+
+See [Syntax and Component Reference](./syntax-example) for the complete syntax and rendering examples.
+
+## 7. Choosing the Verification Scope
+
+| Scope of changes | Minimum to run |
+| :--- | :--- |
+| Pure TypeScript / React / CSS changes | `bun lint`, `bun typecheck` |
+| Markdown / MDX or Frontmatter | `bun typecheck` |
+| Mermaid content or count changes | `bun run generate:mermaid`, and check the generated assets |
+| Static routes, build configuration, or larger content changes | `bun run build` |
+| Write-mode formatting commands used | Check `git status` and the full Diff |
+
+Verification should match the risk of the change; there is no need to mechanically run every command. But you must not claim that checks which were not actually executed have passed.
+
+## 8. Submitting a Pull Request
+
+### Suggested Workflow
+
+1. Create a focused branch from the latest `main`;
+2. Complete one group of focused changes, avoiding unrelated formatting;
+3. Check `git status`, the full Diff, and generated files;
+4. Run verification matching the scope of changes;
+5. Use clear commit messages and push to your own branch;
+6. Create a Pull Request stating the problem, approach, verification results, and known risks;
+7. Keep modifying on the same branch according to review feedback.
+
+The PR description should let reviewers answer: why the change is made, what changed, how it was verified, what was not verified, and whether there are screenshots or reproduction steps.
+
+### Commit Messages
+
+The current repository recommends:
+
+```text
+<type>(<scope>): <summary>
+```
+
+Common types include `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, and `revert`. For example:
+
+```text
+docs(about): rewrite the contributing guide
+fix(search): fix the chapter filter state
+feat(mdx): add a learning path component
+```
+
+Keep the summary short; when additional background is needed, add the body after a blank line. PR titles can follow the same format.
+
+## 9. Translation Principles
+
+- Understand the intent of the original text first, then express it according to target language conventions instead of word-for-word substitution;
+- Keep heading levels, link targets, code behavior, and Frontmatter structure consistent;
+- Unify professional terminology, avoiding different translations for the same concept across adjacent pages;
+- Translate user-visible output in code and instructional comments by context, while keeping syntax identifiers unchanged;
+- After finishing the translation, check locale paths, in-site links, and page registration separately.
+
+## 10. Collaboration Guidelines
+
+Respect other contributors and their time, and discuss around facts and changes; constructive criticism is welcome, and please explain your reasoning. Do not make private information public, do not use aggressive language, and do not force reviewers to accept changes beyond the goal through large-scale unrelated modifications.
+
+Thank you for helping make Neoverse-Docs more accurate and readable. When something is uncertain, you can first discuss it in [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues).

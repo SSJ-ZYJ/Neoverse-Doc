@@ -1,0 +1,252 @@
+---
+title: 搜索、导航与社区
+description: 静态搜索、结果增强、章节筛选、跨文档返回、源码端点、i18n 与 Giscus
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] 本章 AI 摘要
+> 项目把搜索索引、页面树和源码端点静态生成，再在浏览器中增加 Chapter 范围筛选、搜索结果增强流水线、搜索聚光灯与跨文档阅读返回。中文搜索使用中英混合分词，并只为标题和小节标题增加拼音检索。Giscus 主题切换通过 `useLayoutEffect` 与固定 400ms 渐隐消除闪烁。路由转场独立成 [专题](./transitions) 说明。
+
+## 一、静态搜索架构
+
+`src/app/api/search/route.ts` 使用 Fumadocs `createFromSource()` 从内容源生成搜索数据，并设置 `dynamic = 'force-static'`。生产构建会把这个 Route Handler 输出为静态端点，不需要请求时扫描 Markdown。
+
+```mermaid
+flowchart LR
+    A[Fumadocs 内容源] --> B[结构化标题与正文]
+    B --> C[混合分词器]
+    C --> D[Orama / zbsearch 索引]
+    D --> E[静态搜索端点]
+    E --> F[客户端搜索弹窗]
+    F --> G[全文结果或 Chapter 范围]
+```
+
+每条索引记录包含页面 URL、标题、描述、结构化正文与一级 slug。一级 slug 同时写入 Fumadocs `tag`，因此 Chapter 筛选直接复用内容路径，不需要维护第二份章节映射。
+
+## 二、中英混合与拼音检索
+
+默认英文分词无法可靠处理连续中文，简单按字符切分又会损害英文单词和短语。`src/lib/search-tokenizer.ts` 组合了两类行为：
+
+- 中文片段使用 `@orama/tokenizers/mandarin` 的词典分词；
+- 英文片段统一小写，保持英文查询大小写不敏感；
+- 中文标题与小节标题额外建立拼音形式；
+- 正文不全量扩展拼音，避免索引膨胀和无关匹配；
+- 英文 locale 继续使用英文语言配置。
+
+### 命名空间前缀
+
+服务端索引与客户端查询使用不同的命名空间前缀，确保拼音只在需要时被检索：
+
+| 常量 | 前缀 | 用途 |
+| :--- | :--- | :--- |
+| `PINYIN_INDEX_PREFIX` | `\uE000` | 服务端仅标记标题与小节标题，生成拼音别名 |
+| `PINYIN_QUERY_PREFIX` | `\u0000pinyin:` | 浏览器查询时仅搜索带命名空间的拼音别名 |
+
+### 拼音生成
+
+`getPinyinAliases()` 为中文段生成：
+
+- 全拼形式；
+- 首字母缩写；
+- 有界相邻片段（`MAX_PINYIN_SEGMENT_SPAN = 8`），避免过长片段产生无关匹配。
+
+`addKeyboardUmlautVariant()` 处理 `v → ü` 变体，支持键盘输入拼音变音符号。
+
+服务端在构建索引前收集需要拼音扩展的标题，客户端使用同一混合分词逻辑初始化中文数据库，避免"索引方式"和"查询方式"不一致。
+
+中文搜索把 `threshold` 与 `tolerance` 设为严格值，减少短词和单字被模糊匹配到大量无关页面。英文搜索仍由英文语言配置承担词形与规范化。
+
+## 三、搜索结果增强
+
+`src/lib/search-client.ts` 的 `withEnhancedSearch()` 包装原始搜索客户端，按以下流水线处理结果：
+
+```text
+原始搜索结果
+  → cleanSearchResultContent()      清除拼音索引前缀
+  → rankSearchResultGroups()        按 page 分组，组内按 type 优先级排序
+  → preferSearchResultAnchors()     每组首位 page 结果继承最相关子节 URL
+  → mergePinyinSearchResults()      拼音结果去重合并
+  → addSearchSpotlightParams()      为每个结果添加聚光灯参数
+```
+
+### 分组排序
+
+`rankSearchResultGroups()`：
+
+- 按 page 分组，组内按 `type` 优先级（`page > heading > text`）；
+- 组间按是否含 `<mark>` 高亮排序，高亮命中组优先。
+
+### 锚点优先
+
+`preferSearchResultAnchors()`：每组首位 `page` 结果继承最相关子节 URL，让搜索结果直接定位到具体小节。
+
+### 拼音合并
+
+`mergePinyinSearchResults()`：
+
+- 拼音结果去重合并；
+- 跳过 `text` 类型与已见 `id`；
+- 限制 60 条，避免结果膨胀。
+
+### 聚光灯参数
+
+`addSearchSpotlightParams()` 为每个结果添加 `_searchSpotlight` 参数，携带最相关文本片段，用于跳转后的聚光灯定位。
+
+## 四、搜索弹窗与范围
+
+`src/components/search.tsx` 使用 Fumadocs `useDocsSearch` 和静态客户端：
+
+- 中文 locale 使用 `createMixedTokenizer()`，其他使用 `english`；
+- `withEnhancedSearch(searchClient, locale === 'zh')` 包装：拼音回退、结果分组排序、章节锚点继承；
+- 章节筛选 Popover：`search-dialog__scope-trigger` 轻量触发器保持次要层级。
+
+范围选项从当前 locale 的页面树生成：
+
+- "全部内容"不传 `tag`；
+- 选择某个 Chapter 时，以该根节点的 slug 作为 `tag`；
+- locale 变化时重置不再有效的范围；
+- 结果与范围文案从项目字典读取。
+
+搜索弹窗关闭时，组件会在捕获阶段监听 Fumadocs 的 `Ctrl + K` / `Cmd + K` 快捷键。若读者在 `#nd-page` 正文容器内保留了完整选区，弹窗打开前会把选区规范化为空格分隔的单行查询，并取前 200 个字符（`MAX_SELECTED_SEARCH_LENGTH`）；点击搜索入口、跨出正文的选区和可编辑控件中的选区都保持原有查询行为。
+
+范围菜单只是查询约束，不维护独立内容状态。新增 Chapter 并注册页面树后，它会自然进入搜索范围。
+
+## 五、搜索聚光灯
+
+`src/components/search-spotlight.tsx` 实现搜索结果跳转后的短时全局聚光灯：
+
+- 监听 click（link / `button[aria-selected]`）、keydown Enter、hashchange、popstate；
+- `findTextRange()`：TreeWalker 遍历文本节点，在锚点之后查找目标文本；
+- `getRangeRect()`：合并多行 rects；
+- `clampSpotlightRect()`：12px padding，限制在视口内；
+- `centerSpotlightRect()`：滚动让目标居中；
+- `ResizeObserver` + `MutationObserver` 跟踪布局变化；
+- 交互（pointerdown / wheel / touchstart / Escape）后关闭；
+- `SPOTLIGHT_DURATION_MS = 3200`（reduced motion 1800）；
+- `removeSpotlightParam()`：完成后从 URL 清除参数。
+
+`src/lib/search-spotlight.ts` 提供聚光灯参数处理：
+
+- `SEARCH_SPOTLIGHT_PARAM = '_searchSpotlight'`；
+- `getSpotlightScrollDelta()`：让目标 rect 中心对齐视口中心；
+- `cleanSpotlightText()`：清除 HTML 标签与 markdown 装饰，截断 120 字符；
+- `getResultGroupTarget()`：优先取 `<mark>` 高亮文本，`page` 类型向子节借用目标。
+
+## 六、页面树与导航
+
+`content/docs/{locale}/meta.json` 和子目录 `meta.json` 共同形成 Fumadocs 页面树。文档布局使用当前 locale 对应的树，因此中文与英文可以拥有不同覆盖范围，不需要创建空页面维持完全对称。
+
+Fumadocs 页面树提供：
+
+- 左侧 Chapter、Stage 与页面导航；
+- 当前页面的上一篇 / 下一篇关系；
+- 本页目录和滚动位置；
+- 首页章节入口和搜索范围来源。
+
+分段标题通过 `---标题---` 形式记录在 `pages` 数组中。页面顺序来自显式配置，而不是依赖文件系统排序。
+
+## 七、跨文档阅读返回
+
+普通浏览器历史只能回到来源页面，无法稳定找回读者点击链接时的上下文。长文档上方若有图片、代码或延迟布局内容，恢复绝对 `scrollY` 还可能发生偏移。
+
+`DocsReadingReturn` 在正文链接被点击时记录：
+
+- 来源和目标 pathname；
+- 来源页面标题；
+- 链接相对于 `data-docs-body` 的元素路径；
+- 链接离开时的视口位置；
+- 绝对滚动位置兜底。
+
+到达目标文档后，页面显示"返回阅读位置"操作。返回来源时，组件优先按元素路径找到同一链接，再把它恢复到离开时的屏幕高度；只有元素路径失效才使用绝对位置。
+
+这些元数据保存在 `sessionStorage`，不会保存或克隆正文。外部链接、新窗口链接、下载链接、同页 Hash 和上一篇 / 下一篇导航保持原生行为。
+
+### 文档刷新恢复
+
+`src/lib/docs-reading-restore.ts` 处理页面刷新后的滚动恢复：
+
+- `DOCS_REFRESH_RESTORE_BOOTSTRAP` 是 hydration 前内联脚本；
+- 仅在 `navigation.type === 'reload'` 且 sessionStorage 存在有效锚点时运行；
+- 设置 `data-nd-reading-restore` 属性让客户端恢复滚动位置。
+
+## 八、文档源码与 GitHub 操作
+
+文档页面根据内容源的 `fullPath` 推导 GitHub 文件地址，同时按 locale 和 slug 生成 `docs-source` URL。
+
+`src/app/[lang]/docs-source/[...slug]/route.ts` 在构建期枚举全部页面，并返回原始 Markdown / MDX 内容。输出路径使用 `.md` 后缀，避免静态托管中页面目录与同名文件冲突。
+
+`DocsPageActions` 将"查看源码"和"在 GitHub 打开"放在作者信息同一行。读者发现问题时可以直接定位源文件，不需要手工从页面 URL 猜仓库目录。
+
+## 九、i18n 边界
+
+`src/lib/i18n.ts` 是支持语言和默认语言的单一来源。它同时驱动：
+
+- Fumadocs 内容 loader 的 locale 分桶；
+- `generateStaticParams()` 的语言参数；
+- Fumadocs UI 的语言上下文；
+- 自定义错误页、加载页和评论语言。
+
+界面翻译分为两层：
+
+- `src/lib/layout.shared.tsx` 扩展 Fumadocs 内置 UI 翻译（包括 `Ask AI`、`Close Sidebar`、`Layout Tab` 等 16.13.x 新增 key）；
+- `src/dictionaries/` 保存项目自定义文案，并由 TypeScript 接口约束键结构。
+
+界面支持中文与 English 不代表每篇文章已经翻译。页面是否存在由 `content/docs/{locale}/` 的实际文件决定，英文页面不使用空壳占位来模拟完整覆盖。
+
+## 十、社区模块
+
+留言墙和文档评论使用 Giscus 与 GitHub Discussions。`DocsCommunity` 将评论区放在正文卡片之外，`Guestbook` 根据 locale 和主题选择 Giscus 语言与样式。
+
+### Giscus 配置
+
+- `slugKey` 作为讨论标识，中英文页面共享同一讨论串；
+- `mapping="specific"`、`inputPosition="top"`、`reactionsEnabled="1"`；
+- `GISCUS_LANG_MAP`：zh → zh-CN、en → en；
+- 主题 URL：生产用 jsDelivr CDN，开发用站点 origin 拼接相对路径。
+
+### 主题切换闪烁消除
+
+Giscus 运行在跨域 iframe 中，主题切换时 iframe 会重新加载主题 CSS，期间出现短暂的未样式化闪烁。项目通过以下方式消除：
+
+- `useLayoutEffect`（而非 `useEffect`）在 React commit 后、paint 前同步设置 `data-switching` 属性，确保 `opacity:0` 在浏览器绘制前生效；
+- `prevThemeUrl` ref 跟踪上次主题，仅在两个有效 URL 之间切换时触发；
+- 固定 400ms 渐隐时长，不等待 `resizeHeight` 消息（该消息仅在高度变化时回发，主题切换往往不改变高度）；
+- CSS 配合：`transition: none` 立即隐藏，`opacity 240ms` 渐显回来。
+
+`useEffect` 会在浏览器 paint 后执行，留下一个绘制窗口让未样式化内容闪现；`useLayoutEffect` 把 `opacity:0` 应用提前到 paint 之前，消除了这个窗口。
+
+Giscus 仍然是外部增强：网络不可用或用户没有 GitHub 账号时，文档正文、搜索和导航不受影响。
+
+## 十一、交互状态放在哪里
+
+| 状态 | 存储位置 | 生命周期 |
+| :--- | :--- | :--- |
+| 主题偏好 | 浏览器本地存储 | 跨页面与再次访问 |
+| 动效偏好 | 浏览器本地存储 | 跨页面与再次访问 |
+| 侧栏折叠 | 浏览器本地存储 | 跨页面与再次访问 |
+| 任务完成状态 | 按 pathname 的本地存储 | 跨页面与再次访问 |
+| Tabs 偏好 | 浏览器本地存储 | `persist` 开启时 |
+| 阅读返回点 | `sessionStorage` | 当前标签页会话 |
+| 转场 DOM 克隆 | 内存 | 单次转场 |
+
+这些状态都不需要账号或数据库，也不会跨设备同步。静态优先并不等于拒绝状态，而是把轻量、私有、无需协作的数据留在浏览器。
+
+## 十二、关键文件
+
+| 文件 | 职责 |
+| :--- | :--- |
+| `src/app/api/search/route.ts` | 静态搜索索引 |
+| `src/lib/search-tokenizer.ts` | 中文、英文与拼音混合分词 |
+| `src/lib/search-client.ts` | 搜索结果增强流水线 |
+| `src/lib/search-selection.ts` | 正文选区校验与搜索查询规范化 |
+| `src/lib/search-spotlight.ts` | 聚光灯参数处理 |
+| `src/components/search.tsx` | 查询与 Chapter 范围 UI |
+| `src/components/search-spotlight.tsx` | 搜索结果聚光灯 |
+| `src/app/[lang]/docs/layout.tsx` | locale 页面树与导航布局 |
+| `src/components/docs-reading-return.tsx` | 跨文档上下文恢复 |
+| `src/lib/docs-reading-restore.ts` | 文档刷新滚动恢复 |
+| `src/app/[lang]/docs-source/[...slug]/route.ts` | Markdown 源码端点 |
+| `src/lib/layout.shared.tsx` | Fumadocs UI i18n |
+| `src/components/guestbook.tsx` | Giscus locale 与主题同步 |
+| `src/components/docs-community.tsx` | 文档评论区隔离 |

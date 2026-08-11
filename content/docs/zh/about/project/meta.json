@@ -1,0 +1,19 @@
+{
+  "title": "关于项目",
+  "description": "项目理念、技术架构与自定义实现",
+  "icon": "Info",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "---工程与内容---",
+    "architecture",
+    "content-engineering",
+    "---视觉系统---",
+    "design-system",
+    "home-and-immersive",
+    "---交互与图表---",
+    "search-navigation",
+    "transitions",
+    "mermaid-performance"
+  ]
+}

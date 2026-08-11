@@ -1,0 +1,19 @@
+{
+  "title": "About the Project",
+  "description": "Project rationale, technical architecture, and custom implementations",
+  "icon": "Info",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "---Engineering and Content---",
+    "architecture",
+    "content-engineering",
+    "---Visual System---",
+    "design-system",
+    "home-and-immersive",
+    "---Interactions and Diagrams---",
+    "search-navigation",
+    "transitions",
+    "mermaid-performance"
+  ]
+}

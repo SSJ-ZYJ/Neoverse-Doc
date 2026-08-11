@@ -1,0 +1,206 @@
+---
+title: Project Structure and Static Build
+description: Directory responsibilities, routing layout, content source, compilation pipeline, and static export of Neoverse-Docs
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Chapter
+> The project clearly layers content, site components, parsing logic, generation scripts, and styling. Fumadocs compiles `content/docs/{locale}/` into a type-safe content source, Next.js generates all locales and slugs from the page tree, and the production environment outputs the `out/` static site through `output: 'export'`. Search, document sources, Mermaid assets, and site-level constants are also completed at build time or in centralized configuration.
+
+## 1. Directory responsibilities
+
+```text
+Neoverse-Doc/
+├── content/docs/
+│   ├── zh/                       # Chinese content tree
+│   └── en/                       # English content tree
+├── public/
+│   └── mermaid/                  # Generated Mermaid SVGs
+├── scripts/
+│   └── generate-mermaid-assets.ts
+├── src/
+│   ├── app/                      # App Router routes
+│   ├── components/
+│   │   ├── home/                 # Home page content portal
+│   │   ├── mdx/                  # MDX rendering components
+│   │   └── transition/           # Route transitions
+│   ├── dictionaries/             # Project UI dictionaries
+│   ├── generated/                # Generated asset maps
+│   ├── lib/                      # Content source, search, i18n, and parsing logic
+│   └── styles/                   # Tokens, page, and component styles
+├── source.config.ts              # Content Schema and MDX plugins
+├── next.config.ts                # Static export and Next.js configuration
+└── package.json                  # Dependencies and project commands
+```
+
+### Content and implementation separation
+
+`content/docs/` is the single primary entry point for content. Page navigation is explicitly declared by `meta.json` at each level, and per-page metadata is declared in the Frontmatter; React components and parsing plugins are not scattered across the content directory.
+
+`src/components/mdx/` is the unified enhancement layer. Every document obtains code blocks, Mermaid, task items, Tabs, document cards, and file hierarchies through the same component registry, without per-page imports.
+
+`src/lib/` holds reusable parsing and configuration logic, while `scripts/` only handles work that must be completed in bulk before development or builds. Generated artifacts go to `public/mermaid/`, `src/generated/`, `.source/`, and `out/` respectively.
+
+## 2. Routing and layout
+
+```text
+src/app/[lang]/
+├── (home)/
+│   ├── (index)/page.tsx          # Home page
+│   └── guestbook/page.tsx        # Guestbook
+├── docs/
+│   ├── layout.tsx                # DocsLayout
+│   └── [...slug]/page.tsx        # Article body
+└── docs-source/
+    └── [...slug]/route.ts        # Markdown source endpoint
+```
+
+Route groups let the home page and document pages share a locale while using different layouts:
+
+- the home page uses the top navigation and content portal, without loading the document sidebar;
+- document pages use the Fumadocs `DocsLayout`, including the sidebar, article body, and on-page TOC;
+- the guestbook reuses the home page layout but lives on its own page;
+- `docs-source` generates statically accessible raw Markdown for every piece of content.
+
+The root path is the static language routing entry: the browser chooses Chinese or English based on `navigator.languages`, falling back to English for unknown languages; script-free environments can still use the two explicit entries on the page. Automatic detection happens only at `/` and never rewrites `/zh` or `/en` visited deliberately by readers. The project does not use Middleware to determine the locale at request time, because the production deployment has no long-running Next.js server.
+
+## 3. Content source and page tree
+
+`source.config.ts` declares the content directory, Frontmatter Schema, and Markdown / MDX plugins via `defineDocs()`. `fumadocs-mdx` compiles content into `.source/`, and `loader()` in `src/lib/source.ts` assembles it into the page tree.
+
+`src/lib/i18n.ts` is used by both the content loader and the Fumadocs UI, serving as the single source for the locale list and the default language. The directory resolver buckets by top-level directories such as `zh` and `en`, so the same slug can hold independent content under different locales. Content fallback is explicitly disabled: when an English translation is missing, the Chinese page is not re-served under the English URL.
+
+The page tree is also responsible for:
+
+- chapter titles, icons, groupings, and order in `meta.json`;
+- previous / next page relationships;
+- page slugs and locales required by the search index;
+- all static route parameters required by `generateStaticParams()`.
+
+## 4. Document page assembly
+
+`src/app/[lang]/docs/[...slug]/page.tsx` remains a Server Component and centrally assembles:
+
+1. the title, description, authors, and contributors from the Frontmatter;
+2. Markdown source and GitHub file actions;
+3. the optional task progress card;
+4. the shared MDX component registry;
+5. draft gating;
+6. the Fumadocs TOC and pagination;
+7. canonical, `hreflang` for real translations, share metadata, and structured data;
+8. the Giscus community module outside the article body.
+
+The community module is not embedded in the Fumadocs article container, so height changes of the third-party iframe cannot affect the article cards, TOC, and pagination layout.
+
+## 5. Compilation and output pipeline
+
+```mermaid
+flowchart TD
+    A[Markdown / MDX] --> B[source.config.ts]
+    B --> C[Remark / Rehype]
+    C --> D[fumadocs-mdx]
+    D --> E[.source build artifacts]
+    E --> F[src/lib/source.ts]
+    F --> G[Page tree and static routes]
+    G --> H[Next.js build]
+    H --> I[out static site]
+
+    A --> J[Mermaid generation script]
+    J --> K[SVG and asset map]
+    K --> G
+
+    F --> L[Static search index]
+    L --> H
+```
+
+The production build also generates `robots.txt`, a `sitemap.xml` containing only published pages, and a unified PNG social share image from the same content source. The inclusion boundaries for drafts and auxiliary routes are decided at build time, not by server-side detection at deployment.
+
+Different commands cover different verification scopes:
+
+| Command | Pipeline role |
+| :--- | :--- |
+| `bun dev` | Generates Mermaid first, then starts the Turbopack development server |
+| `bun typecheck` | Generates route types, compiles Fumadocs content, and runs the TypeScript check |
+| `bun run generate:mermaid` | Updates the static SVGs and asset map |
+| `bun run build` | Runs Mermaid generation and the Next.js production build |
+| `bun run start` | Previews an existing `out/` |
+
+## 6. Constraints and benefits of static export
+
+Static export introduces several explicit constraints: core features cannot depend on request-time Server Actions, Middleware, databases, or user sessions; all page parameters must be enumerable at build time; images and third-party capabilities must also be compatible with serverless hosting.
+
+These constraints buy a simpler deployment and failure boundary:
+
+- `out/` can be deployed to any static hosting platform;
+- reading the article body does not depend on backend availability;
+- pages, search, and diagrams are generated before publishing;
+- lightweight state lives in the browser, without an account system;
+- a third-party comment failure does not affect the document body.
+
+The development environment temporarily disables `output: 'export'`, preserving Next.js' normal 404 behavior for unknown paths; the production build still enables the full static export.
+
+## 7. Site-level constants and dual licenses
+
+`src/lib/site-config.ts` is the single source for repository information, authors, licenses, and Giscus configuration:
+
+| Constant | Purpose |
+| :--- | :--- |
+| `REPO_URL` | GitHub repository URL, used for source links, the Issue entry, and the Giscus repo configuration |
+| `PROJECT_START_YEAR` | Project start year shown in the Footer |
+| `AUTHOR_GITHUB_ID` | Main author's GitHub ID, used for the author avatar and links |
+| `CODE_LICENSE_URL` | URL of the code MIT license |
+| `DOCS_LICENSE_URL` | URL of the documentation CC BY-NC-SA 4.0 license |
+| `GISCUS_CONFIG` | Giscus `repo` / `repoId` / `category` / `categoryId` |
+| `GISCUS_THEME_PATHS` | Public paths of the custom theme CSS (`/giscus-light.css`, `/giscus-dark.css`) |
+| `GISCUS_THEME_URLS` | Production theme URLs, using the jsDelivr CDN mirror to ensure cross-origin accessibility |
+
+The project adopts dual licenses: code uses MIT, and documentation content uses CC BY-NC-SA 4.0. License URLs are centralized in configuration rather than hardcoded repeatedly on each page.
+
+Giscus themes use the jsDelivr CDN mirror in production (`https://cdn.jsdelivr.net/gh/${repo}@main/public`), because static hosting platforms may not provide cross-origin response headers for CSS files, while the Giscus iframe needs to load themes cross-origin.
+
+## 8. MDX Preview and editor alignment
+
+VS Code's MDX Preview extension cannot automatically recognize the project's custom components; it only ships shims for Docusaurus, Starlight, Nextra, and Next.js. The project aligns the editor preview with the build pipeline through three configuration points:
+
+| File | Purpose |
+| :--- | :--- |
+| `.mdx-previewrc.json` | Registers `remarkPlugins: ["remark-math"]` and `rehypePlugins: ["rehype-katex"]`, and maps custom component names to the shims |
+| `src/components/mdx/mdx-preview-shims.tsx` | Re-exports `DocCard`, `DocGrid`, `FeatureCard`, `LearningPath`, `ResourceLink`, `File`, `Files`, `Folder` |
+| `mdx.plugins` in `tsconfig.json` | Configures `remark-math` so the vscode-mdx language service can parse LaTeX expressions |
+
+In this way, when authors preview MDX in VS Code, they see math rendering and custom component styles consistent with the build output. New site MDX components must keep these three places in sync; otherwise the preview will treat them as unknown components.
+
+## 9. Deployment skew guard
+
+`src/components/deployment-skew-guard.tsx` listens for `error` and `unhandledrejection` events to detect deployment skew errors:
+
+- module loading failures such as `ChunkLoadError`, `dynamically imported module`, and `RSC payload`;
+- SCRIPT / LINK resource loading failures under the `/_next/static/` path.
+
+Once skew is detected, the component forces a page refresh through the `__reload` parameter to bypass the cache, and sets a 30-second cooldown in `sessionStorage` to avoid an infinite reload loop when the refresh fails. This is the last fallback when old pages hold references that have been invalidated after a static site update.
+
+## 10. Route loading scene
+
+`src/styles/loading.css` defines the loading visuals for Next.js App Router route transitions:
+
+- a viewport-wide data stream banner with the Orbitron font brand mark, signal dots, marquee text, and a progress track;
+- the `route-loading-shell--handoff` and `--release` classes cooperate with App Router's clone and release mechanism, avoiding ghosting between two independent marquees;
+- mobile adjustments to the band height and text size.
+
+The loading scene only appears in the brief window of a route transition and does not affect the first paint.
+
+## 11. Key files
+
+| File | Responsibility |
+| :--- | :--- |
+| `source.config.ts` | Content Schema, Remark / Rehype, and code highlighting configuration |
+| `next.config.ts` | Production static export, image, and development response configuration |
+| `src/lib/source.ts` | Fumadocs content loader and icon mapping |
+| `src/lib/i18n.ts` | Single source for locales |
+| `src/lib/site-config.ts` | Repository, author, license, and Giscus configuration |
+| `src/app/[lang]/docs/layout.tsx` | Locale page tree and DocsLayout |
+| `src/app/[lang]/docs/[...slug]/page.tsx` | Document page assembly |
+| `src/app/[lang]/docs-source/[...slug]/route.ts` | Static Markdown source endpoint |
+| `src/components/deployment-skew-guard.tsx` | Deployment skew detection and recovery |
+| `scripts/generate-mermaid-assets.ts` | Mermaid static asset generation |

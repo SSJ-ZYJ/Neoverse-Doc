@@ -1,0 +1,244 @@
+---
+title: 路由转场系统
+description: 五种转场语义、非对称行为、DOM 克隆、content 粒子转场与 contain 隔离
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] 本章 AI 摘要
+> `TransitionProvider` 是转场的唯一状态入口，`transition-policy.ts` 以纯函数把来源和目标路由映射为五种转场语义。aperture 类型在层中使用经过清理的 DOM 克隆；content 类型使用 WebGL 粒子退场；overview / surface / crossfade 依赖目标页自身入场动画。转场层使用 `contain: strict` 完全隔离，克隆在存活期间设置 `will-change`，完成后立即释放合成层。
+
+## 一、系统总览
+
+路由转场由 `src/components/transition/` 下的六个文件协作完成：
+
+```text
+transition-types.ts        类型契约
+transition-policy.ts       纯函数路由分类器 → 5 种转场语义
+transition-controller.ts   DOM 克隆与几何助手
+transition-provider.tsx    中央 Provider，capture-phase 点击监听
+transition-layer.tsx       inert 视觉层
+transition-link.tsx        next/link 包装，声明转场意图
+back-link.tsx              声明式返回链接
+content-particle-transition.ts  docs 间 WebGL 粒子退场
+```
+
+`TransitionProvider` 是转场的唯一状态入口，`TransitionLink` 只表达导航意图，不在各业务组件中复制路径判断、点击坐标和清理逻辑。
+
+## 二、类型契约
+
+`transition-types.ts` 定义核心类型：
+
+- `TransitionPhase`：`idle | preparing | navigating | revealing | settling`，描述转场的五个阶段；
+- `TransitionKind`：`auto | aperture | overview | surface | content | crossfade | none`，描述转场类型；
+- `TransitionIntent`：`{ kind, origin: {x, y}, sourcePath, targetPath }`，描述一次转场意图。
+
+## 三、路由策略
+
+`transition-policy.ts` 是纯函数路由分类器，把来源和目标路由映射为五种转场语义。
+
+### 路由分类
+
+路由按 locale 拆分后匹配 rest 路径，分为四类：
+
+| 分类 | 匹配规则 |
+| :--- | :--- |
+| `home` | 根路径 `/` |
+| `docs` | `/docs/...` |
+| `guestbook` | `/guestbook` |
+| `other` | 其他 |
+
+### 转场选择规则
+
+| 来源 → 目标 | 转场类型 | 语义 |
+| :--- | :--- | :--- |
+| 同路径 | `none` | 无操作 |
+| 仅 locale 变化 | `crossfade` | 语言切换淡入淡出 |
+| home / guestbook → docs | `aperture` | 径向光圈揭示文档 |
+| docs → home / guestbook | `overview` | 文档收束返回概览 |
+| home ↔ guestbook | `surface` | 表面切换 |
+| docs → docs | `content` | 内容粒子退场 |
+| 其他 | `surface` | 默认表面切换 |
+
+`isSamePageHashNavigation()` 检测同页 hash 导航，直接返回 `none` 保持浏览器原生行为。
+
+## 四、非对称转场行为
+
+`isCrossRouteGroupTransition` 是非对称的：
+
+- docs → home / guestbook（跨组）返回 `false`，触发 `page-enter`（opacity + scale + blur）入场动画；
+- home / guestbook → docs（跨组）返回 `true`，保留 `aperture`（径向揭示 DOM 快照）过渡。
+
+这种非对称设计源于两种方向的视觉意图：进入文档时从点击位置展开光圈，强调"深入"；返回首页时让文档页自身收束淡出，强调"退出"。
+
+## 五、DOM 克隆工具
+
+`transition-controller.ts` 提供 `cloneTransitionSource()` 与几何计算助手。
+
+### cloneTransitionSource
+
+```text
+1. 查找 main 或 #nd-docs-layout（排除转场层内）
+2. 创建 .nd-transition-clone viewport div
+3. 克隆源节点
+4. 所有 id 替换为 data-nd-transition-source-id（保留样式钩子）
+5. 移除 canvas / video / audio / iframe / script / object / embed / .immersive-particle-layer
+6. 交互元素 tabIndex = -1，移除 contenteditable
+7. clone.inert = true，aria-hidden = "true"
+8. 若有滚动偏移则 translateY(-scrollY)
+```
+
+移除媒体元素避免快照中的视频继续播放或脚本执行；移除粒子层避免克隆中的粒子动画继续运行；`data-nd-transition-source-id` 保留样式钩子（如 `#id` 选择器匹配的样式），同时避免重复 `id` 破坏页面锚点。
+
+### calculateRevealRadius
+
+计算从 origin（点击坐标）到视口四角的最大距离 + 额外 7vw（clamp 48-140px），作为径向遮罩动画的目标半径。
+
+## 六、集中式 Provider
+
+`transition-provider.tsx` 是转场的中央控制器。
+
+### 点击捕获
+
+`document.addEventListener('click', handleClick, { capture: true })` 在捕获阶段监听所有点击：
+
+- 找到最近 `a[href]`；
+- 通过 `isPlainInternalNavigation` 过滤修饰键、新窗口、下载链接；
+- 优先使用 `data-transition` 显式声明，否则调用 `selectTransition`；
+- 哈希导航与同路径链接直接 no-op。
+
+### 意图建立（prepare）
+
+`prefersReducedMotion()` 时仍发布 `ROUTE_TRANSITION_START_EVENT` 让依赖项响应，但跳过动画。
+
+不同类型的准备行为：
+
+| 类型 | 准备行为 |
+| :--- | :--- |
+| `aperture` | `cloneTransitionSource()` 放入 layer，设置 origin 与 max-radius CSS 变量 |
+| `content` | `createContentParticleTransition()` 创建 WebGL 粒子退场，捕获 `#nd-page` 克隆 |
+| `overview` / `surface` / `crossfade` | layer 保持隐藏，依赖目标页自身入场动画 |
+
+`overview` / `surface` / `crossfade` 不显示克隆，因为显示克隆会产生"闪回"帧——读者已经看到目标页开始入场，再显示来源克隆会造成视觉倒退。
+
+### 目标揭示（useLayoutEffect）
+
+pathname 变化时校验 intent，标记 `data-nd-route-transition`：
+
+- `aperture` 与 `content` 设置 layer `data-phase = revealing`；
+- 计算 `settleDuration`（`content` 需等待 `contentEnterDelay + contentEnter` + buffer）。
+
+### 清理
+
+`cleanup()` 原子化取消快照、计时器、根节点动画；显式重置克隆的 `will-change: auto` 确保浏览器立即释放合成层。
+
+### 预热
+
+`requestIdleCallback` 在 docs 路由空闲时预热 WebGL 渲染器，避免首次 docs 间导航时创建上下文的延迟。
+
+## 七、Content 粒子转场
+
+`content-particle-transition.ts` 实现 docs 间导航的 WebGL 粒子退场，仅用于 `content` 类型。
+
+### 前置条件
+
+依赖 HTML-in-Canvas 捕获（`drawElementImage` + `requestPaint`）与 WebGL2，不支持时保留轻量淡入。
+
+### 共享渲染器
+
+`sharedRenderer` 是单例 WebGL2 上下文，通过 `acquireRenderer()` / `releaseRenderer()` 复用，避免每次转场创建新上下文。
+
+### 着色器
+
+- 顶点着色器：粒子网格 → 计算行进路径（炊烟式上升 + 向左弯曲 + 旋转 swirl + 时间噪声抖动）；
+- 片段着色器：采样源内容纹理，圆形 mask，深色模式混合到亮色目标。
+
+### 捕获与渲染
+
+- `onpaint` 回调：`drawElementImage` 捕获克隆，`clip()` 裁剪到真实正文卡片范围；
+- `play(onFirstFrame)`：首帧就绪后开始动画；
+- `destroy()`：清理所有资源（纹理、缓冲区、着色器程序）。
+
+### 粒子预设
+
+| 档位 | density | spread | swirl |
+| :--- | :--- | :--- | :--- |
+| high | 2 | 180 | 28 |
+| medium | 折半 | 折半 | 折半 |
+
+## 八、转场层
+
+`transition-layer.tsx` 是单一 inert 视觉层：
+
+```html
+<div aria-hidden="true" data-phase="idle" hidden id="nd-transition-layer" />
+```
+
+`#nd-transition-layer` 使用 `contain: strict` 完全隔离，`pointer-events: none` 不拦截交互。`.nd-transition-clone` 设置 `will-change: transform, opacity` 提示合成层，仅在克隆存活期间有效。
+
+## 九、链接组件
+
+### TransitionLink
+
+`transition-link.tsx` 是 `next/link` 的包装，仅声明 `data-transition` 语义。它不负责执行转场，只是让 `TransitionProvider` 的点击捕获知道这是一个声明了转场类型的链接。
+
+### BackLink
+
+`back-link.tsx` 是声明式返回链接，`ArrowLeft` 图标 + `special-page__back-link` 类，用于特殊页面（如留言墙）返回首页。
+
+## 十、转场样式
+
+`src/styles/transitions.css` 定义转场视觉规则。
+
+### 径向遮罩
+
+`@property --transition-radius` 注册自定义属性用于径向遮罩动画。`[data-transition="aperture"]` 使用 `mask-image: radial-gradient(...)`，`nd-aperture-reveal` 动画展开 radius。
+
+### 粒子捕获
+
+`[data-particle-capture]` 在捕获期间清除克隆表面（透明 border / background / box-shadow / backdrop-filter），仅保留文字作为粒子源。
+
+### 关键入场动画
+
+| 类型 | 入场动画 |
+| :--- | :--- |
+| `aperture` land | `scale 1.02 → 1`，无 opacity 变化（页面已通过光圈可见） |
+| `overview` enter | 仅位移收束，opacity 保持 1（避免与克隆淡出叠加产生亮度谷底） |
+| `surface` home | 禁止变换整张主页（固定模糊环境层会相对超长页面定位），仅 `.home-hero__content` 收束 |
+| `content` enter | `nd-route-content-enter` opacity 0 → 1，延迟 `--nd-delay-content-enter` |
+
+### surface 不动整张主页的原因
+
+`surface` 过渡有意不变换整张主页（`html[data-nd-route-transition="surface"] .home-page { animation: none; }`）。因为固定模糊环境层（`.home-page::before`）会转而相对超长页面定位，触发昂贵的整页重绘。仅 `.home-hero__content` 做位移收束，既保留视觉过渡又避免性能问题。
+
+### 移动端调整
+
+`content` 类型在移动端使用 `z-index: 30`，避让侧栏 drawer 的 `z-index: 40`。
+
+### reduced-motion
+
+`prefers-reduced-motion: reduce` 隐藏转场层、禁用所有入场动画，保留即时内容切换。
+
+## 十一、转场完成与超时
+
+转场完成、失败或超时后，Provider 会销毁克隆和临时状态：
+
+- `TRANSITION_TIMEOUT_MS.navigation = 8000`：导航超时；
+- `TRANSITION_TIMEOUT_MS.settleBuffer = 140`：settle 阶段缓冲。
+
+完整页面 HTML 不会写入 `sessionStorage`，同页 Hash 保持浏览器原生行为，减少动态效果偏好则走降级路径。
+
+## 十二、关键文件
+
+| 文件 | 职责 |
+| :--- | :--- |
+| `src/components/transition/transition-types.ts` | 类型契约 |
+| `src/components/transition/transition-policy.ts` | 路由到转场语义的映射 |
+| `src/components/transition/transition-controller.ts` | DOM 克隆与几何计算 |
+| `src/components/transition/transition-provider.tsx` | 转场状态与清理 |
+| `src/components/transition/transition-layer.tsx` | inert 视觉层 |
+| `src/components/transition/transition-link.tsx` | next/link 包装 |
+| `src/components/transition/back-link.tsx` | 声明式返回链接 |
+| `src/components/transition/content-particle-transition.ts` | docs 间 WebGL 粒子退场 |
+| `src/styles/transitions.css` | 转场视觉规则 |
+| `src/lib/motion-config.ts` | 转场时长与超时配置 |

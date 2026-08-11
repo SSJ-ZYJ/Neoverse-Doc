@@ -1,0 +1,387 @@
+---
+title: 语法与组件参考
+description: 编写 Neoverse-Docs 时可用的 Frontmatter、Markdown、MDX 组件、公式与图表
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] 本章 AI 摘要
+> 本页面向文档作者，集中展示当前项目支持的 Frontmatter、Markdown、GFM、提示与折叠块、任务进度、代码标题、文件层级、文档卡片、代码 Tabs、LaTeX 和 Mermaid。新增页面要同步注册 `meta.json`；新增 MDX 组件还要维护站点注册表和 VS Code 预览配置。
+
+## 一、从页面骨架开始
+
+站点内容位于 `content/docs/{locale}/`。只使用 Markdown 时可以创建 `.md` 文件；需要 `Files`、`DocGrid`、`Tabs` 等 JSX 组件时使用 `.mdx`。
+
+### Frontmatter
+
+页面必须提供符合 `source.config.ts` 的 Frontmatter。常用字段如下：
+
+```yaml
+---
+title: 页面标题
+description: 一句话说明页面解决什么问题
+author:
+  - "主要作者(https://github.com/your-name)"
+contributors:
+  - "贡献者(https://github.com/contributor-name)"
+draft: false
+todoProgress: false
+---
+```
+
+| 字段 | 是否必填 | 说明 |
+| :--- | :---: | :--- |
+| `title` | 是 | 页面标题，由布局渲染，正文无需再写一级标题 |
+| `description` | 是 | 用于页面元数据与内容摘要 |
+| `author` | 否 | 主要作者，支持字符串或字符串数组 |
+| `contributor` / `contributors` | 否 | 贡献者，支持字符串或字符串数组 |
+| `draft` | 否 | 默认为 `false`；开启后显示草稿提示 |
+| `todoProgress` | 否 | 默认为 `false`；开启后在正文前汇总任务进度 |
+
+不要添加 Schema 未声明的字段。需要新的内容语义时，应先统一扩展 `source.config.ts`，而不是从文件名、URL 或正文中猜测。
+
+### 标题与段落
+
+Frontmatter 已经提供页面标题，因此正文从 `##` 开始：
+
+```md
+## 一、主要部分
+
+普通段落之间保留空行。
+
+### 1.1 子部分
+
+继续编写正文。
+```
+
+## 二、基础 Markdown 与 GFM
+
+### 文本、链接与行内代码
+
+```md
+普通文字、*斜体*、**粗体**与 ~~删除线~~。
+
+运行 `bun typecheck`，并检查 `content/docs/zh/about/meta.json`。
+
+[站内页面](/zh/docs/ch0)
+[外部资源](https://example.com/)
+![清楚描述图片内容的替代文本](https://example.com/image.png)
+```
+
+命令、路径、配置项、API、环境变量和短代码使用反引号。链接文字应说明目标，不要使用“点这里”作为唯一描述；图片必须提供有意义的替代文本。
+
+### 列表与引用
+
+```md
+- 并列信息使用无序列表
+- 每一项保持相同语法结构
+
+1. 有先后关系的步骤使用有序列表
+2. 每一步写明动作和可验证结果
+
+> 引用用于引用或补充上下文，不应代替提示框。
+```
+
+### 表格
+
+| 能力 | 写法 | 适合场景 |
+| :--- | :---: | :--- |
+| 左对齐 | `:---` | 普通说明 |
+| 居中 | `:---:` | 短状态 |
+| 右对齐 | `---:` | 数值 |
+
+```md
+| 能力 | 状态 |
+| :--- | :---: |
+| Markdown | 可用 |
+| MDX | 可用 |
+```
+
+表格适合横向比较；如果单元格需要放长段落或复杂步骤，改用小节或列表。
+
+### 任务列表
+
+- [x] 明确页面目标
+- [ ] 完成正文
+- [ ] 运行内容校验
+
+```md
+- [x] 明确页面目标
+- [ ] 完成正文
+- [ ] 运行内容校验
+```
+
+本站会将标准 GFM 任务项增强为可交互任务，状态按页面保存在当前浏览器。若希望页面顶部显示完成进度，在 Frontmatter 中设置 `todoProgress: true`。
+
+## 三、提示框与折叠内容
+
+### GitHub Alert 提示框
+
+根据语义选择提示框，不要只按颜色选择：
+
+> [!NOTE]
+> 补充理解正文所需的信息。
+
+> [!TIP]
+> 提供更高效或更稳妥的做法。
+
+> [!IMPORTANT]
+> 强调继续操作前必须满足的条件。
+
+> [!WARNING]
+> 提醒可能造成错误或数据影响的操作。
+
+> [!CAUTION]
+> 标记可能带来破坏性、安全或不可恢复后果的操作。
+
+> [!INFO] 自定义标题
+> `INFO` 适合不属于以上类型的一般信息。
+
+```md
+> [!WARNING] 先备份配置
+> 接下来的操作会覆盖现有文件。
+```
+
+标记同行文字会替换默认标题。一个提示框只承载一个重点，避免把普通正文全部放进彩色容器。
+
+### 基础折叠块
+
+> [!DETAILS] 默认收起
+> 适合补充解释、进阶内容或较长示例。
+
+> [!DETAILS+] 默认展开
+> 在 `DETAILS` 后添加 `+`，让内容初始展开。
+
+```md
+> [!DETAILS] 默认收起
+> 补充内容。
+
+> [!DETAILS+] 默认展开
+> 默认可见、仍允许收起的内容。
+```
+
+### 语义折叠块
+
+| 标记 | 默认语义 | 适合内容 |
+| :--- | :--- | :--- |
+| `[!DETAILS-FAQ]` | 常见问题 | 问题与解释 |
+| `[!DETAILS-ANSWER]` | 答案 | 练习答案或参考结论 |
+| `[!DETAILS-EXAMPLE]` | 示例 | 较长代码或完整案例 |
+| `[!DETAILS-HINT]` | 提示 | 解题或操作线索 |
+| `[!DETAILS-AI]` | AI 摘要 | 经人工核对的 AI 辅助摘要 |
+
+> [!DETAILS-FAQ] 是否需要展开所有折叠内容？
+> 不需要。主要学习路径应留在默认可见正文中，折叠内容只承载可选补充。
+
+> [!DETAILS-HINT] 搜索快捷键
+> 按 `Ctrl + K`，macOS 上按 `Cmd + K`，可以打开本站搜索。
+
+AI 摘要是内容标签，不是事实来源。摘要应由作者核对，并且不能代替正文中的必要前提、风险与结论。
+
+## 四、代码块
+
+### 语言标识与复制
+
+代码围栏必须声明正确语言，以启用语法高亮和语言标识：
+
+````md
+```typescript
+export function double(value: number) {
+  return value * 2;
+}
+```
+````
+
+### 文件路径标题
+
+当代码块首行是看起来像文件名或路径的注释时，项目会把它提取到标题栏，并从代码正文中移除。
+
+| 注释形式 | 示例 |
+| :--- | :--- |
+| 双斜线 | `// src/components/button.tsx` |
+| 块注释 | `/* src/styles/page.css */` |
+| 井号 | `# scripts/check.ps1` |
+| HTML 注释 | `<!-- public/index.html -->` |
+
+```typescript
+// src/lib/example.ts
+export const answer = 42;
+```
+
+只有首行路径注释会成为标题。普通说明注释、后续行注释或不像路径的文本仍保留在代码中。
+
+## 五、文件层级与文档卡片
+
+### 文件层级
+
+使用 `Files`、`Folder` 与 `File` 表达目录结构，避免手动画字符树：
+
+<Files>
+  <Folder name="content" defaultOpen>
+    <Folder name="docs" defaultOpen>
+      <Folder name="zh" disabled title="中文内容" />
+      <Folder name="en" disabled title="英文内容" />
+    </Folder>
+  </Folder>
+  <File name="source.config.ts" title="内容 Schema" />
+</Files>
+
+```mdx
+<Files>
+  <Folder name="content" defaultOpen>
+    <Folder name="docs" defaultOpen>
+      <Folder name="zh" disabled title="中文内容" />
+      <Folder name="en" disabled title="英文内容" />
+    </Folder>
+  </Folder>
+  <File name="source.config.ts" title="内容 Schema" />
+</Files>
+```
+
+`defaultOpen` 表示默认展开；没有子项的目录可以使用 `disabled`；`title` 用于补充说明。
+
+### 文档卡片
+
+卡片适合组织少量高价值入口，不应替代正文中的普通链接：
+
+<DocGrid>
+  <DocCard title="从这里开始" href="/zh/docs/ch0" description="认识项目并选择阅读方式" />
+  <DocCard title="贡献指南" href="/zh/docs/about/contributing" description="参与内容与代码共建" />
+</DocGrid>
+
+```mdx
+<DocGrid>
+  <DocCard
+    title="从这里开始"
+    href="/zh/docs/ch0"
+    description="认识项目并选择阅读方式"
+  />
+  <DocCard
+    title="贡献指南"
+    href="/zh/docs/about/contributing"
+    description="参与内容与代码共建"
+  />
+</DocGrid>
+```
+
+`DocCard` 需要 `title` 与 `href`，`description` 可选。外部 `http` / `https` 链接会在新标签页打开；站内链接进入本站导航流程。`FeatureCard` 与 `ResourceLink` 是同一视觉组件的语义别名，`LearningPath` 是 `DocGrid` 的语义别名。
+
+## 六、多语言代码 Tabs
+
+`Tabs` 用于展示同一逻辑的多种语言或工具写法：
+
+<Tabs groupId="example-language" persist items={['C++', 'Python']}>
+
+<Tab value="C++">
+
+```cpp
+// examples/hello.cpp
+#include <iostream>
+
+int main() {
+  std::cout << "Hello, Neoverse!\n";
+}
+```
+
+</Tab>
+
+<Tab value="Python">
+
+```python
+# examples/hello.py
+print("Hello, Neoverse!")
+```
+
+</Tab>
+
+</Tabs>
+
+````mdx
+<Tabs groupId="example-language" persist items={['C++', 'Python']}>
+  <Tab value="C++">
+
+```cpp
+// examples/hello.cpp
+std::cout << "Hello, Neoverse!\n";
+```
+
+  </Tab>
+  <Tab value="Python">
+
+```python
+# examples/hello.py
+print("Hello, Neoverse!")
+```
+
+  </Tab>
+</Tabs>
+````
+
+- `items` 声明标签及顺序，必须与内部 `Tab value` 对应；
+- 相同 `groupId` 的 Tabs 会同步可用的选择；
+- `persist` 会把偏好写入浏览器本地存储；
+- 某组不包含同步过来的选项时，会保留自己的有效选择。
+
+## 七、LaTeX 与 Mermaid
+
+### LaTeX
+
+行内公式使用单个美元符号，例如 $a^2 + b^2 = c^2$。块级公式独占一段：
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+
+```md
+行内公式：$a^2 + b^2 = c^2$
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+```
+
+### Mermaid
+
+Mermaid 适合流程、关系、时序或状态明显比纯文本更易理解的场景：
+
+```mermaid
+flowchart LR
+    A[提出问题] --> B[实际操作]
+    B --> C[验证结果]
+    C --> D[记录结论]
+```
+
+修改 Mermaid 内容或图表数量后，运行 `bun run generate:mermaid` 或 `bun run build`，并检查生成的 SVG 与 `src/generated/mermaid-assets.ts`。
+
+## 八、站内链接与标题锚点
+
+站内链接包含 locale，并尽量定位到真正需要的小节：
+
+```md
+[文件管理](/zh/docs/ch1/1.1-File-Management)
+[第一个脚本](/zh/docs/ch1/1.12-Shell-Basics#91-第一个脚本)
+```
+
+标题锚点应与渲染结果一一对应：移除标点，空格替换为连字符，中英文和数字保持原样。修改标题后要检查所有指向旧锚点的链接。
+
+## 九、新增 MDX 组件
+
+新增站点 MDX 组件时，至少同步维护：
+
+1. `src/components/mdx/index.ts`：注册站点运行时组件；
+2. `src/components/mdx/mdx-preview-shims.tsx`：导出可在 VS Code 预览中使用的组件；
+3. `.mdx-previewrc.json`：把组件名映射到预览 Shim；
+4. 本页：提供最小、准确的作者用法。
+
+不要为单纯视觉差异创建第二套组件；新组件应表达新的内容或教学语义。
+
+## 十、提交前自检
+
+- [ ] 页面目标、标题与描述一致，正文从 `##` 开始
+- [ ] Frontmatter 字段均已在 Schema 中声明
+- [ ] 新页面已在对应 `meta.json` 注册
+- [ ] 代码块语言、命令、路径、版本和链接已经核对
+- [ ] 中英文、数字与缩写之间的空格一致
+- [ ] 提示框、折叠块、表格和 Mermaid 都有明确的信息用途
+- [ ] 已同步需要维护的语言版本
+- [ ] 已按修改范围运行 `bun typecheck`、Mermaid 生成或生产构建

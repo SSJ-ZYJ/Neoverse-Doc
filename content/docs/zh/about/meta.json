@@ -1,15 +1,7 @@
 {
-  "title": "后记与共建",
-  "description": "了解本项目的结构、目标与愿景, 并参与共建。",
+  "title": "关于与共建",
+  "description": "了解项目理念、技术架构与贡献方式",
   "icon": "HeartHandshake",
-  "pages": [
-    "index",
-    "---关于---",
-    "about",
-    "---参与贡献---",
-    "guide",
-    "syntax-example",
-    "code-tabs-demo"
-  ],
+  "pages": ["index", "contributing", "project"],
   "root": true
 }

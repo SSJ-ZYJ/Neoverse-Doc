@@ -1,0 +1,244 @@
+---
+title: Route Transition System
+description: Five transition semantics, asymmetric behavior, DOM cloning, content particle transitions, and contain isolation
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Chapter
+> `TransitionProvider` is the single state entry point for transitions, and `transition-policy.ts` maps source and target routes to five transition semantics as pure functions. The aperture kind uses a sanitized DOM clone in the layer; the content kind uses WebGL particle exits; overview / surface / crossfade rely on the target page's own enter animations. The transition layer is fully isolated with `contain: strict`; clones set `will-change` while alive and immediately release the compositing layer after completion.
+
+## 1. System Overview
+
+Route transitions are coordinated by six files under `src/components/transition/`:
+
+```text
+transition-types.ts        type contracts
+transition-policy.ts       pure-function route classifier → 5 transition semantics
+transition-controller.ts   DOM cloning and geometry helpers
+transition-provider.tsx    central Provider, capture-phase click listener
+transition-layer.tsx       inert visual layer
+transition-link.tsx        next/link wrapper, declares transition intent
+back-link.tsx              declarative back link
+content-particle-transition.ts  WebGL particle exit between docs
+```
+
+`TransitionProvider` is the single state entry point for transitions; `TransitionLink` only expresses navigation intent and doesn't duplicate path checks, click coordinates, or cleanup logic across business components.
+
+## 2. Type Contracts
+
+`transition-types.ts` defines the core types:
+
+- `TransitionPhase`: `idle | preparing | navigating | revealing | settling`, describing the five phases of a transition;
+- `TransitionKind`: `auto | aperture | overview | surface | content | crossfade | none`, describing the transition kinds;
+- `TransitionIntent`: `{ kind, origin: {x, y}, sourcePath, targetPath }`, describing a single transition intent.
+
+## 3. Route Policy
+
+`transition-policy.ts` is a pure-function route classifier that maps source and target routes to five transition semantics.
+
+### Route Classification
+
+Routes are split by locale and matched against the rest path, falling into four categories:
+
+| Category | Matching rule |
+| :--- | :--- |
+| `home` | root path `/` |
+| `docs` | `/docs/...` |
+| `guestbook` | `/guestbook` |
+| `other` | anything else |
+
+### Transition Selection Rules
+
+| Source → Target | Transition kind | Semantics |
+| :--- | :--- | :--- |
+| same path | `none` | no-op |
+| locale change only | `crossfade` | fade for language switching |
+| home / guestbook → docs | `aperture` | radial aperture reveals the docs |
+| docs → home / guestbook | `overview` | docs shrink back to overview |
+| home ↔ guestbook | `surface` | surface switch |
+| docs → docs | `content` | content particle exit |
+| other | `surface` | default surface switch |
+
+`isSamePageHashNavigation()` detects same-page hash navigation and directly returns `none` to preserve native browser behavior.
+
+## 4. Asymmetric Transition Behavior
+
+`isCrossRouteGroupTransition` is asymmetric:
+
+- docs → home / guestbook (cross-group) returns `false`, triggering the `page-enter` (opacity + scale + blur) enter animation;
+- home / guestbook → docs (cross-group) returns `true`, keeping the `aperture` (radial reveal of the DOM snapshot) transition.
+
+This asymmetric design stems from the visual intent of the two directions: entering docs expands an aperture from the click position, emphasizing "diving in"; returning home lets the docs page shrink and fade out by itself, emphasizing "exiting".
+
+## 5. DOM Cloning Utilities
+
+`transition-controller.ts` provides `cloneTransitionSource()` and geometry calculation helpers.
+
+### cloneTransitionSource
+
+```text
+1. find main or #nd-docs-layout (excluding inside the transition layer)
+2. create .nd-transition-clone viewport div
+3. clone the source node
+4. replace all ids with data-nd-transition-source-id (keep style hooks)
+5. remove canvas / video / audio / iframe / script / object / embed / .immersive-particle-layer
+6. interactive elements get tabIndex = -1, remove contenteditable
+7. clone.inert = true, aria-hidden = "true"
+8. if there is a scroll offset, translateY(-scrollY)
+```
+
+Removing media elements prevents videos in the snapshot from continuing to play or scripts from executing; removing the particle layer keeps particle animations in the clone from running; `data-nd-transition-source-id` keeps style hooks (such as styles matched by `#id` selectors) while avoiding duplicate `id`s breaking page anchors.
+
+### calculateRevealRadius
+
+Computes the maximum distance from the origin (click coordinates) to the four viewport corners plus an extra 7vw (clamped 48-140px) as the target radius of the radial mask animation.
+
+## 6. Centralized Provider
+
+`transition-provider.tsx` is the central controller of transitions.
+
+### Click Capture
+
+`document.addEventListener('click', handleClick, { capture: true })` listens to all clicks in the capture phase:
+
+- find the nearest `a[href]`;
+- filter modifier keys, new windows, and download links via `isPlainInternalNavigation`;
+- prefer the explicit `data-transition` declaration, otherwise call `selectTransition`;
+- hash navigation and same-path links are no-ops directly.
+
+### Intent Building (prepare)
+
+When `prefersReducedMotion()` is active, `ROUTE_TRANSITION_START_EVENT` is still published so dependents can respond, but the animation is skipped.
+
+Preparation behavior per kind:
+
+| Kind | Preparation behavior |
+| :--- | :--- |
+| `aperture` | `cloneTransitionSource()` places the clone in the layer, sets the origin and max-radius CSS variables |
+| `content` | `createContentParticleTransition()` creates the WebGL particle exit, captures the `#nd-page` clone |
+| `overview` / `surface` / `crossfade` | layer stays hidden, relies on the target page's own enter animation |
+
+`overview` / `surface` / `crossfade` don't show a clone, because showing one produces a "flashback" frame — the reader has already seen the target page start entering, and showing the source clone again would feel like visual regression.
+
+### Target Reveal (useLayoutEffect)
+
+When the pathname changes, validate the intent and mark `data-nd-route-transition`:
+
+- `aperture` and `content` set the layer `data-phase = revealing`;
+- compute `settleDuration` (`content` waits for `contentEnterDelay + contentEnter` + buffer).
+
+### Cleanup
+
+`cleanup()` atomically cancels snapshots, timers, and root node animations; explicitly resetting the clone's `will-change: auto` ensures the browser immediately releases the compositing layer.
+
+### Pre-warming
+
+`requestIdleCallback` pre-warms the WebGL renderer while docs routes are idle, avoiding the delay of creating a context on the first docs-to-docs navigation.
+
+## 7. Content Particle Transition
+
+`content-particle-transition.ts` implements the WebGL particle exit for docs-to-docs navigation, used only for the `content` kind.
+
+### Prerequisites
+
+Depends on HTML-in-Canvas capture (`drawElementImage` + `requestPaint`) and WebGL2; when unsupported, keeps a lightweight fade-in.
+
+### Shared Renderer
+
+`sharedRenderer` is a singleton WebGL2 context, reused through `acquireRenderer()` / `releaseRenderer()` to avoid creating a new context for each transition.
+
+### Shaders
+
+- Vertex shader: particle grid → computes the travel path (smoke-like rise + leftward bend + rotational swirl + time-noise jitter);
+- Fragment shader: samples the source content texture with a circular mask, blending the dark-mode content into the light target.
+
+### Capture and Rendering
+
+- `onpaint` callback: `drawElementImage` captures the clone, `clip()` crops it to the actual content card bounds;
+- `play(onFirstFrame)`: starts the animation once the first frame is ready;
+- `destroy()`: cleans up all resources (textures, buffers, shader programs).
+
+### Particle Presets
+
+| Tier | density | spread | swirl |
+| :--- | :--- | :--- | :--- |
+| high | 2 | 180 | 28 |
+| medium | halved | halved | halved |
+
+## 8. Transition Layer
+
+`transition-layer.tsx` is a single inert visual layer:
+
+```html
+<div aria-hidden="true" data-phase="idle" hidden id="nd-transition-layer" />
+```
+
+`#nd-transition-layer` is fully isolated with `contain: strict`, and `pointer-events: none` doesn't intercept interaction. `.nd-transition-clone` sets `will-change: transform, opacity` to hint the compositing layer, effective only while the clone is alive.
+
+## 9. Link Components
+
+### TransitionLink
+
+`transition-link.tsx` is a wrapper around `next/link` that only declares `data-transition` semantics. It doesn't execute the transition itself; it just lets `TransitionProvider`'s click capture know this is a link with a declared transition kind.
+
+### BackLink
+
+`back-link.tsx` is a declarative back link — `ArrowLeft` icon + `special-page__back-link` class, used on special pages (such as the guestbook) to return home.
+
+## 10. Transition Styles
+
+`src/styles/transitions.css` defines the transition visual rules.
+
+### Radial Mask
+
+`@property --transition-radius` registers a custom property for the radial mask animation. `[data-transition="aperture"]` uses `mask-image: radial-gradient(...)`, and the `nd-aperture-reveal` animation expands the radius.
+
+### Particle Capture
+
+`[data-particle-capture]` clears the clone surface during capture (transparent border / background / box-shadow / backdrop-filter), keeping only the text as the particle source.
+
+### Key Enter Animations
+
+| Kind | Enter animation |
+| :--- | :--- |
+| `aperture` land | `scale 1.02 → 1`, no opacity change (the page is already visible through the aperture) |
+| `overview` enter | positional shrink only, opacity stays 1 (avoids a brightness dip from stacking with the clone fade-out) |
+| `surface` home | transforming the whole home page is disabled (a fixed blurred environment layer would position relative to the over-long page); only `.home-hero__content` shrinks |
+| `content` enter | `nd-route-content-enter` opacity 0 → 1, delayed by `--nd-delay-content-enter` |
+
+### Why surface doesn't transform the whole home page
+
+The `surface` transition intentionally doesn't transform the whole home page (`html[data-nd-route-transition="surface"] .home-page { animation: none; }`). Because the fixed blurred environment layer (`.home-page::before`) would instead position relative to the over-long page, triggering expensive full-page repaints. Only `.home-hero__content` does a positional shrink, keeping the visual transition while avoiding the performance problem.
+
+### Mobile Adjustments
+
+The `content` kind uses `z-index: 30` on mobile, avoiding the sidebar drawer's `z-index: 40`.
+
+### reduced-motion
+
+`prefers-reduced-motion: reduce` hides the transition layer and disables all enter animations, keeping instant content switching.
+
+## 11. Transition Completion and Timeouts
+
+After a transition completes, fails, or times out, the Provider destroys clones and temporary state:
+
+- `TRANSITION_TIMEOUT_MS.navigation = 8000`: navigation timeout;
+- `TRANSITION_TIMEOUT_MS.settleBuffer = 140`: settle phase buffer.
+
+Full page HTML isn't written to `sessionStorage`; same-page hash navigation keeps native browser behavior, and the reduced-motion preference takes the degraded path.
+
+## 12. Key Files
+
+| File | Responsibility |
+| :--- | :--- |
+| `src/components/transition/transition-types.ts` | type contracts |
+| `src/components/transition/transition-policy.ts` | route-to-transition-semantics mapping |
+| `src/components/transition/transition-controller.ts` | DOM cloning and geometry computation |
+| `src/components/transition/transition-provider.tsx` | transition state and cleanup |
+| `src/components/transition/transition-layer.tsx` | inert visual layer |
+| `src/components/transition/transition-link.tsx` | next/link wrapper |
+| `src/components/transition/back-link.tsx` | declarative back link |
+| `src/components/transition/content-particle-transition.ts` | WebGL particle exit between docs |
+| `src/styles/transitions.css` | transition visual rules |
+| `src/lib/motion-config.ts` | transition durations and timeout config |

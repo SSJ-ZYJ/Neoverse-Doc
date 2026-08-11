@@ -1,0 +1,225 @@
+---
+title: Content Pipeline and MDX Enhancements
+description: Frontmatter, MDX components, code blocks, collapsible content, task progress, Remark plugins, and client boundaries
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Chapter
+> The project builds on Fumadocs' content source and default MDX components, adding code titles, semantic collapsible blocks, interactive tasks, code Tabs, file hierarchies, doc cards, and long code block fallbacks through a unified Schema, a Remark / Rehype plugin chain, and a shared component registry. Enhancement logic is prioritized at build time or on the server; only interactions such as copying, checking boxes, and preference sync enter small client boundaries.
+
+## 1. Content Schema
+
+`source.config.ts` extends project fields on the Fumadocs `pageSchema`:
+
+| Field | Type | Purpose |
+| :--- | :--- | :--- |
+| `author` | string or string array | Primary author |
+| `contributor` / `contributors` | string or string array | Contributors after the body |
+| `draft` | boolean, default `false` | Soft gating for drafts |
+| `todoProgress` | boolean, default `false` | Page task progress display |
+
+A centralized Schema lets the Fumadocs compilation stage validate Frontmatter directly, and also avoids guessing content state from titles, file names, or the DOM.
+
+## 2. Author Parsing and Display
+
+When authors and contributors use the `Name(https://github.com/name)` form, `src/lib/parse-author.ts` parses the name and the GitHub URL:
+
+- The regex matches the `Name(url)` structure, separating the display name from the homepage URL;
+- The username is extracted from the GitHub URL to build the avatar address;
+- Without a URL, only the name is kept;
+- On parse failure, the string is returned as-is.
+
+`src/components/mdx/docs-author.tsx` decides how to display avatars, links, and separators based on the parsed result. The parsing rules stay in code, so articles do not need to embed React data objects, nor split the name and URL fields in Frontmatter.
+
+## 3. Shared Component Registry
+
+`src/components/mdx/index.ts` first inherits the Fumadocs default components, then replaces or adds project capabilities:
+
+```text
+Fumadocs default MDX components
+  + details → CollapsibleDetailsRenderer
+  + li      → MdxListItem
+  + pre     → CustomCodeBlock
+  + Mermaid
+  + Tabs / Tab
+  + DocCard / DocGrid
+  + FeatureCard / ResourceLink / LearningPath
+  + Files / Folder / File
+  + LongCodeBlock
+```
+
+`getMdxComponents()` returns a stable shared object and also lets pages pass overrides when necessary. The value of centralized registration is not just fewer imports: it concentrates the decision of which components need to run on the client and which can be server-rendered in one place.
+
+## 4. Remark / Rehype Plugin Chain
+
+`source.config.ts` assembles the MDX plugins in the following order, each plugin taking a single responsibility:
+
+```text
+remarkCollapsibleAlert   → semantic collapsible block syntax
+remarkGithubAlert        → GitHub Alert callouts
+remarkMath               → LaTeX math
+remarkMdxMermaid         → Mermaid code block markers
+remarkCodeTitle          → first-line code path extraction
+remarkLangAlias          → non-built-in language identifier rewrite
+remarkLongCodeBlock      → long code block fallback
+```
+
+In the Rehype stage, `rehypeKatex` is wired in first, followed by the built-in Fumadocs plugins.
+
+### Semantic Collapsible Blocks
+
+`remark-collapsible-alert.ts` extends the blockquote syntax, supporting `[!DETAILS]`, `[!DETAILS+]` (open by default), and the semantic variants `[!DETAILS-FAQ]`, `[!DETAILS-ANSWER]`, `[!DETAILS-EXAMPLE]`, `[!DETAILS-HINT]`, `[!DETAILS-AI]`. `detectLocale(file.path)` detects zh / en from the path to provide localized default titles; `splitInlineDetailsNodes()` splits the title and body at the first hard line break. It renders as `<details>` + `<summary>`, with the `open` attribute controlled by the `+` marker.
+
+### GitHub Alert
+
+`remark-github-alert.ts` supports `[!NOTE|TIP|IMPORTANT|WARNING|CAUTION|INFO]`, reusing the octicons from `remark-github-blockquote-alert`; the `INFO` alias reuses the note icon. Text on the same line after `[!TYPE]` becomes a custom title; content after a hard line break is the body.
+
+### Code Block Path Titles
+
+`remark-code-title.ts` extracts the file path from the first-line comment of a code block (`//`, `/* */`, `#`, `<!-- -->`), injects `title="..."` into the code fence meta string, and removes that comment line from the code content. It skips when a `title=` already exists. It only applies when the content looks like a file name or path; ordinary explanatory comments are left untouched.
+
+### Language Alias Rewrite
+
+`remark-lang-alias.ts` rewrites language identifiers not built into Shiki to built-in syntax (e.g., `gitattributes → ini`) and keeps the original language name in the `originalLang` meta attribute. This avoids the Shiki `langAlias` path, which creates a new highlighter instance and breaks lazy loading of other built-in languages (such as bash).
+
+### Long Code Block Fallback
+
+`remark-long-code-block.ts` replaces code blocks longer than 400 lines with the `<LongCodeBlock>` MDX component, keeping the `code`, `lang` (`originalLang` preferred), and `title` attributes. A long code block going through the normal Shiki pipeline would generate thousands of React nodes and crush the dev compiler; `LongCodeBlock` renders as a single raw text node, keeping copy support and the glass shell but dropping syntax highlighting.
+
+## 5. Code Block Enhancement Pipeline
+
+Fumadocs and Shiki handle syntax highlighting; the project adds file paths, language icons, a title bar, a copy button, and Tabs to this pipeline.
+
+```text
+First-line path comment
+  → remarkCodeTitle extracts the path and injects title metadata
+  → remarkLangAlias rewrites non-built-in languages
+  → Shiki generates highlighted HAST
+  → transformerMetaTitle writes pre.title and restores the originalLang icon
+  → CustomCodeBlock renders the unified title bar
+```
+
+### Shiki Icon Configuration
+
+`source.config.ts` registers custom SVG icons for 20+ languages via `icon.extend` (HTML, CSS, JS, TS, React, Vue, Python, Rust, Go, Shell, PowerShell, BAT, C, C++, C#, Java, JSON, YAML, TOML, INI, Vim, Text, LaTeX, etc.), and provides alias mappings via `icon.shortcuts` (`pwsh/ps1 → powershell`, `batch → bat`, `gitattributes → git`, `tex → latex`, `markdown/mdx → md`, `fish → shellscript`, `jsonc → json`). PowerShell and CMD icons use brighter color variants in dark mode to improve readability.
+
+### transformerMetaTitle
+
+`transformer-meta-title.ts` runs after the Fumadocs `transformerIcon` with `enforce: 'post'`: it copies `title` from the meta to the `<pre>` properties; when the meta contains `originalLang=...`, it restores the original language name for display and re-resolves the icon (because `transformerIcon` resolves with the aliased language and cannot hit the shortcuts registered for the original language).
+
+### CustomCodeBlock
+
+`src/components/mdx/custom-codeblock.tsx` is the server-side shell responsible for the title bar layout (language icon + file path + copy button). `CodeCopyButton` is the client-side interaction boundary. The path line is removed from the body code, so the copy button does not duplicate the title comment.
+
+### Multi-language Tabs
+
+`Tabs` and `Tab` use content-based Props:
+
+- `items` declares the options and their order;
+- `groupId` keeps compatible selections in sync across multiple examples;
+- `persist` saves preferences to `localStorage`;
+- when a group has no target option, it keeps its own valid selection.
+
+`src/components/mdx/code-tabs.tsx` renders a sliding underline indicator below the Tabs, tracking the active Tab's geometry with a `ResizeObserver`. The Tabs do not copy code text into another state; they only observe the activation state of the Fumadocs Tabs and sync the necessary preferences.
+
+## 6. Callouts and Semantic Collapsible Blocks
+
+The project extends the blockquote syntax instead of requiring authors to hand-write JSX for every callout:
+
+| Processor | Input | Output purpose |
+| :--- | :--- | :--- |
+| `remarkGithubAlert` | `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`, `INFO` | Semantic callouts |
+| `remarkCollapsibleAlert` | `DETAILS`, `FAQ`, `ANSWER`, `EXAMPLE`, `HINT`, `AI` | Semantic `details` |
+
+Plain `details` are output directly by `CollapsibleDetailsRenderer`, staying server-rendered. Only summaries with AI semantics use the `CollapsibleDetails` client component, which handles per-paragraph reveal, cursor, and open state.
+
+This boundary avoids two common problems: turning an entire article into a client component just to collapse one passage, or traversing the DOM at runtime and guessing what should be rendered from the quoted text.
+
+## 7. Task Items and Progress
+
+Authors keep using the standard GFM task syntax:
+
+```md
+- [x] Finish reading
+- [ ] Run the practice
+```
+
+`MdxListItem` distinguishes plain lists from task items on the server. Plain `li` stays native; only task items are handed to `InteractiveTaskListItem`.
+
+Task state uses the local model below:
+
+```text
+storage key = fixed prefix + current pathname
+task key    = stable hash of the normalized task text
+value       = checked / unchecked
+```
+
+The progress component no longer maintains a duplicate task array. It reads the task checkboxes already rendered in the body and listens for the `neoverse:task-state-change` custom event to update the completion count. This avoids introducing a global state library and keeps non-task lists free of client logic.
+
+`todoProgress: true` only controls whether the stats card appears at the top of the page. Each task itself can still be checked and saved in the current browser even without a stats card.
+
+## 8. File Hierarchy and Doc Cards
+
+`Files`, `Folder`, and `File` wrap the Fumadocs file tree component at the project level, replacing hand-drawn character trees with structured MDX. `defaultOpen`, `disabled`, and `title` express default expansion, leaf directories, and supplementary explanations respectively.
+
+`DocCard` and `DocGrid` are used for a few high-value entry points:
+
+- In-site links use the unified transition link;
+- External links open in a new tab with a safe `rel`;
+- External resources progressively resolve site icons through `src/components/mdx/doc-card-site-icon.tsx`, keeping a generic icon on failure;
+- Cards only expose the title, target, and description; surface effects are implementation details.
+
+`FeatureCard`, `ResourceLink`, and `LearningPath` are direct aliases of `DocCard` / `DocGrid` (`export const FeatureCard = DocCard`), letting authors express the content intent of "feature", "resource", and "learning path" without duplicating a second set of visual components. Direct aliases are used instead of wrapper functions to avoid extra component layers in the React tree.
+
+## 9. Draft Gating
+
+`draft: true` does not remove an article from the static page tree. The page still participates in the build, but the body initially starts in an `inert` and inaccessible state, while `DocsDraftControls` shows the under-construction notice, a previous or home page entry, and an explicit preview button.
+
+This soft gating is suited for signaling "content is not stable yet"; it is not a permission system. No sensitive information should ever enter the generated static files.
+
+## 10. Page Authors, Contributors, and Actions
+
+Doc pages decide whether to show authors and contributors based on Frontmatter. `DocsPageActions` also receives:
+
+- the `docs-source` static Markdown address;
+- the source file address in GitHub derived from `page.data.info.fullPath`.
+
+Readers can view the raw content directly or locate the file in the repository. The source address is generated from the content source, so authors do not need to hand-write repository paths in every article.
+
+## 11. Server and Client Boundaries
+
+| Capability | Default boundary |
+| :--- | :--- |
+| Body text, code highlighting, plain callouts, and collapsible blocks | Server |
+| Authors, contributors, doc cards, file tree | Server |
+| Copy button | Small client component |
+| Task checking and progress sync | Task items and progress card client-rendered |
+| Tabs preferences and underline indicator | Tabs client boundary |
+| AI summary per-paragraph reveal | Single summary client boundary |
+| Mermaid zoom, drag, and maximize | Single diagram client boundary |
+| Long code blocks | Server (single raw text node) |
+
+The boundary principle is "client code stops where the interaction is", rather than client-rendering the whole MDX page for the convenience of authoring.
+
+## 12. Key Files
+
+| File | Responsibility |
+| :--- | :--- |
+| `source.config.ts` | Schema, Remark / Rehype, and Shiki configuration |
+| `src/components/mdx/index.ts` | Shared MDX component registry |
+| `src/lib/parse-author.ts` | Author name and GitHub URL parsing |
+| `src/lib/remark-code-title.ts` | Path title extraction |
+| `src/lib/remark-collapsible-alert.ts` | Semantic collapsible syntax |
+| `src/lib/remark-github-alert.ts` | GitHub Alert syntax |
+| `src/lib/remark-lang-alias.ts` | Non-built-in language identifier rewrite |
+| `src/lib/remark-long-code-block.ts` | Long code block fallback |
+| `src/lib/transformer-meta-title.ts` | Title attribute transformation and icon restoration |
+| `src/components/mdx/custom-codeblock.tsx` | Server-side code block shell |
+| `src/components/mdx/code-tabs.tsx` | Tabs and sliding underline |
+| `src/components/mdx/task-list-item.tsx` | Server-side task identification |
+| `src/components/mdx/interactive-task-list-item.tsx` | Local task state |
+| `src/components/mdx/task-list-progress.tsx` | Page progress derivation |
+| `src/components/mdx/doc-cards.tsx` | Doc cards and semantic aliases |
+| `src/components/mdx/doc-card-site-icon.tsx` | Progressive site icon resolution |
+| `src/components/mdx/mdx-preview-shims.tsx` | VS Code MDX Preview bridge |

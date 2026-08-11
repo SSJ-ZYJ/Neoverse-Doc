@@ -1,0 +1,289 @@
+---
+title: Homepage and Immersive Interaction
+description: Homepage visual composition, ambient motion, chapter cards, immersive particles, TOC scrollbar, and motion preferences
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] AI Summary of This Chapter
+> The homepage is organized by `HomePortal` into a three-section structure of Hero, chapters, and community, with an ambient motion controller providing a shared animation clock and frame budget. The immersive interaction generates a HarmonyOS-style photon field along the pointer path, the TOC scrollbar continuously tracks the directory highlight with a 4px thumb, and progressive blur on documentation pages plus inline code wrapping detection use `IntersectionObserver` and `MutationObserver` for on-demand measurement. All continuous animations respect `prefers-reduced-motion`, and RAF and the particle layer pause when the tab is hidden.
+
+## 1. Three-section homepage structure
+
+`src/components/home/home-portal.tsx` is the homepage entrance component. It wraps three sections of content with `AmbientMotionController`:
+
+```text
+HomePortal
+├── AmbientMotionController (shared animation clock)
+│   ├── Hero section
+│   │   ├── LightRays (light-ray background)
+│   │   ├── .home-hero__network (grid background)
+│   │   ├── HeroTitle (particle text title)
+│   │   └── PrimaryAction (primary action button)
+│   ├── Chapter section
+│   │   ├── AiComputeBackdrop variant="knowledge" (AI accelerator backdrop)
+│   │   ├── AnimatedContent (scroll entrance)
+│   │   └── ChapterGrid (chapter card grid)
+│   └── Community section
+│       ├── AiComputeBackdrop variant="community"
+│       ├── AnimatedContent
+│       └── TransitionLink transition="surface" (community entrance)
+```
+
+The three-section structure gives the homepage a clear information hierarchy: first establish the project identity, then present the content entrances, and finally guide participation.
+
+## 2. Ambient motion controller
+
+`src/components/home/ambient-motion-controller.tsx` is the shared clock for all continuous animations on the homepage:
+
+- Samples the `currentTime` of CSS Animations periodically via `setInterval` (`HOME_AMBIENT_FRAME_INTERVAL_MS`) instead of running RAF every frame;
+- Pauses sampling when the tab is hidden, avoiding background RAF accumulation; re-syncs on resume to prevent animation jumps;
+- Uses the `document.documentElement.dataset.pageHidden` attribute so pure CSS infinite animations also pause;
+- `MOTION_FRAME_RATE.homepageAmbient: 60` caps the shared frame budget, preventing GPU cost on high-refresh-rate screens from growing with the refresh rate.
+
+The value of the shared clock: multiple ambient animations (floating light orbs, grid movement, blinking signal dots) don't each maintain their own RAF; a single controller drives them all uniformly.
+
+## 3. Hero section
+
+The Hero section is the first screen of the homepage and is responsible for establishing the project identity.
+
+### HeroTitle
+
+`src/components/home/hero-title.tsx` renders the title with the `SplitText` and `ParticleText` components:
+
+- `SplitText` splits the title into characters or words that enter in sequence;
+- `ParticleText` assembles the title from particles and activates when the experimental motion is available.
+
+### PrimaryAction
+
+`src/components/home/primary-action.tsx` is the primary action button, using the `.glass-cta` surface and navigating to the documentation entrance with `TransitionLink`.
+
+### Background layers
+
+- `LightRays` provides a sweeping light-ray effect;
+- `.home-hero__network::before` is the grid layer, which moves a single expanded layer on the compositor to avoid repainting a large background area every frame.
+
+## 4. Chapter section and AI accelerator backdrop
+
+The chapter section shows the documentation entrance cards and is the homepage's core navigation area.
+
+### AiComputeBackdrop
+
+`src/components/home/ai-compute-backdrop.tsx` renders a structured SVG animation as the chapter section's backdrop:
+
+- `variant="knowledge"` is used for the chapter section, presenting a knowledge-network visual;
+- `variant="community"` is used for the community section, presenting a community-connection visual;
+- The SVG animation is isolated with `contain: layout style paint` so it doesn't interfere with the content layout.
+
+### ChapterGrid
+
+`src/components/home/chapter-grid.tsx` renders the chapter card grid using the `Magic Bento` component:
+
+- A 12-column grid where `.chapter-card` occupies 4 columns;
+- Cards use `--home-map-card-surface` and `--home-map-card-blur: 8px`;
+- `Magic Bento` provides cursor tracking and hover lift effects;
+- Card content (title, description, status) is read dynamically from `home-sections.ts`.
+
+### home-sections.ts
+
+`src/lib/home-sections.ts` extracts root folders from Fumadocs `source.getPageTree(locale)` as the homepage chapters:
+
+- `getHomeChapters(locale)` avoids linking to sections that don't exist;
+- `getSearchChapterTags(locale)` reuses the same page tree and aligns with the server-side search index tags using the first-segment slug.
+
+Chapter entrances and search scopes share the same data source, so a newly added Chapter naturally appears in both places.
+
+## 5. Homepage style constraints
+
+`src/styles/pages/home.css` contains several key constraints that keep visual enhancements from breaking the layout.
+
+### .home-page without overflow
+
+`.home-page` deliberately avoids adding `overflow-x: clip/hidden`. Any overflow value other than `visible` creates a containing block for `position: fixed` descendants, making the ambient orb layer position relative to this element instead of the viewport, producing blank space below the footer.
+
+### .home-page::before fixed ambient light
+
+`.home-page::before` is the dedicated fixed ambient light layer of the homepage:
+
+- Four `radial-gradient`s (radii of 28-34rem, naturally soft);
+- `filter: blur()` is completely removed so `transform` animations run entirely on the compositor;
+- `contain: strict` fully isolates it, which is safe because it is purely decorative, has no children, and is already `position: fixed`.
+
+### Progressive-enhancement scroll parallax
+
+`@supports (animation-timeline: scroll())` enables scroll parallax when supported and falls back to a static layout otherwise.
+
+### Dark mode adjustments
+
+- `.home-nav-shadow` becomes a bright glow layer (black shadows are invisible on the navy canvas);
+- On mobile, the `html[data-nd-motion-level="high"]` top bar uses higher blur and brightness/contrast adjustments.
+
+## 6. Homepage footer
+
+`src/components/home/home-footer.tsx` shows project metadata:
+
+- `getGitInfo()` reads commitId and commitDateIso;
+- For the `(commitId @ date)` format, `white-space: pre-wrap` preserves the spaces on both sides of `@`;
+- The Git commit ID is bold and keeps the same color as the date;
+- Two licenses: MIT for code, CC BY-NC-SA 4.0 for documentation;
+- Author and contributor links use semantic `<span>` grouping instead of relying on trailing flex spacing.
+
+## 7. React Bits component library
+
+`src/components/react-bits/` contains the React Bits components adapted by the project:
+
+| Component | Purpose |
+| :--- | :--- |
+| `animated-content` | Scroll entrance animation wrapper |
+| `gradual-blur` | Progressive blur mask |
+| `light-rays` | Light-ray sweep background |
+| `magic-bento` | Cursor-tracking Bento cards |
+| `magnet` | Magnet-effect button |
+| `particle-text` | Particle-aggregated text |
+| `split-text` | Text split entrance |
+
+These components are adapted by the project from the React Bits library, imported on demand, and control GPU cost through `contain` and `will-change`.
+
+## 8. Immersive particle interaction
+
+`src/components/immersive-interaction-controller.tsx` implements a HarmonyOS-style photon field: it continuously generates small dot photons along the pointer path, with responsive density and smooth outward spread.
+
+### Selector grouping
+
+The controller registers different particle behaviors for different element types:
+
+| Selector constant | Targets | Behavior |
+| :--- | :--- | :--- |
+| `CONTROL_SELECTOR` | `.control-surface`, `.chapter-card`, `.mdx-doc-card`, `#nd-nav button` | Control-level particles |
+| `SURFACE_SELECTOR` | `.surface-panel`, `.glass-codeblock`, `.markdown-alert`, `.markdown-details` | Surface-level particles |
+| `SIDEBAR_FOOTER_PARTICLE_HOST_SELECTOR` | Sidebar bottom toolbar | Treated as a particle host as a whole |
+| `CODE_TABS_PARTICLE_HOST_SELECTOR` | Code tabs | Share one particle layer |
+
+### Core algorithm
+
+- `burstConfig()`: adjusts particle count and emission distance based on `pointerType` (touch / pen / mouse), surface type, and motion level (halved at medium);
+- `emitBursts()`: computes the initial ring-band distribution, travel direction, edge distance, travel cap, and sway of particles; all CSS custom properties are assigned in a single pass through `style.cssText` to reduce style reflow;
+- `processMoves()`: RAF-scheduled, interpolates pointer samples (`MAX_INTERPOLATED_STEPS = 14`), with fragment / append / trim / cleanup shared within the same frame batch;
+- `getLayer()`: reuses the mounted `.immersive-particle-layer`, sets `contain: layout style paint` + `will-change: transform, opacity`, and cleans up on removal.
+
+### Lifecycle
+
+- `pointerdown` (capture): measures geometry, generates the initial burst, and establishes a session;
+- `pointermove` (capture, passive): accumulates into `pendingMoves` for RAF batch processing;
+- `pointerup/cancel`: ends the session, and `scheduleClear` defers cleanup by 2.8s;
+- `visibilitychange`: pauses RAF, clears pendingMoves, and sets `data-page-hidden`;
+- `pagehide`: cleans up all sessions and particle layers, avoiding leftover inheritance when returning from bfcache.
+
+### Chromium compatibility
+
+When an HTML-in-Canvas subtree is unmounted during navigation, it may crash if composited particle descendants are still mounted inside links. All pointer types skip instantaneous feedback before modifying the experimental subtree.
+
+### Particle styles
+
+`src/styles/immersive-interactions.css` defines the particle visuals:
+
+- Two theme particle colors: light mode uses `normal` blending, dark mode uses `screen` blending for better visibility;
+- `.immersive-particle-layer`: `contain: layout paint`, and `border-radius` and `clip-path` follow the host's rounding;
+- `::before` provides a radial light field + linear-gradient refraction;
+- `.immersive-particle`: `backdrop-filter` has been removed (CSS filters aren't accelerated by the compositor), and the animation runs entirely on the compositor through `opacity` + `transform`;
+- `.mermaid-wrapper` deliberately omits `isolation: isolate`: isolation would make the element a backdrop root and trap the floating toolbar's backdrop-filter.
+
+## 9. Immersive scrollbar and TOC thumb
+
+`src/components/immersive-scrollbar.tsx` implements the custom viewport scrollbar and continuous TOC thumb tracking.
+
+### Viewport scrollbar
+
+- The `nd-immersive-scrollbar-ready` class marks that it has taken over, and the `nd-immersive-scrollbar-active` class hides the native scrollbar;
+- `readMetrics()`: reads both html / body metrics to stay compatible when the document layout switches scroll ownership;
+- `updateChromeOffset()`: avoids top fixed / sticky controls (`#nd-nav`, `#nd-subnav`, TOC popover, etc.); the cached element set is invalidated by `MutationObserver`;
+- Dragging: `pointerdown` detects whether the thumb is hit, and `setPointerCapture` keeps the drag going;
+- `visibilitychange` pauses RAF; on resume, `applyMetrics()` runs once synchronously to immediately reflect the current position.
+
+### TOC thumb
+
+The TOC thumb follows project constraints:
+
+- Its color matches `--color-fd-primary`;
+- 4px default size;
+- Uses the `default` style (not `clerk`) to enable continuous scroll tracking;
+- The `paused` flag skips RAF scheduling when the tab is hidden.
+
+## 10. Progressive blur on documentation pages
+
+`src/components/docs-page-gradual-blur.tsx` aligns with the server-rendered content card at the viewport edge to achieve the progressive blur effect:
+
+- `IntersectionObserver` watches the visibility of the card and footer;
+- `ResizeObserver` updates only when the size actually changes;
+- Mounted to `document.body` via `createPortal`, with `data-visible` controlling visibility.
+
+## 11. Inline code wrapping detection
+
+`src/components/inline-code-wrap-controller.tsx` detects whether inline code wraps and marks `data-inline-code-wrapped`:
+
+- Determines wrapping via `height > lineHeight * 1.5`;
+- Reads the geometry of all visible fragments in a batch and then writes the attributes in one pass, avoiding interleaved per-node reads and writes that trigger forced layout;
+- `MutationObserver` watches document body changes (route, fonts, container size);
+- `IntersectionObserver` measures one screen ahead;
+- Re-schedules after `document.fonts.ready` to ensure fonts have finished loading.
+
+## 12. Motion settings panel
+
+`src/components/docs-motion-settings.tsx` sits next to the Fumadocs `ThemeSwitch`:
+
+- A Popover contains the three-level motion radio (high / medium / low) and the experimental motion switch;
+- Experimental-unavailable hints cover three cases: the low level, lack of support, and system reduced motion;
+- Selections are written to `data-nd-*` attributes and localStorage via `motion-preferences-provider`.
+
+## 13. Performance strategy
+
+### Let the content appear first
+
+- Documentation pages and most MDX shells stay server-rendered;
+- Homepage ambient effects reuse the shared clock and frame budget;
+- Off-screen, high-cost MDX blocks use browser containment to defer layout and paint;
+- `DocsCommunity` is isolated from the content, so iframe height changes don't trigger layout inside the content.
+
+### Control continuous work
+
+- Continuous animations prefer `transform` and `opacity`;
+- Pointer move and drag events are coalesced per frame;
+- Particles are written to the DOM in batches instead of updating immediately on every raw event;
+- Timers, RAF, Observers, listeners, and temporary nodes are cleaned up on page leave or component unmount.
+
+### Containment isolation
+
+- `.home-page::before` and `body::before` are fully isolated with `contain: strict`;
+- `.surface-panel`, `.chapter-card`, and `.mdx-doc-card` use `contain: layout style` to isolate hover transforms;
+- The particle layer uses `contain: layout style paint`;
+- `will-change` is set only while the element is alive and cleaned up on removal.
+
+## 14. Mobile degradation
+
+On mobile, priority goes to content width, reachable navigation, and touch targets:
+
+- Large ambient effects and continuous particles are reduced in density or turned off;
+- Toolbars stay compactly grouped, and no operation depends on Hover;
+- The comment iframe uses natural height to avoid nested scrolling;
+- The sidebar, TOC, and page actions use their corresponding triggers on small screens.
+
+`prefers-reduced-motion` turns off non-essential movement and continuous animations; the reduced transparency preference makes glass surfaces fall back to more solid backgrounds. Degradation only trims decoration and transitions; it never removes content, focus, button labels, or critical states.
+
+## 15. Key files
+
+| File | Responsibility |
+| :--- | :--- |
+| `src/components/home/home-portal.tsx` | Three-section homepage entrance |
+| `src/components/home/ambient-motion-controller.tsx` | Shared animation clock |
+| `src/components/home/ai-compute-backdrop.tsx` | AI accelerator backdrop |
+| `src/components/home/chapter-grid.tsx` | Chapter card grid |
+| `src/components/home/hero-title.tsx` | Hero title animation |
+| `src/components/home/home-footer.tsx` | Homepage footer |
+| `src/lib/home-sections.ts` | Data source for homepage chapters and search tags |
+| `src/styles/pages/home.css` | Homepage styles and constraints |
+| `src/components/immersive-interaction-controller.tsx` | Particle interaction controller |
+| `src/components/immersive-scrollbar.tsx` | Viewport scrollbar and TOC thumb |
+| `src/components/docs-page-gradual-blur.tsx` | Progressive blur for documentation pages |
+| `src/components/inline-code-wrap-controller.tsx` | Inline code wrapping detection |
+| `src/components/docs-motion-settings.tsx` | Motion settings panel |
+| `src/styles/immersive-interactions.css` | Immersive interaction styles |

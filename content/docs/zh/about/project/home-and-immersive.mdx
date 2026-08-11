@@ -1,0 +1,289 @@
+---
+title: 首页与沉浸式交互
+description: 首页视觉构成、环境动效、章节卡片、沉浸式粒子、TOC 滚动条与动效偏好
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] 本章 AI 摘要
+> 首页由 `HomePortal` 组织成 Hero、章节、共建三段式结构，环境动效控制器提供共享动画时钟与帧率预算。沉浸式交互沿指针路径生成 HarmonyOS 风格光子场，TOC 滚动条以 4px thumb 连续追踪目录高亮，文档页渐进模糊与行内代码换行检测通过 `IntersectionObserver` 与 `MutationObserver` 实现按需测量。所有持续动画尊重 `prefers-reduced-motion`，标签页隐藏时暂停 RAF 与粒子层。
+
+## 一、首页三段式结构
+
+`src/components/home/home-portal.tsx` 是首页入口组件，由 `AmbientMotionController` 包裹三段内容：
+
+```text
+HomePortal
+├── AmbientMotionController（共享动画时钟）
+│   ├── Hero 段
+│   │   ├── LightRays（光线背景）
+│   │   ├── .home-hero__network（网格背景）
+│   │   ├── HeroTitle（粒子文字标题）
+│   │   └── PrimaryAction（主操作按钮）
+│   ├── 章节段
+│   │   ├── AiComputeBackdrop variant="knowledge"（AI 加速器背景）
+│   │   ├── AnimatedContent（滚动入场）
+│   │   └── ChapterGrid（章节卡片网格）
+│   └── 共建段
+│       ├── AiComputeBackdrop variant="community"
+│       ├── AnimatedContent
+│       └── TransitionLink transition="surface"（共建入口）
+```
+
+三段式结构让首页有明确的信息层级：先建立项目身份，再展示内容入口，最后引导参与。
+
+## 二、环境动效控制器
+
+`src/components/home/ambient-motion-controller.tsx` 是首页所有持续动画的共享时钟：
+
+- 通过 `setInterval`（`HOME_AMBIENT_FRAME_INTERVAL_MS`）周期采样 CSS Animation 的 `currentTime`，而不是每帧 RAF；
+- 标签页隐藏时暂停采样，避免后台 RAF 累积；恢复时同步对齐，防止动画跳跃；
+- 通过 `document.documentElement.dataset.pageHidden` 属性让纯 CSS 无限动画也暂停；
+- `MOTION_FRAME_RATE.homepageAmbient: 60` 限制共享帧率预算，避免高刷屏 GPU 开销随屏幕刷新率增长。
+
+共享时钟的价值在于：多个环境动画（光球漂浮、网格移动、信号点闪烁）不需要各自维护 RAF，统一由一个控制器驱动。
+
+## 三、Hero 段
+
+Hero 段是首页第一屏，承担项目身份建立。
+
+### HeroTitle
+
+`src/components/home/hero-title.tsx` 使用 `SplitText` 与 `ParticleText` 组件渲染标题：
+
+- `SplitText` 把标题拆分为字符或单词，按顺序入场；
+- `ParticleText` 让标题由粒子聚合而成，在实验性动效可用时启用。
+
+### PrimaryAction
+
+`src/components/home/primary-action.tsx` 是主操作按钮，使用 `.glass-cta` 表面与 `TransitionLink` 导航到文档入口。
+
+### 背景层
+
+- `LightRays` 提供光线扫射效果；
+- `.home-hero__network::before` 是网格层，通过合成器移动单个扩展层，避免每帧重绘大面积背景位置。
+
+## 四、章节段与 AI 加速器背景
+
+章节段展示文档入口卡片，是首页的核心导航区。
+
+### AiComputeBackdrop
+
+`src/components/home/ai-compute-backdrop.tsx` 渲染结构化 SVG 动画作为章节段背景：
+
+- `variant="knowledge"` 用于章节段，呈现知识网络视觉；
+- `variant="community"` 用于共建段，呈现社区连接视觉；
+- SVG 动画通过 `contain: layout style paint` 隔离，避免与正文布局互相影响。
+
+### ChapterGrid
+
+`src/components/home/chapter-grid.tsx` 使用 `Magic Bento` 组件渲染章节卡片网格：
+
+- 12 列网格，`.chapter-card` 占 4 列；
+- 卡片使用 `--home-map-card-surface` 与 `--home-map-card-blur: 8px`；
+- `Magic Bento` 提供光标追踪与悬浮抬升效果；
+- 卡片内容（标题、描述、状态）从 `home-sections.ts` 动态读取。
+
+### home-sections.ts
+
+`src/lib/home-sections.ts` 从 Fumadocs `source.getPageTree(locale)` 提取 root folders 作为首页章节：
+
+- `getHomeChapters(locale)` 避免链接到不存在的栏目；
+- `getSearchChapterTags(locale)` 复用同一页面树，并以首段 slug 对齐服务端搜索索引标签。
+
+章节入口与搜索范围共享同一数据源，新增 Chapter 后会自然出现在两处。
+
+## 五、首页样式约束
+
+`src/styles/pages/home.css` 包含几项关键约束，避免视觉增强破坏布局。
+
+### .home-page 不加 overflow
+
+`.home-page` 刻意不添加 `overflow-x: clip/hidden`。任何非 `visible` 的 overflow 值都会为 `position: fixed` 后代创建包含块，使环境光球层相对此元素而非视口定位，产生 footer 下方空白。
+
+### .home-page::before 固定环境光
+
+`.home-page::before` 是主页专属固定环境光层：
+
+- 四个 `radial-gradient`（半径 28-34rem 自然柔和）；
+- 完全移除 `filter: blur()`，让 `transform` 动画完全在合成器上运行；
+- `contain: strict` 完全隔离，安全因为纯装饰、无子节点、已 `position: fixed`。
+
+### 渐进增强滚动视差
+
+`@supports (animation-timeline: scroll())` 检测支持时启用滚动视差，不支持时退化为静态布局。
+
+### Dark mode 调整
+
+- `.home-nav-shadow` 改为明亮辉光层（黑色投影在海军蓝画布上不可见）；
+- Mobile `html[data-nd-motion-level="high"]` 顶栏使用更高 blur 与 brightness/contrast 调整。
+
+## 六、首页 Footer
+
+`src/components/home/home-footer.tsx` 显示项目元信息：
+
+- `getGitInfo()` 读取 commitId 与 commitDateIso；
+- `(commitId @ date)` 格式：`white-space: pre-wrap` 保留 `@` 两侧空格；
+- Git commit ID 加粗，颜色与日期一致；
+- 双协议：代码 MIT、文档 CC BY-NC-SA 4.0；
+- 作者与合作者链接使用语义分组 `<span>`，而非依赖 flex 末尾空格。
+
+## 七、React Bits 组件库
+
+`src/components/react-bits/` 下是项目适配的 React Bits 组件：
+
+| 组件 | 作用 |
+| :--- | :--- |
+| `animated-content` | 滚动入场动画包装器 |
+| `gradual-blur` | 渐进模糊遮罩 |
+| `light-rays` | 光线扫射背景 |
+| `magic-bento` | 光标追踪 Bento 卡片 |
+| `magnet` | 磁吸效果按钮 |
+| `particle-text` | 粒子聚合文字 |
+| `split-text` | 文字拆分入场 |
+
+这些组件是项目从 React Bits 库适配而来，按需引入并通过 `contain` 与 `will-change` 控制 GPU 成本。
+
+## 八、沉浸式粒子交互
+
+`src/components/immersive-interaction-controller.tsx` 实现 HarmonyOS 风格光子场：沿指针路径连续生成小型圆点光子，响应式密度与平滑外散。
+
+### 选择器分组
+
+控制器为不同元素类型注册不同粒子行为：
+
+| 选择器常量 | 目标 | 行为 |
+| :--- | :--- | :--- |
+| `CONTROL_SELECTOR` | `.control-surface`、`.chapter-card`、`.mdx-doc-card`、`#nd-nav button` | 控件级粒子 |
+| `SURFACE_SELECTOR` | `.surface-panel`、`.glass-codeblock`、`.markdown-alert`、`.markdown-details` | 表面级粒子 |
+| `SIDEBAR_FOOTER_PARTICLE_HOST_SELECTOR` | 侧栏底部工具栏 | 整体作为粒子宿主 |
+| `CODE_TABS_PARTICLE_HOST_SELECTOR` | 代码 Tabs | 共享一个粒子层 |
+
+### 核心算法
+
+- `burstConfig()`：根据 `pointerType`（touch / pen / mouse）、surface 类型、motion level（medium 折半）调整粒子数与发射距离；
+- `emitBursts()`：计算粒子初始环带分布、行进方向、边缘距离、travel cap、sway；所有 CSS 自定义属性通过 `style.cssText` 单次赋值，减少 style reflow；
+- `processMoves()`：RAF 调度，插值指针采样（`MAX_INTERPOLATED_STEPS = 14`），同帧批次共享 fragment / append / trim / cleanup；
+- `getLayer()`：复用已挂载的 `.immersive-particle-layer`，设置 `contain: layout style paint` + `will-change: transform, opacity`，移除时清理。
+
+### 生命周期
+
+- `pointerdown`（capture）：测量 geometry、生成初始 burst、建立 session；
+- `pointermove`（capture, passive）：累积到 `pendingMoves`，RAF 批处理；
+- `pointerup/cancel`：结束 session，`scheduleClear` 延迟 2.8s 清理；
+- `visibilitychange`：暂停 RAF、清空 pendingMoves、设置 `data-page-hidden`；
+- `pagehide`：清理所有 sessions 与粒子层，避免 bfcache 返回时继承残留。
+
+### Chromium 兼容
+
+HTML-in-Canvas 子树导航卸载时，若链接内仍挂载合成粒子后代可能崩溃。所有指针类型在修改实验性子树前跳过瞬时反馈。
+
+### 粒子样式
+
+`src/styles/immersive-interactions.css` 定义粒子视觉：
+
+- 双主题粒子色：浅色用 `normal` 混合，深色用 `screen` 混合提升可见度；
+- `.immersive-particle-layer`：`contain: layout paint`、`border-radius` 与 `clip-path` 同步宿主圆角；
+- `::before` 径向光场 + linear-gradient 折射；
+- `.immersive-particle`：`backdrop-filter` 已移除（CSS filter 不被合成器加速），动画完全通过 `opacity` + `transform` 运行于合成器；
+- `.mermaid-wrapper` 刻意排除 `isolation: isolate`：isolation 会使元素成为 backdrop root，困住悬浮工具栏的 backdrop-filter。
+
+## 九、沉浸式滚动条与 TOC thumb
+
+`src/components/immersive-scrollbar.tsx` 实现自定义视口滚动条与 TOC thumb 连续追踪。
+
+### 视口滚动条
+
+- `nd-immersive-scrollbar-ready` 类标记已接管，`nd-immersive-scrollbar-active` 类隐藏原生滚动条；
+- `readMetrics()`：同时读取 html / body 指标，兼容文档布局切换滚动归属；
+- `updateChromeOffset()`：避让顶部固定 / 粘性控件（`#nd-nav`、`#nd-subnav`、TOC popover 等），缓存元素集合由 `MutationObserver` 失效；
+- 拖拽：`pointerdown` 检测是否击中 thumb，`setPointerCapture` 持续拖拽；
+- `visibilitychange` 暂停 RAF，恢复时同步执行一次 `applyMetrics()` 立即反映当前位置。
+
+### TOC thumb
+
+TOC thumb 遵循项目约束：
+
+- 颜色匹配 `--color-fd-primary`；
+- 4px 默认尺寸；
+- 使用 `default` 样式（非 `clerk`）启用连续滚动追踪；
+- `paused` 标志在标签页隐藏时跳过 RAF 调度。
+
+## 十、文档页渐进模糊
+
+`src/components/docs-page-gradual-blur.tsx` 在视口边缘对齐服务端渲染的正文卡片，实现渐进模糊效果：
+
+- `IntersectionObserver` 监听 card 与 footer 可见性；
+- `ResizeObserver` 仅在尺寸真正变化时更新；
+- 通过 `createPortal` 挂到 `document.body`，`data-visible` 控制显隐。
+
+## 十一、行内代码换行检测
+
+`src/components/inline-code-wrap-controller.tsx` 检测行内代码是否换行，标记 `data-inline-code-wrapped`：
+
+- 通过 `height > lineHeight * 1.5` 判断换行；
+- 批量读取所有可见分片几何后再统一写入属性，避免逐节点读写交错触发强制布局；
+- `MutationObserver` 监听文档正文变化（路由、字体、容器尺寸）；
+- `IntersectionObserver` 提前一屏测量；
+- `document.fonts.ready` 后再次调度，确保字体加载完成。
+
+## 十二、动效设置面板
+
+`src/components/docs-motion-settings.tsx` 与 Fumadocs `ThemeSwitch` 并排呈现：
+
+- Popover 内含三档动效单选（high / medium / low）与实验性动效开关；
+- 实验性不可用提示：low 档、不支持、系统减少动效三种情况；
+- 选择结果通过 `motion-preferences-provider` 写入 `data-nd-*` 属性与 localStorage。
+
+## 十三、性能策略
+
+### 让正文先出现
+
+- 文档页面和大多数 MDX 外壳保持服务端渲染；
+- 首页环境效果复用共享时钟和帧率预算；
+- 离屏高成本 MDX 区块使用浏览器 containment 延迟布局和绘制；
+- `DocsCommunity` 与正文隔离，iframe 高度变化不触发正文内部布局。
+
+### 控制持续工作
+
+- 持续动画优先使用 `transform` 与 `opacity`；
+- 指针移动和拖拽事件按帧合并；
+- 粒子按批次写入 DOM，不在每个原始事件中立即更新；
+- 页面离开或组件卸载时清理 Timer、RAF、Observer、监听器和临时节点。
+
+### Containment 隔离
+
+- `.home-page::before`、`body::before` 使用 `contain: strict` 完全隔离；
+- `.surface-panel`、`.chapter-card`、`.mdx-doc-card` 使用 `contain: layout style` 隔离 hover 变换；
+- 粒子层使用 `contain: layout style paint`；
+- 仅在元素存活期间设置 `will-change`，移除时清理。
+
+## 十四、移动端降级
+
+移动端优先保证正文宽度、导航可达和触控目标：
+
+- 大面积环境效果和持续粒子降低密度或关闭；
+- 工具栏保持紧凑分组，不依赖 Hover 才能完成操作；
+- 评论 iframe 使用自然高度，避免嵌套滚动；
+- 侧栏、目录与页面操作在小屏使用对应触发器。
+
+`prefers-reduced-motion` 会关闭非必要位移和持续动画；减少透明度偏好会让玻璃表面回退到更实的背景。降级只减少装饰与过渡，不移除正文、焦点、按钮标签或关键状态。
+
+## 十五、关键文件
+
+| 文件 | 职责 |
+| :--- | :--- |
+| `src/components/home/home-portal.tsx` | 首页三段式入口 |
+| `src/components/home/ambient-motion-controller.tsx` | 共享动画时钟 |
+| `src/components/home/ai-compute-backdrop.tsx` | AI 加速器背景 |
+| `src/components/home/chapter-grid.tsx` | 章节卡片网格 |
+| `src/components/home/hero-title.tsx` | Hero 标题动画 |
+| `src/components/home/home-footer.tsx` | 首页 Footer |
+| `src/lib/home-sections.ts` | 首页章节与搜索标签数据源 |
+| `src/styles/pages/home.css` | 首页样式与约束 |
+| `src/components/immersive-interaction-controller.tsx` | 粒子交互控制器 |
+| `src/components/immersive-scrollbar.tsx` | 视口滚动条与 TOC thumb |
+| `src/components/docs-page-gradual-blur.tsx` | 文档页渐进模糊 |
+| `src/components/inline-code-wrap-controller.tsx` | 行内代码换行检测 |
+| `src/components/docs-motion-settings.tsx` | 动效设置面板 |
+| `src/styles/immersive-interactions.css` | 沉浸式交互样式 |

@@ -1,0 +1,225 @@
+---
+title: 内容管线与 MDX 增强
+description: Frontmatter、MDX 组件、代码块、折叠内容、任务进度、Remark 插件与客户端边界
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] 本章 AI 摘要
+> 项目以 Fumadocs 的内容源和默认 MDX 组件为基础，通过统一 Schema、Remark / Rehype 插件链与共享组件注册表增加代码标题、语义折叠块、可交互任务、代码 Tabs、文件层级、文档卡片与长代码块降级。增强逻辑优先发生在构建期或服务端，只有复制、勾选、偏好同步等交互进入小型客户端边界。
+
+## 一、内容 Schema
+
+`source.config.ts` 在 Fumadocs `pageSchema` 上扩展项目字段：
+
+| 字段 | 类型 | 用途 |
+| :--- | :--- | :--- |
+| `author` | 字符串或字符串数组 | 主要作者 |
+| `contributor` / `contributors` | 字符串或字符串数组 | 正文后的贡献者 |
+| `draft` | 布尔值，默认 `false` | 显示草稿软门控 |
+| `todoProgress` | 布尔值，默认 `false` | 显示页面任务进度 |
+
+集中 Schema 让 Fumadocs 编译阶段直接校验 Frontmatter，也避免从标题、文件名或 DOM 猜测内容状态。
+
+## 二、作者解析与展示
+
+作者与贡献者使用 `Name(https://github.com/name)` 形式时，`src/lib/parse-author.ts` 会解析名称与 GitHub 地址：
+
+- 正则匹配 `Name(url)` 结构，分离显示名与主页 URL；
+- 从 GitHub URL 提取用户名，拼接头像地址；
+- 无 URL 时只保留名称；
+- 解析失败时原样返回字符串。
+
+`src/components/mdx/docs-author.tsx` 根据解析结果决定头像、链接与分隔符展示。解析规则集中在代码中，文章不需要嵌入 React 数据对象，也不需要在 Frontmatter 中拆分姓名与 URL 字段。
+
+## 三、共享组件注册表
+
+`src/components/mdx/index.ts` 先继承 Fumadocs 默认组件，再替换或增加项目能力：
+
+```text
+Fumadocs 默认 MDX 组件
+  + details → CollapsibleDetailsRenderer
+  + li      → MdxListItem
+  + pre     → CustomCodeBlock
+  + Mermaid
+  + Tabs / Tab
+  + DocCard / DocGrid
+  + FeatureCard / ResourceLink / LearningPath
+  + Files / Folder / File
+  + LongCodeBlock
+```
+
+`getMdxComponents()` 返回稳定的共享对象，也允许页面在必要时传入覆盖项。统一注册的价值不只是减少导入：它把哪些组件需要客户端运行、哪些可以服务端输出的决定集中到一个地方。
+
+## 四、Remark / Rehype 插件链
+
+`source.config.ts` 按以下顺序组装 MDX 插件，每个插件只承担单一职责：
+
+```text
+remarkCollapsibleAlert   → 语义折叠块语法
+remarkGithubAlert        → GitHub Alert 提示框
+remarkMath               → LaTeX 数学公式
+remarkMdxMermaid         → Mermaid 代码块标记
+remarkCodeTitle          → 代码块首行路径提取
+remarkLangAlias          → 非内置语言标识符重写
+remarkLongCodeBlock      → 超长代码块降级
+```
+
+Rehype 阶段优先接入 `rehypeKatex`，再接 Fumadocs 内置插件。
+
+### 语义折叠块
+
+`remark-collapsible-alert.ts` 扩展引用语法，支持 `[!DETAILS]`、`[!DETAILS+]`（默认展开）以及语义变体 `[!DETAILS-FAQ]`、`[!DETAILS-ANSWER]`、`[!DETAILS-EXAMPLE]`、`[!DETAILS-HINT]`、`[!DETAILS-AI]`。`detectLocale(file.path)` 从路径检测 zh / en，提供本地化默认标题；`splitInlineDetailsNodes()` 按第一个硬换行拆分标题与正文。渲染为 `<details>` + `<summary>`，`open` 属性由 `+` 标记控制。
+
+### GitHub Alert
+
+`remark-github-alert.ts` 支持 `[!NOTE|TIP|IMPORTANT|WARNING|CAUTION|INFO]`，复用 `remark-github-blockquote-alert` 的 octicons，`INFO` 别名复用 note 图标。`[!TYPE]` 后同行文本成为自定义标题，硬换行后为正文。
+
+### 代码块路径标题
+
+`remark-code-title.ts` 从代码块首行注释提取文件路径（`//`、`/* */`、`#`、`<!-- -->`），注入 `title="..."` 到代码围栏 meta 字符串，并从代码内容中移除该注释行。若已有 `title=` 则跳过。只有内容看起来像文件名或路径时才成立，普通说明注释不会被移走。
+
+### 语言别名重写
+
+`remark-lang-alias.ts` 把 Shiki 不内置的语言标识符改写为内置语法（如 `gitattributes → ini`），并通过 `originalLang` meta 属性保留原始语言名。这避免了 Shiki `langAlias` 路径——它会创建新的 highlighter 实例并破坏其他内置语言（如 bash）的懒加载。
+
+### 长代码块降级
+
+`remark-long-code-block.ts` 把超过 400 行的代码块替换为 `<LongCodeBlock>` MDX 组件，保留 `code`、`lang`（优先 `originalLang`）、`title` 属性。超长代码块若走 Shiki 正常管线会生成数千个 React 节点，压垮开发编译器；`LongCodeBlock` 渲染为单个原始文本节点，保留复制功能与玻璃外壳，但放弃语法高亮。
+
+## 五、代码块增强管线
+
+Fumadocs 与 Shiki 负责语法高亮，项目在这条管线上增加文件路径、语言图标、标题栏、复制按钮和 Tabs。
+
+```text
+首行路径注释
+  → remarkCodeTitle 提取路径并注入 title 元数据
+  → remarkLangAlias 重写非内置语言
+  → Shiki 生成高亮 HAST
+  → transformerMetaTitle 写入 pre.title 并恢复 originalLang 图标
+  → CustomCodeBlock 渲染统一标题栏
+```
+
+### Shiki 图标配置
+
+`source.config.ts` 的 `icon.extend` 为 20+ 语言注册自定义 SVG 图标（HTML、CSS、JS、TS、React、Vue、Python、Rust、Go、Shell、PowerShell、BAT、C、C++、C#、Java、JSON、YAML、TOML、INI、Vim、Text、LaTeX 等），`icon.shortcuts` 提供别名映射（`pwsh/ps1 → powershell`、`batch → bat`、`gitattributes → git`、`tex → latex`、`markdown/mdx → md`、`fish → shellscript`、`jsonc → json`）。PowerShell 与 CMD 图标在深色模式使用更亮的颜色变体以提升可读性。
+
+### transformerMetaTitle
+
+`transformer-meta-title.ts` 以 `enforce: 'post'` 在 Fumadocs `transformerIcon` 之后运行：从 meta 复制 `title` 到 `<pre>` properties；若 meta 含 `originalLang=...`，恢复原始语言名用于显示，并重新解析图标（因为 `transformerIcon` 用别名语言解析，无法命中原始语言的 shortcuts）。
+
+### CustomCodeBlock
+
+`src/components/mdx/custom-codeblock.tsx` 是服务端外壳，负责标题栏布局（语言图标 + 文件路径 + 复制按钮）。`CodeCopyButton` 才是客户端交互边界。路径行从正文代码中移除，复制按钮不会把标题注释重复复制进去。
+
+### 多语言 Tabs
+
+`Tabs` 和 `Tab` 使用内容型 Props：
+
+- `items` 声明可选项与顺序；
+- `groupId` 让多个示例同步兼容的选择；
+- `persist` 把偏好保存到 `localStorage`；
+- 某组没有目标选项时，保持自己的有效选择。
+
+`src/components/mdx/code-tabs.tsx` 在 Tabs 下方渲染滑动下划线指示器，通过 `ResizeObserver` 跟踪激活 Tab 的几何位置。Tabs 不把代码文本复制到另一份状态中，只观察 Fumadocs Tab 的激活状态并同步必要偏好。
+
+## 六、提示框与语义折叠块
+
+项目扩展引用语法，而不是要求作者为每个提示手写 JSX：
+
+| 处理器 | 输入 | 输出用途 |
+| :--- | :--- | :--- |
+| `remarkGithubAlert` | `NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION`、`INFO` | 语义提示框 |
+| `remarkCollapsibleAlert` | `DETAILS`、`FAQ`、`ANSWER`、`EXAMPLE`、`HINT`、`AI` | 语义 `details` |
+
+普通 `details` 由 `CollapsibleDetailsRenderer` 直接输出，保持服务端渲染。只有带 AI 语义的摘要使用 `CollapsibleDetails` 客户端组件，负责逐段揭示、光标与展开状态。
+
+这种边界避免了两个常见问题：为了折叠一段文字把整篇文章变成客户端组件；或者在运行时遍历 DOM，再根据引用文本猜测应该渲染成什么。
+
+## 七、任务项与进度
+
+作者继续使用标准 GFM 任务语法：
+
+```md
+- [x] 完成阅读
+- [ ] 执行实践
+```
+
+`MdxListItem` 在服务端区分普通列表和任务项。普通 `li` 保持原生；任务项才交给 `InteractiveTaskListItem`。
+
+任务状态使用下面的本地模型：
+
+```text
+storage key = 固定前缀 + 当前 pathname
+task key    = 规范化任务文字的稳定哈希
+value       = checked / unchecked
+```
+
+进度组件不再维护一份重复任务数组。它读取正文中已经渲染的任务复选框，并监听 `neoverse:task-state-change` 自定义事件更新完成数。这样不需要引入全局状态库，也不会让非任务列表承担客户端逻辑。
+
+`todoProgress: true` 只控制页面顶部是否出现统计卡片。每个任务本身即使没有统计卡片，仍可以勾选并在当前浏览器保存。
+
+## 八、文件层级与文档卡片
+
+`Files`、`Folder` 与 `File` 对 Fumadocs 文件树组件做项目级封装，用结构化 MDX 代替手绘字符树。`defaultOpen`、`disabled` 与 `title` 分别表达默认展开、叶子目录和补充说明。
+
+`DocCard` 与 `DocGrid` 用于少量高价值入口：
+
+- 站内链接使用统一转场链接；
+- 外部链接在新标签页打开，并添加安全的 `rel`；
+- 外部资源通过 `src/components/mdx/doc-card-site-icon.tsx` 渐进解析站点图标，失败时保留通用图标；
+- 卡片只暴露标题、目标和描述，表面效果属于实现细节。
+
+`FeatureCard`、`ResourceLink` 与 `LearningPath` 是 `DocCard` / `DocGrid` 的直接别名（`export const FeatureCard = DocCard`），使作者可以表达"功能""资源""学习路径"的内容意图，而不复制第二套视觉组件。使用直接别名而非包装函数，避免在 React 树中产生多余组件层级。
+
+## 九、草稿门控
+
+`draft: true` 不会从静态页面树移除文章。页面仍然参与构建，但正文初始处于 `inert` 和不可访问状态，由 `DocsDraftControls` 显示施工说明、上一篇或首页入口以及主动预览按钮。
+
+这种软门控适合提示"内容尚未稳定"，不是权限系统。任何敏感信息都不应进入已经生成的静态文件。
+
+## 十、页面作者、贡献者与操作
+
+文档页面根据 Frontmatter 决定是否显示作者和贡献者。`DocsPageActions` 同时得到：
+
+- `docs-source` 静态 Markdown 地址；
+- GitHub 中由 `page.data.info.fullPath` 推导的源文件地址。
+
+读者可以直接查看原始内容或定位到仓库文件。源地址从内容源生成，不要求作者在每篇文章中手写仓库路径。
+
+## 十一、服务端与客户端边界
+
+| 能力 | 默认边界 |
+| :--- | :--- |
+| 正文、代码高亮、普通提示和折叠块 | 服务端 |
+| 作者、贡献者、文档卡片、文件树 | 服务端 |
+| 复制按钮 | 小型客户端组件 |
+| 任务勾选与进度同步 | 任务项和进度卡片客户端化 |
+| Tabs 偏好与下划线指示器 | Tabs 客户端边界 |
+| AI 摘要逐段揭示 | 单个摘要客户端边界 |
+| Mermaid 缩放、拖拽与最大化 | 单张图表客户端边界 |
+| 长代码块 | 服务端（单个原始文本节点） |
+
+边界选择的原则是"交互在哪里，客户端就停在哪里"，而不是为了编写方便把整篇 MDX 页面客户端化。
+
+## 十二、关键文件
+
+| 文件 | 职责 |
+| :--- | :--- |
+| `source.config.ts` | Schema、Remark / Rehype 与 Shiki 配置 |
+| `src/components/mdx/index.ts` | 共享 MDX 组件注册表 |
+| `src/lib/parse-author.ts` | 作者名与 GitHub URL 解析 |
+| `src/lib/remark-code-title.ts` | 路径标题提取 |
+| `src/lib/remark-collapsible-alert.ts` | 语义折叠语法 |
+| `src/lib/remark-github-alert.ts` | GitHub Alert 语法 |
+| `src/lib/remark-lang-alias.ts` | 非内置语言标识符重写 |
+| `src/lib/remark-long-code-block.ts` | 超长代码块降级 |
+| `src/lib/transformer-meta-title.ts` | 标题属性转换与图标恢复 |
+| `src/components/mdx/custom-codeblock.tsx` | 代码块服务端外壳 |
+| `src/components/mdx/code-tabs.tsx` | Tabs 与滑动下划线 |
+| `src/components/mdx/task-list-item.tsx` | 服务端任务识别 |
+| `src/components/mdx/interactive-task-list-item.tsx` | 本地任务状态 |
+| `src/components/mdx/task-list-progress.tsx` | 页面进度派生 |
+| `src/components/mdx/doc-cards.tsx` | 文档卡片与语义别名 |
+| `src/components/mdx/doc-card-site-icon.tsx` | 站点图标渐进解析 |
+| `src/components/mdx/mdx-preview-shims.tsx` | VS Code MDX Preview 桥接 |

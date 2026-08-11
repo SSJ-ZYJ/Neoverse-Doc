@@ -1,0 +1,7 @@
+{
+  "title": "参与共建",
+  "description": "贡献流程与语法组件参考",
+  "icon": "GitPullRequest",
+  "defaultOpen": true,
+  "pages": ["index", "syntax-example"]
+}

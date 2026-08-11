@@ -1,0 +1,227 @@
+---
+title: 贡献指南
+description: 报告问题、改进内容或参与 Neoverse-Docs 开发
+author:
+  - "Shenshijun(https://github.com/SSJ-ZYJ)"
+---
+
+> [!DETAILS-AI] 本章 AI 摘要
+> 你可以通过 Issue、文档修正、翻译或 Pull Request 参与 Neoverse-Docs。修改前先确认问题与范围，保持静态优先、Server-first、Fumadocs-first 和现有设计语言；修改后根据影响运行 `bun lint`、`bun typecheck`、Mermaid 资源生成或生产构建。`bun check` 会写入工作区，不应当作只读检查。
+
+## 一、可以怎样贡献
+
+贡献不只意味着提交代码。以下改进都很有价值：
+
+- 报告事实错误、失效链接、无法复现的步骤或显示异常；
+- 改正文案、示例、图表、术语解释或学习路径；
+- 补充当前章节真正缺少的内容；
+- 修复可访问性、移动端、浅色 / 深色主题或性能问题；
+- 翻译已有内容，并保持术语与结构一致；
+- 参与代码审查，提供可验证的复现信息或替代方案。
+
+如果改动会明显影响架构、依赖、公共 API、内容 Schema、兼容性或用户数据，请先通过 [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) 说明背景与方案，不要直接提交大范围实现。
+
+## 二、提交 Issue
+
+### 报告问题
+
+提交前先搜索是否已有相同 Issue。一个可处理的问题报告通常包括：
+
+1. 出现问题的页面或功能；
+2. 能稳定触发问题的最小步骤；
+3. 实际结果与预期结果；
+4. 浏览器、操作系统和必要的版本信息；
+5. 截图、错误文本或最小复现（如果适用）。
+
+不要只写“不能用”或“显示不对”。越接近可复现事实，问题越容易被定位。
+
+### 提出内容或功能建议
+
+请说明建议服务于谁、解决什么问题、为什么现有内容或能力不足，以及你考虑过哪些更小的替代方案。视觉效果还应说明对阅读、移动端、浅色 / 深色主题、减少动态效果和性能的影响。
+
+## 三、建立开发环境
+
+### 前置要求
+
+- Node.js 20 或更高版本；
+- Bun 1.0 或更高版本；
+- Git。
+
+### Fork 与启动
+
+```bash
+# Fork 后克隆自己的仓库
+git clone https://github.com/<your-username>/Neoverse-Doc.git
+cd Neoverse-Doc
+
+# 保留官方仓库作为 upstream
+git remote add upstream https://github.com/SSJ-ZYJ/Neoverse-Doc.git
+
+# 安装依赖并生成 Fumadocs 内容文件
+bun install
+
+# 生成 Mermaid 资源并启动开发服务器
+bun dev
+```
+
+浏览器打开 `http://localhost:3000` 即可预览。不要在没有讨论的情况下新增、删除、升级或替换依赖；当前版本以 `package.json` 为准。
+
+### 常用命令
+
+| 命令 | 用途 | 是否写入工作区 |
+| :--- | :--- | :---: |
+| `bun dev` | 生成 Mermaid 资源并启动 Turbopack 开发服务器 | 是 |
+| `bun lint` | 运行 Biome Lint | 否 |
+| `bun typecheck` | 生成路由与内容类型，校验 MDX、Frontmatter 和 TypeScript | 是 |
+| `bun run generate:mermaid` | 重新生成 Mermaid 静态 SVG 与资源映射 | 是 |
+| `bun run build` | 生成 Mermaid 资源并执行生产静态构建 | 是 |
+| `bun format` | 使用 Biome 格式化工作区 | 是 |
+| `bun check` | 使用带 `--write` 的 Biome Check | **是** |
+| `bun run start` | 预览已经生成的 `out/` 静态产物 | 否 |
+
+> [!WARNING] `bun check` 不是只读检查
+> 它会修改工作区文件。执行 `bun format`、`bun check`、类型生成、Mermaid 生成或构建后，都应检查 `git status` 和 Diff，避免把无关变化带进 Pull Request。
+
+## 四、项目结构
+
+<Files>
+  <Folder name="Neoverse-Doc" defaultOpen>
+    <Folder name="content/docs" defaultOpen title="按 locale 组织的 Markdown / MDX 内容">
+      <Folder name="zh" disabled title="中文内容树" />
+      <Folder name="en" disabled title="英文内容树" />
+    </Folder>
+    <Folder name="public" disabled title="静态资源与 Mermaid 产物" />
+    <Folder name="scripts" disabled title="构建期生成脚本" />
+    <Folder name="src" defaultOpen>
+      <Folder name="app" disabled title="Next.js App Router 页面" />
+      <Folder name="components" disabled title="站点与 MDX 组件" />
+      <Folder name="dictionaries" disabled title="界面 i18n 字典" />
+      <Folder name="generated" disabled title="生成的资源映射" />
+      <Folder name="lib" disabled title="配置、内容源与工具函数" />
+    </Folder>
+    <File name="source.config.ts" title="内容 Schema 与 MDX 插件" />
+    <File name="next.config.ts" title="Next.js 与静态导出配置" />
+    <File name="package.json" title="依赖版本与命令" />
+    <File name="AGENTS.md" title="仓库级修改约束" />
+  </Folder>
+</Files>
+
+开始修改前，请先阅读根目录的 `AGENTS.md`、受影响文件及其调用方。README 是项目能力与技术栈的总览，实际行为仍以当前代码、配置和内容为准。
+
+## 五、实现约束
+
+### 保持最小改动
+
+- 只修改完成当前目标所必需的文件；
+- 不格式化、移动或重构无关代码；
+- 优先修复根因，不用额外定时器、高权重 CSS 或重复状态掩盖问题；
+- 保留工作区中不属于自己的未提交改动。
+
+### 保持现有架构
+
+- **Static-first**：不得破坏生产静态导出，也不要让核心功能依赖长期服务器、数据库、Server Action 或 Middleware。
+- **Server-first**：组件默认保持 Server Component，仅在状态、交互或浏览器 API 需要时添加小型客户端边界。
+- **Fumadocs-first**：页面树、MDX、目录、搜索和 i18n 优先使用现有 Fumadocs API。
+- **类型安全**：不要用 `any`、`@ts-ignore` 或不安全断言隐藏真实问题。
+- **现有设计系统优先**：复用 Token、组件与样式模式，同时检查移动端、浅色 / 深色主题和减少动态效果。
+
+新增用户可见 UI 文本必须接入 `src/dictionaries/` 的现有 i18n 体系，并同步当前语言字典。新增依赖需要先说明名称、用途、版本与现有方案不足之处。
+
+## 六、修改文档
+
+### 内容位置与文件类型
+
+站点内容位于 `content/docs/{locale}/`。普通 Markdown 使用 `.md`；需要 JSX 组件时使用 `.mdx`。页面已经通过 Frontmatter 提供标题时，正文从 `##` 开始。
+
+新增页面后，必须在同目录的 `meta.json` 中注册。若页面已经存在对应中英文版本，修改核心内容时应同步维护；当前只有中文的页面，不要为了形式完整擅自创建英文版本。
+
+### Frontmatter
+
+Frontmatter 必须符合 `source.config.ts` 的 Schema。除 Fumadocs 基础字段外，项目当前扩展字段包括：
+
+```yaml
+---
+title: 页面标题
+description: 页面描述
+author:
+  - "主要作者(https://github.com/your-name)"
+contributors:
+  - "贡献者(https://github.com/contributor-name)"
+draft: false
+todoProgress: false
+---
+```
+
+`author`、`contributor` 和 `contributors` 支持单个字符串或字符串数组；`draft` 与 `todoProgress` 默认均为 `false`。不要写入 Schema 未声明的自定义字段。
+
+### 正文规则
+
+- 代码块声明正确语言；命令、路径、配置项、API 和环境变量使用反引号；
+- 中文与英文、数字、缩写之间原则上保留一个半角空格；
+- 中文正文使用全角引号“”，代码与配置字符串保留英文引号；
+- 首次出现的陌生术语应就近解释，必要时链接到详细章节；
+- 站内链接使用 `/zh/docs/ch1/xxx` 或对应 locale 的绝对路径，能定位小节时附标题锚点；
+- Mermaid 只在图形表达明显优于文本时使用；修改图表后重新生成静态资源；
+- 文档中的版本、命令、路径和行为必须能由当前仓库或可靠官方资料验证。
+
+新增站点 MDX 组件时，还要在 `src/components/mdx/mdx-preview-shims.tsx` 导出，并在 `.mdx-previewrc.json` 注册，避免 VS Code MDX Preview 将其识别为未知组件。
+
+完整写法与渲染示例见 [语法与组件参考](./syntax-example)。
+
+## 七、选择验证范围
+
+| 修改范围 | 至少执行 |
+| :--- | :--- |
+| 纯 TypeScript / React / CSS 修改 | `bun lint`、`bun typecheck` |
+| Markdown / MDX 或 Frontmatter | `bun typecheck` |
+| Mermaid 内容或数量变化 | `bun run generate:mermaid`，并检查生成资源 |
+| 静态路由、构建配置或较大内容变更 | `bun run build` |
+| 使用了写入型格式化命令 | 检查 `git status` 与完整 Diff |
+
+验证应与改动风险匹配，不必机械运行所有命令；但不能声称没有实际执行的检查已经通过。
+
+## 八、提交 Pull Request
+
+### 建议流程
+
+1. 从最新 `main` 创建范围明确的分支；
+2. 完成一组聚焦修改，避免夹带无关格式化；
+3. 检查 `git status`、完整 Diff 和生成文件；
+4. 执行与修改范围匹配的验证；
+5. 使用清楚的提交信息并推送个人分支；
+6. 创建 Pull Request，说明问题、方案、验证结果和已知风险；
+7. 根据审查意见继续在同一分支修改。
+
+PR 描述应让审查者能够回答：为什么要改、改了什么、怎样验证、哪些内容没有验证，以及是否有截图或复现步骤。
+
+### 提交信息
+
+当前仓库建议使用：
+
+```text
+<类型>(<作用域>): <中文摘要>
+```
+
+常用类型包括 `feat`、`fix`、`docs`、`style`、`refactor`、`test`、`chore`、`ci` 与 `revert`。例如：
+
+```text
+docs(about): 重写贡献指南
+fix(search): 修复章节筛选状态
+feat(mdx): 新增学习路径组件
+```
+
+摘要保持简短；需要补充背景时，在空行后添加正文。PR 标题可以沿用相同格式。
+
+## 九、翻译原则
+
+- 先理解原文意图，再按目标语言习惯表达，不做逐词替换；
+- 保持标题层级、链接目标、代码行为和 Frontmatter 结构一致；
+- 统一专业术语，避免同一概念在相邻页面使用不同译名；
+- 代码中的用户可见输出与教学性注释按上下文翻译，语法标识符保持原样；
+- 翻译完成后单独检查 locale 路径、站内链接和页面注册。
+
+## 十、协作准则
+
+尊重其他贡献者及其时间，围绕事实和改动讨论；欢迎建设性批评，也请解释判断依据。不要公开私人信息，不要使用攻击性表达，不要通过大范围无关改动迫使审查者接受目标之外的变化。
+
+感谢你愿意让 Neoverse-Docs 变得更准确、更易读。遇到不确定的问题时，可以先在 [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) 中讨论。

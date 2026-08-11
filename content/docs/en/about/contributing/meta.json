@@ -1,0 +1,7 @@
+{
+  "title": "Contributing",
+  "description": "Contribution workflow and syntax reference",
+  "icon": "GitPullRequest",
+  "defaultOpen": true,
+  "pages": ["index", "syntax-example"]
+}

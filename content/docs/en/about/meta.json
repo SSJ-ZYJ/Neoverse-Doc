@@ -1,15 +1,7 @@
 {
-  "title": "Afterword & Contributing",
-  "description": "Learn about the structure, goals, and vision of this project, and join us in building it.",
+  "title": "About & Contributing",
+  "description": "Project rationale, architecture, and ways to contribute",
   "icon": "HeartHandshake",
-  "pages": [
-    "index",
-    "---About---",
-    "about",
-    "---Contributing---",
-    "guide",
-    "syntax-example",
-    "code-tabs-demo"
-  ],
+  "pages": ["index", "contributing", "project"],
   "root": true
 }
