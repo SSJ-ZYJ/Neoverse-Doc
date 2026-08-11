@@ -19,7 +19,9 @@
     "---Stage 4: Systems and Shell---",
     "1.11-Operating-Systems",
     "1.12-Shell-Basics",
-    "1.13-Shell-Text-Editing"
+    "1.13-Shell-Text-Editing",
+    "---Stage 6: Version Control---",
+    "1.15-Version-Control-Git"
   ],
   "root": true
 }
