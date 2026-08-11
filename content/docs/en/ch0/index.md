@@ -9,7 +9,7 @@ author:
 
 Neoverse-Docs is a continuously updated online learning document. It does not require you to know programming from the start, nor does it require you to read from the first page to the last: you can learn systematically by stage, follow a path around a specific goal, or search directly when you run into a concrete problem.
 
-For now, it is not a complete course on programming languages, algorithms, or computer theory, nor is it a software recommendation list to install everything from. We are gradually improving the content; contributions are welcome — see [how to contribute](/en/docs/about/guide).
+For now, it is not a complete course on programming languages, algorithms, or computer theory, nor is it a software recommendation list to install everything from. We are gradually improving the content; contributions are welcome — see [how to contribute](/en/docs/about/contributing).
 
 ## 2. What You Can Learn So Far
 
