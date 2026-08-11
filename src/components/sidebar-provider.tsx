@@ -12,7 +12,8 @@ import {
   SidebarProvider as FumadocsSidebarProvider,
   useSidebar,
 } from 'fumadocs-ui/layouts/docs/slots/sidebar';
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { ROUTE_TRANSITION_START_EVENT } from '@/components/transition/transition-types';
 
 const STORAGE_KEY = 'sidebar-collapsed';
 
@@ -23,8 +24,20 @@ interface SidebarProviderWrapperProps {
 }
 
 function SidebarStateSyncer() {
-  const { collapsed, setCollapsed } = useSidebar();
+  const { collapsed, mode, setCollapsed, setOpen } = useSidebar();
   const initialized = useRef(false);
+
+  useEffect(() => {
+    if (mode !== 'drawer') return;
+
+    // Fumadocs normally closes the drawer after pathname commits. Route intent
+    // is available at click time, so start closing immediately instead.
+    // Fumadocs 默认在 pathname 提交后才关闭抽屉；路由意图在点击时已经可用，
+    // 因此立即开始收回侧栏。
+    const closeDrawer = () => setOpen(false);
+    document.addEventListener(ROUTE_TRANSITION_START_EVENT, closeDrawer);
+    return () => document.removeEventListener(ROUTE_TRANSITION_START_EVENT, closeDrawer);
+  }, [mode, setOpen]);
 
   useLayoutEffect(() => {
     if (initialized.current) return;

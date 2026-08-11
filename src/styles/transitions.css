@@ -108,6 +108,17 @@
   background: transparent;
 }
 
+/* Mobile docs UI reserves z-40 for the sidebar drawer and its overlay. Keep
+   content particles above the article but below that modal navigation surface;
+   other full-page transition kinds retain the global top layer.
+   移动端文档侧栏及遮罩使用 z-40。content 粒子层保持在正文之上、模态导航
+   之下；其他全页转场继续使用全局顶层。 */
+@media (max-width: 767.98px) {
+  #nd-transition-layer[data-transition="content"] {
+    z-index: 30;
+  }
+}
+
 .nd-content-particle-canvas {
   position: absolute;
   inset: 0;
