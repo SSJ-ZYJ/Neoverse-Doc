@@ -25,6 +25,7 @@
 //   - Maple Mono NF CN：代码块字体（本地字体）
 
 import { Noto_Sans_SC, Orbitron } from 'next/font/google';
+import type { Metadata } from 'next';
 import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
 import { DeploymentSkewGuard } from '@/components/deployment-skew-guard';
@@ -35,6 +36,7 @@ import { MotionPreferencesProvider } from '@/components/motion-preferences-provi
 import { DOCS_REFRESH_RESTORE_BOOTSTRAP } from '@/lib/docs-reading-restore';
 import { i18n } from '@/lib/i18n';
 import { MOTION_PREFERENCES_BOOTSTRAP } from '@/lib/motion-preferences';
+import { AUTHOR_GITHUB_URL, AUTHOR_NAME, SITE_URL } from '@/lib/site-config';
 import '@/app/globals.css';
 // Route loading styles are imported at the root CSS entry for Turbopack tracking.
 // 路由加载样式在根 CSS 入口导入，确保 Turbopack 稳定追踪。
@@ -64,6 +66,15 @@ const notoSansSC = Noto_Sans_SC({
   weight: ['400', '500', '600', '700'],
   variable: '--font-noto-sans',
 });
+
+export const metadata: Metadata = {
+  metadataBase: SITE_URL,
+  applicationName: 'Neoverse-Docs',
+  authors: [{ name: AUTHOR_NAME, url: AUTHOR_GITHUB_URL }],
+  creator: AUTHOR_NAME,
+  publisher: AUTHOR_NAME,
+  category: 'education',
+};
 
 // Enables the HTML-in-Canvas origin trial for docs.shenshijun.space and its subdomains.
 // 为 docs.shenshijun.space 及其子域启用 HTML-in-Canvas Origin Trial。

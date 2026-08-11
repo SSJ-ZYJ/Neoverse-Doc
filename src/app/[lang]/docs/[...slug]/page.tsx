@@ -17,9 +17,12 @@ import { DocsPageGradualBlur } from '@/components/docs-page-gradual-blur';
 import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { TaskListProgress } from '@/components/mdx/task-list-progress';
+import { JsonLd } from '@/components/seo/json-ld';
 import { getPageDictionary } from '@/dictionaries';
-import { resolveLocale } from '@/lib/i18n';
-import { REPO_URL } from '@/lib/site-config';
+import { LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, resolveLocale } from '@/lib/i18n';
+import { parseAuthor } from '@/lib/parse-author';
+import { createBreadcrumbJsonLd, createTechArticleJsonLd, getDocumentSeoLinks } from '@/lib/seo';
+import { REPO_URL, SOCIAL_IMAGE } from '@/lib/site-config';
 import { source } from '@/lib/source';
 
 export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
@@ -101,8 +104,24 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   // 使用 default TOC 风格，内置沿 SVG 路径移动的滚动追踪指示点。clerk 风格没有 thumb 元素。
   return (
     <>
+      {!page.data.draft && (
+        <>
+          <JsonLd
+            id="tech-article-json-ld"
+            data={createTechArticleJsonLd({
+              author: page.data.author,
+              description: page.data.description,
+              locale,
+              title: page.data.title,
+              url: page.url,
+            })}
+          />
+          <JsonLd id="breadcrumb-json-ld" data={createBreadcrumbJsonLd(page.slugs, locale)} />
+        </>
+      )}
       <DeferredDocsPage
         data-docs-page-card=""
+        lang={LANGUAGE_TAGS[locale]}
         toc={page.data.toc}
         full={page.data.full}
         footer={{
@@ -138,9 +157,50 @@ export async function generateMetadata(
   const locale = resolveLocale(lang);
   const page = source.getPage(slug, locale);
   if (!page) notFound();
+  const isDraft = page.data.draft === true;
+  const { alternates, alternateOpenGraphLocales } = getDocumentSeoLinks(
+    page.slugs,
+    locale,
+    page.url,
+    isDraft,
+  );
+  const authors = page.data.author ? parseAuthor(page.data.author) : [];
 
   return {
     title: page.data.title,
     description: page.data.description,
+    authors: authors.map((author) => ({
+      name: author.name,
+      ...(author.url ? { url: author.url } : {}),
+    })),
+    alternates,
+    ...(isDraft
+      ? {
+          robots: {
+            index: false,
+            follow: true,
+            googleBot: {
+              index: false,
+              follow: true,
+            },
+          },
+        }
+      : {}),
+    openGraph: {
+      type: 'article',
+      url: page.url,
+      title: page.data.title,
+      description: page.data.description,
+      siteName: getPageDictionary(locale).siteTitle,
+      locale: OPEN_GRAPH_LOCALES[locale],
+      alternateLocale: alternateOpenGraphLocales,
+      images: [SOCIAL_IMAGE],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: page.data.title,
+      description: page.data.description,
+      images: [SOCIAL_IMAGE],
+    },
   };
 }

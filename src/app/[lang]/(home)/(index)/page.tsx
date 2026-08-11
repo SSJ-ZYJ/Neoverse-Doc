@@ -5,9 +5,11 @@
 import { HomeFooter } from '@/components/home/home-footer';
 import { HomeParticleScroll } from '@/components/home/home-particle-scroll';
 import { HomePortal } from '@/components/home/home-portal';
+import { JsonLd } from '@/components/seo/json-ld';
 import { getPageDictionary } from '@/dictionaries';
 import { getHomeChapters } from '@/lib/home-sections';
-import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
+import { generateLocaleStaticParams, LANGUAGE_TAGS, resolveLocale } from '@/lib/i18n';
+import { createWebSiteJsonLd } from '@/lib/seo';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
@@ -18,19 +20,22 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
   const chapters = getHomeChapters(locale);
 
   return (
-    <HomeParticleScroll>
-      {/* Keep the complete homepage surface inside the HTML-in-Canvas subtree so
-          its ambient background is captured together with the foreground content.
-          将完整首页表面置于 HTML-in-Canvas 子树内，使环境背景与前景内容一同捕获。 */}
-      <main className="home-page">
-        {/* The portal component keeps page structure semantic and effects encapsulated.
-            门户组件保持页面结构语义化，并封装底层效果。 */}
-        <HomePortal chapters={chapters} dict={dict} locale={locale} />
+    <>
+      <JsonLd id="website-json-ld" data={createWebSiteJsonLd(locale)} />
+      <HomeParticleScroll>
+        {/* Keep the complete homepage surface inside the HTML-in-Canvas subtree so
+            its ambient background is captured together with the foreground content.
+            将完整首页表面置于 HTML-in-Canvas 子树内，使环境背景与前景内容一同捕获。 */}
+        <main className="home-page" lang={LANGUAGE_TAGS[locale]}>
+          {/* The portal component keeps page structure semantic and effects encapsulated.
+              门户组件保持页面结构语义化，并封装底层效果。 */}
+          <HomePortal chapters={chapters} dict={dict} locale={locale} />
 
-        {/* Homepage footer with repository, Git commit, and author metadata.
-            首页底部信息，展示仓库、Git 提交与作者元信息。 */}
-        <HomeFooter locale={locale} />
-      </main>
-    </HomeParticleScroll>
+          {/* Homepage footer with repository, Git commit, and author metadata.
+              首页底部信息，展示仓库、Git 提交与作者元信息。 */}
+          <HomeFooter locale={locale} />
+        </main>
+      </HomeParticleScroll>
+    </>
   );
 }

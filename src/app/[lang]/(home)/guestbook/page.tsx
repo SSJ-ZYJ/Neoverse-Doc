@@ -5,10 +5,17 @@
 // 返回链接为来源感知：从文档页进入时还原来源文档页。
 
 import { MessageSquareText } from 'lucide-react';
+import type { Metadata } from 'next';
 import { Guestbook } from '@/components/guestbook';
 import { GuestbookReturnLink } from '@/components/guestbook-return';
 import { getPageDictionary } from '@/dictionaries';
-import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
+import {
+  generateLocaleStaticParams,
+  LANGUAGE_TAGS,
+  OPEN_GRAPH_LOCALES,
+  resolveLocale,
+} from '@/lib/i18n';
+import { SOCIAL_IMAGE } from '@/lib/site-config';
 
 // Stable Giscus term for the standalone guestbook across all locales.
 // 独立留言墙跨语言共用的稳定 Giscus 讨论标识。
@@ -16,13 +23,49 @@ const GUESTBOOK_SLUG_KEY = 'guestbook';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
+export async function generateMetadata(props: PageProps<'/[lang]/guestbook'>): Promise<Metadata> {
+  const { lang } = await props.params;
+  const locale = resolveLocale(lang);
+  const dict = getPageDictionary(locale);
+  const url = `/${locale}/guestbook`;
+
+  return {
+    title: dict.guestbookTitle,
+    description: dict.guestbookDesc,
+    alternates: { canonical: url },
+    robots: {
+      index: false,
+      follow: true,
+      googleBot: {
+        index: false,
+        follow: true,
+      },
+    },
+    openGraph: {
+      type: 'website',
+      url,
+      title: dict.guestbookTitle,
+      description: dict.guestbookDesc,
+      siteName: dict.siteTitle,
+      locale: OPEN_GRAPH_LOCALES[locale],
+      images: [SOCIAL_IMAGE],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: dict.guestbookTitle,
+      description: dict.guestbookDesc,
+      images: [SOCIAL_IMAGE],
+    },
+  };
+}
+
 export default async function GuestbookPage({ params }: PageProps<'/[lang]/guestbook'>) {
   const { lang } = await params;
   const locale = resolveLocale(lang);
   const dict = getPageDictionary(locale);
 
   return (
-    <main className="special-page guestbook-page">
+    <main className="special-page guestbook-page" lang={LANGUAGE_TAGS[locale]}>
       <div className="guestbook-page__inner">
         <div className="guestbook-page__header">
           {/* The back link restores the recorded source docs page when the

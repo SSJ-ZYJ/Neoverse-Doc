@@ -1,26 +1,41 @@
-// Root redirect: static export does not support middleware, so the client
-// redirects to the default locale while handing off the loading scene.
-// 根路径重定向：静态导出不支持 middleware，因此客户端跳转到默认语言并交接加载画面。
-'use client';
+// Root language gateway: static export keeps a crawlable page while the client
+// selects Chinese or English from browser language preferences.
+// 根语言分流入口：静态导出保留可抓取页面，客户端再按浏览器语言选择中英文入口。
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
-import { LocalizedLoading } from '@/components/localized-loading';
-import { i18n } from '@/lib/i18n';
-import { mountRouteLoadingHandoff } from '@/lib/route-loading-handoff';
+import type { Metadata } from 'next';
+import { LanguageGateway } from '@/components/language-gateway';
+import { getPageDictionary } from '@/dictionaries';
+import { SOCIAL_IMAGE } from '@/lib/site-config';
 
-export default function RootRedirect() {
-  const router = useRouter();
-  const hasRedirectedRef = useRef(false);
-  const defaultLocaleHref = `/${i18n.defaultLanguage}`;
+const zh = getPageDictionary('zh');
+const en = getPageDictionary('en');
 
-  useEffect(() => {
-    if (hasRedirectedRef.current) return;
+export const metadata: Metadata = {
+  title: zh.siteTitle,
+  description: `${zh.tagline} / ${en.tagline}`,
+  openGraph: {
+    type: 'website',
+    title: zh.siteTitle,
+    description: `${zh.tagline} / ${en.tagline}`,
+    siteName: zh.siteTitle,
+    images: [SOCIAL_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: zh.siteTitle,
+    description: `${zh.tagline} / ${en.tagline}`,
+    images: [SOCIAL_IMAGE],
+  },
+  robots: {
+    index: false,
+    follow: true,
+    googleBot: {
+      index: false,
+      follow: true,
+    },
+  },
+};
 
-    hasRedirectedRef.current = true;
-    mountRouteLoadingHandoff();
-    router.replace(defaultLocaleHref);
-  }, [defaultLocaleHref, router]);
-
-  return <LocalizedLoading />;
+export default function RootLanguageGateway() {
+  return <LanguageGateway />;
 }

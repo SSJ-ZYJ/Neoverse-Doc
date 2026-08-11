@@ -15,6 +15,9 @@ export const zh = {
   // 可视化加载跑马灯标签。
   loadingMarquee: 'LOADING...',
   enterDocs: '进入文档',
+  languageGatewayTitle: '选择阅读语言',
+  languageGatewayDescription: '本站会根据浏览器语言自动选择入口，你也可以手动进入中文站点。',
+  languageGatewayAction: '进入中文站点',
   guestbookTitle: '留言板',
   guestbookDesc: '在这里留下你对 Neoverse-Docs 的建议与反馈',
   communityTitle: '讨论区',

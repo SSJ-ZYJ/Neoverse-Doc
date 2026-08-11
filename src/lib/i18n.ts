@@ -13,9 +13,25 @@ export const i18n = defineI18n({
   defaultLanguage: 'zh',
   languages: ['zh', 'en'],
   parser: 'dir',
+  // Missing translations must not inherit Chinese pages under English URLs;
+  // canonical and hreflang relationships only describe real localized files.
+  // 缺失译文不得在英文 URL 下继承中文页面；canonical 与 hreflang 只描述真实文件。
+  fallbackLanguage: null,
 });
 
 export type Locale = (typeof i18n.languages)[number];
+
+// Standards-facing language tags and Open Graph locale identifiers.
+// 面向 HTML、hreflang 与 Open Graph 标准的语言标识。
+export const LANGUAGE_TAGS = {
+  zh: 'zh-CN',
+  en: 'en',
+} as const satisfies Record<Locale, string>;
+
+export const OPEN_GRAPH_LOCALES = {
+  zh: 'zh_CN',
+  en: 'en_US',
+} as const satisfies Record<Locale, string>;
 
 // Locale validation — single source of truth for the "is this a supported locale" check.
 // 语言校验：唯一来源，避免各处重复实现 includes 判断。

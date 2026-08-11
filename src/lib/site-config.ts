@@ -8,6 +8,20 @@
 // GitHub 仓库地址，布局导航链接与 Giscus 配置共用。
 export const REPO_URL = 'https://github.com/SSJ-ZYJ/Neoverse-Doc';
 
+// Canonical production origin — shared by metadata, sitemap, robots, and JSON-LD.
+// 生产环境规范来源，供 metadata、sitemap、robots 与 JSON-LD 共用。
+export const SITE_ORIGIN = 'https://docs.shenshijun.space';
+export const SITE_URL = new URL(SITE_ORIGIN);
+
+// Shared social preview asset metadata.
+// 统一的社交分享预览图元信息。
+export const SOCIAL_IMAGE = {
+  url: '/opengraph-image.png',
+  alt: 'Neoverse-Docs',
+  width: 1200,
+  height: 630,
+} as const;
+
 // Homepage footer project metadata.
 // 首页 footer 项目元信息。
 export const PROJECT_START_YEAR = 2026;

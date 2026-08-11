@@ -15,6 +15,10 @@ export const en = {
   // 可视化加载跑马灯标签。
   loadingMarquee: 'LOADING...',
   enterDocs: 'Enter',
+  languageGatewayTitle: 'Choose your language',
+  languageGatewayDescription:
+    'The site chooses an entry from your browser language, or you can continue in English.',
+  languageGatewayAction: 'Continue in English',
   guestbookTitle: 'Guestbook',
   guestbookDesc: 'Leave your suggestions and feedback for Neoverse-Docs here',
   communityTitle: 'Discussion',

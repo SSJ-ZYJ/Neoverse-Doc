@@ -21,6 +21,10 @@ export interface Dictionary {
   // 可视化加载跑马灯标签。
   loadingMarquee: string;
   enterDocs: string;
+  // Root language gateway fallback / 根语言分流入口兜底文案
+  languageGatewayTitle: string;
+  languageGatewayDescription: string;
+  languageGatewayAction: string;
   guestbookTitle: string;
   guestbookDesc: string;
   communityTitle: string;
