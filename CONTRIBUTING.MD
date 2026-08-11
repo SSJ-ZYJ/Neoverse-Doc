@@ -302,7 +302,7 @@ class Sort { static void demo() {} }
 - `items` 数组顺序决定 Tab 顺序，`<Tab value="...">` 必须与 `items` 中的字符串完全一致。
 - 每个 `<Tab>` 内可放任意 Markdown 内容，并不限定代码块；代码块首行注释（如 `// src/foo.cpp`）仍会被自动提取为文件路径标题，复制按钮、Shiki 高亮等装饰与普通代码块完全一致。
 - 多语言代码块的语言选择条与内部代码块共用一个点击粒子表面，内部复制操作不会形成独立的粒子区域。
-- 完整的运行示例见 [`content/docs/zh/about/code-tabs-demo.mdx`](content/docs/zh/about/code-tabs-demo.mdx)。
+- 完整的运行示例见 [https://docs.shenshijun.space/zh/docs/about/syntax-example] 的「多语言代码块」一节。
 
 ### AI 摘要折叠块
 
