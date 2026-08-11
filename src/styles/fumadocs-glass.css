@@ -1233,6 +1233,8 @@ button[data-theme-toggle]:focus-visible {
 }
 
 .docs-motion-levels {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.25rem;
@@ -1243,8 +1245,38 @@ button[data-theme-toggle]:focus-visible {
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 46%, transparent);
 }
 
+/* One shared glass indicator slides between all three motion levels, so state
+   changes preserve spatial continuity instead of cross-fading separate pills.
+   三个动效档位共享一个玻璃指示块，在列之间平滑移动，避免独立按钮背景
+   交叉淡入淡出造成跳变。 */
+.docs-motion-levels::before {
+  position: absolute;
+  z-index: 0;
+  inset-block: 0.25rem;
+  inset-inline-start: 0.25rem;
+  inline-size: calc((100% - 1rem) / 3);
+  border-radius: var(--glass-secondary-inner-radius);
+  background: var(--glass-control-active-tint);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 0.35rem 1rem -0.75rem color-mix(in srgb, var(--accent-primary) 55%, transparent);
+  content: "";
+  pointer-events: none;
+  transform: translateX(0);
+  transition: transform var(--motion-standard) var(--motion-ease-emphasized);
+}
+
+.docs-motion-levels[data-level="medium"]::before {
+  transform: translateX(calc(100% + 0.25rem));
+}
+
+.docs-motion-levels[data-level="high"]::before {
+  transform: translateX(calc(200% + 0.5rem));
+}
+
 .docs-motion-levels > label {
   position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1274,10 +1306,8 @@ button[data-theme-toggle]:focus-visible {
 
 .docs-motion-levels > label[data-active] {
   color: var(--text-primary);
-  background: var(--glass-control-active-tint);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    0 0.35rem 1rem -0.75rem color-mix(in srgb, var(--accent-primary) 55%, transparent);
+  background: transparent;
+  box-shadow: none;
 }
 
 @media (hover: hover) {
@@ -1377,6 +1407,10 @@ button[data-theme-toggle]:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .docs-motion-levels::before {
+    transition: none;
+  }
+
   :is(#nd-sidebar, #nd-sidebar-mobile)
     button[data-motion-settings-trigger][aria-haspopup="dialog"]
     > svg,
@@ -1391,6 +1425,10 @@ button[data-theme-toggle]:focus-visible {
     > svg {
     transform: none;
   }
+}
+
+html[data-nd-motion-level="low"] .docs-motion-levels::before {
+  transition: none;
 }
 
 html[data-nd-motion-level="low"]

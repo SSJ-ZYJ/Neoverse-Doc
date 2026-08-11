@@ -76,7 +76,7 @@ function DocsMotionSettings() {
 
         <fieldset className="docs-motion-settings-fieldset">
           <legend>{dict.motionLevelLabel}</legend>
-          <div className="docs-motion-levels">
+          <div className="docs-motion-levels" data-level={preferences.level}>
             {MOTION_LEVELS.map((level) => (
               <label data-active={preferences.level === level ? '' : undefined} key={level}>
                 <input
