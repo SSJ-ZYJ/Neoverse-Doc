@@ -329,7 +329,7 @@ git switch main               # Switch to the target branch first
 git merge feature             # Merge feature
 ```
 
-If the current branch is a direct ancestor of the branch being merged, Git may perform a **fast-forward**: it only moves the current branch reference and creates no merge commit. If both branches have commits after their common ancestor, Git usually performs a **three-way merge** based on the common ancestor and may create a merge commit; files that cannot be resolved automatically cause conflicts (see the next section). Whether to force a merge commit can follow the project convention with `--no-ff`.
+If the branch being merged already contains all of the current branch's commits, Git may perform a **fast-forward**: it only moves the current branch reference and creates no merge commit. If both branches have new commits after the fork point, Git usually performs a **three-way merge** based on the fork point and may create a merge commit; files that cannot be resolved automatically cause conflicts (see the next section). Whether to force a merge commit can follow the project convention with `--no-ff`.
 
 ```bash
 git merge --ff-only feature   # Fast-forward only; fails if it can't, no merge commit
@@ -352,7 +352,7 @@ gitGraph
 
 `main` simply moves its reference directly to the tip of `feature` (F), creating no merge commit.
 
-**Three-way merge: both branches have commits after their common ancestor**
+**Three-way merge: both branches have new commits after the fork point**
 
 ```mermaid
 gitGraph
@@ -368,7 +368,7 @@ gitGraph
     commit id: "D"
 ```
 
-The two branches advance separately after the common ancestor B; Git does a three-way merge based on the common ancestor and produces merge commit M.
+The two branches advance separately after the fork point B; Git does a three-way merge based on the fork point and produces merge commit M.
 
 ### 9.3 Rebasing
 
