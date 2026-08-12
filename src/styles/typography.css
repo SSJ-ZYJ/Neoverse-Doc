@@ -1242,10 +1242,10 @@ figure.shiki .line > span:empty::before {
   padding-bottom: 0;
 }
 
-/* Direct ordered-list markers align with the surrounding paragraph edge.
+/* Direct list markers align with the surrounding paragraph edge.
    Nested lists retain their normal indentation hierarchy.
-   直属有序列表的序号与相邻正文左边缘对齐，嵌套列表继续保留正常层级缩进。 */
-.markdown-details > ol {
+   直属列表的标记与相邻正文左边缘对齐，嵌套列表继续保留正常层级缩进。 */
+.markdown-details > :is(ul, ol) {
   margin-inline-start: var(--markdown-details-content-inline);
 }
 
