@@ -418,7 +418,9 @@ rebase 后 `feature` 看起来像从 `main` 顶端（C）接着开发，E'、F' 
 
 ### 9.4 detached HEAD
 
-通常 `HEAD` 指向当前分支；执行 `git checkout a1b2c3d` 或 `git switch --detach a1b2c3d` 后，`HEAD` 会直接指向某个提交，处于 **detached HEAD** 状态。此时可以查看历史或临时测试，但直接创建的新提交不属于任何分支，离开前应创建分支保存它：
+通常 `HEAD` 指向当前分支。
+
+执行 `git checkout a1b2c3d` 或 `git switch --detach a1b2c3d` 后，`HEAD` 会直接指向某个提交，处于 **detached HEAD** 状态。此时可以查看历史或临时测试，但直接创建的新提交不属于任何分支，离开前应创建分支保存它：
 
 ```bash
 git switch --detach a1b2c3d
@@ -595,9 +597,13 @@ git branch recovery HEAD@{2}      # 创建恢复分支，不覆盖当前工作�
 ## 十五、值得我们思考的问题
 
 > [!DETAILS-FAQ] rebase 和 merge 有什么区别？什么时候使用？
-> `merge` 保留分支结构并产生合并提交，历史如实记录分支何时汇合；`rebase` 把提交重新应用到目标分支顶端，得到线性历史，但会生成新的提交哈希。
+> `merge` 保留分支结构并产生合并提交，历史如实记录分支何时汇合。
 >
-> 判断依据主要是历史是否已被共享：已经推送到远程或多人协作的分支，优先使用 `merge` 而不是改写历史；尚未推送的本地分支，可以根据项目约定选择，想要整洁的线性历史时用 `rebase`。冲突处理上 `merge` 一次解决，`rebase` 可能需要在重放的每个提交上逐个解决。具体取舍仍以项目约定为准。
+> `rebase` 把提交重新应用到目标分支顶端，得到线性历史，但会生成新的提交哈希。
+>
+> 判断依据主要是历史是否已被共享：已经推送到远程或多人协作的分支，优先使用 `merge` 而不是改写历史。
+>
+> 尚未推送的本地分支，可以根据项目约定选择，想要整洁的线性历史时用 `rebase`。冲突处理上 `merge` 一次解决，`rebase` 可能需要在重放的每个提交上逐个解决。具体取舍仍以项目约定为准。
 
 ## 十六、值得我们进一步阅读的资料
 
@@ -624,5 +630,5 @@ Bilibili 合集「从零开始深入 git」（UP 主：寰宇牛奶unimilk，[�
 | 10 | Remote、clone、简单推拉与协作准备 | 四、基本工作流；十一、远程仓库操作 |
 | 11 | fetch、push、pull、force push、force-with-lease | 十一、远程仓库操作 |
 | 12 | 小团队、企业与大型开源项目的协作 Workflow | 十一、远程仓库操作；十五、值得我们思考的问题 |
-| 13-A | GitHub 账户授权、分支保护、PR、Issue、Releases | [1.16 GitHub 与 CNB](/zh/docs/ch1/1.16-GitHub-CNB) |
-| 13-B | 参与大型开源项目 | [1.16 GitHub 与 CNB](/zh/docs/ch1/1.16-GitHub-CNB) |
+| 13-A | GitHub 账户授权、分支保护、PR、Issue、Releases | [1.16 代码托管平台](/zh/docs/ch1/1.16-Code-Hosting-Platform) |
+| 13-B | 参与大型开源项目 | [1.16 代码托管平台](/zh/docs/ch1/1.16-Code-Hosting-Platform) |

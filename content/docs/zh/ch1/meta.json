@@ -26,7 +26,7 @@
     "1.14-Environment-Setup",
     "---Stage 6：版本控制---",
     "1.15-Version-Control-Git",
-    "1.16-GitHub-CNB",
+    "1.16-Code-Hosting-Platform",
     "---Stage 7：容器化与编排---",
     "1.17-Docker-Basics",
     "1.18-Kubernetes-Basics"
