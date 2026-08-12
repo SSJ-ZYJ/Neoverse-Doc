@@ -21,7 +21,9 @@
     "1.12-Shell-Basics",
     "1.13-Shell-Text-Editing",
     "---Stage 6: Version Control---",
-    "1.15-Version-Control-Git"
+    "1.15-Version-Control-Git",
+    "---Stage 7: Containers and Orchestration---",
+    "1.17-Docker-Basics"
   ],
   "root": true
 }
