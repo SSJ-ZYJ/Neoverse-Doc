@@ -21,6 +21,7 @@ export const MERMAID_ASSET_PATHS: Readonly<Record<string, string>> = {
   '37352deba423d6e9': '0e613afd24b75a8ce7336c58.svg',
   '41e73480b7517c0c': '3a01d51ee76d16ba61dcf444.svg',
   '44202bc8670d7e39': '74905fc6213c229c741846fa.svg',
+  '449cbb382511a5ed': '8b9db7dadb9afc62b672a2dc.svg',
   '48f2c85538e87b72': '103e33d20816c81069c80dd1.svg',
   '49cb5fadffbf3eaa': '883432ab3e90c029384834b5.svg',
   '4afcaac189084bc5': '20502ce704eccf924d44c2be.svg',
