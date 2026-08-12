@@ -147,7 +147,7 @@ git config --local --list --show-origin
 `--system` may require administrator privileges; the command can fail if the file is missing or you lack permission. Project-specific settings should go into the local-level configuration, and personal defaults into the global level. When identity, proxy, or credentials are involved, confirm the current source before changing anything.
 
 > [!WARNING] Associating Your Commit Email with an Account
-> If you want commits to be associated with your GitHub account, use an email verified in your GitHub account (recommended) or the `noreply` email provided by GitHub. The commit identity and login credentials are two different things; before changing anything, you can check the locally configured email with `git config --global --get user.email`.
+> If you want commits to be associated with your GitHub account, use an email verified in your GitHub account or the `noreply` email provided by GitHub (not recommended if you haven't added your personal email to your account). The commit identity and login credentials are two different things; before changing anything, you can check the locally configured email with `git config --global --get user.email`.
 
 ## 4. Basic Workflow
 

@@ -7,7 +7,7 @@ author:
 ---
 
 > [!DETAILS-AI] 本节 AI 摘要
-> 本节从工作区、暂存区和提交历史讲起，介绍 Git 的日常提交、分支协作、冲突处理与撤销方法。重点是先判断改动位于哪里，再选择不会误伤其他内容的命令。
+> 本节围绕工作区、暂存区和提交历史，介绍 Git 的日常提交、分支协作、冲突处理与撤销方法。重点是先判断改动位于哪里，再选择不会误伤其他内容的命令。
 
 ## 一、版本控制
 
@@ -47,6 +47,8 @@ Git 诞生于 2005 年，作者是 Linux 内核创始人 Linus Torvalds，最初
 > - `git blame`：查看每一行代码是谁写的、什么时候改的
 > - `git log` / `git cherry-pick`：回滚更改，或将某些更改应用到其他分支
 > - `git branch`：在不同分支上开发不同功能，多人协作互不干扰
+>
+> <div className="text-right">—— 引自 [SAST Summer Training 2024 · Git](https://summer24.net9.org/basic/linux_git/Git/#intro)。</div>
 
 ## 二、Git 的核心概念
 
@@ -147,7 +149,7 @@ git config --local --list --show-origin
 `--system` 可能需要管理员权限；没有对应文件或权限不足时命令可能失败。项目专属设置应写入本地级配置，个人默认值写入全局级配置。涉及身份、代理和凭据时，先确认当前来源，再修改。
 
 > [!WARNING] 提交邮箱与账户关联
-> 如果希望提交关联到 GitHub 账户，应使用 GitHub 账户中已验证的邮箱（推荐）或 GitHub 提供的 `noreply` 邮箱。提交身份与登录凭据两者并不同，修改前可用 `git config --global --get user.email` 检查本地配置的邮箱。
+> 如果希望提交关联到 GitHub 账户，应使用 GitHub 账户中已验证的邮箱或 GitHub 提供的 `noreply` 邮箱（未添加个人邮箱到 GitHub 账户时，不推荐）。提交身份与登录凭据两者并不同，修改前可用 `git config --global --get user.email` 检查本地配置的邮箱。
 
 ## 四、基本工作流
 
