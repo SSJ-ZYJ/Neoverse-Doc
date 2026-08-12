@@ -662,11 +662,11 @@ body:has(> [data-reading-return]) .docs-back-to-top {
     border-color var(--motion-fast) var(--motion-ease-standard) !important;
 }
 
-/* Sidebar document groups are disclosure controls, not immersive action
-   buttons. Their hierarchy stays quieter than the active document while using
-   the same navigation tint on desktop and mobile.
-   侧栏文档组属于展开控件而非沉浸式操作按钮；桌面端与移动端统一复用导航
-   背景，同时保持低于当前文档的视觉层级。 */
+/* Sidebar document groups are disclosure controls. An open folder no longer
+   keeps a persistent surface, so only the current document stays highlighted
+   while the folder remains quiet; transient hover feedback still applies.
+   侧栏文档组属于展开控件；展开状态下不再常驻背景色，保证侧栏中只有当前
+   文档保持高亮，文档夹自身保持安静；鼠标悬浮时的瞬时 hover 反馈保留。 */
 :is(#nd-sidebar, #nd-sidebar-mobile) button[data-state][aria-expanded]:not([aria-haspopup]) {
   color: var(--text-secondary) !important;
   background: transparent !important;
@@ -679,7 +679,6 @@ body:has(> [data-reading-return]) .docs-back-to-top {
 :is(#nd-sidebar, #nd-sidebar-mobile)
   button[data-state="open"][aria-expanded="true"]:not([aria-haspopup]) {
   color: var(--text-primary) !important;
-  background: var(--docs-sidebar-hover-background) !important;
 }
 
 :is(#nd-sidebar, #nd-sidebar-mobile)
