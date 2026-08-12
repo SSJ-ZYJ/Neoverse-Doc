@@ -4,10 +4,7 @@
 
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import {
-  releaseRouteLoadingHandoff,
-  shouldSuppressHomeRouteEntry,
-} from '@/features/transition';
+import { releaseRouteLoadingHandoff, shouldSuppressHomeRouteEntry } from '@/features/transition';
 import { useNavigationSnapshot } from '@/runtime/navigation/use-navigation';
 
 export default function Template({ children }: { children: ReactNode }) {

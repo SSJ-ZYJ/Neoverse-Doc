@@ -3,6 +3,8 @@
   "description": "The things we should know",
   "icon": "GraduationCap",
   "pages": [
+    "---Stage 0: Prologue---",
+    "index",
     "---Stage 1: Windows and Everyday Tools---",
     "1.1-File-Management",
     "1.2-Windows-Settings",
