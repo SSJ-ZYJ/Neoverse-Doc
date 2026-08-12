@@ -8,22 +8,22 @@ import { findNeighbour } from 'fumadocs-core/page-tree';
 import { DocsBody, DocsDescription, DocsTitle, PageFooter } from 'fumadocs-ui/layouts/docs/page';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { DeferredDocsPage } from '@/components/deferred-docs-page';
+import { DeferredDocsPage } from '@/adapters/fumadocs/deferred-docs-page';
+import { source } from '@/adapters/fumadocs/source';
 import { DocsBackToTop } from '@/components/docs-back-to-top';
-import { DocsCommunity } from '@/components/docs-community';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
 import { DocsPageActions } from '@/components/docs-page-actions';
 import { DocsPageGradualBlur } from '@/components/docs-page-gradual-blur';
 import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
-import { TaskListProgress } from '@/components/mdx/task-list-progress';
 import { JsonLd } from '@/components/seo/json-ld';
 import { getPageDictionary } from '@/dictionaries';
+import { DocsCommunity } from '@/features/community';
+import { TaskListProgress } from '@/features/tasks';
 import { LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, resolveLocale } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
 import { createBreadcrumbJsonLd, createTechArticleJsonLd, getDocumentSeoLinks } from '@/lib/seo';
 import { REPO_URL, SOCIAL_IMAGE } from '@/lib/site-config';
-import { source } from '@/lib/source';
 
 export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   const { slug, lang } = await props.params;

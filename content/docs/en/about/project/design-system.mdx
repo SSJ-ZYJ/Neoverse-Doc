@@ -10,34 +10,25 @@ author:
 
 ## 1. Styles Directory Structure
 
-`src/app/globals.css` is the aggregation entry point; actual rules are split by responsibility into `src/styles/`:
+`src/app/globals.css` is the aggregation entry point; shared foundations and feature-private styles are split by ownership:
 
 ```text
-src/styles/
-├── theme.css              # Tailwind / Fumadocs base mapping
-├── tokens.css             # colors, surfaces, radii, shadows, spacing, and motion
-├── motion.css             # entrance animations and reduced-motion
-├── glass.css              # glass surfaces and controls
-├── fumadocs-glass.css     # Fumadocs component overrides
-├── typography.css         # body text, code, blockquotes, and callouts
-├── transitions.css        # page transitions
-├── mermaid.css            # diagram theme and nodes
-├── loading.css            # route loading
-├── giscus.css             # comment styles
-├── mdx-files.css          # file hierarchy styles
-├── search-spotlight.css   # search spotlight
-├── immersive-interactions.css # immersive interactions
-├── a11y.css               # accessibility and transparency fallbacks
-└── pages/                 # page-level structure
-    ├── home.css
-    └── special.css
+src/
+├── ui/
+│   ├── tokens/tokens.css         # colors, surfaces, radii, shadows, spacing, motion
+│   ├── surfaces/glass.css        # glass surfaces and controls
+│   └── styles/                   # Theme, Motion, Typography, and A11y
+├── adapters/fumadocs/styles.css  # Fumadocs component overrides
+├── features/*/styles.css         # Search, Tasks, Mermaid, Transition, Community
+├── runtime/interaction/styles.css
+└── styles/                       # Loading, MDX file trees, and page-level structure
 ```
 
-Each file takes a single responsibility; visual tweaks prefer replacing Tokens or existing surfaces over stacking a second glass, Glow, or shadow system.
+Task, Mermaid, Transition, Community, Search Spotlight, and Interaction styles follow their owners; page layout and a small number of global integration rules remain in `src/styles/`. Visual tweaks prefer replacing Tokens or existing surfaces over stacking a second glass, Glow, or shadow system.
 
 ## 2. Semantic Token System
 
-`src/styles/tokens.css` is the single source of truth for all visual decisions, providing dual variable sets for light (`:root, .light`) and dark (`.dark`).
+`src/ui/tokens/tokens.css` is the single source of truth for all visual decisions, providing dual variable sets for light (`:root, .light`) and dark (`.dark`).
 
 ### Token Categories
 
@@ -69,7 +60,7 @@ Tokens bridge to the Fumadocs UI color system through the `--color-fd-*` and `--
 
 ## 3. Glassmorphism System
 
-`src/styles/glass.css` implements the unified glass visual language.
+`src/ui/surfaces/glass.css` implements the unified glass visual language.
 
 ### The Trio Structure
 
@@ -107,7 +98,7 @@ Each glass surface consists of the `border + backdrop-filter + box-shadow` trio:
 
 ## 4. Theme Entry Point and Tailwind Mapping
 
-`src/styles/theme.css` is the integration point for Tailwind v4 and Fumadocs:
+`src/ui/styles/theme.css` is the integration point for Tailwind v4 and Fumadocs:
 
 ```text
 @import "tailwindcss"
@@ -143,11 +134,11 @@ A theme switch makes code highlighting, tables, and diagram nodes in long docume
 
 ### Mermaid Theme Adaptation
 
-Mermaid static SVGs adapt to the theme via CSS variables and project class names, so there is no need to generate two diagram sets for light and dark. `src/styles/mermaid.css` provides complete semantic color slots; Mermaid nodes reference variables through class names.
+Mermaid static SVGs adapt to the theme via CSS variables and project class names, so there is no need to generate two diagram sets for light and dark. `src/features/mermaid/styles.css` provides complete semantic color slots; Mermaid nodes reference variables through class names.
 
 ## 6. Motion Tiers and Base Animations
 
-`src/styles/motion.css` defines the unified entrance animations and reduced-motion handling.
+`src/ui/styles/motion.css` defines the unified entrance animations and reduced-motion handling.
 
 ### Three Motion Tiers
 
@@ -169,7 +160,7 @@ Tiers are switched via the `html[data-nd-motion-level]` attribute. System `prefe
 
 ### Motion Preferences Provider
 
-`src/components/motion-preferences-provider.tsx` exposes `effectiveLevel`, `effectiveExperimental`, `systemReducedMotion`, and `experimentalMotionSupported` through Context:
+`src/runtime/motion/provider.tsx` exposes `effectiveLevel`, `effectiveExperimental`, `systemReducedMotion`, and `experimentalMotionSupported` through Context:
 
 - `useLayoutEffect` initialization: reads localStorage, detects `prefers-reduced-motion`, and detects experimental motion support;
 - listens to `matchMedia` change and `storage` events for cross-tab sync;
@@ -177,11 +168,11 @@ Tiers are switched via the `html[data-nd-motion-level]` attribute. System `prefe
 
 ### Experimental Motion Capability Detection
 
-`src/lib/experimental-motion-support.ts` detects HTML-in-Canvas capture (`drawElementImage` + `requestPaint`) and WebGL2 support; experimental motion is enabled only when both are present. The detection result is cached once so the settings UI and runtime consumers stay consistent. The WebGL2 context is released immediately with `loseContext()` after creation.
+`src/runtime/motion/experimental-support.ts` detects HTML-in-Canvas capture (`drawElementImage` + `requestPaint`) and WebGL2 support; experimental motion is enabled only when both are present. The detection result is cached once so the settings UI and runtime consumers stay consistent. The WebGL2 context is released immediately with `loseContext()` after creation.
 
 ### Motion Configuration
 
-`src/lib/motion-config.ts` centralizes all motion parameters:
+`src/runtime/motion/config.ts` centralizes all motion parameters:
 
 - `MOTION_DURATION_MS`: JS durations aligned with the CSS Tokens (instant / fast / standard / expressive / aperture / overview / surface / content / crossfade);
 - `MOTION_EASING`: the standard / reveal / softSpring trio;
@@ -190,7 +181,7 @@ Tiers are switched via the `html[data-nd-motion-level]` attribute. System `prefe
 
 ## 7. Accessibility Fallbacks
 
-`src/styles/a11y.css` handles three fallback layers so content stays readable when visual enhancements are unavailable.
+`src/ui/styles/a11y.css` handles three fallback layers so content stays readable when visual enhancements are unavailable.
 
 ### Reduced Motion
 
@@ -219,7 +210,7 @@ Fallbacks only remove decoration and transitions; they never remove body text, f
 
 ## 8. Typography and Body Text Rules
 
-`src/styles/typography.css` defines typography rules for body text, code, blockquotes, and callouts:
+`src/ui/styles/typography.css` defines typography rules for body text, code, blockquotes, and callouts:
 
 - interactive task list (`.mdx-task-progress`) styles;
 - the glass code block (`.glass-codeblock`) shell;
@@ -246,14 +237,14 @@ Any non-essential Motion respects `prefers-reduced-motion`.
 
 | File | Responsibility |
 | :--- | :--- |
-| `src/styles/tokens.css` | Dual semantic Token variable sets |
-| `src/styles/theme.css` | Tailwind / Fumadocs mapping |
-| `src/styles/glass.css` | Glass trio structure and business surfaces |
-| `src/styles/motion.css` | Entrance animations and three motion tiers |
-| `src/styles/a11y.css` | Three accessibility fallback layers |
-| `src/styles/typography.css` | Body text, code, blockquotes, and callouts |
-| `src/styles/fumadocs-glass.css` | Fumadocs component overrides |
-| `src/components/motion-preferences-provider.tsx` | Motion preferences Context |
-| `src/lib/motion-preferences.ts` | Motion preference parsing and bootstrap |
-| `src/lib/motion-config.ts` | Centralized motion configuration |
-| `src/lib/experimental-motion-support.ts` | Experimental motion capability detection |
+| `src/ui/tokens/tokens.css` | Dual semantic Token variable sets |
+| `src/ui/styles/theme.css` | Tailwind / Fumadocs mapping |
+| `src/ui/surfaces/glass.css` | Glass trio structure and business surfaces |
+| `src/ui/styles/motion.css` | Entrance animations and three motion tiers |
+| `src/ui/styles/a11y.css` | Three accessibility fallback layers |
+| `src/ui/styles/typography.css` | Body text, code, blockquotes, and callouts |
+| `src/adapters/fumadocs/styles.css` | Fumadocs component overrides |
+| `src/runtime/motion/provider.tsx` | Motion preferences Context |
+| `src/runtime/motion/preferences.ts` | Motion preference parsing and bootstrap |
+| `src/runtime/motion/config.ts` | Centralized motion configuration |
+| `src/runtime/motion/experimental-support.ts` | Experimental motion capability detection |

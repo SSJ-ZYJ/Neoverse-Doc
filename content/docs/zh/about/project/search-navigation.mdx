@@ -10,7 +10,7 @@ author:
 
 ## 一、静态搜索架构
 
-`src/app/api/search/route.ts` 使用 Fumadocs `createFromSource()` 从内容源生成搜索数据，并设置 `dynamic = 'force-static'`。生产构建会把这个 Route Handler 输出为静态端点，不需要请求时扫描 Markdown。
+`src/content/search/index.ts` 使用 Fumadocs `createFromSource()` 从内容源生成搜索数据；`src/app/api/search/route.ts` 只设置 `dynamic = 'force-static'` 并导出静态 GET。生产构建会把这个 Route Handler 输出为静态端点，不需要请求时扫描 Markdown。
 
 ```mermaid
 flowchart LR
@@ -26,7 +26,7 @@ flowchart LR
 
 ## 二、中英混合与拼音检索
 
-默认英文分词无法可靠处理连续中文，简单按字符切分又会损害英文单词和短语。`src/lib/search-tokenizer.ts` 组合了两类行为：
+默认英文分词无法可靠处理连续中文，简单按字符切分又会损害英文单词和短语。`src/content/search/tokenizer.ts` 组合了两类行为：
 
 - 中文片段使用 `@orama/tokenizers/mandarin` 的词典分词；
 - 英文片段统一小写，保持英文查询大小写不敏感；
@@ -59,7 +59,7 @@ flowchart LR
 
 ## 三、搜索结果增强
 
-`src/lib/search-client.ts` 的 `withEnhancedSearch()` 包装原始搜索客户端，按以下流水线处理结果：
+`src/features/search/client.ts` 的 `withEnhancedSearch()` 包装原始搜索客户端，按以下流水线处理结果：
 
 ```text
 原始搜索结果
@@ -95,7 +95,7 @@ flowchart LR
 
 ## 四、搜索弹窗与范围
 
-`src/components/search.tsx` 使用 Fumadocs `useDocsSearch` 和静态客户端：
+`src/features/search/components/search-dialog.tsx` 使用 Fumadocs `useDocsSearch` 和静态客户端：
 
 - 中文 locale 使用 `createMixedTokenizer()`，其他使用 `english`；
 - `withEnhancedSearch(searchClient, locale === 'zh')` 包装：拼音回退、结果分组排序、章节锚点继承；
@@ -114,7 +114,7 @@ flowchart LR
 
 ## 五、搜索聚光灯
 
-`src/components/search-spotlight.tsx` 实现搜索结果跳转后的短时全局聚光灯：
+`src/features/search/components/search-spotlight.tsx` 实现搜索结果跳转后的短时全局聚光灯：
 
 - 监听 click（link / `button[aria-selected]`）、keydown Enter、hashchange、popstate；
 - `findTextRange()`：TreeWalker 遍历文本节点，在锚点之后查找目标文本；
@@ -126,7 +126,7 @@ flowchart LR
 - `SPOTLIGHT_DURATION_MS = 3200`（reduced motion 1800）；
 - `removeSpotlightParam()`：完成后从 URL 清除参数。
 
-`src/lib/search-spotlight.ts` 提供聚光灯参数处理：
+`src/features/search/spotlight.ts` 提供聚光灯参数处理：
 
 - `SEARCH_SPOTLIGHT_PARAM = '_searchSpotlight'`；
 - `getSpotlightScrollDelta()`：让目标 rect 中心对齐视口中心；
@@ -164,7 +164,7 @@ Fumadocs 页面树提供：
 
 ### 文档刷新恢复
 
-`src/lib/docs-reading-restore.ts` 处理页面刷新后的滚动恢复：
+`src/features/reading/restore.ts` 处理页面刷新后的滚动恢复：
 
 - `DOCS_REFRESH_RESTORE_BOOTSTRAP` 是 hydration 前内联脚本；
 - 仅在 `navigation.type === 'reload'` 且 sessionStorage 存在有效锚点时运行；
@@ -189,7 +189,7 @@ Fumadocs 页面树提供：
 
 界面翻译分为两层：
 
-- `src/lib/layout.shared.tsx` 扩展 Fumadocs 内置 UI 翻译（包括 `Ask AI`、`Close Sidebar`、`Layout Tab` 等 16.13.x 新增 key）；
+- `src/adapters/fumadocs/layout.tsx` 扩展 Fumadocs 内置 UI 翻译（包括 `Ask AI`、`Close Sidebar`、`Layout Tab` 等 16.13.x 新增 key）；
 - `src/dictionaries/` 保存项目自定义文案，并由 TypeScript 接口约束键结构。
 
 界面支持中文与 English 不代表每篇文章已经翻译。页面是否存在由 `content/docs/{locale}/` 的实际文件决定，英文页面不使用空壳占位来模拟完整覆盖。
@@ -237,16 +237,19 @@ Giscus 仍然是外部增强：网络不可用或用户没有 GitHub 账号时�
 | 文件 | 职责 |
 | :--- | :--- |
 | `src/app/api/search/route.ts` | 静态搜索索引 |
-| `src/lib/search-tokenizer.ts` | 中文、英文与拼音混合分词 |
-| `src/lib/search-client.ts` | 搜索结果增强流水线 |
-| `src/lib/search-selection.ts` | 正文选区校验与搜索查询规范化 |
-| `src/lib/search-spotlight.ts` | 聚光灯参数处理 |
-| `src/components/search.tsx` | 查询与 Chapter 范围 UI |
-| `src/components/search-spotlight.tsx` | 搜索结果聚光灯 |
+| `src/content/search/index.ts` | 服务端索引构建与静态 GET |
+| `src/content/search/tokenizer.ts` | 中文、英文与拼音混合分词 |
+| `src/features/search/client.ts` | 搜索结果增强流水线 |
+| `src/features/search/selection.ts` | 正文选区校验与搜索查询规范化 |
+| `src/features/search/spotlight.ts` | 聚光灯参数处理 |
+| `src/features/search/components/search-dialog.tsx` | 查询与 Chapter 范围 UI |
+| `src/features/search/components/search-spotlight.tsx` | 搜索结果聚光灯 |
 | `src/app/[lang]/docs/layout.tsx` | locale 页面树与导航布局 |
-| `src/components/docs-reading-return.tsx` | 跨文档上下文恢复 |
-| `src/lib/docs-reading-restore.ts` | 文档刷新滚动恢复 |
+| `src/features/reading/docs-reading-return.tsx` | 跨文档上下文恢复 |
+| `src/features/reading/restore.ts` | 文档刷新滚动恢复 |
 | `src/app/[lang]/docs-source/[...slug]/route.ts` | Markdown 源码端点 |
-| `src/lib/layout.shared.tsx` | Fumadocs UI i18n |
-| `src/components/guestbook.tsx` | Giscus locale 与主题同步 |
-| `src/components/docs-community.tsx` | 文档评论区隔离 |
+| `src/adapters/fumadocs/layout.tsx` | Fumadocs UI i18n |
+| `src/features/community/components/guestbook.tsx` | Giscus locale 与主题同步 |
+| `src/features/community/components/docs-community.tsx` | 文档评论区隔离 |
+
+搜索聚光灯通过 `runtime/navigation` 判断转场是否结束，并通过 Fumadocs Adapter 获取正文根节点，不再从根元素的 transition dataset 反推状态。

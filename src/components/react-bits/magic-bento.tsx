@@ -4,7 +4,7 @@
 'use client';
 
 import { type PointerEvent, type ReactNode, useEffect, useRef } from 'react';
-import { prefersReducedMotion } from '@/lib/motion-preferences';
+import { prefersReducedMotion } from '@/runtime/motion/preferences';
 
 interface MagicBentoProps {
   children: ReactNode;

@@ -20,7 +20,7 @@
       "!**/package-lock.json",
       "!**/yarn.lock",
       "!**/public/mermaid",
-      "!**/src/generated/mermaid-assets.ts"
+      "!**/src/features/mermaid/generated/assets.ts"
     ]
   },
   "formatter": {

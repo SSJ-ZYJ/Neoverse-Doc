@@ -5,12 +5,12 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { supportsExperimentalMotion } from '@/lib/experimental-motion-support';
+import { supportsExperimentalMotion } from '@/runtime/motion/experimental-support';
 import {
   getEffectiveMotionLevel,
   isExperimentalMotionEnabled,
-  MOTION_PREFERENCES_CHANGE_EVENT,
-} from '@/lib/motion-preferences';
+  subscribeMotionPreferences,
+} from '@/runtime/motion/preferences';
 
 export interface ParticleScrollOptions {
   /** Viewport fraction of the formation line. Content assembles as it scrolls up past this line and dissolves back below it. */
@@ -686,10 +686,10 @@ function readParticleMotionMode(): ParticleMotionMode {
 function subscribeParticleSupport(callback: () => void): () => void {
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   motionQuery.addEventListener('change', callback);
-  document.addEventListener(MOTION_PREFERENCES_CHANGE_EVENT, callback);
+  const unsubscribe = subscribeMotionPreferences(callback);
   return () => {
     motionQuery.removeEventListener('change', callback);
-    document.removeEventListener(MOTION_PREFERENCES_CHANGE_EVENT, callback);
+    unsubscribe();
   };
 }
 

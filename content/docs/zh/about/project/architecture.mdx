@@ -20,16 +20,16 @@ Neoverse-Doc/
 ├── scripts/
 │   └── generate-mermaid-assets.ts
 ├── src/
-│   ├── app/                      # App Router 路由
-│   ├── components/
-│   │   ├── home/                 # 首页内容门户
-│   │   ├── mdx/                  # MDX 渲染组件
-│   │   └── transition/           # 路由转场
+│   ├── app/                      # 路由、数据读取与页面组合
+│   ├── content/                  # Schema、MDX 插件、搜索索引与 Manifest
+│   ├── features/                 # Search、Reading、Tasks、Mermaid、Transition、Community
+│   ├── runtime/                  # Navigation、Motion 与 Interaction 外部 Store
+│   ├── adapters/fumadocs/        # Source、Layout 与第三方 DOM 适配
+│   ├── ui/                       # Token、Surface 与全局样式
+│   ├── components/               # 未迁移的共享组件与 MDX 注册表
 │   ├── dictionaries/             # 项目 UI 字典
-│   ├── generated/                # 生成的资源映射
-│   ├── lib/                      # 内容源、搜索、i18n 与解析逻辑
-│   └── styles/                   # Token、页面与组件样式
-├── source.config.ts              # 内容 Schema 与 MDX 插件
+│   └── lib/                      # i18n、SEO 与站点配置等低耦合工具
+├── source.config.ts              # 内容源、Schema 与 MDX Pipeline 组装
 ├── next.config.ts                # 静态导出与 Next.js 配置
 └── package.json                  # 依赖与项目命令
 ```
@@ -40,7 +40,7 @@ Neoverse-Doc/
 
 `src/components/mdx/` 是统一增强层。每篇文档都通过同一个组件注册表获得代码块、Mermaid、任务项、Tabs、文档卡片和文件层级，不需要逐页导入。
 
-`src/lib/` 保存可复用解析与配置逻辑，`scripts/` 只负责需要在开发或构建前批量完成的工作。生成产物分别进入 `public/mermaid/`、`src/generated/`、`.source/` 与 `out/`。
+成熟业务能力收敛到 `src/features/`，跨 Feature 的导航、动效和交互状态由 `src/runtime/` 提供；Fumadocs 的 Loader、Layout、TOC 与复杂 DOM 选择器统一经过 `src/adapters/fumadocs/`。`scripts/` 只负责开发或构建前需要批量完成的工作，生成产物分别进入 `public/mermaid/`、`src/features/mermaid/generated/`、`.source/` 与 `out/`。
 
 ## 二、路由与布局
 
@@ -67,7 +67,7 @@ src/app/[lang]/
 
 ## 三、内容源与页面树
 
-`source.config.ts` 通过 `defineDocs()` 声明内容目录、Frontmatter Schema 与 Markdown / MDX 插件。`fumadocs-mdx` 把内容编译到 `.source/`，再由 `src/lib/source.ts` 的 `loader()` 组合为页面树。
+`source.config.ts` 只组装内容源、`src/content/schema/docs.ts` 与 `src/content/plugins/mdx-options.ts`。`fumadocs-mdx` 把内容编译到 `.source/`，再由 `src/adapters/fumadocs/source.ts` 的 `loader()` 组合为页面树。
 
 `src/lib/i18n.ts` 同时被内容 loader 和 Fumadocs UI 使用，是 locale 列表与默认语言的唯一来源。目录解析器以 `zh`、`en` 等一级目录分桶，因此同一个 slug 可以在不同 locale 下拥有独立内容。内容回退被显式关闭，缺失英文译文时不会在英文 URL 下重复输出中文页面。
 
@@ -101,7 +101,7 @@ flowchart TD
     B --> C[Remark / Rehype]
     C --> D[fumadocs-mdx]
     D --> E[.source 编译产物]
-    E --> F[src/lib/source.ts]
+    E --> F[src/adapters/fumadocs/source.ts]
     F --> G[页面树与静态路由]
     G --> H[Next.js build]
     H --> I[out 静态站点]
@@ -110,11 +110,12 @@ flowchart TD
     J --> K[SVG 与资源映射]
     K --> G
 
-    F --> L[静态搜索索引]
-    L --> H
+    F --> L[类型化 Content Manifest]
+    L --> M[静态搜索索引与 sitemap]
+    M --> H
 ```
 
-生产构建还会从同一内容源生成 `robots.txt`、只包含已发布页面的 `sitemap.xml`，以及统一的 PNG 社交分享图。草稿与辅助路由的收录边界在构建期确定，不依赖部署时服务端判断。
+`src/content/generated/manifest.ts` 直接从编译后的 Source 派生只读内容清单，稳定 ID 使用 `docs:${slugs.join('/')}`，同路径多语言页面共享 ID。Manifest 保留草稿标记，由 sitemap 等消费者自行过滤，不存在第二份手写内容事实来源。生产构建还会生成 `robots.txt`、只包含已发布页面的 `sitemap.xml`，以及统一的 PNG 社交分享图。
 
 不同命令承担不同验证范围：
 
@@ -194,9 +195,14 @@ VS Code 的 MDX Preview 扩展无法自动识别项目自定义组件，只内�
 
 | 文件 | 职责 |
 | :--- | :--- |
-| `source.config.ts` | 内容 Schema、Remark / Rehype 与代码高亮配置 |
+| `source.config.ts` | 内容源、Schema 与 MDX Pipeline 组装 |
+| `src/content/schema/docs.ts` | Frontmatter Schema |
+| `src/content/plugins/` | Remark / Rehype、代码标题与图标配置 |
+| `src/content/generated/manifest.ts` | 从 Source 派生的类型化 Content Manifest |
 | `next.config.ts` | 生产静态导出、图片与开发响应配置 |
-| `src/lib/source.ts` | Fumadocs 内容 loader 与图标映射 |
+| `src/adapters/fumadocs/` | Fumadocs Source、Layout、TOC 与 DOM 适配 |
+| `src/features/` | 六个成熟功能边界 |
+| `src/runtime/` | Navigation、Motion 与 Interaction 协调层 |
 | `src/lib/i18n.ts` | locale 单一来源 |
 | `src/lib/site-config.ts` | 仓库、作者、协议与 Giscus 配置 |
 | `src/app/[lang]/docs/layout.tsx` | locale 页面树与 DocsLayout |

@@ -5,8 +5,8 @@
 // 首页与文档路由保留同一组功能入口。
 
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
+import { baseOptions } from '@/adapters/fumadocs/layout';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
-import { baseOptions } from '@/lib/layout.shared';
 
 export const generateStaticParams = generateLocaleStaticParams;
 

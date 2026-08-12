@@ -4,7 +4,7 @@
 
 import { ArrowRight, ArrowUpRight, FileText } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { TransitionLink } from '@/components/transition/transition-link';
+import { TransitionLink } from '@/features/transition/transition-link';
 import { DocCardSiteIcon } from './doc-card-site-icon';
 
 interface DocCardProps {

@@ -2,8 +2,8 @@
 // 为 Fumadocs 页面操作提供静态 Markdown 源码端点。
 
 import { notFound } from 'next/navigation';
+import { source } from '@/adapters/fumadocs/source';
 import { resolveLocale } from '@/lib/i18n';
-import { source } from '@/lib/source';
 
 export const revalidate = false;
 

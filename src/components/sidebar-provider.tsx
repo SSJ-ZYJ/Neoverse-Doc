@@ -13,7 +13,7 @@ import {
   useSidebar,
 } from 'fumadocs-ui/layouts/docs/slots/sidebar';
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { ROUTE_TRANSITION_START_EVENT } from '@/components/transition/transition-types';
+import { useNavigationSnapshot } from '@/runtime/navigation/use-navigation';
 
 const STORAGE_KEY = 'sidebar-collapsed';
 
@@ -25,6 +25,7 @@ interface SidebarProviderWrapperProps {
 
 function SidebarStateSyncer() {
   const { collapsed, mode, setCollapsed, setOpen } = useSidebar();
+  const navigation = useNavigationSnapshot();
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -34,10 +35,8 @@ function SidebarStateSyncer() {
     // is available at click time, so start closing immediately instead.
     // Fumadocs 默认在 pathname 提交后才关闭抽屉；路由意图在点击时已经可用，
     // 因此立即开始收回侧栏。
-    const closeDrawer = () => setOpen(false);
-    document.addEventListener(ROUTE_TRANSITION_START_EVENT, closeDrawer);
-    return () => document.removeEventListener(ROUTE_TRANSITION_START_EVENT, closeDrawer);
-  }, [mode, setOpen]);
+    if (navigation.phase === 'capturing' || navigation.phase === 'leaving') setOpen(false);
+  }, [mode, navigation.phase, setOpen]);
 
   useLayoutEffect(() => {
     if (initialized.current) return;

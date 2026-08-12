@@ -1,0 +1,1046 @@
+/* Typography styles: code blocks, blockquotes, alerts, tables, and inline code.
+   排版样式：代码块、引用块、提示框、表格与行内代码。 */
+
+/* ── Code Blocks & Inline Code / 代码块与行内代码 ─────────────────────────── */
+
+pre,
+code,
+pre code {
+  font-family: var(--font-mono);
+}
+
+/* Glass code block surface: lets ambient page color show through while preserving syntax colors.
+   玻璃态代码块表面：保留语法高亮颜色，同时让页面环境色透出。
+   顶部 sheen、单层折射描边与投影共同构成基础玻璃面。 */
+.glass-codeblock {
+  background:
+    linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%), var(--glass-tint-medium);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border: 1px solid var(--glass-border-hairline);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+/* Code block hover: keep the reading surface stationary while strengthening
+   its tint, rim, and ambient shadow so the state remains visible in both themes.
+   代码块悬浮：阅读表面保持静止，通过底色、边缘与环境投影共同增强反馈，
+   确保浅色和深色主题下都能清晰辨识。 */
+@media (hover: hover) {
+  .glass-codeblock:hover {
+    border-color: color-mix(in srgb, var(--accent-primary) 34%, var(--glass-border-hairline));
+    background-color: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+}
+
+/* Transparent Shiki layers expose the glass wrapper instead of forcing pure black or white.
+   透明化 Shiki 内层背景，避免代码区域显示为纯黑或纯白。 */
+.glass-codeblock pre,
+.glass-codeblock pre code,
+.glass-codeblock .shiki,
+.glass-codeblock .shiki span {
+  background: transparent !important;
+}
+
+/* Extremely long snippets intentionally skip token-level Shiki markup. A
+   single preformatted text node keeps the code readable and copyable while
+   avoiding a multi-megabyte React payload.
+   超长代码有意跳过 Token 级 Shiki 标记；单个预格式化文本节点既保留阅读与
+   复制能力，也避免生成数 MB 的 React 载荷。 */
+.docs-long-codeblock__content {
+  display: block;
+  min-inline-size: max-content;
+  padding-inline: 1rem;
+  color: var(--text-primary);
+  line-height: 1.65;
+  white-space: pre;
+}
+
+/* Preserve empty line height: the `*:flex *:flex-col` layout on <pre> turns each Shiki `.line`
+   into a flex item. Shiki renders empty lines as `<span class="line"><span></span></span>`,
+   so both the .line flex item and its inner <span> have zero content height — blank lines vanish.
+   Target the inner empty <span> (and defensively .line itself) with a zero-width space ::before.
+   保留空行高度：<pre> 上的 `*:flex *:flex-col` 布局使每个 Shiki `.line` 成为 flex 项。
+   Shiki 将空行渲染为 `<span class="line"><span></span></span>`，.line 项与其内部 <span>
+   均无内容高度，导致空行消失。通过 ::before 向内部空 <span>（及防御性地 .line 本身）
+   插入零宽空格，赋予其一行文本的固有高度。 */
+figure.shiki .line:empty::before,
+figure.shiki .line > span:empty::before {
+  content: "\200B";
+}
+
+.glass-codeblock > div:first-child {
+  background-color: var(--glass-tint-soft);
+  /* The outer code block owns backdrop sampling; the header keeps its tint
+     without allocating another blur surface.
+     外层代码块统一采样背景；标题栏只保留色调，不再分配额外模糊表面。 */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* ── Blockquote & Alerts / 引用块与提示框 ─────────────────────────────── */
+
+/* Editorial quote surface: a slim gradient rail replaces the conventional
+   heavy left border, while the translucent panel stays visually quieter than
+   alerts and other interactive containers.
+   编辑式引用表面：使用纤细渐变引导线替代传统粗左边框，半透明面板的视觉
+   层级低于提示框与交互容器。 */
+#nd-page blockquote {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin: 1.25rem 0;
+  padding-block: 1rem;
+  padding-inline: 1.5rem 1.25rem;
+  font-style: normal;
+  font-weight: 400;
+  quotes: none;
+  border: 1px solid var(--docs-quote-border);
+  border-radius: var(--radius-md);
+  background: var(--docs-quote-background);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow: var(--docs-quote-shadow);
+  color: var(--text-secondary);
+  transition:
+    border-color var(--theme-transition-duration) ease,
+    background-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+/* The inset rail follows logical positioning so quotes retain their visual
+   hierarchy in both left-to-right and right-to-left layouts.
+   内嵌引导线使用逻辑定位，使引用块在从左到右和从右到左布局中均保持层级。 */
+#nd-page blockquote::before {
+  position: absolute;
+  z-index: 1;
+  inset-block: 0.75rem;
+  inset-inline-start: 0.5rem;
+  width: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--docs-quote-rail);
+  content: "";
+  opacity: 0.82;
+}
+
+/* Fumadocs typography inserts open/close quotation marks by default. The
+   editorial rail already communicates quotation semantics, so duplicated
+   glyphs are suppressed without changing the underlying blockquote markup.
+   Fumadocs 排版默认插入首尾引号；编辑式引导线已经表达引用语义，因此隐藏
+   重复字形，同时保留原生 blockquote 结构。 */
+#nd-page blockquote > p:first-of-type::before,
+#nd-page blockquote > p:last-of-type::after {
+  content: none;
+}
+
+/* Remove redundant paragraph spacing at the panel edges and keep citations
+   visually subordinate to the quoted content.
+   移除面板首尾多余段落间距，并让引用来源在视觉上从属于正文。 */
+#nd-page blockquote > :first-child {
+  margin-block-start: 0;
+}
+
+/* Remark emits GFM alerts as divs, so include them in the same edge reset.
+   The particle controller temporarily appends its owned layer after the prose;
+   keep the preceding content edge reset while that dynamic layer is present.
+   Remark 会将 GFM 提示框输出为 div，因此同步应用相同的边缘重置。
+   粒子控制器会临时在正文后追加自有图层；该动态图层存在时，仍清除其前方
+   末尾内容的外边距。 */
+:where(#nd-page blockquote, #nd-page .markdown-alert)
+> :is(:last-child, :has(+ .immersive-particle-layer)) {
+  margin-block-end: 0;
+}
+
+#nd-page blockquote cite {
+  color: var(--text-muted);
+  font-size: 0.875em;
+  font-style: normal;
+}
+
+/* Nested quotes use a lighter inset treatment instead of stacking multiple
+   full glass panels and shadows.
+   嵌套引用使用更轻的内嵌层，避免多层玻璃面与投影重复堆叠。 */
+#nd-page [data-docs-body] blockquote blockquote {
+  margin-block: 0.75rem 0.25rem;
+  background: color-mix(in srgb, var(--surface-subtle) 64%, transparent);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 30%, transparent);
+}
+
+/* Hover only clarifies the border and rail; the quote remains a static
+   editorial element without lift or scale.
+   悬浮时仅强化边框与引导线，引用块仍是无抬升、无缩放的静态编辑元素。 */
+@media (hover: hover) {
+  #nd-page blockquote:hover {
+    border-color: color-mix(in srgb, var(--border-interactive) 48%, var(--docs-quote-border));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--edge-light) 52%, transparent),
+      var(--docs-quote-shadow);
+  }
+
+  #nd-page blockquote:hover::before {
+    opacity: 1;
+  }
+}
+
+/* Filtered surfaces already receive compositor isolation from backdrop-filter;
+   forcing an additional 3D layer on every block wastes GPU memory on long pages.
+   带滤镜的表面已由 backdrop-filter 获得合成隔离；为每个内容块额外强制
+   3D 图层会在长文章中浪费 GPU 内存。 */
+.markdown-alert {
+  --markdown-alert-accent: var(--color-alert-note);
+  --markdown-alert-border: color-mix(
+    in srgb,
+    var(--markdown-alert-accent) 42%,
+    var(--glass-border-hairline)
+  );
+
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--markdown-alert-accent) 8%, transparent),
+      transparent 42%
+    ),
+    var(--glass-tint-medium);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border: 1px solid var(--markdown-alert-border);
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  padding: 0.75rem 1rem 0.75rem 1.5rem;
+  position: relative;
+  margin: 1rem 0;
+  overflow: hidden;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+/* Alert hover：展示性元素，不抬升，仅强化辉光 + 强调色光带亮度，
+   让用户在快速滚动时能感知到当前关注的提示框。 */
+@media (hover: hover) {
+  .markdown-alert:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--markdown-alert-accent) 56%,
+      var(--glass-border-hairline)
+    );
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+
+  .markdown-alert:hover::before {
+    filter: brightness(1.15);
+  }
+}
+
+/* Alert accent rail: separated from the rounded corner to avoid jagged subpixel clipping.
+   提示框强调色光带：与圆角保持距离，避免粗描边在圆角处出现锯齿。 */
+.markdown-alert::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.85rem;
+  inset-inline-start: 0.65rem;
+  width: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--markdown-alert-accent) 82%, transparent),
+    color-mix(in srgb, var(--markdown-alert-accent) 54%, transparent)
+  );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--markdown-alert-accent) 24%, transparent);
+  pointer-events: none;
+}
+
+.markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  /* Reset the prose paragraph margin so the title aligns with the accent rail.
+     清除正文段落外边距，使标题与左侧强调竖线顶部对齐。 */
+  margin: 0 0 0.25rem;
+  color: var(--markdown-alert-accent);
+}
+
+.markdown-alert-title .octicon {
+  flex-shrink: 0;
+}
+
+/* The alert surface owns its internal spacing; prose paragraph margins would
+   otherwise insert a blank-line-sized gap between every GFM body line.
+   提示框自行管理内部留白，避免正文段落 margin 在每次 GFM 换行间叠加出空行。 */
+.markdown-alert > p:not(.markdown-alert-title) {
+  margin-block: 0;
+}
+
+.markdown-alert-note {
+  --markdown-alert-accent: var(--color-alert-note);
+}
+.markdown-alert-note .octicon {
+  fill: var(--color-alert-note);
+}
+
+/* INFO alert uses the existing hint cyan accent while preserving GitHub alert markup.
+   INFO 提示复用现有 hint 青色强调色，并保持 GitHub alert 的 DOM 结构。 */
+.markdown-alert-info {
+  --markdown-alert-accent: var(--color-alert-hint);
+}
+.markdown-alert-info .octicon {
+  fill: var(--color-alert-hint);
+}
+
+.markdown-alert-tip {
+  --markdown-alert-accent: var(--color-alert-tip);
+}
+.markdown-alert-tip .octicon {
+  fill: var(--color-alert-tip);
+}
+
+.markdown-alert-important {
+  --markdown-alert-accent: var(--color-alert-important);
+}
+.markdown-alert-important .octicon {
+  fill: var(--color-alert-important);
+}
+
+.markdown-alert-warning {
+  --markdown-alert-accent: var(--color-alert-warning);
+}
+.markdown-alert-warning .octicon {
+  fill: var(--color-alert-warning);
+}
+
+.markdown-alert-caution {
+  --markdown-alert-accent: var(--color-alert-caution);
+}
+.markdown-alert-caution .octicon {
+  fill: var(--color-alert-caution);
+}
+
+/* Glass table surface: keeps Markdown tables visually aligned with code blocks, alerts, and details.
+   玻璃态表格表面：让 Markdown 表格与代码块、提示框、折叠块保持统一视觉。 */
+:where(#nd-page) :where(.prose-no-margin):has(> table) {
+  /* Table palette keeps the header, dividers, and row hover on one theme-aware glass scale.
+     表格色板让表头、分隔线与行悬浮复用同一套主题感知玻璃层级。 */
+  --markdown-table-head-bg: color-mix(in srgb, var(--color-fd-muted) 82%, var(--glass-tint-soft));
+  --markdown-table-head-border: color-mix(
+    in srgb,
+    var(--color-fd-foreground) 9%,
+    var(--glass-border-hairline)
+  );
+  --markdown-table-head-color: var(--color-fd-foreground);
+  --markdown-table-cell-border: var(--glass-border-hairline);
+  --markdown-table-row-hover-bg: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent);
+
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--glass-highlight) 28%, transparent),
+      transparent 38%
+    ),
+    var(--glass-tint-medium);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  overflow: auto;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+/* Table container hover：展示性容器，不抬升，仅切换到 hover 投影，
+   与 .markdown-alert 保持一致的悬浮层级反馈。 */
+@media (hover: hover) {
+  :where(#nd-page) :where(.prose-no-margin):has(> table):hover {
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table {
+  width: 100%;
+  margin: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table thead {
+  background: var(--markdown-table-head-bg);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 -1px 0 var(--markdown-table-head-border);
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table th,
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table td {
+  background-color: transparent;
+  border-color: var(--markdown-table-cell-border);
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table thead th {
+  background: transparent;
+  border-bottom: 1px solid var(--markdown-table-head-border);
+  color: var(--markdown-table-head-color);
+  font-weight: 600;
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table tbody tr {
+  transition: background-color var(--theme-transition-duration) ease;
+}
+
+:where(#nd-page) :where(.prose-no-margin):has(> table) > table tbody tr:hover {
+  background-color: var(--markdown-table-row-hover-bg);
+}
+
+/* Dark tables use a graphite glass base with restrained violet-to-cyan ambient light.
+   Neutral dividers and a low-saturation hover replace the previous heavy cyan slab.
+   深色表格使用石墨玻璃底与克制的紫青环境光，以中性分隔线和低饱和悬浮色
+   替换原先厚重的整块青色表头。 */
+.dark :where(#nd-page) :where(.prose-no-margin):has(> table) {
+  --markdown-table-head-bg:
+    linear-gradient(
+      112deg,
+      color-mix(in srgb, var(--accent-tertiary) 7%, transparent),
+      transparent 42%,
+      color-mix(in srgb, var(--accent-primary) 5%, transparent)
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-elevated) 88%, var(--color-fd-muted)),
+      color-mix(in srgb, var(--surface-glass) 90%, var(--color-fd-muted))
+    );
+  --markdown-table-head-border: color-mix(
+    in srgb,
+    var(--text-primary) 14%,
+    var(--glass-border-hairline)
+  );
+  --markdown-table-head-color: color-mix(in srgb, var(--text-primary) 94%, var(--accent-primary));
+  --markdown-table-cell-border: color-mix(
+    in srgb,
+    var(--text-secondary) 10%,
+    var(--glass-border-hairline)
+  );
+  --markdown-table-row-hover-bg: color-mix(
+    in srgb,
+    var(--accent-primary) 5%,
+    var(--surface-subtle)
+  );
+}
+
+/* Dark mode header silhouette uses a quiet highlight and neutral divider.
+   深色表头轮廓使用轻量顶部高光与中性底部分隔线。 */
+.dark :where(#nd-page) :where(.prose-no-margin):has(> table) > table thead {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 38%, transparent),
+    inset 0 -1px 0 var(--markdown-table-head-border);
+}
+
+/* ────────────── Inline Code Enhancement / 行内代码增强 ────────────── */
+
+:root,
+.light {
+  --inline-code-bg: rgba(0, 0, 0, 0.06);
+  --inline-code-border: rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+  --inline-code-bg: rgba(255, 255, 255, 0.15);
+  --inline-code-border: rgba(255, 255, 255, 0.3);
+}
+
+:not(pre) > code {
+  background-color: var(--inline-code-bg);
+  border: 1px solid var(--inline-code-border);
+  border-radius: var(--glass-icon-button-radius);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.875em;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease;
+}
+
+/* A mixed strikethrough must not reuse the smaller monospace font's native
+   strikeout metric. Cloned one-pixel backgrounds keep each wrapped fragment on
+   the surrounding text axis while preserving the inline-code capsule.
+   混合删除线不复用较小等宽字体的原生删除线度量；随换行片段复制的一像素背景线
+   让普通文字与代码保持同一视觉轴，同时保留行内代码胶囊。 */
+#nd-page del:has(> code) {
+  text-decoration: none;
+  background-image: linear-gradient(currentcolor, currentcolor);
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+#nd-page del:has(> code) > code {
+  background-image: linear-gradient(currentcolor, currentcolor);
+  background-position: 0 calc(50% - 0.12em);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+}
+
+/* A completed task already supplies one continuous strikeout for the whole row.
+   Suppress nested Markdown strikeout painting so del + inline code cannot add a
+   second line with a different font metric; reopening restores it automatically.
+   已完成任务已由整行提供连续删除线；隐藏内部 Markdown 删除线，避免 del 与
+   行内代码按不同字体度量叠加第二条线，取消勾选后会自动恢复。 */
+#nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__content del,
+#nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__content del > code {
+  text-decoration: none;
+  background-image: none;
+}
+
+/* The opaque code capsule covers its ancestor's background, so repaint the
+   same task strikeout locally using the existing monospace-size compensation.
+   代码胶囊的不透明背景会覆盖祖先背景，因此沿用现有等宽字号补偿，在胶囊内
+   重新绘制同一条任务删除线。 */
+#nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__label :not(pre) > code {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--text-muted) 68%, transparent),
+    color-mix(in srgb, var(--text-muted) 68%, transparent)
+  );
+  background-position: 0 calc(50% - 0.12em);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+}
+
+/* Wrapped inline code uses native cloned capsules and a restrained accent
+   surface. Keeping every decoration on the inline element avoids detached
+   document overlays drifting during route and layout transitions.
+   换行行内代码使用浏览器原生复制的圆角胶囊与克制的强调表面；所有装饰均
+   保留在行内元素自身，避免文档级覆盖层在路由或布局切换时漂移。 */
+:not(pre) > code[data-inline-code-wrapped],
+#nd-page :not(pre) > code[data-inline-code-wrapped] {
+  border-color: color-mix(
+    in srgb,
+    var(--accent-primary, var(--fd-primary)) 26%,
+    var(--border-subtle, var(--inline-code-border))
+  );
+  background-color: color-mix(
+    in srgb,
+    var(--accent-soft, var(--inline-code-bg)) 88%,
+    var(--surface-glass, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 28%, transparent);
+}
+
+/* Inline code hover：极轻反馈 —— 边框颜色加深 + 文字着色，
+   与 .markdown-details-summary 的"颜色提示"策略一致。
+   不抬升、不加投影，避免段落阅读时跳动。 */
+@media (hover: hover) {
+  :not(pre) > code:hover {
+    border-color: color-mix(in srgb, var(--fd-primary) 38%, var(--inline-code-border));
+    color: var(--fd-primary);
+  }
+}
+
+/* ── Collapsible Details / 可折叠块 ─────────────────────────────── */
+
+.markdown-details {
+  --markdown-details-content-inline: 1rem;
+  --markdown-details-accent: var(--color-fd-muted-foreground);
+  --markdown-details-border: var(--glass-border-hairline);
+  --markdown-details-summary-bg: var(--glass-tint-soft);
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--glass-tint-soft) 70%,
+    var(--color-fd-accent)
+  );
+
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--markdown-details-accent) 8%, transparent),
+      transparent 42%
+    ),
+    var(--glass-tint-medium);
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  border: 1px solid var(--markdown-details-border);
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  margin: 1rem 0;
+  overflow: hidden;
+  interpolate-size: allow-keywords;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    box-shadow var(--theme-transition-duration) ease;
+}
+
+/* Details container hover：展示性容器，不抬升，仅切换 hover 投影。
+   summary 自身的 hover 单独处理（见下方）。 */
+@media (hover: hover) {
+  .markdown-details:hover {
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+}
+
+/* Smooth expand/collapse animation / 平滑展开折叠动画 */
+.markdown-details::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size var(--theme-transition-duration) ease,
+    content-visibility var(--theme-transition-duration) ease allow-discrete;
+}
+
+.markdown-details[open]::details-content {
+  block-size: auto;
+}
+
+.markdown-details-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem var(--markdown-details-content-inline);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  color: var(--color-fd-foreground);
+  background: var(--markdown-details-summary-bg);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    border-color var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease;
+}
+
+/* Summary hover：作为可交互的折叠头，沿用 chip 规范的 tint 切换 +
+   强调色文字提示，不再用色块跳变。
+   点击反馈改为波纹粒子（见 .markdown-details-summary::after 的波纹动画），
+   不再使用 scale 缩放（避免"背景收缩一下"的奇怪视觉）。 */
+@media (hover: hover) {
+  .markdown-details-summary:hover {
+    background: var(--markdown-details-summary-hover-bg);
+    color: var(--markdown-details-accent);
+  }
+}
+
+.markdown-details[open] > .markdown-details-summary {
+  border-bottom-color: var(--markdown-details-border);
+}
+
+.markdown-details-summary::-webkit-details-marker {
+  display: none;
+}
+
+/* MDX parses text inside a JSX <summary> as a <p> element, which inherits UA
+   default margins and inflates the summary height. GFM Alert-rendered
+   summaries keep their text as phrasing content (no <p> wrapper), so they
+   are not affected. Strip the paragraph margin to keep the example summary
+   visually consistent with the GFM Alert variant.
+   MDX 会将 JSX <summary> 内的文本解析为 <p> 元素，其继承的 UA 默认 margin
+   会撑高 summary 高度。GFM Alert 渲染的 summary 文本保持为短语内容
+   (无 <p> 包裹)，不受影响。移除段落 margin 以使示例 summary 与
+   GFM Alert 变体视觉一致。 */
+.markdown-details-summary > p {
+  margin: 0;
+}
+
+/* Default icon for plain DETAILS / 普通 DETAILS 默认图标 */
+.markdown-details-type-details::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-fd-muted-foreground);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3Cpolyline points='10 9 9 9 8 9'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3Cpolyline points='10 9 9 9 8 9'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  flex-shrink: 0;
+}
+
+/* Arrow indicator / 箭头指示器 */
+.markdown-details-summary::after {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid currentColor;
+  transition: transform var(--theme-transition-duration) ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.markdown-details[open] > .markdown-details-summary::after {
+  transform: rotate(90deg);
+}
+
+.markdown-details > *:not(summary) {
+  padding: 0 var(--markdown-details-content-inline) 0.75rem;
+  margin: 0;
+  color: var(--color-fd-muted-foreground);
+}
+
+.markdown-details > *:not(summary):first-of-type {
+  padding-top: 0.25rem;
+}
+
+/* Consecutive body paragraphs share the block's line rhythm; only the final
+   paragraph keeps the container's bottom breathing room.
+   连续正文段落沿用块内行距，仅最后一段保留容器底部留白。 */
+.markdown-details > p:has(+ p) {
+  padding-bottom: 0;
+}
+
+/* Direct list markers align with the surrounding paragraph edge.
+   Nested lists retain their normal indentation hierarchy.
+   直属列表的标记与相邻正文左边缘对齐，嵌套列表继续保留正常层级缩进。 */
+.markdown-details > :is(ul, ol) {
+  margin-inline-start: var(--markdown-details-content-inline);
+}
+
+/* Nested code blocks inside details (non-glass only).
+   Glass-codeblock figures are styled by the glass design system.
+   折叠块内嵌代码块优化（仅非玻璃化代码块）。
+   glass-codeblock 由玻璃设计系统控制样式。 */
+.markdown-details figure.shiki:not(.glass-codeblock) {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-md);
+  margin-block: 0.5rem;
+  margin-inline: var(--markdown-details-content-inline);
+}
+
+/* Direct code blocks use the same horizontal safe area as paragraphs while
+   retaining their own rounded surface and internal scrolling.
+   The block margin must be set explicitly here because the generic
+   `> *:not(summary)` rule above zeroes out margin on all direct children,
+   which would otherwise make the figure touch the summary border and the
+   details edge. Non-glass blocks get their margin from the rule above.
+   直属代码块与正文共用横向安全区，同时保留自身圆角表面与内部滚动。
+   此处必须显式设置 block margin：上面的通用 `> *:not(summary)` 规则会将
+   所有直接子元素的 margin 置零，否则代码块会紧贴 summary 边框与 details
+   边缘。非玻璃代码块的 margin 由上方规则提供。 */
+.markdown-details > figure.shiki {
+  margin-block: 0.5rem;
+  margin-inline: var(--markdown-details-content-inline);
+  padding: 0;
+}
+
+/* Dark mode border highlight for nested code blocks (non-glass only).
+   深色模式下嵌套代码块边缘（仅非玻璃化代码块） */
+.dark .markdown-details figure.shiki:not(.glass-codeblock) {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Code block header divider / 代码块标题栏分割线 */
+figure.shiki > div:first-child {
+  border-bottom-color: rgba(0, 0, 0, 0.15);
+}
+
+.dark figure.shiki > div:first-child {
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Collapsible Block Variants / 可折叠块变体 ─────────────────────────── */
+
+/* FAQ - 常见问题 */
+.markdown-details-faq {
+  --markdown-details-accent: var(--color-alert-note);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-note) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-note) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-note) 16%,
+    var(--glass-tint-soft)
+  );
+}
+.markdown-details-type-faq::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-alert-note);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  flex-shrink: 0;
+}
+
+/* ANSWER - 解答 */
+.markdown-details-answer {
+  --markdown-details-accent: var(--color-alert-tip);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-tip) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-tip) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-tip) 16%,
+    var(--glass-tint-soft)
+  );
+}
+.markdown-details-type-answer::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-alert-tip);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpolyline points='22 4 12 14.01 9 11.01'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpolyline points='22 4 12 14.01 9 11.01'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  flex-shrink: 0;
+}
+
+/* EXAMPLE - 示例 */
+.markdown-details-example {
+  --markdown-details-accent: var(--color-alert-example);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-example) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-example) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-example) 16%,
+    var(--glass-tint-soft)
+  );
+}
+.markdown-details-type-example::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-alert-example);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cpath d='M12 18v-6'/%3E%3Cpath d='M9 15l3 3 3-3'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cpath d='M12 18v-6'/%3E%3Cpath d='M9 15l3 3 3-3'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  flex-shrink: 0;
+}
+
+/* HINT - 提示 */
+.markdown-details-hint {
+  --markdown-details-accent: var(--color-alert-hint);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-hint) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-hint) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-hint) 16%,
+    var(--glass-tint-soft)
+  );
+}
+.markdown-details-type-hint::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-alert-hint);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z'/%3E%3Cpath d='M9 21h6'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z'/%3E%3Cpath d='M9 21h6'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  flex-shrink: 0;
+}
+
+/* AI - AI-generated summary with adaptive typewriter reveal.
+   AI - 带自适应打字机揭示效果的 AI 生成摘要。 */
+.markdown-details-ai {
+  --markdown-details-accent: var(--color-alert-ai);
+  --markdown-details-border: color-mix(
+    in srgb,
+    var(--color-alert-ai) 42%,
+    var(--glass-border-hairline)
+  );
+  --markdown-details-summary-bg: color-mix(
+    in srgb,
+    var(--color-alert-ai) var(--alert-tint-pct),
+    var(--glass-tint-soft)
+  );
+  --markdown-details-summary-hover-bg: color-mix(
+    in srgb,
+    var(--color-alert-ai) 16%,
+    var(--glass-tint-soft)
+  );
+}
+.markdown-details-type-ai::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-alert-ai);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 8V4H8'/%3E%3Crect width='16' height='12' x='4' y='8' rx='2'/%3E%3Cpath d='M2 14h2'/%3E%3Cpath d='M20 14h2'/%3E%3Cpath d='M15 13v2'/%3E%3Cpath d='M9 13v2'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 8V4H8'/%3E%3Crect width='16' height='12' x='4' y='8' rx='2'/%3E%3Cpath d='M2 14h2'/%3E%3Cpath d='M20 14h2'/%3E%3Cpath d='M15 13v2'/%3E%3Cpath d='M9 13v2'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  flex-shrink: 0;
+}
+
+/* AI typewriter body keeps layout stable while revealing text chunks.
+   AI 打字机正文在逐段揭示文字的同时保持布局稳定。 */
+.markdown-details-ai-body {
+  position: relative;
+}
+.markdown-details-ai-body > * {
+  margin-block: 0;
+}
+.markdown-details-ai-body > * + * {
+  margin-block-start: 0.75rem;
+}
+.markdown-details-ai-typed-chunk {
+  opacity: 1;
+}
+.markdown-details-ai[data-ai-typing="true"] .markdown-details-ai-typed-chunk {
+  opacity: 0;
+}
+.markdown-details-ai[data-ai-typing="true"] [data-ai-visible-content="false"] {
+  visibility: hidden;
+}
+.markdown-details-ai[data-ai-typing="true"]
+  .markdown-details-ai-typed-chunk[data-ai-visible="true"] {
+  opacity: 1;
+}
+/* AI typewriter caret follows the latest visible text chunk instead of the block end.
+   AI 打字机光标跟随最新显示的文字分片，而不是固定在正文块末尾。 */
+.markdown-details-ai[data-ai-typing="true"]
+.markdown-details-ai-typed-chunk[data-ai-caret="true"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.45em;
+  height: 1em;
+  margin-left: 0.15em;
+  vertical-align: -0.12em;
+  background: var(--color-alert-ai);
+  animation: markdown-details-ai-caret-blink var(--nd-duration-ai-caret-blink) steps(1, end)
+    infinite;
+}
+
+@keyframes markdown-details-ai-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markdown-details-ai[data-ai-typing="true"] .markdown-details-ai-typed-chunk {
+    opacity: 1;
+  }
+  .markdown-details-ai[data-ai-typing="true"] [data-ai-visible-content="false"] {
+    visibility: visible;
+  }
+  .markdown-details-ai[data-ai-typing="true"]
+    .markdown-details-ai-typed-chunk[data-ai-caret="true"]::after {
+    display: none;
+  }
+}
+
+/* Dark mode border highlight for code blocks (non-glass only).
+   Glass-codeblock figures are styled by the glass design system via CSS
+   variables and must not be overridden by hardcoded rgba values.
+   深色模式下代码块边缘高光（仅非玻璃化代码块）。
+   glass-codeblock 图表由玻璃设计系统通过 CSS 变量控制样式，
+   不能被硬编码 rgba 值覆盖。 */
+.dark figure.shiki:not(.glass-codeblock) {
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+}

@@ -2,14 +2,24 @@ import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import puppeteer, { type Browser, type Page } from 'puppeteer';
-import { getMermaidSourceId, normalizeMermaidSource } from '../src/lib/mermaid-asset-id';
-import { MERMAID_CONFIG } from '../src/lib/mermaid-config';
+import {
+  getMermaidSourceId,
+  MERMAID_CONFIG,
+  normalizeMermaidSource,
+} from '../src/features/mermaid';
 
 const PROJECT_ROOT = process.cwd();
 const CONTENT_ROOT = path.join(PROJECT_ROOT, 'content', 'docs');
 const ASSET_ROOT = path.join(PROJECT_ROOT, 'public', 'mermaid');
-const MANIFEST_PATH = path.join(PROJECT_ROOT, 'src', 'generated', 'mermaid-assets.ts');
-const MERMAID_STYLE_PATH = path.join(PROJECT_ROOT, 'src', 'styles', 'mermaid.css');
+const MANIFEST_PATH = path.join(
+  PROJECT_ROOT,
+  'src',
+  'features',
+  'mermaid',
+  'generated',
+  'assets.ts',
+);
+const MERMAID_STYLE_PATH = path.join(PROJECT_ROOT, 'src', 'features', 'mermaid', 'styles.css');
 const MERMAID_BROWSER_BUNDLE = path.join(
   PROJECT_ROOT,
   'node_modules',

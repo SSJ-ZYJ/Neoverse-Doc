@@ -19,8 +19,8 @@ import {
   ResourceLink,
 } from '@/components/mdx/doc-cards';
 import { File, Files, Folder } from '@/components/mdx/files';
-import { Mermaid } from '@/components/mdx/mermaid';
-import { MdxListItem } from '@/components/mdx/task-list-item';
+import { Mermaid } from '@/features/mermaid';
+import { MdxListItem } from '@/features/tasks';
 
 const projectMdxComponents = {
   ...defaultMdxComponents,

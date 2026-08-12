@@ -1825,50 +1825,11 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   background: transparent !important;
 }
 
-/* Mount the TOC only after the page transition settles, then reveal it without
-   adding transform or blur work to the first interactive frame.
-   TOC 仅在页面转场结束后挂载，再以纯透明度淡入，避免首个交互帧新增
-   transform 或 blur 工作。 */
-.docs-toc-deferred-entering {
-  animation: docs-toc-deferred-enter var(--motion-fast) var(--motion-ease-standard) both;
-}
-
-.docs-toc-deferred-exiting {
+/* Keep the previous outline mounted during route capture and swap it only when
+   the destination commits. This avoids a blank right rail between documents.
+   路由捕获期间保留旧目录，仅在目标页提交后替换，避免文档切换时右栏留白。 */
+.docs-toc-deferred-retained {
   pointer-events: none;
-  animation: docs-toc-deferred-exit var(--motion-fast) var(--motion-ease-standard) both;
-}
-
-@keyframes docs-toc-deferred-enter {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes docs-toc-deferred-exit {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .docs-toc-deferred-entering,
-  .docs-toc-deferred-exiting {
-    animation: none;
-  }
-
-  .docs-toc-deferred-entering {
-    opacity: 1;
-  }
-
-  .docs-toc-deferred-exiting {
-    opacity: 0;
-  }
 }
 
 #nd-toc a {

@@ -20,16 +20,16 @@ Neoverse-Doc/
 ├── scripts/
 │   └── generate-mermaid-assets.ts
 ├── src/
-│   ├── app/                      # App Router routes
-│   ├── components/
-│   │   ├── home/                 # Home page content portal
-│   │   ├── mdx/                  # MDX rendering components
-│   │   └── transition/           # Route transitions
+│   ├── app/                      # Routes, data reads, and page composition
+│   ├── content/                  # Schema, MDX plugins, search index, and Manifest
+│   ├── features/                 # Search, Reading, Tasks, Mermaid, Transition, Community
+│   ├── runtime/                  # Navigation, Motion, and Interaction external stores
+│   ├── adapters/fumadocs/        # Source, Layout, and third-party DOM adapters
+│   ├── ui/                       # Tokens, surfaces, and global styles
+│   ├── components/               # Remaining shared components and MDX registry
 │   ├── dictionaries/             # Project UI dictionaries
-│   ├── generated/                # Generated asset maps
-│   ├── lib/                      # Content source, search, i18n, and parsing logic
-│   └── styles/                   # Tokens, page, and component styles
-├── source.config.ts              # Content Schema and MDX plugins
+│   └── lib/                      # Low-coupling i18n, SEO, and site configuration
+├── source.config.ts              # Content source, Schema, and MDX Pipeline assembly
 ├── next.config.ts                # Static export and Next.js configuration
 └── package.json                  # Dependencies and project commands
 ```
@@ -40,7 +40,7 @@ Neoverse-Doc/
 
 `src/components/mdx/` is the unified enhancement layer. Every document obtains code blocks, Mermaid, task items, Tabs, document cards, and file hierarchies through the same component registry, without per-page imports.
 
-`src/lib/` holds reusable parsing and configuration logic, while `scripts/` only handles work that must be completed in bulk before development or builds. Generated artifacts go to `public/mermaid/`, `src/generated/`, `.source/`, and `out/` respectively.
+Mature product capabilities live under `src/features/`; navigation, motion, and interaction state shared across features is provided by `src/runtime/`. The Fumadocs Loader, Layout, TOC, and complex DOM selectors are isolated in `src/adapters/fumadocs/`. Generated artifacts go to `public/mermaid/`, `src/features/mermaid/generated/`, `.source/`, and `out/`.
 
 ## 2. Routing and layout
 
@@ -67,7 +67,7 @@ The root path is the static language routing entry: the browser chooses Chinese 
 
 ## 3. Content source and page tree
 
-`source.config.ts` declares the content directory, Frontmatter Schema, and Markdown / MDX plugins via `defineDocs()`. `fumadocs-mdx` compiles content into `.source/`, and `loader()` in `src/lib/source.ts` assembles it into the page tree.
+`source.config.ts` only assembles the content source, `src/content/schema/docs.ts`, and `src/content/plugins/mdx-options.ts`. `fumadocs-mdx` compiles content into `.source/`, and `loader()` in `src/adapters/fumadocs/source.ts` assembles it into the page tree.
 
 `src/lib/i18n.ts` is used by both the content loader and the Fumadocs UI, serving as the single source for the locale list and the default language. The directory resolver buckets by top-level directories such as `zh` and `en`, so the same slug can hold independent content under different locales. Content fallback is explicitly disabled: when an English translation is missing, the Chinese page is not re-served under the English URL.
 
@@ -101,7 +101,7 @@ flowchart TD
     B --> C[Remark / Rehype]
     C --> D[fumadocs-mdx]
     D --> E[.source build artifacts]
-    E --> F[src/lib/source.ts]
+    E --> F[src/adapters/fumadocs/source.ts]
     F --> G[Page tree and static routes]
     G --> H[Next.js build]
     H --> I[out static site]
@@ -110,11 +110,12 @@ flowchart TD
     J --> K[SVG and asset map]
     K --> G
 
-    F --> L[Static search index]
-    L --> H
+    F --> L[Typed Content Manifest]
+    L --> M[Static search index and sitemap]
+    M --> H
 ```
 
-The production build also generates `robots.txt`, a `sitemap.xml` containing only published pages, and a unified PNG social share image from the same content source. The inclusion boundaries for drafts and auxiliary routes are decided at build time, not by server-side detection at deployment.
+`src/content/generated/manifest.ts` derives a read-only content list directly from the compiled Source. Stable IDs use `docs:${slugs.join('/')}`, so localized pages at the same path share an ID. The Manifest retains draft flags and consumers such as sitemap perform their own filtering; there is no second hand-maintained content source. The production build also generates `robots.txt`, a published-only `sitemap.xml`, and a unified PNG social share image.
 
 Different commands cover different verification scopes:
 
@@ -194,9 +195,14 @@ The loading scene only appears in the brief window of a route transition and doe
 
 | File | Responsibility |
 | :--- | :--- |
-| `source.config.ts` | Content Schema, Remark / Rehype, and code highlighting configuration |
+| `source.config.ts` | Content source, Schema, and MDX Pipeline assembly |
+| `src/content/schema/docs.ts` | Frontmatter Schema |
+| `src/content/plugins/` | Remark / Rehype, code title, and icon configuration |
+| `src/content/generated/manifest.ts` | Typed Content Manifest derived from Source |
 | `next.config.ts` | Production static export, image, and development response configuration |
-| `src/lib/source.ts` | Fumadocs content loader and icon mapping |
+| `src/adapters/fumadocs/` | Fumadocs Source, Layout, TOC, and DOM adapters |
+| `src/features/` | Six mature feature boundaries |
+| `src/runtime/` | Navigation, Motion, and Interaction coordination |
 | `src/lib/i18n.ts` | Single source for locales |
 | `src/lib/site-config.ts` | Repository, author, license, and Giscus configuration |
 | `src/app/[lang]/docs/layout.tsx` | Locale page tree and DocsLayout |

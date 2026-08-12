@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { source } from '@/adapters/fumadocs/source';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, LANGUAGE_TAGS, type Locale, OPEN_GRAPH_LOCALES } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
@@ -9,7 +10,6 @@ import {
   REPO_URL,
   SITE_ORIGIN,
 } from '@/lib/site-config';
-import { source } from '@/lib/source';
 
 export type DocumentLanguagePaths = Partial<Record<Locale, string>>;
 

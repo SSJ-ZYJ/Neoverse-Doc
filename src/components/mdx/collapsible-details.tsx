@@ -21,7 +21,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { prefersReducedMotion } from '@/lib/motion-config';
+import { prefersReducedMotion } from '@/runtime/motion/config';
 
 const AI_DETAILS_CLASS = 'markdown-details-ai';
 const AI_DETAILS_BODY_CLASS = 'markdown-details-ai-body';

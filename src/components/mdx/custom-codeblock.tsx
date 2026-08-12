@@ -21,7 +21,7 @@ import {
   type ReactNode,
 } from 'react';
 import { CodeCopyButton } from '@/components/mdx/code-copy-button';
-import { getFilePathFromCodeTitleLine } from '@/lib/code-title';
+import { getFilePathFromCodeTitleLine } from '@/content/plugins/code-title';
 import { getLanguageDisplayName } from '@/lib/language-mapping';
 
 interface CodeBlockPreProps extends ComponentProps<'pre'> {

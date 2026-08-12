@@ -1,8 +1,8 @@
 // Page-level custom copy (NOT fumadocs UI translations).
-// fumadocs-ui internal labels live in src/lib/layout.shared.tsx via defineI18nUI.
+// fumadocs-ui internal labels live in src/adapters/fumadocs/layout.tsx via defineI18nUI.
 // This dictionary only holds tagline / nav text / etc. consumed by app pages.
 // 页面自定义文案（非 fumadocs UI 翻译）。
-// fumadocs-ui 内部 UI 文案由 src/lib/layout.shared.tsx 的 defineI18nUI 管理。
+// fumadocs-ui 内部 UI 文案由 src/adapters/fumadocs/layout.tsx 的 defineI18nUI 管理。
 // 本字典只承载页面用到的 副标题 / 导航栏名 / 卡片标题等业务文案。
 
 import type { Dictionary } from './index';

@@ -6,7 +6,7 @@
 import { ArrowUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { prefersReducedMotion } from '@/lib/motion-preferences';
+import { prefersReducedMotion } from '@/runtime/motion/preferences';
 
 const CARD_SELECTOR = '[data-docs-page-card]';
 const TITLE_SELECTOR = '[data-docs-title]';

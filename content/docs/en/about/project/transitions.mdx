@@ -10,7 +10,7 @@ author:
 
 ## 1. System Overview
 
-Route transitions are coordinated by six files under `src/components/transition/`:
+Route transitions are coordinated by six files under `src/features/transition/`:
 
 ```text
 transition-types.ts        type contracts
@@ -24,6 +24,8 @@ content-particle-transition.ts  WebGL particle exit between docs
 ```
 
 `TransitionProvider` is the single state entry point for transitions; `TransitionLink` only expresses navigation intent and doesn't duplicate path checks, click coordinates, or cleanup logic across business components.
+
+The Provider is also the sole writer of the `idle → capturing → leaving → entering` lifecycle in `runtime/navigation`. Deferred TOC, Sidebar, Search Spotlight, and Home Template subscribe through `useSyncExternalStore`; they no longer depend on a global `CustomEvent`, a root-attribute `MutationObserver`, or transition datasets for business state. Root datasets remain only as CSS visual projections.
 
 ## 2. Type Contracts
 
@@ -188,7 +190,7 @@ Depends on HTML-in-Canvas capture (`drawElementImage` + `requestPaint`) and WebG
 
 ## 10. Transition Styles
 
-`src/styles/transitions.css` defines the transition visual rules.
+`src/features/transition/styles.css` defines the transition visual rules.
 
 ### Radial Mask
 
@@ -232,13 +234,15 @@ Full page HTML isn't written to `sessionStorage`; same-page hash navigation keep
 
 | File | Responsibility |
 | :--- | :--- |
-| `src/components/transition/transition-types.ts` | type contracts |
-| `src/components/transition/transition-policy.ts` | route-to-transition-semantics mapping |
-| `src/components/transition/transition-controller.ts` | DOM cloning and geometry computation |
-| `src/components/transition/transition-provider.tsx` | transition state and cleanup |
-| `src/components/transition/transition-layer.tsx` | inert visual layer |
-| `src/components/transition/transition-link.tsx` | next/link wrapper |
-| `src/components/transition/back-link.tsx` | declarative back link |
-| `src/components/transition/content-particle-transition.ts` | WebGL particle exit between docs |
-| `src/styles/transitions.css` | transition visual rules |
-| `src/lib/motion-config.ts` | transition durations and timeout config |
+| `src/features/transition/transition-types.ts` | type contracts |
+| `src/features/transition/transition-policy.ts` | route-to-transition-semantics mapping |
+| `src/features/transition/transition-controller.ts` | DOM cloning and geometry computation |
+| `src/features/transition/transition-provider.tsx` | transition state and cleanup |
+| `src/features/transition/transition-layer.tsx` | inert visual layer |
+| `src/features/transition/transition-link.tsx` | next/link wrapper |
+| `src/features/transition/back-link.tsx` | declarative back link |
+| `src/features/transition/content-particle-transition.ts` | WebGL particle exit between docs |
+| `src/features/transition/styles.css` | transition visual rules |
+| `src/runtime/motion/config.ts` | transition durations and timeout config |
+| `src/runtime/navigation/store.ts` | Cross-module navigation lifecycle Store |
+| `src/adapters/fumadocs/dom.ts` | Fumadocs DOM adapter interface |

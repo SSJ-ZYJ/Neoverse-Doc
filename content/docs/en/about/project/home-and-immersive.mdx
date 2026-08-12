@@ -180,7 +180,7 @@ When an HTML-in-Canvas subtree is unmounted during navigation, it may crash if c
 
 ### Particle styles
 
-`src/styles/immersive-interactions.css` defines the particle visuals:
+`src/runtime/interaction/styles.css` defines the particle visuals:
 
 - Two theme particle colors: light mode uses `normal` blending, dark mode uses `screen` blending for better visibility;
 - `.immersive-particle-layer`: `contain: layout paint`, and `border-radius` and `clip-path` follow the host's rounding;
@@ -286,4 +286,4 @@ On mobile, priority goes to content width, reachable navigation, and touch targe
 | `src/components/docs-page-gradual-blur.tsx` | Progressive blur for documentation pages |
 | `src/components/inline-code-wrap-controller.tsx` | Inline code wrapping detection |
 | `src/components/docs-motion-settings.tsx` | Motion settings panel |
-| `src/styles/immersive-interactions.css` | Immersive interaction styles |
+| `src/runtime/interaction/styles.css` | Immersive interaction styles |

@@ -133,7 +133,7 @@ Neoverse-Doc/
 3. **遵循技术栈**：使用 `package.json` 中定义的依赖版本
 4. **类型安全**：充分利用 TypeScript 类型系统
 5. **动效隔离**：命令式挂载的视觉特效必须使用宿主直属层，禁止覆盖业务组件已有的定位、布局属性或接管内部控件的指针事件
-6. **设计 Token**：业务组件不得散落颜色、圆角、阴影和动效时长，优先使用 `src/styles/tokens.css` 中的语义变量
+6. **设计 Token**：业务组件不得散落颜色、圆角、阴影和动效时长，优先使用 `src/ui/tokens/tokens.css` 中的语义变量
 7. **转场集中**：内部导航使用 `TransitionLink` 或交由 `TransitionProvider` 捕获，禁止在业务按钮中重复实现路由分类、DOM 快照和点击坐标协议；由 Provider 管理的客户端导航必须在目标模板挂载前写入 pending 标记，目标模板不得再次播放直达加载动画；包含固定模糊环境层的长页面不得执行整页 `transform`，应将入场收束限定在轻量内容区域
 8. **效果分层**：页面使用 `HeroTitle`、`ChapterGrid`、`DocCard` 等业务组件；React Bits 本地化组件只作为底层实现，并必须提供触摸、移动端与 `prefers-reduced-motion` 降级
 9. **滚动动效**：优先使用支持渐进增强的 CSS 视图时间线；必须保留无时间线浏览器的静态背景，并提供 `prefers-reduced-motion` 降级
@@ -144,7 +144,7 @@ Neoverse-Doc/
 14. **代码 Tabs 层级**：代码 Tabs 仅允许根容器保留 `--radius-md`，内部 tablist、tabpanel、文件栏与代码块不得重复设置圆角；Tab 标签 hover 保持透明，整个 Tabs 根容器作为统一粒子宿主，粒子层需要同时覆盖语言栏与代码面板
 15. **内缩表面交互**：使用 `::before` 绘制的内缩玻璃条必须以伪元素的实际几何范围作为粒子命中、hover 与裁剪边界；移动端悬浮标题栏由圆角外层承载 hover、active 与粒子反馈，内部按钮不得重复着色或缩放
 16. **悬浮轮廓**：卡片与控件的锐利 hover 描边必须由宿主真实 border 提供，外层阴影仅负责柔光；伪元素描边不得使用负 inset 扩大边界，避免其圆角轮廓与实际内容边缘错位
-17. **Giscus 主题与布局**：宿主在 `src/styles/giscus.css` 中保持透明无框并仅负责宽度约束；文档评论区必须通过 `DocsCommunity` 作为 `#nd-docs-layout` 的独立 Grid 子节点呈现，社区卡片与正文卡片共享边框、圆角、背景和阴影规则，但 Giscus 内容必须跟随页面自然高度，禁止使用固定高度、内部滚动或 `overscroll-behavior` 截断页面滚动，也禁止重新放入 `DocsPage` 或 `DocsBody`。跨域 iframe 主题维护在 `public/giscus-light.css` 与 `public/giscus-dark.css`。宿主 `iframe` shadow part 的 `color-scheme` 必须与站点最终主题同步，两套 iframe 主题必须显式清空 `html`、`body` 与 `.gsc-main` 根画布，禁止系统主题在半透明表面后产生黑底串色。表情汇总区保持透明无框；评论卡片 / 弹层、输入组合、按钮 / 头像分别映射 `--radius-md`、`--radius-sm`、`--radius-xs` 对应尺寸。文本区与 Markdown 提示栏只允许一个 `--radius-sm` 外壳，内部不得重复设置圆角，滚动条也不得破坏右侧圆角。深色评论外框必须使用平面色阶和中性冷色内描边，禁止方向性高亮渐变或大面积蓝色外发光；表情弹层应使用更低不透明度的独立折射表面和更强背景模糊，保持文档背景可感知；深色主按钮必须使用低亮度表面、浅色文字和克制的折射高光，不得复用浅色主题的高亮渐变。宿主可禁止误选，但不得通过 `pointer-events` 阻断 iframe 内部交互
+17. **Giscus 主题与布局**：宿主在 `src/features/community/styles.css` 中保持透明无框并仅负责宽度约束；文档评论区必须通过 `DocsCommunity` 作为 `#nd-docs-layout` 的独立 Grid 子节点呈现，社区卡片与正文卡片共享边框、圆角、背景和阴影规则，但 Giscus 内容必须跟随页面自然高度，禁止使用固定高度、内部滚动或 `overscroll-behavior` 截断页面滚动，也禁止重新放入 `DocsPage` 或 `DocsBody`。跨域 iframe 主题维护在 `public/giscus-light.css` 与 `public/giscus-dark.css`。宿主 `iframe` shadow part 的 `color-scheme` 必须与站点最终主题同步，两套 iframe 主题必须显式清空 `html`、`body` 与 `.gsc-main` 根画布，禁止系统主题在半透明表面后产生黑底串色。表情汇总区保持透明无框；评论卡片 / 弹层、输入组合、按钮 / 头像分别映射 `--radius-md`、`--radius-sm`、`--radius-xs` 对应尺寸。文本区与 Markdown 提示栏只允许一个 `--radius-sm` 外壳，内部不得重复设置圆角，滚动条也不得破坏右侧圆角。深色评论外框必须使用平面色阶和中性冷色内描边，禁止方向性高亮渐变或大面积蓝色外发光；表情弹层应使用更低不透明度的独立折射表面和更强背景模糊，保持文档背景可感知；深色主按钮必须使用低亮度表面、浅色文字和克制的折射高光，不得复用浅色主题的高亮渐变。宿主可禁止误选，但不得通过 `pointer-events` 阻断 iframe 内部交互
 18. **阅读宽度**：常规视口使用 `--reading-max`，仅在侧栏、正文与目录之间空间充足的宽屏断点切换到 `--reading-wide-max`；`#nd-page`、正文和移动 TOC 必须共用同一响应式宽度变量，并通过自动外边距与 `justify-self` 保持居中。桌面 `#nd-toc` 容器必须通过 `justify-self: end` 与逻辑外边距贴齐最右网格列，目录文字仍保持起始对齐
 19. **长文档性能**：MDX 组件必须通过共享注册表维护；纯展示主体优先保持服务端渲染，交互只保留最小客户端边界；Mermaid 等重型依赖必须动态导入并按视口激活；复杂离屏内容块使用 `content-visibility` 时必须通过稳定的 `[data-docs-body]` 标记限定范围，并提供固有尺寸与打印回退；禁止让每个内容块各自执行未合并的滚动状态更新；主题切换必须由 `next-themes` 临时停用 CSS 过渡，避免代码块与高亮节点随文章长度线性增加动画开销；嵌套玻璃不得重复执行 `backdrop-filter`，持续动画优先使用 `transform` / `opacity` 合成；首页无限环境动效必须复用 `MOTION_FRAME_RATE.homepageAmbient` 的共享时钟，不得分别按显示器刷新率持续提交；触摸粒子等高频反馈必须按帧批量读写
 20. **首页页脚**：外层必须保持透明或使用与首页画布同源的渐变延续，禁止使用独立通栏纯色切断场景；项目元信息统一放入使用语义 Token 的悬浮玻璃面，版权作者与项目修订信息保持上下两行，行内间距由结构化分组控制，并分别验证深色、浅色与移动端布局
@@ -407,7 +407,7 @@ feat(i18n): 新增日语语言支持
 
 4. 在 `content/docs/` 创建 `ja/` 目录并翻译文档
 
-5. 在 `src/lib/layout.shared.tsx` 添加 fumadocs UI 翻译
+5. 在 `src/adapters/fumadocs/layout.tsx` 添加 fumadocs UI 翻译
 
 ### 翻译原则
 

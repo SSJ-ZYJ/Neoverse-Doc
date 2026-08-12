@@ -4,8 +4,8 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { useMotionPreferences } from '@/components/motion-preferences-provider';
-import { MOTION_DURATION_MS, MOTION_EASING } from '@/lib/motion-config';
+import { MOTION_DURATION_MS, MOTION_EASING } from '@/runtime/motion/config';
+import { useMotionPreferences } from '@/runtime/motion/provider';
 
 interface SplitTextProps {
   className?: string;

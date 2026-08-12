@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { LocalizedLoading } from '@/components/localized-loading';
 import { getPageDictionary } from '@/dictionaries';
+import { mountRouteLoadingHandoff } from '@/features/transition';
 import { getPreferredLocale } from '@/lib/preferred-locale';
-import { mountRouteLoadingHandoff } from '@/lib/route-loading-handoff';
 
 const zh = getPageDictionary('zh');
 const en = getPageDictionary('en');

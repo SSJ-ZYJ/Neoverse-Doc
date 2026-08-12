@@ -7,12 +7,12 @@
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { i18nProvider, i18nUI } from '@/adapters/fumadocs/layout';
 import { DocumentLanguageSetter } from '@/components/document-language';
-import { GuestbookReturnTracker } from '@/components/guestbook-return';
-import DefaultSearchDialog from '@/components/search';
-import { SearchSpotlight } from '@/components/search-spotlight';
-import { TransitionProvider } from '@/components/transition/transition-provider';
 import { getPageDictionary } from '@/dictionaries';
+import { GuestbookReturnTracker } from '@/features/community';
+import { DefaultSearchDialog, SearchSpotlight } from '@/features/search';
+import { TransitionProvider } from '@/features/transition';
 import { getSearchChapterTags } from '@/lib/home-sections';
 import {
   generateLocaleStaticParams,
@@ -20,7 +20,6 @@ import {
   OPEN_GRAPH_LOCALES,
   resolveLocale,
 } from '@/lib/i18n';
-import { i18nProvider, i18nUI } from '@/lib/layout.shared';
 import { getHomeAlternates } from '@/lib/seo';
 import { SOCIAL_IMAGE } from '@/lib/site-config';
 

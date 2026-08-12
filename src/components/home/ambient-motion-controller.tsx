@@ -4,8 +4,8 @@
 'use client';
 
 import { type ReactNode, useEffect } from 'react';
-import { useMotionPreferences } from '@/components/motion-preferences-provider';
-import { MOTION_FRAME_RATE } from '@/lib/motion-config';
+import { MOTION_FRAME_RATE } from '@/runtime/motion/config';
+import { useMotionPreferences } from '@/runtime/motion/provider';
 
 const MILLISECONDS_PER_SECOND = 1_000;
 const HOME_AMBIENT_FRAME_INTERVAL_MS = MILLISECONDS_PER_SECOND / MOTION_FRAME_RATE.homepageAmbient;

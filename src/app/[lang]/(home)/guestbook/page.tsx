@@ -6,9 +6,8 @@
 
 import { MessageSquareText } from 'lucide-react';
 import type { Metadata } from 'next';
-import { Guestbook } from '@/components/guestbook';
-import { GuestbookReturnLink } from '@/components/guestbook-return';
 import { getPageDictionary } from '@/dictionaries';
+import { Guestbook, GuestbookReturnLink } from '@/features/community';
 import {
   generateLocaleStaticParams,
   LANGUAGE_TAGS,

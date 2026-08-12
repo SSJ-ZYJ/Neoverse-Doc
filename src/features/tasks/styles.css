@@ -1,0 +1,506 @@
+/* Task feature styles: interactive task lists and persisted progress.
+   Task 功能样式：可交互任务清单与持久化进度。 */
+
+/* ── Interactive Task Lists / 可交互任务清单 ─────────────────────────── */
+
+/* Standard GFM `- [ ]` lists become compact glass rows without changing the
+   authoring syntax. Normal unordered lists keep their existing typography.
+   标准 GFM `- [ ]` 清单以紧凑玻璃行呈现，不改变文档编写语法；
+   普通无序列表继续沿用现有排版。 */
+.mdx-task-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem 1.25rem;
+  margin-block: 1.25rem 1.5rem;
+  padding: 0.85rem 1rem;
+}
+
+.mdx-task-progress__heading,
+.mdx-task-progress__controls,
+.mdx-task-progress__stats,
+.mdx-task-progress__stats > span {
+  display: flex;
+  align-items: center;
+}
+
+.mdx-task-progress__controls {
+  gap: 0.75rem;
+}
+
+.mdx-task-progress__heading {
+  gap: 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--fd-foreground);
+}
+
+.mdx-task-progress__icon {
+  display: inline-grid;
+  inline-size: 2rem;
+  block-size: 2rem;
+  place-items: center;
+  border: 1px solid var(--border-interactive);
+  border-radius: var(--radius-xs);
+  color: var(--fd-accent-foreground);
+  background: var(--glass-control-hover-tint);
+}
+
+.mdx-task-progress__stats {
+  gap: 1rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.mdx-task-progress__stats > span {
+  gap: 0.35rem;
+}
+
+.mdx-task-progress__stats strong {
+  color: var(--fd-foreground);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The progress-card action reuses the compact project control hierarchy and
+   stays secondary to the task counts while remaining clearly discoverable.
+   进度卡片操作复用项目紧凑控件层级，在保持次于任务统计的同时清晰可发现。 */
+.mdx-task-progress__jump {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  gap: 0.375rem;
+  border: 1px solid var(--glass-border-hairline);
+  border-radius: var(--radius-xs);
+  padding: 0.35rem 0.55rem;
+  color: var(--text-secondary);
+  background: var(--glass-control-surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 48%, transparent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard),
+    transform var(--nd-tt-bounce);
+}
+
+.mdx-task-progress__jump > svg {
+  inline-size: 0.9rem;
+  block-size: 0.9rem;
+  color: var(--accent-primary);
+  transition: transform var(--motion-fast) var(--motion-ease-emphasized);
+}
+
+@media (hover: hover) {
+  .mdx-task-progress__jump:hover {
+    border-color: var(--border-interactive);
+    color: var(--text-primary);
+    background: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--shadow-interactive);
+    transform: translateY(-1px);
+  }
+
+  .mdx-task-progress__jump:hover > svg {
+    transform: translateY(0.125rem);
+  }
+}
+
+.mdx-task-progress__jump:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 2px;
+}
+
+.mdx-task-progress__jump:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.mdx-task-progress__bar {
+  grid-column: 1 / -1;
+  inline-size: 100%;
+  block-size: 0.3rem;
+  overflow: hidden;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 16%, transparent);
+}
+
+.mdx-task-progress__bar::-webkit-progress-bar {
+  border-radius: inherit;
+  background: transparent;
+}
+
+.mdx-task-progress__bar::-webkit-progress-value,
+.mdx-task-progress__bar::-moz-progress-bar {
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+
+@media (max-width: 32rem) {
+  .mdx-task-progress {
+    grid-template-columns: 1fr;
+  }
+
+  .mdx-task-progress__stats {
+    gap: 1rem;
+  }
+
+  .mdx-task-progress__controls {
+    justify-content: space-between;
+  }
+
+  .mdx-task-progress__bar {
+    grid-column: 1;
+  }
+}
+
+#nd-page ul.contains-task-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-block: 1.25rem;
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mdx-task-progress__jump,
+  .mdx-task-progress__jump > svg {
+    transition: none;
+  }
+
+  .mdx-task-progress__jump:hover,
+  .mdx-task-progress__jump:active,
+  .mdx-task-progress__jump:hover > svg {
+    transform: none;
+  }
+}
+
+#nd-page li.mdx-task-item {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--glass-border-hairline) 82%, transparent);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--edge-light) 9%, transparent), transparent 34%),
+    color-mix(in srgb, var(--surface-subtle) 58%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 52%, transparent);
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard),
+    opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+/* A single composited sheen crosses the row only after a direct completion.
+   It uses no extra DOM and never runs as an ambient animation.
+   单层合成扫光仅在用户直接完成任务后经过卡片，不增加 DOM，也不会常驻运行。 */
+#nd-page li.mdx-task-item::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 14%,
+    color-mix(in srgb, var(--accent-primary) 16%, transparent) 42%,
+    color-mix(in srgb, var(--edge-light) 24%, transparent) 50%,
+    transparent 72%
+  );
+  content: "";
+  pointer-events: none;
+  transform: translate3d(-112%, 0, 0);
+}
+
+#nd-page li.mdx-task-item::marker {
+  content: "";
+}
+
+@media (hover: hover) {
+  #nd-page li.mdx-task-item:hover {
+    border-color: var(--border-interactive);
+    background-color: var(--glass-control-hover-tint);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow-hover);
+  }
+}
+
+.mdx-task-item__checkbox {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  inline-size: 1.35rem;
+  block-size: 1.35rem;
+  place-content: center;
+  margin: 0.2rem 0 0;
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--text-muted) 48%, transparent);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  color: transparent;
+  background: color-mix(in srgb, var(--surface-subtle) 72%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 48%, transparent);
+  transform: scale(1);
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-fast) var(--motion-ease-emphasized);
+}
+
+/* The checkbox owns a six-photon burst rendered by one pseudo-element. Only
+   transform and opacity animate, keeping the feedback compositor-friendly.
+   勾选框通过单个伪元素绘制六点光子爆发，仅动画化 transform 与 opacity。 */
+.mdx-task-item__checkbox::after {
+  position: absolute;
+  inset: -0.72rem;
+  border-radius: 50%;
+  opacity: 0;
+  background:
+    radial-gradient(circle, var(--edge-light) 0 28%, transparent 34%) 50% 0 / 0.3rem 0.3rem
+    no-repeat,
+    radial-gradient(circle, var(--accent-primary) 0 28%, transparent 34%) 100% 28% / 0.26rem 0.26rem
+    no-repeat,
+    radial-gradient(circle, var(--accent-secondary) 0 28%, transparent 34%) 88% 88% / 0.3rem 0.3rem
+    no-repeat,
+    radial-gradient(circle, var(--edge-light) 0 28%, transparent 34%) 18% 100% / 0.24rem 0.24rem
+    no-repeat,
+    radial-gradient(circle, var(--accent-secondary) 0 28%, transparent 34%) 0 48% / 0.28rem 0.28rem
+    no-repeat,
+    radial-gradient(circle, var(--accent-primary) 0 28%, transparent 34%) 18% 10% / 0.22rem 0.22rem
+    no-repeat;
+  content: "";
+  pointer-events: none;
+  transform: scale(0.45) rotate(-18deg);
+}
+
+.mdx-task-item__checkbox::before {
+  inline-size: 0.34rem;
+  block-size: 0.64rem;
+  border: solid currentColor;
+  border-width: 0 0.13rem 0.13rem 0;
+  content: "";
+  transform: translateY(-0.05rem) rotate(45deg) scale(0);
+  transition: transform var(--motion-fast) var(--motion-ease-emphasized);
+}
+
+.mdx-task-item__checkbox:checked {
+  border-color: color-mix(in srgb, var(--accent-secondary) 72%, var(--border-subtle));
+  color: var(--fd-primary-foreground);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--edge-light) 68%, transparent),
+    0 0 1rem -0.4rem color-mix(in srgb, var(--accent-primary) 58%, transparent);
+  transform: scale(1.04);
+}
+
+.mdx-task-item__checkbox:checked::before {
+  transform: translateY(-0.05rem) rotate(45deg) scale(1);
+}
+
+.mdx-task-item__checkbox:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 2px;
+}
+
+.mdx-task-item__content {
+  position: relative;
+  z-index: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  transition:
+    color var(--motion-fast) var(--motion-ease-standard),
+    opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
+#nd-page li.mdx-task-item[data-task-checked="true"] {
+  opacity: 0.72;
+}
+
+#nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__content {
+  color: var(--text-muted);
+}
+
+/* The task content is a grid item and therefore blockified. Its inline child
+   supplies one cloned strikeout fragment per visual line without inheriting a
+   new native metric when the text enters a smaller monospace code capsule.
+   任务内容作为网格项会被块级化；内部行内容器按每个视觉行片段复制统一删除线，
+   遇到较小的等宽代码胶囊时也不会切换到新的原生字体度量。 */
+#nd-page li.mdx-task-item[data-task-checked="true"] .mdx-task-item__label {
+  text-decoration: none;
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--text-muted) 68%, transparent),
+    color-mix(in srgb, var(--text-muted) 68%, transparent)
+  );
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Completion feedback mirrors the project's restrained photon language while
+   reopen feedback stays shorter and quieter.
+   完成反馈沿用项目克制的光子语言，恢复待办则采用更短、更轻的回弹。 */
+#nd-page li.mdx-task-item[data-task-animation="complete"]::after {
+  animation: mdx-task-row-sheen 560ms var(--motion-ease-standard) both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__checkbox {
+  animation: mdx-task-checkbox-complete 420ms var(--motion-ease-emphasized) both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__checkbox::before {
+  animation: mdx-task-check-draw 320ms var(--motion-ease-emphasized) 70ms both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__checkbox::after {
+  animation: mdx-task-photon-burst 480ms var(--motion-ease-standard) 40ms both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__content {
+  animation: mdx-task-content-complete 440ms var(--motion-ease-standard) both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="reopen"] .mdx-task-item__checkbox {
+  animation: mdx-task-checkbox-reopen 240ms var(--motion-ease-emphasized) both;
+}
+
+#nd-page li.mdx-task-item[data-task-animation="reopen"] .mdx-task-item__content {
+  animation: mdx-task-content-reopen 260ms var(--motion-ease-standard) both;
+}
+
+@keyframes mdx-task-checkbox-complete {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  36% {
+    transform: scale(0.76) rotate(-7deg);
+  }
+  72% {
+    transform: scale(1.18) rotate(3deg);
+  }
+  100% {
+    transform: scale(1.04) rotate(0deg);
+  }
+}
+
+@keyframes mdx-task-check-draw {
+  0% {
+    opacity: 0;
+    transform: translateY(0.12rem) rotate(35deg) scale(0);
+  }
+  64% {
+    opacity: 1;
+    transform: translateY(-0.08rem) rotate(47deg) scale(1.18);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-0.05rem) rotate(45deg) scale(1);
+  }
+}
+
+@keyframes mdx-task-photon-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.45) rotate(-18deg);
+  }
+  28% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18) rotate(12deg);
+  }
+}
+
+@keyframes mdx-task-row-sheen {
+  0% {
+    opacity: 0;
+    transform: translate3d(-112%, 0, 0);
+  }
+  24% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(112%, 0, 0);
+  }
+}
+
+@keyframes mdx-task-content-complete {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  45% {
+    opacity: 0.72;
+    transform: translate3d(0.18rem, 0, 0);
+  }
+}
+
+@keyframes mdx-task-checkbox-reopen {
+  0% {
+    transform: scale(1.04);
+  }
+  48% {
+    transform: scale(0.84);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes mdx-task-content-reopen {
+  0% {
+    opacity: 0.72;
+    transform: translate3d(0.12rem, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Coarse pointers skip the wide row sweep and photon burst. The remaining
+   checkbox response is short, local, and compositor-only for mobile GPUs.
+   粗指针设备关闭整行扫光与光子爆发，仅保留短促、局部、合成层友好的勾选反馈。 */
+@media (hover: none), (pointer: coarse) {
+  #nd-page li.mdx-task-item[data-task-animation]::after,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__checkbox::after,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__content {
+    animation: none;
+  }
+
+  #nd-page li.mdx-task-item[data-task-animation="complete"] .mdx-task-item__checkbox {
+    animation-duration: 260ms;
+  }
+
+  #nd-page li.mdx-task-item[data-task-animation="reopen"] .mdx-task-item__checkbox {
+    animation-duration: 180ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-page li.mdx-task-item[data-task-animation]::after,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__checkbox,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__checkbox::before,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__checkbox::after,
+  #nd-page li.mdx-task-item[data-task-animation] .mdx-task-item__content {
+    animation: none;
+  }
+}

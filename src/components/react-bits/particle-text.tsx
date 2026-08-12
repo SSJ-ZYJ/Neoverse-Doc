@@ -5,7 +5,7 @@
 'use client';
 
 import { type CSSProperties, useEffect, useRef } from 'react';
-import { useMotionPreferences } from '@/components/motion-preferences-provider';
+import { useMotionPreferences } from '@/runtime/motion/provider';
 
 type ParticleTextTrigger = 'mount' | 'hover' | 'click';
 

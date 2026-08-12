@@ -40,24 +40,24 @@ flowchart TD
 
 ### 稳定身份与缓存
 
-`src/lib/mermaid-asset-id.ts` 根据规范化 Mermaid 源码生成 source ID。最终文件名还包含渲染器版本与项目样式签名，因此：
+`src/features/mermaid/asset-id.ts` 根据规范化 Mermaid 源码生成 source ID。最终文件名还包含渲染器版本与项目样式签名，因此：
 
 - 相同源码只生成一份资源；
 - 未变化图表可以跨构建复用；
 - Mermaid 版本或影响测量的配置变化会产生新资源；
 - 不再被任何内容引用的 SVG 可以安全清理。
 
-`src/generated/mermaid-assets.ts` 是 source ID 到文件名的只读映射，由脚本生成，不应手工编辑。
+`src/features/mermaid/generated/assets.ts` 是 source ID 到文件名的只读映射，由脚本生成，不应手工编辑。
 
 ### 与站点样式一致
 
-生成脚本通过 Puppeteer 加载项目 Mermaid 配置、字体和 `src/styles/mermaid.css`。影响节点尺寸的样式在 Mermaid 测量阶段就生效，避免先用默认字体布局、再在站点中套样式造成裁剪。
+生成脚本通过 Puppeteer 加载项目 Mermaid 配置、字体和 `src/features/mermaid/styles.css`。影响节点尺寸的样式在 Mermaid 测量阶段就生效，避免先用默认字体布局、再在站点中套样式造成裁剪。
 
 渲染结果保留 Mermaid 图型自身的 `viewBox`，只有实际内容越界时才扩展边界。通用测量不会覆盖 `gitGraph` 等专用图型的布局。
 
 ## 三、浏览器渲染路径
 
-`src/lib/hooks/use-mermaid-render.ts` 先查询静态资源映射：
+`src/features/mermaid/hooks/use-mermaid-render.ts` 先查询静态资源映射：
 
 1. 找到资源时直接加载 SVG；
 2. 资源未到达视口附近时延迟非必要工作（`MERMAID_RENDER_ROOT_MARGIN = '1200px 0px'`，提前提升优先级）；
@@ -177,7 +177,7 @@ bun run generate:mermaid
 
 - 控制台中的生成、复用和清理数量；
 - `public/mermaid/` 新增与删除是否符合内容变化；
-- `src/generated/mermaid-assets.ts` 是否只包含生成映射；
+- `src/features/mermaid/generated/assets.ts` 是否只包含生成映射；
 - 浅色 / 深色下节点、标签和边界是否完整；
 - 大图、小图、源码视图与最大化操作是否正常。
 
@@ -188,10 +188,10 @@ bun run generate:mermaid
 | 文件 | 职责 |
 | :--- | :--- |
 | `scripts/generate-mermaid-assets.ts` | 扫描、去重、渲染与清理 |
-| `src/lib/mermaid-asset-id.ts` | 稳定源码 ID |
-| `src/generated/mermaid-assets.ts` | 静态资源映射 |
-| `src/components/mdx/mermaid.tsx` | 图表外壳与工具栏 |
-| `src/lib/hooks/use-mermaid-render.ts` | 静态资源与兜底 |
-| `src/lib/hooks/use-fit-canvas-scale.ts` | 自动适配 |
-| `src/lib/hooks/use-zoom-and-pan.ts` | 画布交互 |
-| `src/styles/mermaid.css` | 图表主题 |
+| `src/features/mermaid/asset-id.ts` | 稳定源码 ID |
+| `src/features/mermaid/generated/assets.ts` | 静态资源映射 |
+| `src/features/mermaid/components/mermaid.tsx` | 图表外壳与工具栏 |
+| `src/features/mermaid/hooks/use-mermaid-render.ts` | 静态资源与兜底 |
+| `src/features/mermaid/hooks/use-fit-canvas-scale.ts` | 自动适配 |
+| `src/features/mermaid/hooks/use-zoom-and-pan.ts` | 画布交互 |
+| `src/features/mermaid/styles.css` | 图表主题 |

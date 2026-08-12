@@ -9,21 +9,22 @@
    @mogeko/maple-mono-cn 包本地加载（import CSS）。这消除了此前
    每次页面加载都从 jsdelivr CDN 获取的渲染阻塞远程 @import。 */
 
-@import "../styles/theme.css";
-@import "../styles/tokens.css";
-@import "../styles/motion.css";
-@import "../styles/glass.css";
-@import "../styles/typography.css";
-@import "../styles/fumadocs-glass.css";
-@import "../styles/giscus.css";
-@import "../styles/mermaid.css";
+@import "../ui/styles/theme.css";
+@import "../ui/tokens/tokens.css";
+@import "../ui/styles/motion.css";
+@import "../ui/surfaces/glass.css";
+@import "../features/tasks/styles.css";
+@import "../ui/styles/typography.css";
+@import "../adapters/fumadocs/styles.css";
+@import "../features/community/styles.css";
+@import "../features/mermaid/styles.css";
 /* Project file hierarchy styling is shared by the site and MDX Preview.
    项目文件层级样式由站点与 MDX Preview 共同使用。 */
 @import "../styles/mdx-files.css";
 @import "../styles/pages/home.css";
 @import "../styles/pages/docs.css";
 @import "../styles/pages/special.css";
-@import "../styles/transitions.css";
-@import "../styles/immersive-interactions.css";
-@import "../styles/search-spotlight.css";
-@import "../styles/a11y.css";
+@import "../features/transition/styles.css";
+@import "../runtime/interaction/styles.css";
+@import "../features/search/styles.css";
+@import "../ui/styles/a11y.css";

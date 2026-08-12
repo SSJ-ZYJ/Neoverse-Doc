@@ -10,7 +10,7 @@ author:
 
 ## 一、系统总览
 
-路由转场由 `src/components/transition/` 下的六个文件协作完成：
+路由转场由 `src/features/transition/` 下的六个文件协作完成：
 
 ```text
 transition-types.ts        类型契约
@@ -24,6 +24,8 @@ content-particle-transition.ts  docs 间 WebGL 粒子退场
 ```
 
 `TransitionProvider` 是转场的唯一状态入口，`TransitionLink` 只表达导航意图，不在各业务组件中复制路径判断、点击坐标和清理逻辑。
+
+Provider 同时单写 `runtime/navigation` 的 `idle → capturing → leaving → entering` 生命周期。Deferred TOC、侧栏、Search Spotlight 与 Home Template 通过 `useSyncExternalStore` 订阅，不再依赖全局 `CustomEvent`、根属性 `MutationObserver` 或 transition dataset 推导业务状态；根 dataset 只保留为 CSS 视觉投影。
 
 ## 二、类型契约
 
@@ -188,7 +190,7 @@ pathname 变化时校验 intent，标记 `data-nd-route-transition`：
 
 ## 十、转场样式
 
-`src/styles/transitions.css` 定义转场视觉规则。
+`src/features/transition/styles.css` 定义转场视觉规则。
 
 ### 径向遮罩
 
@@ -232,13 +234,15 @@ pathname 变化时校验 intent，标记 `data-nd-route-transition`：
 
 | 文件 | 职责 |
 | :--- | :--- |
-| `src/components/transition/transition-types.ts` | 类型契约 |
-| `src/components/transition/transition-policy.ts` | 路由到转场语义的映射 |
-| `src/components/transition/transition-controller.ts` | DOM 克隆与几何计算 |
-| `src/components/transition/transition-provider.tsx` | 转场状态与清理 |
-| `src/components/transition/transition-layer.tsx` | inert 视觉层 |
-| `src/components/transition/transition-link.tsx` | next/link 包装 |
-| `src/components/transition/back-link.tsx` | 声明式返回链接 |
-| `src/components/transition/content-particle-transition.ts` | docs 间 WebGL 粒子退场 |
-| `src/styles/transitions.css` | 转场视觉规则 |
-| `src/lib/motion-config.ts` | 转场时长与超时配置 |
+| `src/features/transition/transition-types.ts` | 类型契约 |
+| `src/features/transition/transition-policy.ts` | 路由到转场语义的映射 |
+| `src/features/transition/transition-controller.ts` | DOM 克隆与几何计算 |
+| `src/features/transition/transition-provider.tsx` | 转场状态与清理 |
+| `src/features/transition/transition-layer.tsx` | inert 视觉层 |
+| `src/features/transition/transition-link.tsx` | next/link 包装 |
+| `src/features/transition/back-link.tsx` | 声明式返回链接 |
+| `src/features/transition/content-particle-transition.ts` | docs 间 WebGL 粒子退场 |
+| `src/features/transition/styles.css` | 转场视觉规则 |
+| `src/runtime/motion/config.ts` | 转场时长与超时配置 |
+| `src/runtime/navigation/store.ts` | 跨模块导航生命周期 Store |
+| `src/adapters/fumadocs/dom.ts` | Fumadocs DOM 适配接口 |

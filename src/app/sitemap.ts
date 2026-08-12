@@ -1,11 +1,7 @@
 import type { MetadataRoute } from 'next';
+import { contentManifest, getContentLanguagePaths } from '@/content/generated/manifest';
 import { i18n, LANGUAGE_TAGS } from '@/lib/i18n';
-import {
-  absoluteUrl,
-  createAbsoluteDocumentLanguageLinks,
-  getIndexableDocumentLanguagePaths,
-} from '@/lib/seo';
-import { source } from '@/lib/source';
+import { absoluteUrl, createAbsoluteDocumentLanguageLinks } from '@/lib/seo';
 
 export const dynamic = 'force-static';
 
@@ -21,18 +17,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     alternates: { languages: homeLanguages },
   }));
 
-  for (const locale of i18n.languages) {
-    for (const page of source.getPages(locale)) {
-      if (page.data.draft === true) continue;
+  for (const page of contentManifest) {
+    if (page.draft === true) continue;
 
-      const languagePaths = getIndexableDocumentLanguagePaths(page.slugs);
-      const languages = createAbsoluteDocumentLanguageLinks(languagePaths);
-
-      entries.push({
-        url: absoluteUrl(page.url),
-        ...(languages ? { alternates: { languages } } : {}),
-      });
+    const publicPaths = getContentLanguagePaths(page.id);
+    for (const locale of i18n.languages) {
+      const localizedPage = contentManifest.find(
+        (candidate) => candidate.id === page.id && candidate.locale === locale,
+      );
+      if (localizedPage?.draft === true) delete publicPaths[locale];
     }
+    const languages = createAbsoluteDocumentLanguageLinks(publicPaths);
+    entries.push({
+      url: absoluteUrl(page.url),
+      ...(languages ? { alternates: { languages } } : {}),
+    });
   }
 
   return entries.sort((left, right) => left.url.localeCompare(right.url));

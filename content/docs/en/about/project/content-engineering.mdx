@@ -10,7 +10,7 @@ author:
 
 ## 1. Content Schema
 
-`source.config.ts` extends project fields on the Fumadocs `pageSchema`:
+`src/content/schema/docs.ts` extends project fields on the Fumadocs `pageSchema`, while `source.config.ts` only assembles the pieces:
 
 | Field | Type | Purpose |
 | :--- | :--- | :--- |
@@ -53,7 +53,7 @@ Fumadocs default MDX components
 
 ## 4. Remark / Rehype Plugin Chain
 
-`source.config.ts` assembles the MDX plugins in the following order, each plugin taking a single responsibility:
+`src/content/plugins/mdx-options.ts` assembles the MDX plugins in the following order, each plugin taking a single responsibility:
 
 ```text
 remarkCollapsibleAlert   → semantic collapsible block syntax
@@ -102,7 +102,7 @@ First-line path comment
 
 ### Shiki Icon Configuration
 
-`source.config.ts` registers custom SVG icons for 20+ languages via `icon.extend` (HTML, CSS, JS, TS, React, Vue, Python, Rust, Go, Shell, PowerShell, BAT, C, C++, C#, Java, JSON, YAML, TOML, INI, Vim, Text, LaTeX, etc.), and provides alias mappings via `icon.shortcuts` (`pwsh/ps1 → powershell`, `batch → bat`, `gitattributes → git`, `tex → latex`, `markdown/mdx → md`, `fish → shellscript`, `jsonc → json`). PowerShell and CMD icons use brighter color variants in dark mode to improve readability.
+`src/content/plugins/code-icons.ts` registers custom SVG icons for 20+ languages via `icon.extend` (HTML, CSS, JS, TS, React, Vue, Python, Rust, Go, Shell, PowerShell, BAT, C, C++, C#, Java, JSON, YAML, TOML, INI, Vim, Text, LaTeX, etc.), and provides alias mappings via `icon.shortcuts` (`pwsh/ps1 → powershell`, `batch → bat`, `gitattributes → git`, `tex → latex`, `markdown/mdx → md`, `fish → shellscript`, `jsonc → json`). PowerShell and CMD icons use brighter color variants in dark mode to improve readability.
 
 ### transformerMetaTitle
 
@@ -209,17 +209,17 @@ The boundary principle is "client code stops where the interaction is", rather t
 | `source.config.ts` | Schema, Remark / Rehype, and Shiki configuration |
 | `src/components/mdx/index.ts` | Shared MDX component registry |
 | `src/lib/parse-author.ts` | Author name and GitHub URL parsing |
-| `src/lib/remark-code-title.ts` | Path title extraction |
-| `src/lib/remark-collapsible-alert.ts` | Semantic collapsible syntax |
-| `src/lib/remark-github-alert.ts` | GitHub Alert syntax |
-| `src/lib/remark-lang-alias.ts` | Non-built-in language identifier rewrite |
-| `src/lib/remark-long-code-block.ts` | Long code block fallback |
-| `src/lib/transformer-meta-title.ts` | Title attribute transformation and icon restoration |
+| `src/content/plugins/remark-code-title.ts` | Path title extraction |
+| `src/content/plugins/remark-collapsible-alert.ts` | Semantic collapsible syntax |
+| `src/content/plugins/remark-github-alert.ts` | GitHub Alert syntax |
+| `src/content/plugins/remark-lang-alias.ts` | Non-built-in language identifier rewrite |
+| `src/content/plugins/remark-long-code-block.ts` | Long code block fallback |
+| `src/content/plugins/transformer-meta-title.ts` | Title attribute transformation and icon restoration |
 | `src/components/mdx/custom-codeblock.tsx` | Server-side code block shell |
 | `src/components/mdx/code-tabs.tsx` | Tabs and sliding underline |
-| `src/components/mdx/task-list-item.tsx` | Server-side task identification |
-| `src/components/mdx/interactive-task-list-item.tsx` | Local task state |
-| `src/components/mdx/task-list-progress.tsx` | Page progress derivation |
+| `src/features/tasks/components/task-list-item.tsx` | Server-side task identification |
+| `src/features/tasks/components/interactive-task-list-item.tsx` | Local task state |
+| `src/features/tasks/components/task-list-progress.tsx` | Page progress derivation |
 | `src/components/mdx/doc-cards.tsx` | Doc cards and semantic aliases |
 | `src/components/mdx/doc-card-site-icon.tsx` | Progressive site icon resolution |
 | `src/components/mdx/mdx-preview-shims.tsx` | VS Code MDX Preview bridge |

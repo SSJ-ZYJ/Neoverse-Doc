@@ -3,8 +3,8 @@
 // 首页章节入口来自 Fumadocs 对应语言页面树，避免链接到仓库中不存在的栏目。
 
 import type { Folder, Item } from 'fumadocs-core/page-tree';
+import { source } from '@/adapters/fumadocs/source';
 import type { Locale } from '@/lib/i18n';
-import { source } from '@/lib/source';
 
 export interface HomeChapter {
   description: string;

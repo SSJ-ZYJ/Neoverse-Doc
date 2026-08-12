@@ -2,7 +2,7 @@
 // 由主题自适应 Particle Text 效果驱动的业务 Hero 标题。
 
 import { ParticleText } from '@/components/react-bits/particle-text';
-import { MOTION_DURATION_MS } from '@/lib/motion-config';
+import { MOTION_DURATION_MS } from '@/runtime/motion/config';
 
 const HOME_TITLE = 'NEOVERSE-DOCS';
 

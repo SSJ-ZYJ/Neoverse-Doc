@@ -5,10 +5,10 @@ import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { ThemeSwitch, type ThemeSwitchProps } from 'fumadocs-ui/layouts/shared/slots/theme-switch';
 import { Settings } from 'lucide-react';
 import { useId } from 'react';
-import { useMotionPreferences } from '@/components/motion-preferences-provider';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
-import { MOTION_LEVELS, type MotionLevel } from '@/lib/motion-preferences';
+import { MOTION_LEVELS, type MotionLevel } from '@/runtime/motion/preferences';
+import { useMotionPreferences } from '@/runtime/motion/provider';
 
 export function DocsThemeAndMotionSettings(props: ThemeSwitchProps) {
   return (

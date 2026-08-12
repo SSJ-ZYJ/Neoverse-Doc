@@ -10,34 +10,25 @@ author:
 
 ## 一、样式目录结构
 
-`src/app/globals.css` 是聚合入口，实际规则按职责拆分到 `src/styles/`：
+`src/app/globals.css` 是聚合入口，跨模块基础样式与 Feature 私有样式按所有权拆分：
 
 ```text
-src/styles/
-├── theme.css              # Tailwind / Fumadocs 基础映射
-├── tokens.css             # 颜色、表面、圆角、阴影、间距与动效
-├── motion.css             # 入场动画与 reduced-motion
-├── glass.css              # 玻璃表面和控件
-├── fumadocs-glass.css     # Fumadocs 组件覆写
-├── typography.css         # 正文、代码、引用与提示
-├── transitions.css        # 页面转场
-├── mermaid.css            # 图表主题与节点
-├── loading.css            # 路由加载
-├── giscus.css             # 评论样式
-├── mdx-files.css          # 文件层级样式
-├── search-spotlight.css   # 搜索聚光灯
-├── immersive-interactions.css # 沉浸式交互
-├── a11y.css               # 无障碍与透明度回退
-└── pages/                 # 页面级结构
-    ├── home.css
-    └── special.css
+src/
+├── ui/
+│   ├── tokens/tokens.css         # 颜色、表面、圆角、阴影、间距与动效
+│   ├── surfaces/glass.css        # 玻璃表面和控件
+│   └── styles/                   # Theme、Motion、Typography 与 A11y
+├── adapters/fumadocs/styles.css  # Fumadocs 组件覆写
+├── features/*/styles.css         # Search、Tasks、Mermaid、Transition、Community
+├── runtime/interaction/styles.css
+└── styles/                       # Loading、MDX 文件树与页面级结构
 ```
 
-每个文件只承担一类职责，视觉调整优先替换 Token 或已有表面，不继续叠加第二套玻璃、Glow 或阴影体系。
+Task、Mermaid、Transition、Community、Search Spotlight 与 Interaction 样式跟随其所有者；页面级布局和少量全局集成规则继续留在 `src/styles/`。视觉调整优先替换 Token 或已有表面，不继续叠加第二套玻璃、Glow 或阴影体系。
 
 ## 二、语义 Token 体系
 
-`src/styles/tokens.css` 是所有视觉决策的单一来源，提供浅色（`:root, .light`）与深色（`.dark`）双套变量。
+`src/ui/tokens/tokens.css` 是所有视觉决策的单一来源，提供浅色（`:root, .light`）与深色（`.dark`）双套变量。
 
 ### Token 分类
 
@@ -69,7 +60,7 @@ Token 通过 `--color-fd-*` 与 `--fd-primary` 别名桥接到 Fumadocs UI 的�
 
 ## 三、玻璃形态系统
 
-`src/styles/glass.css` 实现统一的玻璃视觉语言。
+`src/ui/surfaces/glass.css` 实现统一的玻璃视觉语言。
 
 ### 三件套结构
 
@@ -107,7 +98,7 @@ Token 通过 `--color-fd-*` 与 `--fd-primary` 别名桥接到 Fumadocs UI 的�
 
 ## 四、主题入口与 Tailwind 映射
 
-`src/styles/theme.css` 是 Tailwind v4 与 Fumadocs 的接入点：
+`src/ui/styles/theme.css` 是 Tailwind v4 与 Fumadocs 的接入点：
 
 ```text
 @import "tailwindcss"
@@ -143,11 +134,11 @@ Fumadocs `RootProvider` 通过 `theme={{ enabled: false }}` 关闭其内置 Them
 
 ### Mermaid 主题适配
 
-Mermaid 静态 SVG 使用 CSS 变量和项目类名适配主题，不需要因为浅色 / 深色分别生成两份图表。`src/styles/mermaid.css` 提供完整的语义色槽，Mermaid 节点通过类名引用变量。
+Mermaid 静态 SVG 使用 CSS 变量和项目类名适配主题，不需要因为浅色 / 深色分别生成两份图表。`src/features/mermaid/styles.css` 提供完整的语义色槽，Mermaid 节点通过类名引用变量。
 
 ## 六、Motion 分级与基础动画
 
-`src/styles/motion.css` 定义统一的入场动画与 reduced-motion 处理。
+`src/ui/styles/motion.css` 定义统一的入场动画与 reduced-motion 处理。
 
 ### 三档动效
 
@@ -169,7 +160,7 @@ Mermaid 静态 SVG 使用 CSS 变量和项目类名适配主题，不需要因�
 
 ### 动效偏好提供器
 
-`src/components/motion-preferences-provider.tsx` 通过 Context 暴露 `effectiveLevel`、`effectiveExperimental`、`systemReducedMotion`、`experimentalMotionSupported`：
+`src/runtime/motion/provider.tsx` 通过 Context 暴露 `effectiveLevel`、`effectiveExperimental`、`systemReducedMotion`、`experimentalMotionSupported`：
 
 - `useLayoutEffect` 初始化：读取 localStorage、检测 `prefers-reduced-motion`、检测实验性动效支持；
 - 监听 `matchMedia` change 与 `storage` 事件，跨标签页同步；
@@ -177,11 +168,11 @@ Mermaid 静态 SVG 使用 CSS 变量和项目类名适配主题，不需要因�
 
 ### 实验性动效能力检测
 
-`src/lib/experimental-motion-support.ts` 检测 HTML-in-Canvas 捕获（`drawElementImage` + `requestPaint`）与 WebGL2 支持，两者同时满足才启用实验性动效。检测结果缓存一次，让设置界面与运行时消费者一致。创建 WebGL2 上下文后立即 `loseContext()` 释放资源。
+`src/runtime/motion/experimental-support.ts` 检测 HTML-in-Canvas 捕获（`drawElementImage` + `requestPaint`）与 WebGL2 支持，两者同时满足才启用实验性动效。检测结果缓存一次，让设置界面与运行时消费者一致。创建 WebGL2 上下文后立即 `loseContext()` 释放资源。
 
 ### 动效配置
 
-`src/lib/motion-config.ts` 集中所有动效参数：
+`src/runtime/motion/config.ts` 集中所有动效参数：
 
 - `MOTION_DURATION_MS`：与 CSS Token 对齐的 JS 时长（instant / fast / standard / expressive / aperture / overview / surface / content / crossfade）；
 - `MOTION_EASING`：standard / reveal / softSpring 三元组；
@@ -190,7 +181,7 @@ Mermaid 静态 SVG 使用 CSS 变量和项目类名适配主题，不需要因�
 
 ## 七、无障碍降级
 
-`src/styles/a11y.css` 处理三层降级，保证视觉增强不可用时内容仍可阅读。
+`src/ui/styles/a11y.css` 处理三层降级，保证视觉增强不可用时内容仍可阅读。
 
 ### 减少动效
 
@@ -219,7 +210,7 @@ Mermaid 静态 SVG 使用 CSS 变量和项目类名适配主题，不需要因�
 
 ## 八、排版与正文规则
 
-`src/styles/typography.css` 定义正文、代码、引用与提示的排版规则：
+`src/ui/styles/typography.css` 定义正文、代码、引用与提示的排版规则：
 
 - 可交互任务清单（`.mdx-task-progress`）样式；
 - 玻璃代码块（`.glass-codeblock`）外壳；
@@ -246,14 +237,14 @@ Glass、Glow、粒子、Blur 和环境 Motion 作为增强效果而不是默认�
 
 | 文件 | 职责 |
 | :--- | :--- |
-| `src/styles/tokens.css` | 语义 Token 双套变量 |
-| `src/styles/theme.css` | Tailwind / Fumadocs 映射 |
-| `src/styles/glass.css` | 玻璃形态三件套与业务表面 |
-| `src/styles/motion.css` | 入场动画与三档动效 |
-| `src/styles/a11y.css` | 三层无障碍降级 |
-| `src/styles/typography.css` | 正文、代码、引用与提示 |
-| `src/styles/fumadocs-glass.css` | Fumadocs 组件覆写 |
-| `src/components/motion-preferences-provider.tsx` | 动效偏好 Context |
-| `src/lib/motion-preferences.ts` | 动效偏好解析与 bootstrap |
-| `src/lib/motion-config.ts` | 动效参数集中配置 |
-| `src/lib/experimental-motion-support.ts` | 实验性动效能力检测 |
+| `src/ui/tokens/tokens.css` | 语义 Token 双套变量 |
+| `src/ui/styles/theme.css` | Tailwind / Fumadocs 映射 |
+| `src/ui/surfaces/glass.css` | 玻璃形态三件套与业务表面 |
+| `src/ui/styles/motion.css` | 入场动画与三档动效 |
+| `src/ui/styles/a11y.css` | 三层无障碍降级 |
+| `src/ui/styles/typography.css` | 正文、代码、引用与提示 |
+| `src/adapters/fumadocs/styles.css` | Fumadocs 组件覆写 |
+| `src/runtime/motion/provider.tsx` | 动效偏好 Context |
+| `src/runtime/motion/preferences.ts` | 动效偏好解析与 bootstrap |
+| `src/runtime/motion/config.ts` | 动效参数集中配置 |
+| `src/runtime/motion/experimental-support.ts` | 实验性动效能力检测 |

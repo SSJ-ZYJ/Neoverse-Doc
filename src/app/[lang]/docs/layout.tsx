@@ -8,15 +8,15 @@
 
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { Sidebar, SidebarTrigger, useSidebar } from 'fumadocs-ui/layouts/docs/slots/sidebar';
+import { baseOptions } from '@/adapters/fumadocs/layout';
+import { source } from '@/adapters/fumadocs/source';
 import { DocsThemeAndMotionSettings } from '@/components/docs-motion-settings';
-import { DocsReadingReturn } from '@/components/docs-reading-return';
 import { DocsSidebarSeparator } from '@/components/docs-sidebar-separator';
 import { SidebarProvider } from '@/components/sidebar-provider';
 import { getPageDictionary } from '@/dictionaries';
+import { DocsReadingReturn } from '@/features/reading';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
-import { baseOptions } from '@/lib/layout.shared';
 import { REPO_URL } from '@/lib/site-config';
-import { source } from '@/lib/source';
 
 export const generateStaticParams = generateLocaleStaticParams;
 

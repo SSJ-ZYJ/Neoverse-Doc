@@ -4,19 +4,30 @@
 
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { releaseRouteLoadingHandoff } from '@/lib/route-loading-handoff';
+import {
+  releaseRouteLoadingHandoff,
+  shouldSuppressHomeRouteEntry,
+} from '@/features/transition';
+import { useNavigationSnapshot } from '@/runtime/navigation/use-navigation';
 
 export default function Template({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const navigation = useNavigationSnapshot();
 
   const [restoreKey, setRestoreKey] = useState(0);
   const [isPageCacheRestore, setIsPageCacheRestore] = useState(false);
-  const [isManagedTransition] = useState(
-    () =>
-      typeof document !== 'undefined' &&
-      document.documentElement.hasAttribute('data-nd-route-transition-pending'),
-  );
+  const isManagedTransition = navigation.phase !== 'idle';
   const restoreFrameRef = useRef<number | null>(null);
+  const [hasSuppressedDirectEntry, setHasSuppressedDirectEntry] = useState(isManagedTransition);
+  const suppressDirectEntry = shouldSuppressHomeRouteEntry(
+    hasSuppressedDirectEntry,
+    isManagedTransition,
+    isPageCacheRestore,
+  );
+
+  useEffect(() => {
+    if (isManagedTransition || isPageCacheRestore) setHasSuppressedDirectEntry(true);
+  }, [isManagedTransition, isPageCacheRestore]);
 
   // Release the cloned root loading screen after the home route has mounted,
   // smoothing the first "/" → "/{locale}" handoff.
@@ -64,7 +75,7 @@ export default function Template({ children }: { children: ReactNode }) {
       // The global transition provider owns cross-route entry motion; this
       // shell only handles direct loads and BFCache-safe remounting.
       // 跨路由入场由全局转场 Provider 管理，本外壳仅处理直达加载与 BFCache 安全重挂载。
-      className={`home-route-shell${isPageCacheRestore || isManagedTransition ? '' : ' home-route-shell--enter'}`}
+      className={`home-route-shell${suppressDirectEntry ? '' : ' home-route-shell--enter'}`}
     >
       {children}
     </div>

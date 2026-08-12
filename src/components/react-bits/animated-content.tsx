@@ -4,7 +4,7 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef } from 'react';
-import { prefersReducedMotion } from '@/lib/motion-preferences';
+import { prefersReducedMotion } from '@/runtime/motion/preferences';
 
 interface AnimatedContentProps {
   children: ReactNode;

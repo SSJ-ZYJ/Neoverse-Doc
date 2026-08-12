@@ -10,7 +10,7 @@ author:
 
 ## 1. Static search architecture
 
-`src/app/api/search/route.ts` uses Fumadocs `createFromSource()` to generate search data from the content source and sets `dynamic = 'force-static'`. Production builds output this Route Handler as a static endpoint, so no request-time Markdown scanning is needed.
+`src/content/search/index.ts` uses Fumadocs `createFromSource()` to build search data from the content source; `src/app/api/search/route.ts` only sets `dynamic = 'force-static'` and exports the static GET. Production builds output this Route Handler as a static endpoint, so no request-time Markdown scanning is needed.
 
 ```mermaid
 flowchart LR
@@ -26,7 +26,7 @@ Each index record contains the page URL, title, description, structured content,
 
 ## 2. Mixed Chinese-English and pinyin search
 
-Default English tokenization can't reliably handle continuous Chinese, while simply splitting by character would damage English words and phrases. `src/lib/search-tokenizer.ts` combines both behaviors:
+Default English tokenization can't reliably handle continuous Chinese, while simply splitting by character would damage English words and phrases. `src/content/search/tokenizer.ts` combines both behaviors:
 
 - Chinese fragments use the dictionary tokenization of `@orama/tokenizers/mandarin`;
 - English fragments are uniformly lowercased, keeping English queries case-insensitive;
@@ -59,7 +59,7 @@ Chinese search sets strict `threshold` and `tolerance` values, reducing short wo
 
 ## 3. Search result enhancement
 
-`withEnhancedSearch()` in `src/lib/search-client.ts` wraps the raw search client and processes results through the following pipeline:
+`withEnhancedSearch()` in `src/features/search/client.ts` wraps the raw search client and processes results through the following pipeline:
 
 ```text
 Raw search results
@@ -95,7 +95,7 @@ Raw search results
 
 ## 4. Search dialog and scope
 
-`src/components/search.tsx` uses Fumadocs `useDocsSearch` and the static client:
+`src/features/search/components/search-dialog.tsx` uses Fumadocs `useDocsSearch` and the static client:
 
 - The Chinese locale uses `createMixedTokenizer()`, and others use `english`;
 - Wrapped with `withEnhancedSearch(searchClient, locale === 'zh')`: pinyin fallback, grouped result sorting, chapter anchor inheritance;
@@ -114,7 +114,7 @@ The scope menu is only a query constraint; it doesn't maintain separate content 
 
 ## 5. Search spotlight
 
-`src/components/search-spotlight.tsx` implements a short-lived global spotlight after navigating from a search result:
+`src/features/search/components/search-spotlight.tsx` implements a short-lived global spotlight after navigating from a search result:
 
 - Listens to click (link / `button[aria-selected]`), keydown Enter, hashchange, and popstate;
 - `findTextRange()`: walks text nodes with a TreeWalker to find the target text after the anchor;
@@ -126,7 +126,7 @@ The scope menu is only a query constraint; it doesn't maintain separate content 
 - `SPOTLIGHT_DURATION_MS = 3200` (1800 with reduced motion);
 - `removeSpotlightParam()`: removes the parameter from the URL when done.
 
-`src/lib/search-spotlight.ts` provides spotlight parameter handling:
+`src/features/search/spotlight.ts` provides spotlight parameter handling:
 
 - `SEARCH_SPOTLIGHT_PARAM = '_searchSpotlight'`;
 - `getSpotlightScrollDelta()`: aligns the target rect's center with the viewport center;
@@ -164,7 +164,7 @@ This metadata is kept in `sessionStorage`, and the content is never saved or clo
 
 ### Document refresh restore
 
-`src/lib/docs-reading-restore.ts` handles scroll restoration after a page refresh:
+`src/features/reading/restore.ts` handles scroll restoration after a page refresh:
 
 - `DOCS_REFRESH_RESTORE_BOOTSTRAP` is an inline script that runs before hydration;
 - Runs only when `navigation.type === 'reload'` and a valid anchor exists in sessionStorage;
@@ -189,7 +189,7 @@ Documentation pages derive the GitHub file URL from the content source's `fullPa
 
 UI translations are split into two layers:
 
-- `src/lib/layout.shared.tsx` extends Fumadocs' built-in UI translations (including keys added in 16.13.x such as `Ask AI`, `Close Sidebar`, `Layout Tab`);
+- `src/adapters/fumadocs/layout.tsx` extends Fumadocs' built-in UI translations (including keys added in 16.13.x such as `Ask AI`, `Close Sidebar`, `Layout Tab`);
 - `src/dictionaries/` holds the project's custom copy, with the key structure constrained by a TypeScript interface.
 
 The UI supporting Chinese and English doesn't mean every article is translated. Whether a page exists is decided by the actual files in `content/docs/{locale}/`; English pages don't use empty-shell placeholders to simulate full coverage.
@@ -237,16 +237,19 @@ None of this state needs an account or a database, and it doesn't sync across de
 | File | Responsibility |
 | :--- | :--- |
 | `src/app/api/search/route.ts` | Static search index |
-| `src/lib/search-tokenizer.ts` | Mixed Chinese, English, and pinyin tokenization |
-| `src/lib/search-client.ts` | Search result enhancement pipeline |
-| `src/lib/search-selection.ts` | Content selection validation and search query normalization |
-| `src/lib/search-spotlight.ts` | Spotlight parameter handling |
-| `src/components/search.tsx` | Query and Chapter scope UI |
-| `src/components/search-spotlight.tsx` | Search result spotlight |
+| `src/content/search/index.ts` | Server index construction and static GET |
+| `src/content/search/tokenizer.ts` | Mixed Chinese, English, and pinyin tokenization |
+| `src/features/search/client.ts` | Search result enhancement pipeline |
+| `src/features/search/selection.ts` | Content selection validation and search query normalization |
+| `src/features/search/spotlight.ts` | Spotlight parameter handling |
+| `src/features/search/components/search-dialog.tsx` | Query and Chapter scope UI |
+| `src/features/search/components/search-spotlight.tsx` | Search result spotlight |
 | `src/app/[lang]/docs/layout.tsx` | Locale page tree and navigation layout |
-| `src/components/docs-reading-return.tsx` | Cross-document context restoration |
-| `src/lib/docs-reading-restore.ts` | Scroll restoration on document refresh |
+| `src/features/reading/docs-reading-return.tsx` | Cross-document context restoration |
+| `src/features/reading/restore.ts` | Scroll restoration on document refresh |
 | `src/app/[lang]/docs-source/[...slug]/route.ts` | Markdown source endpoint |
-| `src/lib/layout.shared.tsx` | Fumadocs UI i18n |
-| `src/components/guestbook.tsx` | Giscus locale and theme sync |
-| `src/components/docs-community.tsx` | Documentation comment section isolation |
+| `src/adapters/fumadocs/layout.tsx` | Fumadocs UI i18n |
+| `src/features/community/components/guestbook.tsx` | Giscus locale and theme sync |
+| `src/features/community/components/docs-community.tsx` | Documentation comment section isolation |
+
+Search Spotlight reads transition completion from `runtime/navigation` and gets the article root through the Fumadocs Adapter instead of inferring state from transition datasets on the root element.

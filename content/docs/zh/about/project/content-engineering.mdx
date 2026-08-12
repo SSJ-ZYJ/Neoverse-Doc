@@ -10,7 +10,7 @@ author:
 
 ## 一、内容 Schema
 
-`source.config.ts` 在 Fumadocs `pageSchema` 上扩展项目字段：
+`src/content/schema/docs.ts` 在 Fumadocs `pageSchema` 上扩展项目字段，`source.config.ts` 只负责组装：
 
 | 字段 | 类型 | 用途 |
 | :--- | :--- | :--- |
@@ -53,7 +53,7 @@ Fumadocs 默认 MDX 组件
 
 ## 四、Remark / Rehype 插件链
 
-`source.config.ts` 按以下顺序组装 MDX 插件，每个插件只承担单一职责：
+`src/content/plugins/mdx-options.ts` 按以下顺序组装 MDX 插件，每个插件只承担单一职责：
 
 ```text
 remarkCollapsibleAlert   → 语义折叠块语法
@@ -102,7 +102,7 @@ Fumadocs 与 Shiki 负责语法高亮，项目在这条管线上增加文件路�
 
 ### Shiki 图标配置
 
-`source.config.ts` 的 `icon.extend` 为 20+ 语言注册自定义 SVG 图标（HTML、CSS、JS、TS、React、Vue、Python、Rust、Go、Shell、PowerShell、BAT、C、C++、C#、Java、JSON、YAML、TOML、INI、Vim、Text、LaTeX 等），`icon.shortcuts` 提供别名映射（`pwsh/ps1 → powershell`、`batch → bat`、`gitattributes → git`、`tex → latex`、`markdown/mdx → md`、`fish → shellscript`、`jsonc → json`）。PowerShell 与 CMD 图标在深色模式使用更亮的颜色变体以提升可读性。
+`src/content/plugins/code-icons.ts` 的 `icon.extend` 为 20+ 语言注册自定义 SVG 图标（HTML、CSS、JS、TS、React、Vue、Python、Rust、Go、Shell、PowerShell、BAT、C、C++、C#、Java、JSON、YAML、TOML、INI、Vim、Text、LaTeX 等），`icon.shortcuts` 提供别名映射（`pwsh/ps1 → powershell`、`batch → bat`、`gitattributes → git`、`tex → latex`、`markdown/mdx → md`、`fish → shellscript`、`jsonc → json`）。PowerShell 与 CMD 图标在深色模式使用更亮的颜色变体以提升可读性。
 
 ### transformerMetaTitle
 
@@ -209,17 +209,17 @@ value       = checked / unchecked
 | `source.config.ts` | Schema、Remark / Rehype 与 Shiki 配置 |
 | `src/components/mdx/index.ts` | 共享 MDX 组件注册表 |
 | `src/lib/parse-author.ts` | 作者名与 GitHub URL 解析 |
-| `src/lib/remark-code-title.ts` | 路径标题提取 |
-| `src/lib/remark-collapsible-alert.ts` | 语义折叠语法 |
-| `src/lib/remark-github-alert.ts` | GitHub Alert 语法 |
-| `src/lib/remark-lang-alias.ts` | 非内置语言标识符重写 |
-| `src/lib/remark-long-code-block.ts` | 超长代码块降级 |
-| `src/lib/transformer-meta-title.ts` | 标题属性转换与图标恢复 |
+| `src/content/plugins/remark-code-title.ts` | 路径标题提取 |
+| `src/content/plugins/remark-collapsible-alert.ts` | 语义折叠语法 |
+| `src/content/plugins/remark-github-alert.ts` | GitHub Alert 语法 |
+| `src/content/plugins/remark-lang-alias.ts` | 非内置语言标识符重写 |
+| `src/content/plugins/remark-long-code-block.ts` | 超长代码块降级 |
+| `src/content/plugins/transformer-meta-title.ts` | 标题属性转换与图标恢复 |
 | `src/components/mdx/custom-codeblock.tsx` | 代码块服务端外壳 |
 | `src/components/mdx/code-tabs.tsx` | Tabs 与滑动下划线 |
-| `src/components/mdx/task-list-item.tsx` | 服务端任务识别 |
-| `src/components/mdx/interactive-task-list-item.tsx` | 本地任务状态 |
-| `src/components/mdx/task-list-progress.tsx` | 页面进度派生 |
+| `src/features/tasks/components/task-list-item.tsx` | 服务端任务识别 |
+| `src/features/tasks/components/interactive-task-list-item.tsx` | 本地任务状态 |
+| `src/features/tasks/components/task-list-progress.tsx` | 页面进度派生 |
 | `src/components/mdx/doc-cards.tsx` | 文档卡片与语义别名 |
 | `src/components/mdx/doc-card-site-icon.tsx` | 站点图标渐进解析 |
 | `src/components/mdx/mdx-preview-shims.tsx` | VS Code MDX Preview 桥接 |

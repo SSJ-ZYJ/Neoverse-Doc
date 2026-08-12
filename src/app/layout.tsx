@@ -29,14 +29,14 @@ import { Noto_Sans_SC, Orbitron } from 'next/font/google';
 import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
 import { DeploymentSkewGuard } from '@/components/deployment-skew-guard';
-import { ImmersiveInteractionController } from '@/components/immersive-interaction-controller';
-import ImmersiveScrollbar from '@/components/immersive-scrollbar';
 import { InlineCodeWrapController } from '@/components/inline-code-wrap-controller';
-import { MotionPreferencesProvider } from '@/components/motion-preferences-provider';
-import { DOCS_REFRESH_RESTORE_BOOTSTRAP } from '@/lib/docs-reading-restore';
+import { DOCS_REFRESH_RESTORE_BOOTSTRAP } from '@/features/reading';
 import { i18n } from '@/lib/i18n';
-import { MOTION_PREFERENCES_BOOTSTRAP } from '@/lib/motion-preferences';
 import { AUTHOR_GITHUB_URL, AUTHOR_NAME, SITE_URL } from '@/lib/site-config';
+import { ImmersiveInteractionController } from '@/runtime/interaction/controller';
+import ImmersiveScrollbar from '@/runtime/interaction/scrollbar';
+import { MOTION_PREFERENCES_BOOTSTRAP } from '@/runtime/motion/preferences';
+import { MotionPreferencesProvider } from '@/runtime/motion/provider';
 import '@/app/globals.css';
 // Route loading styles are imported at the root CSS entry for Turbopack tracking.
 // 路由加载样式在根 CSS 入口导入，确保 Turbopack 稳定追踪。
