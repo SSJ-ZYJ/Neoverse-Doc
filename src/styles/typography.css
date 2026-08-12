@@ -788,6 +788,13 @@ figure.shiki .line > span:empty::before {
   flex-shrink: 0;
 }
 
+/* The alert surface owns its internal spacing; prose paragraph margins would
+   otherwise insert a blank-line-sized gap between every GFM body line.
+   提示框自行管理内部留白，避免正文段落 margin 在每次 GFM 换行间叠加出空行。 */
+.markdown-alert > p:not(.markdown-alert-title) {
+  margin-block: 0;
+}
+
 .markdown-alert-note {
   --markdown-alert-accent: var(--color-alert-note);
 }
