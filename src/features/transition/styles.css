@@ -153,16 +153,16 @@ html[data-nd-route-transition="crossfade"] :is(.home-page, .special-page, #nd-pa
   animation: nd-route-target-enter var(--motion-standard) var(--motion-ease-standard) both;
 }
 
-/* Overview transition (docs → home): the clone layer fades out to reveal
-   the home page. If the home page also animates opacity 0→1 simultaneously,
-   the combined opacity dips and creates a visible flash. Instead, keep the
-   home page at full opacity and only apply a subtle positional settle —
-   the clone fade handles the visual transition, no flash.
-   Overview 转场（文档 → 主页）：克隆层淡出揭示主页。若主页同时做
-   opacity 0→1，两者叠加会产生亮度谷底、形成闪烁。改为主页保持满
-   不透明度，仅做微妙的位移收束 —— 视觉过渡由克隆层淡出承担，无闪烁。 */
+/* Overview transition (docs → home) keeps the full home surface stationary.
+   Transforming `.home-page` changes the containing block of its fixed ambient
+   layer, so removing that transform at transition cleanup visibly repositions
+   the background. The hero owns its local loading motion; the page itself must
+   stay in the viewport coordinate system throughout the handoff.
+   Overview 转场（文档 → 主页）保持整张主页静止。变换 `.home-page` 会改变
+   fixed 环境背景的包含块，转场收尾移除 transform 时就会造成背景明显跳位。
+   Hero 继续负责局部加载动效，页面本身在整个交接期间保持视口坐标系。 */
 html[data-nd-route-transition="overview"] :is(.home-page, .special-page) {
-  animation: nd-route-overview-enter var(--motion-standard) var(--motion-ease-standard) both;
+  animation: none;
 }
 
 /* Aperture transition (home → docs): after the radial mask expands to
@@ -245,17 +245,6 @@ html[data-nd-route-transition="surface"] .home-page .home-hero__content {
   }
 }
 
-/* Overview enter: opacity stays at 1, only transform settles.
-   Overview 入场：opacity 保持 1，仅做位移收束。 */
-@keyframes nd-route-overview-enter {
-  from {
-    transform: translateY(0.45rem) scale(0.99);
-  }
-  to {
-    transform: translateY(0) scale(1);
-  }
-}
-
 /* Aperture land: gentle scale settle after the mask opens.
    Aperture 落定：遮罩展开后的柔和缩放收束。 */
 @keyframes nd-aperture-land {
@@ -280,9 +269,8 @@ html[data-nd-route-transition="surface"] .home-page .home-hero__content {
     animation: none !important;
   }
 
-  /* Cover overview-enter and aperture-land keyframes as well.
-     覆盖 overview-enter 与 aperture-land 动画。 */
-  html[data-nd-route-transition="overview"] :is(.home-page, .special-page),
+  /* Cover the aperture-land keyframe as well.
+     同时覆盖 aperture-land 动画。 */
   html[data-nd-route-transition="aperture"] #nd-page {
     animation: none !important;
   }
