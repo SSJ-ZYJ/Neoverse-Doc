@@ -7,6 +7,7 @@
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { DocumentLanguageSetter } from '@/components/document-language';
 import { GuestbookReturnTracker } from '@/components/guestbook-return';
 import DefaultSearchDialog from '@/components/search';
 import { SearchSpotlight } from '@/components/search-spotlight';
@@ -71,12 +72,12 @@ export default async function LangLayout({ params, children }: LayoutProps<'/[la
 
   return (
     <>
-      {/* The shared root layout stays mounted across locale changes. Update the
-          document language before localized content is parsed by assistive tools.
-          共享根布局在语言切换时保持挂载；在辅助工具解析本地化内容前修正文档语言。 */}
-      <script id="document-language">
-        {`document.documentElement.lang=${JSON.stringify(documentLanguage)}`}
-      </script>
+      {/* The shared root layout stays mounted across locale changes. A client
+          effect keeps <html lang> in sync after hydration, before localized
+          content is parsed by assistive tools.
+          共享根布局在语言切换时保持挂载；客户端副作用在辅助工具解析本地化
+          内容前修正文档语言。 */}
+      <DocumentLanguageSetter value={documentLanguage} />
       <RootProvider
         search={{
           SearchDialog: DefaultSearchDialog,
