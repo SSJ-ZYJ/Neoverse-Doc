@@ -13,7 +13,7 @@ import { useMotionPreferences } from '@/runtime/motion/provider';
 export function DocsThemeAndMotionSettings(props: ThemeSwitchProps) {
   return (
     <>
-      <ThemeSwitch {...props} />
+      <ThemeSwitch {...props} mode="light-dark-system" />
       <DocsMotionSettings />
     </>
   );

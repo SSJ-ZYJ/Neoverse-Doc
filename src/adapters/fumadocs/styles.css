@@ -15,13 +15,13 @@
   /* Desktop sidebar controls share one height and proportional icon sizes.
      桌面端侧栏控件共享同一高度与成比例的图标尺寸。 */
   --glass-sidebar-control-height: calc(var(--spacing) * 9);
-  /* The compact theme segment keeps its dark glyph close to the language divider.
-     紧凑主题分段让深色图标靠近语言分隔线。 */
-  --glass-sidebar-theme-control-width: calc(var(--spacing) * 14);
-  /* Mobile theme control keeps the complete sun/moon pair with balanced
+  /* The compact theme segment keeps all three glyphs close to the language divider.
+     紧凑主题分段让三个主题图标靠近语言分隔线。 */
+  --glass-sidebar-theme-control-width: calc(var(--spacing) * 20);
+  /* Mobile theme control keeps the complete light/dark/system group with balanced
      horizontal breathing room, without changing the desktop footer width.
-     移动端主题控件为完整日/月图标保留均衡横向留白，不改变桌面页脚宽度。 */
-  --glass-mobile-sidebar-theme-control-width: calc(var(--spacing) * 16);
+     移动端主题控件为完整浅色、深色与跟随系统图标保留均衡横向留白，不改变桌面页脚宽度。 */
+  --glass-mobile-sidebar-theme-control-width: calc(var(--spacing) * 22);
   /* Mobile utility controls reuse the desktop press depth with a restrained
      angular cue that remains subtle beside the particle burst.
      移动端工具控件复用桌面按压层次，并加入克制倾角，与粒子反馈同时出现时仍保持轻量。 */
@@ -45,8 +45,16 @@
      浅色控件在文档与主页导航中共享同一套清晰可见的悬浮底色。 */
   --glass-light-control-hover-tint: color-mix(
     in srgb,
-    var(--accent-primary) 9%,
+    var(--accent-primary) 16%,
     var(--surface-elevated)
+  );
+  /* Theme hover is derived from the selected tint, keeping inactive feedback
+     visible but intentionally quieter than the active theme state.
+     主题悬浮色由选中态底色稀释而来，使未激活反馈清晰可见且始终弱于选中态。 */
+  --glass-theme-light-hover-tint: color-mix(
+    in srgb,
+    var(--glass-control-active-tint) 70%,
+    transparent
   );
   --glass-mobile-toolbar-action-width: 4rem;
   --glass-mobile-toolbar-action-height: 2.5rem;
@@ -235,7 +243,7 @@
 :where(#nd-sidebar)[data-collapsed="true"],
 :where(#nd-sidebar-mobile),
 :where([data-toc-popover-content]) > div,
-button[data-theme-toggle],
+[data-theme-toggle],
 [role="dialog"][data-state]:has(input),
 [data-radix-popper-content-wrapper] > [role="dialog"] {
   transition-duration: var(--theme-transition-duration);
@@ -456,8 +464,10 @@ button[data-theme-toggle],
 
 /* Mobile drawer icon controls use the same compact radii and pointer affordance
    as desktop sidebar actions. 移动抽屉图标控件复用桌面侧栏操作的紧凑圆角与手型光标。 */
-#nd-sidebar-mobile > div:first-child :is(a, button):not(.flex.items-center),
-#nd-sidebar-mobile button[data-theme-toggle] {
+#nd-sidebar-mobile
+  > div:first-child
+  :is(a, button):not(.flex.items-center):not([data-theme-toggle] > button),
+#nd-sidebar-mobile [data-theme-toggle] {
   border-radius: var(--glass-icon-button-radius) !important;
 }
 
@@ -506,7 +516,7 @@ button[data-theme-toggle],
   border-radius: inherit;
 }
 
-#nd-sidebar-mobile button[data-theme-toggle] {
+#nd-sidebar-mobile [data-theme-toggle] {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -523,10 +533,11 @@ button[data-theme-toggle],
     var(--glass-shadow) !important;
 }
 
-#nd-sidebar-mobile :is(button[data-theme-toggle], button[data-theme-toggle][aria-label]) > svg {
-  inline-size: 1.625rem !important;
-  block-size: 1.625rem !important;
+#nd-sidebar-mobile [data-theme-toggle][data-theme-toggle] > button > svg {
+  inline-size: 100% !important;
+  block-size: 100% !important;
   flex: 0 0 auto;
+  padding: 0 !important;
   border-radius: var(--glass-icon-inner-radius) !important;
   margin: 0 !important;
 }
@@ -536,8 +547,8 @@ button[data-theme-toggle],
    global gray switcher surface.
    移动抽屉浅色主题切换：让分段开关使用与相邻工具按钮一致的干净玻璃底，
    避免套用全局灰色切换器底色。 */
-.light #nd-sidebar-mobile button[data-theme-toggle],
-:root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle] {
+.light #nd-sidebar-mobile [data-theme-toggle],
+:root:not(.dark) #nd-sidebar-mobile [data-theme-toggle] {
   background-color: var(--glass-tint-soft) !important;
   border-color: var(--glass-border-hairline) !important;
   box-shadow:
@@ -951,7 +962,7 @@ button[data-theme-toggle],
    不替换其原有主题逻辑。统一走 chip 悬浮规范（不抬升，仅 tint + 辉光）。
    关键修复：覆盖 fumadocs 默认 overflow:hidden，避免 svg 图标被裁剪。
    关键修复：移除 svg.bg-fd-accent 的 box-shadow —— 它在圆形按钮内产生矩形阴影重叠。 */
-button[data-theme-toggle] {
+[data-theme-toggle] {
   position: relative;
   isolation: isolate;
   cursor: pointer;
@@ -977,7 +988,7 @@ button[data-theme-toggle] {
 /* The desktop nav keeps the original compact segmented geometry; the previous
    fully rounded capsule conflicted with the squarer search and language controls.
    桌面导航恢复紧凑分段几何，避免全圆胶囊与搜索、语言控件的方圆节奏冲突。 */
-#nd-nav button[data-theme-toggle] {
+#nd-nav [data-theme-toggle] {
   overflow: hidden !important;
   border-radius: var(--glass-icon-button-radius) !important;
 }
@@ -985,8 +996,8 @@ button[data-theme-toggle] {
 /* Light mode theme switcher visibility: add a stronger hairline and inner sheen
    so the control remains visible on the light homepage navbar.
    浅色模式主题切换器可见度：加强描边与内高光，避免在浅色首页导航中融入背景。 */
-.light button[data-theme-toggle],
-:root:not(.dark) button[data-theme-toggle] {
+.light [data-theme-toggle],
+:root:not(.dark) [data-theme-toggle] {
   border-color: color-mix(in srgb, var(--foreground) 18%, transparent) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -1000,7 +1011,8 @@ button[data-theme-toggle] {
    关键修复：确保 svg 尺寸完整显示，不被 padding 裁剪。
    关键修复：移除 svg 的 box-shadow —— 圆形按钮内矩形阴影会产生"重叠矩形"视觉。 */
 :is(#nd-nav, #nd-sidebar, #nd-sidebar-mobile, body)
-  :is(button[data-theme-toggle], button[data-theme-toggle][aria-label])
+  [data-theme-toggle][data-theme-toggle]
+  > button
   > svg {
   position: relative;
   z-index: 1;
@@ -1011,19 +1023,26 @@ button[data-theme-toggle] {
     transform var(--theme-transition-duration) var(--motion-ease-emphasized);
 }
 
-button[data-theme-toggle] > svg.bg-fd-accent {
+[data-theme-toggle] > button {
+  position: relative;
+  z-index: 1;
+  border-radius: var(--glass-icon-inner-radius) !important;
+  cursor: pointer;
+  transition:
+    background-color var(--theme-transition-duration) ease,
+    color var(--theme-transition-duration) ease,
+    transform var(--theme-transition-duration) var(--motion-ease-emphasized);
+}
+
+[data-theme-toggle] > button.bg-fd-accent {
   background-color: var(--glass-control-active-tint) !important;
 }
 
 @media (hover: hover) {
-  button[data-theme-toggle]:hover {
-    background-color: var(--glass-control-hover-tint) !important;
-    box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      var(--glass-shadow-hover);
-  }
-
-  button[data-theme-toggle] > svg:not(.bg-fd-accent):hover {
+  /* Fumadocs owns the nested theme-button markup; hover belongs to the complete
+     button cell rather than its smaller SVG glyph.
+     Fumadocs 管理主题按钮的嵌套结构；悬浮反馈应覆盖完整按钮单元，而不是更小的 SVG 图标。 */
+  [data-theme-toggle] > button:not(.bg-fd-accent):hover {
     background-color: var(--glass-control-hover-tint) !important;
     color: var(--color-fd-accent-foreground);
   }
@@ -1031,13 +1050,21 @@ button[data-theme-toggle] > svg.bg-fd-accent {
   /* Light desktop navigation and sidebar reuse the same visible inactive-glyph
      hover without illuminating the complete segmented control.
      浅色桌面导航与侧栏复用同一套清晰的未激活图标悬浮态，不提亮整个分段切换器。 */
-  .light :is(#nd-nav, #nd-sidebar) button[data-theme-toggle] > svg:not(.bg-fd-accent):hover,
+  .light :is(#nd-nav, #nd-sidebar) [data-theme-toggle] > button:not(.bg-fd-accent):hover,
   :root:not(.dark)
     :is(#nd-nav, #nd-sidebar)
-    button[data-theme-toggle]
-    > svg:not(.bg-fd-accent):hover {
+    [data-theme-toggle]
+    > button:not(.bg-fd-accent):hover {
     color: color-mix(in srgb, var(--text-primary) 84%, var(--accent-primary)) !important;
-    background-color: var(--glass-light-control-hover-tint) !important;
+    background-color: var(--glass-theme-light-hover-tint) !important;
+  }
+
+  .light :is(#nd-nav, #nd-sidebar) [data-theme-toggle] > button:not(.bg-fd-accent):hover > svg,
+  :root:not(.dark)
+    :is(#nd-nav, #nd-sidebar)
+    [data-theme-toggle]
+    > button:not(.bg-fd-accent):hover
+    > svg {
     transform: scale(1.06);
   }
 }
@@ -1045,26 +1072,39 @@ button[data-theme-toggle] > svg.bg-fd-accent {
 /* Mobile drawer theme glyph states reuse the desktop docs-sidebar colors, so
    selected and hovered icons communicate the same state on every viewport.
    移动抽屉主题图标复用桌面文档侧栏配色，让选中与悬浮状态在各视口保持一致。 */
-.light #nd-sidebar-mobile button[data-theme-toggle] > svg.bg-fd-accent,
-:root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle] > svg.bg-fd-accent {
+.light #nd-sidebar-mobile [data-theme-toggle] > button.bg-fd-accent,
+:root:not(.dark) #nd-sidebar-mobile [data-theme-toggle] > button.bg-fd-accent {
   background-color: var(--glass-control-active-tint) !important;
   color: var(--foreground) !important;
 }
 
 @media (hover: hover) {
-  .light #nd-sidebar-mobile button[data-theme-toggle] > svg:not(.bg-fd-accent):hover,
-  :root:not(.dark) #nd-sidebar-mobile button[data-theme-toggle] > svg:not(.bg-fd-accent):hover {
-    background-color: var(--glass-light-control-hover-tint) !important;
+  .light #nd-sidebar-mobile [data-theme-toggle] > button:not(.bg-fd-accent):hover,
+  :root:not(.dark) #nd-sidebar-mobile [data-theme-toggle] > button:not(.bg-fd-accent):hover {
+    background-color: var(--glass-theme-light-hover-tint) !important;
     color: color-mix(in srgb, var(--text-primary) 84%, var(--accent-primary)) !important;
+  }
+
+  .light #nd-sidebar-mobile [data-theme-toggle] > button:not(.bg-fd-accent):hover > svg,
+  :root:not(.dark) #nd-sidebar-mobile [data-theme-toggle] > button:not(.bg-fd-accent):hover > svg {
     transform: scale(1.06);
+  }
+
+  /* Active and hover are mutually exclusive visual states. When the pointer
+     remains over a newly selected mode, preserve its selected fill and glyph
+     instead of retaining the inactive hover treatment during the transition.
+     激活态与悬浮态是互斥视觉状态；指针停留在刚选中的模式上时，保持选中底色与
+     图标形态，不沿用切换前的未激活悬浮效果。 */
+  [data-theme-toggle] > button.bg-fd-accent:hover {
+    background-color: var(--glass-control-active-tint) !important;
   }
 }
 
-button[data-theme-toggle]:active {
+[data-theme-toggle] > button:active {
   transform: scale(0.97);
 }
 
-button[data-theme-toggle]:focus-visible {
+[data-theme-toggle] > button:focus-visible {
   outline: 2px solid var(--color-fd-ring);
   outline-offset: 2px;
 }
@@ -1083,7 +1123,7 @@ button[data-theme-toggle]:focus-visible {
    keeping the switcher in a fixed right segment so it cannot overlap GitHub icons.
    侧栏底部主题切换：与图标链接共用父级工具条玻璃面，将切换器固定为右侧分段，
    避免与 GitHub 图标发生重叠或嵌套挤压。 */
-#nd-sidebar div:has(> button[data-theme-toggle]) {
+#nd-sidebar div:has(> [data-theme-toggle]) {
   block-size: var(--glass-sidebar-control-height);
   border-radius: var(--radius-sm) !important;
   gap: 0;
@@ -1091,11 +1131,11 @@ button[data-theme-toggle]:focus-visible {
   padding-inline-end: 0 !important;
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > a {
+#nd-sidebar div:has(> [data-theme-toggle]) > a {
   flex: 0 0 auto;
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle] {
+#nd-sidebar div:has(> [data-theme-toggle]) > [data-theme-toggle] {
   flex: 0 0 auto;
   min-inline-size: var(--glass-sidebar-theme-control-width);
   max-inline-size: calc(100% - 2.5rem);
@@ -1448,7 +1488,7 @@ html[data-nd-motion-level="low"]
   transform: none;
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-motion-settings-trigger] {
+#nd-sidebar div:has(> [data-theme-toggle]) > button[data-motion-settings-trigger] {
   position: relative;
   flex: 0 0 var(--glass-sidebar-control-height);
   inline-size: var(--glass-sidebar-control-height);
@@ -1467,7 +1507,7 @@ html[data-nd-motion-level="low"]
 }
 
 @media (hover: hover) {
-  #nd-sidebar div:has(> button[data-theme-toggle]) > button[data-motion-settings-trigger]:hover {
+  #nd-sidebar div:has(> [data-theme-toggle]) > button[data-motion-settings-trigger]:hover {
     color: var(--accent-primary) !important;
     background: color-mix(
       in srgb,
@@ -1481,7 +1521,7 @@ html[data-nd-motion-level="low"]
   }
 
   #nd-sidebar
-    div:has(> button[data-theme-toggle])
+    div:has(> [data-theme-toggle])
     > button[data-motion-settings-trigger]:hover
     > svg {
     filter: drop-shadow(0 0 0.4rem color-mix(in srgb, var(--accent-primary) 42%, transparent));
@@ -1490,7 +1530,7 @@ html[data-nd-motion-level="low"]
 }
 
 #nd-sidebar
-  div:has(> button[data-theme-toggle])
+  div:has(> [data-theme-toggle])
   > button[data-motion-settings-trigger][data-state="open"] {
   color: var(--accent-primary);
   background: color-mix(
@@ -1505,13 +1545,13 @@ html[data-nd-motion-level="low"]
 }
 
 #nd-sidebar
-  div:has(> button[data-theme-toggle])
+  div:has(> [data-theme-toggle])
   > button[data-motion-settings-trigger]:active
   > svg {
   transform: scale(0.94);
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]::before {
+#nd-sidebar div:has(> [data-theme-toggle]) > [data-theme-toggle]::before {
   position: absolute;
   inset-block: 0.375rem;
   inset-inline-start: 0;
@@ -1521,10 +1561,10 @@ html[data-nd-motion-level="low"]
   pointer-events: none;
 }
 
-/* Motion settings are a separate system entry, while the adjacent sun and
-   moon remain direct theme choices. Keep a boundary between both controls.
-   动效设置是独立的系统入口，相邻日/月仍是直接主题选项，因此保留控件边界。 */
-#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]::before {
+/* Motion settings are a separate system entry, while the adjacent theme modes
+   remain direct choices. Keep a boundary between both controls.
+   动效设置是独立的系统入口，相邻主题模式仍是直接选项，因此保留控件边界。 */
+#nd-sidebar div:has(> [data-theme-toggle]) > [data-theme-toggle]::before {
   display: block;
 }
 
@@ -1534,7 +1574,7 @@ html[data-nd-motion-level="low"]
    避免父级 :has(button:hover) 再叠一层矩形 hover 背景。 */
 #nd-sidebar
 .bg-fd-secondary\/50:has(
-  > :is(button[data-theme-toggle], button[data-motion-settings-trigger]):hover
+  > :is([data-theme-toggle], button[data-motion-settings-trigger]):hover
 ) {
   background-color: var(--glass-tint) !important;
   box-shadow:
@@ -1544,7 +1584,7 @@ html[data-nd-motion-level="low"]
 }
 
 @media (hover: hover) {
-  #nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]:hover {
+  #nd-sidebar div:has(> [data-theme-toggle]) > [data-theme-toggle]:hover {
     background: transparent !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
@@ -1554,7 +1594,7 @@ html[data-nd-motion-level="low"]
   }
 }
 
-#nd-sidebar div:has(> button[data-theme-toggle]) > button[data-theme-toggle]:active {
+#nd-sidebar div:has(> [data-theme-toggle]) > [data-theme-toggle]:active {
   background: transparent !important;
   box-shadow: none !important;
   transform: none;
@@ -1563,7 +1603,7 @@ html[data-nd-motion-level="low"]
 /* Docs sidebar footer language action: turn the full-width language selector
    into an icon-only segment and attach it to the GitHub/theme toolbar.
    文档侧栏底部语言操作：将整行语言切换器收敛为纯图标分段，并并入 GitHub / 主题工具栏。 */
-#nd-sidebar > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle]) {
+#nd-sidebar > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle]) {
   flex-direction: row !important;
   align-items: stretch !important;
   gap: 0 !important;
@@ -1576,7 +1616,7 @@ html[data-nd-motion-level="low"]
    the whole footer container into a large glass block.
    共享内嵌表面沿用页脚原有内边距，避免整个页脚容器变成大面积玻璃块。 */
 #nd-sidebar
-> div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])::before {
+> div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])::before {
   position: absolute;
   inset: calc(var(--spacing) * 2) calc(var(--spacing) * 4) calc(var(--spacing) * 4);
   z-index: 0;
@@ -1599,20 +1639,21 @@ html[data-nd-motion-level="low"]
 }
 
 #nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
-  > :is(button[aria-haspopup="dialog"], div:has(> button[data-theme-toggle])) {
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
+  > :is(button[aria-haspopup="dialog"], div:has(> [data-theme-toggle])) {
   position: relative;
   z-index: 1;
 }
 
-/* The footer actions share one hover surface so the language segment and the
-   toolbar no longer illuminate as two detached controls.
-   侧栏底部操作共享同一悬浮表面，让语言分段与左侧工具栏整体发光。 */
+/* The language segment can illuminate the shared footer surface. Theme modes
+   keep their feedback inside their own cells, preventing active and hover
+   layers from competing.
+   语言分段可提亮共享页脚表面；主题模式的反馈仅保留在各自单元内，避免激活态与
+   外层悬浮层相互竞争。 */
 @media (hover: hover) {
   #nd-sidebar
-    > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle]):has(
-      > button[aria-haspopup="dialog"]:hover,
-      > div:has(> button[data-theme-toggle]):hover
+    > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle]):has(
+      > button[aria-haspopup="dialog"]:hover
     )::before {
     background-color: var(--glass-control-hover-tint);
     box-shadow:
@@ -1624,8 +1665,8 @@ html[data-nd-motion-level="low"]
 /* Toolbar segment: keep GitHub/theme as the flexible left part of the shared bar.
    工具栏分段：GitHub / 主题区域作为共享工具条的左侧弹性部分。 */
 #nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
-  > div:has(> button[data-theme-toggle]) {
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
+  > div:has(> [data-theme-toggle]) {
   order: 1;
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -1643,11 +1684,11 @@ html[data-nd-motion-level="low"]
 }
 
 #nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
-  > div:has(> button[data-theme-toggle]):hover,
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
+  > div:has(> [data-theme-toggle]):hover,
 #nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
-  > div:has(> button[data-theme-toggle]):has(button:hover) {
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
+  > div:has(> [data-theme-toggle]):has(button:hover) {
   background: transparent !important;
   box-shadow: none !important;
 }
@@ -1656,7 +1697,7 @@ html[data-nd-motion-level="low"]
    Fumadocs' built-in popover behavior.
    语言分段：复用首页的纯图标触发形态，同时保留 Fumadocs 内置弹层逻辑。 */
 #nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
   > button[aria-haspopup="dialog"] {
   order: 2;
   flex: 0 0 var(--glass-sidebar-control-height);
@@ -1682,7 +1723,7 @@ html[data-nd-motion-level="low"]
 
 @media (hover: hover) {
   #nd-sidebar
-    > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+    > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
     > button[aria-haspopup="dialog"]:hover {
     color: var(--accent-primary) !important;
     background: color-mix(
@@ -1696,7 +1737,7 @@ html[data-nd-motion-level="low"]
   }
 
   #nd-sidebar
-    > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+    > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
     > button[aria-haspopup="dialog"]:hover
     > svg.lucide-languages {
     filter: drop-shadow(0 0 0.4rem color-mix(in srgb, var(--accent-primary) 42%, transparent));
@@ -1705,7 +1746,7 @@ html[data-nd-motion-level="low"]
 }
 
 #nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
   > button[aria-haspopup="dialog"]
   > svg.lucide-languages {
   inline-size: var(--glass-sidebar-control-icon-size) !important;
@@ -1719,16 +1760,17 @@ html[data-nd-motion-level="low"]
 /* Theme glyph cells scale with the unified desktop control height.
    主题图标单元随桌面端统一控件高度同步缩放。 */
 #nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
-  button[data-theme-toggle]
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
+  [data-theme-toggle]
+  > button
   > svg {
-  inline-size: var(--glass-sidebar-theme-item-size) !important;
-  block-size: var(--glass-sidebar-theme-item-size) !important;
-  padding: calc(var(--spacing) * 1.25) !important;
+  inline-size: 100% !important;
+  block-size: 100% !important;
+  padding: 0 !important;
 }
 
 #nd-sidebar
-  > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])
+  > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])
   > button[aria-haspopup="dialog"]
   > :not(svg.lucide-languages) {
   display: none !important;
@@ -2672,7 +2714,7 @@ button:has(
     var(--glass-shadow) !important;
 }
 
-#nd-sidebar-mobile > div:first-child > div.flex > button[data-theme-toggle] {
+#nd-sidebar-mobile > div:first-child > div.flex > [data-theme-toggle] {
   order: 2;
   flex: 0 0 var(--glass-mobile-sidebar-theme-control-width);
   inline-size: var(--glass-mobile-sidebar-theme-control-width) !important;
@@ -2713,11 +2755,11 @@ button:has(
     var(--glass-shadow) !important;
 }
 
-#nd-sidebar-mobile > div:first-child > div.flex > button[data-theme-toggle] > svg {
-  inline-size: var(--glass-sidebar-theme-item-size) !important;
-  block-size: var(--glass-sidebar-theme-item-size) !important;
-  flex: 0 0 var(--glass-sidebar-theme-item-size);
-  padding: calc(var(--spacing) * 1.25) !important;
+#nd-sidebar-mobile > div:first-child > div.flex > [data-theme-toggle] > button > svg {
+  inline-size: 100% !important;
+  block-size: 100% !important;
+  flex: 0 0 auto;
+  padding: 0 !important;
   border-radius: var(--glass-icon-inner-radius) !important;
 }
 
@@ -2779,14 +2821,6 @@ button:has(
   #nd-sidebar-mobile > div:first-child > div.flex:has(:is(a, button):hover) {
     background: transparent !important;
     box-shadow: none !important;
-  }
-
-  #nd-sidebar-mobile > div:first-child > div.flex > button[data-theme-toggle]:hover {
-    background: var(--glass-tint-soft) !important;
-    box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      var(--glass-shadow) !important;
-    transform: none !important;
   }
 
   #nd-sidebar-mobile > div:first-child > div.flex > div:first-child > a:hover,

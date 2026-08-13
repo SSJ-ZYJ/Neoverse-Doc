@@ -22,7 +22,7 @@ export const FUMADOCS_SIDEBAR_DOCUMENT_GROUP_TRIGGER_SELECTOR =
   ':is(#nd-sidebar, #nd-sidebar-mobile) button[data-state][aria-expanded]:not([aria-haspopup])';
 
 export const FUMADOCS_SIDEBAR_FOOTER_SELECTOR =
-  '#nd-sidebar > div:has(> button[aria-haspopup="dialog"]):has(> div > button[data-theme-toggle])';
+  '#nd-sidebar > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])';
 
 export const FUMADOCS_MOBILE_TITLE_SELECTOR =
   '#nd-docs-layout > div.sticky header.border-b.backdrop-blur-sm';

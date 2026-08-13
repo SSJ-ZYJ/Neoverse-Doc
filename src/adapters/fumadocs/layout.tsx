@@ -104,6 +104,9 @@ export function baseOptions(locale: Locale = i18n.defaultLanguage): BaseLayoutPr
       title: <NavTitle />,
       url: `/${locale}`,
     },
+    themeSwitch: {
+      mode: 'light-dark-system',
+    },
     links: [
       {
         text: dict.guestbookTitle,

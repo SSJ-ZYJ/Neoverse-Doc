@@ -830,7 +830,7 @@ body:has(> [data-reading-return]) .docs-back-to-top {
 /* Desktop footer and mobile-header icon links are utility controls rather than
    navigation rows, so their hover state never inherits the accent rail.
    桌面页脚与移动端顶栏图标链接属于工具控件而非导航行，悬浮时不继承导航强调竖线。 */
-#nd-sidebar div:has(> button[data-theme-toggle]) > a::before,
+#nd-sidebar div:has(> [data-theme-toggle]) > a::before,
 #nd-sidebar-mobile > div:first-child > div.flex > div:first-child > a::before {
   display: none !important;
   content: none !important;

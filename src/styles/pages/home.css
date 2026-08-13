@@ -1250,7 +1250,7 @@
   :is(
     button[data-search],
     button[data-search-full],
-    button[data-theme-toggle],
+    [data-theme-toggle],
     button[aria-haspopup="dialog"]:has(> svg.lucide-languages),
     button[aria-haspopup="menu"]:has(> svg.lucide-languages)
   ) {
@@ -1268,7 +1268,7 @@
   :is(#nd-nav, [data-nd-transition-source-id="nd-nav"])
   :is(
     button[data-search],
-    button[data-theme-toggle],
+    [data-theme-toggle],
     button[aria-haspopup="dialog"]:has(svg.lucide-languages),
     button[aria-haspopup="menu"]:has(svg.lucide-languages)
   ) {
@@ -1297,7 +1297,6 @@
     :is(
       button[data-search],
       button[data-search-full],
-      button[data-theme-toggle],
       button[aria-haspopup="dialog"]:has(> svg.lucide-languages),
       button[aria-haspopup="menu"]:has(> svg.lucide-languages)
     ):hover {
