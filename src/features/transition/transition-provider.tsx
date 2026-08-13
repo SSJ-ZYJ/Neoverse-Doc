@@ -16,6 +16,7 @@ import { finishNavigation, setNavigationPhase } from '@/runtime/navigation/store
 import {
   type ContentParticleTransition,
   createContentParticleTransition,
+  discardPreparedContentParticleTransition,
   prewarmContentParticleRenderer,
 } from './content-particle-transition';
 import {
@@ -199,16 +200,29 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
           root.style.setProperty('--nd-content-outgoing-opacity', outgoingOpacity);
           root.dataset.ndRouteTransitionCapturing = kind;
           root.dataset.ndRouteTransitionParticles = kind;
-          transition.play(() => {
-            if (contentParticleRef.current !== transition) return;
-            layer.hidden = false;
-            if (!root.hasAttribute('data-nd-route-transition')) {
-              layer.dataset.phase = 'navigating';
-              root.dataset.ndRouteTransitionOutgoing = kind;
-            }
-            root.removeAttribute('data-nd-route-transition-capturing');
-            root.style.removeProperty('--nd-content-outgoing-opacity');
-          });
+          transition.play(
+            () => {
+              if (contentParticleRef.current !== transition) return;
+              layer.hidden = false;
+              if (!root.hasAttribute('data-nd-route-transition')) {
+                layer.dataset.phase = 'navigating';
+                root.dataset.ndRouteTransitionOutgoing = kind;
+              }
+              root.removeAttribute('data-nd-route-transition-capturing');
+              root.style.removeProperty('--nd-content-outgoing-opacity');
+            },
+            () => {
+              if (contentParticleRef.current !== transition) return;
+              contentParticleRef.current = null;
+              transition.destroy();
+              layer.replaceChildren();
+              layer.hidden = true;
+              root.removeAttribute('data-nd-route-transition-capturing');
+              root.removeAttribute('data-nd-route-transition-outgoing');
+              root.removeAttribute('data-nd-route-transition-particles');
+              root.style.removeProperty('--nd-content-outgoing-opacity');
+            },
+          );
         }
       }
 
@@ -221,17 +235,35 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
   useEffect(() => {
     if (!isDocsRoute(pathname)) return;
 
-    const idleWindow = window as unknown as {
-      cancelIdleCallback?: (handle: number) => void;
-      requestIdleCallback?: (callback: IdleRequestCallback) => number;
-    };
-    if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
-      const idleId = idleWindow.requestIdleCallback(prewarmContentParticleRenderer);
-      return () => idleWindow.cancelIdleCallback?.(idleId);
-    }
+    let timeoutId: number | null = null;
 
-    const timeoutId = window.setTimeout(prewarmContentParticleRenderer, 240);
-    return () => window.clearTimeout(timeoutId);
+    const cancelScheduledPrewarm = () => {
+      if (timeoutId !== null) window.clearTimeout(timeoutId);
+      timeoutId = null;
+    };
+
+    const schedulePrewarm = () => {
+      cancelScheduledPrewarm();
+      discardPreparedContentParticleTransition();
+      // requestIdleCallback can be starved indefinitely by layout and ambient
+      // motion on long docs, then fire inside the user's click task. Start the
+      // experimental capture shortly after mount instead, outside interaction.
+      // 长文档的布局与环境动效会让 requestIdleCallback 长期饥饿，最终与点击
+      // 任务重叠。改为挂载后短延时开始实验性捕获，避开用户交互路径。
+      timeoutId = window.setTimeout(prewarmContentParticleRenderer, 180);
+    };
+
+    const handleViewportChange = () => schedulePrewarm();
+    schedulePrewarm();
+    window.addEventListener('scrollend', handleViewportChange, { passive: true });
+    window.addEventListener('resize', handleViewportChange, { passive: true });
+
+    return () => {
+      cancelScheduledPrewarm();
+      window.removeEventListener('scrollend', handleViewportChange);
+      window.removeEventListener('resize', handleViewportChange);
+      discardPreparedContentParticleTransition();
+    };
   }, [pathname]);
 
   useEffect(() => {

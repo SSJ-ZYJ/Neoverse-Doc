@@ -1825,11 +1825,49 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   background: transparent !important;
 }
 
-/* Keep the previous outline mounted during route capture and swap it only when
-   the destination commits. This avoids a blank right rail between documents.
-   路由捕获期间保留旧目录，仅在目标页提交后替换，避免文档切换时右栏留白。 */
+/* Keep the previous outline mounted during route capture and fade it out
+   completely. The destination outline is mounted only after route commit and
+   fades back in through the provider-owned root transition projection.
+   路由捕获期间保留旧目录并完整淡出；目标目录仅在路由提交后挂载，再通过
+   Provider 维护的根转场视觉投影淡入。 */
 .docs-toc-deferred-retained {
   pointer-events: none;
+  animation: nd-docs-toc-fade-out var(--motion-fast) var(--motion-ease-standard) both;
+  will-change: opacity;
+}
+
+/* The destination DocsPage can remount after the navigation store has already
+   settled. The root transition dataset remains the canonical CSS projection,
+   so it guarantees the newly mounted TOC receives its enter animation.
+   目标 DocsPage 可能在导航 Store 已收尾后重挂。根转场 dataset 仍是规范的
+   CSS 视觉投影，因此用它确保新挂载的 TOC 一定执行淡入。 */
+html[data-nd-route-transition="content"] #nd-toc {
+  animation: nd-docs-toc-fade-in var(--motion-fast) var(--motion-ease-standard) both;
+  will-change: opacity;
+}
+
+@keyframes nd-docs-toc-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes nd-docs-toc-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-toc-deferred-retained,
+  html[data-nd-route-transition="content"] #nd-toc {
+    opacity: 1;
+    animation: none;
+    will-change: auto;
+  }
 }
 
 #nd-toc a {

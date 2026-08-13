@@ -6,11 +6,19 @@ import { getDocsPageElement } from '@/adapters/fumadocs/dom';
 import { TRANSITION_DURATION_MS } from '@/runtime/motion/config';
 import { supportsExperimentalMotion } from '@/runtime/motion/experimental-support';
 import { getEffectiveMotionLevel, isExperimentalMotionEnabled } from '@/runtime/motion/preferences';
+import {
+  type ContentParticleCaptureSnapshot,
+  matchesContentParticleCapture,
+} from './content-particle-capture-state';
+import type {
+  ContentParticleWorkerInitMessage,
+  ContentParticleWorkerResponse,
+} from './content-particle-worker-protocol';
 
 export interface ContentParticleTransition {
   canvas: HTMLCanvasElement;
   destroy: () => void;
-  play: (onFirstFrame?: () => void) => void;
+  play: (onFirstFrame?: () => void, onFailure?: () => void) => void;
 }
 
 type PaintableCanvas = HTMLCanvasElement & {
@@ -146,7 +154,137 @@ interface ContentParticleRenderer {
   vertex: WebGLShader;
 }
 
+interface WorkerParticleRenderer {
+  canvas: HTMLCanvasElement;
+  worker: Worker;
+}
+
 let sharedRenderer: ContentParticleRenderer | null = null;
+let preparedCapture: ContentParticleCaptureSnapshot & {
+  transition: ContentParticleTransition;
+} | null = null;
+let cachedWorkerParticleSupport: boolean | undefined;
+
+function supportsWorkerParticleRenderer(): boolean {
+  if (cachedWorkerParticleSupport !== undefined) return cachedWorkerParticleSupport;
+  if (
+    typeof Worker === 'undefined' ||
+    typeof OffscreenCanvas === 'undefined' ||
+    !('transferControlToOffscreen' in HTMLCanvasElement.prototype)
+  ) {
+    cachedWorkerParticleSupport = false;
+    return false;
+  }
+
+  try {
+    const probe = new OffscreenCanvas(1, 1);
+    const gl = probe.getContext('webgl2');
+    cachedWorkerParticleSupport = gl !== null;
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+  } catch {
+    cachedWorkerParticleSupport = false;
+  }
+  return cachedWorkerParticleSupport;
+}
+
+function createWorkerParticleRenderer(
+  dpr: number,
+  pageRect: DOMRect,
+  particlePreset: (typeof PARTICLE_PRESETS)[keyof typeof PARTICLE_PRESETS],
+): WorkerParticleRenderer | null {
+  if (!supportsWorkerParticleRenderer()) return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'nd-content-particle-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  canvas.width = Math.max(1, Math.round(window.innerWidth * dpr));
+  canvas.height = Math.max(1, Math.round(window.innerHeight * dpr));
+
+  try {
+    const worker = new Worker('/content-particle-worker.js');
+    const offscreen = canvas.transferControlToOffscreen();
+    const message: ContentParticleWorkerInitMessage = {
+      type: 'init',
+      canvas: offscreen,
+      dark: document.documentElement.classList.contains('dark'),
+      dpr,
+      duration: TRANSITION_DURATION_MS.content,
+      fragmentSource: DISSOLVE_FRAG,
+      height: canvas.height,
+      pageRect: {
+        bottom: pageRect.bottom,
+        left: pageRect.left,
+        right: pageRect.right,
+        top: pageRect.top,
+      },
+      preset: particlePreset,
+      viewportHeight: window.innerHeight,
+      viewportWidth: window.innerWidth,
+      vertexSource: DISSOLVE_VERT,
+      width: canvas.width,
+    };
+    worker.postMessage(message, [offscreen]);
+    return { canvas, worker };
+  } catch {
+    canvas.remove();
+    return null;
+  }
+}
+
+function getCurrentCaptureSnapshot(page: HTMLElement): ContentParticleCaptureSnapshot {
+  return {
+    height: window.innerHeight,
+    page,
+    path: window.location.pathname,
+    scrollX: window.scrollX,
+    scrollY: window.scrollY,
+    width: window.innerWidth,
+  };
+}
+
+function captureMatchesCurrentPage(page: HTMLElement): boolean {
+  return matchesContentParticleCapture(preparedCapture, getCurrentCaptureSnapshot(page));
+}
+
+export function discardPreparedContentParticleTransition(): void {
+  preparedCapture?.transition.destroy();
+  preparedCapture = null;
+}
+
+function pruneOffscreenCaptureBranches(sourceRoot: Element, cloneRoot: Element): void {
+  const sourceChildren = Array.from(sourceRoot.children);
+  const cloneChildren = Array.from(cloneRoot.children);
+
+  sourceChildren.forEach((sourceChild, index) => {
+    const cloneChild = cloneChildren[index];
+    if (!(cloneChild instanceof HTMLElement)) return;
+
+    const rect = sourceChild.getBoundingClientRect();
+    if (rect.top >= window.innerHeight) {
+      cloneChild.remove();
+      return;
+    }
+
+    if (rect.bottom <= 0) {
+      const display = getComputedStyle(sourceChild).display;
+      // Inline descendants can affect wrapping in a partly visible text block.
+      // Keep those small branches intact; replace only offscreen layout boxes
+      // with fixed-size placeholders so the visible subtree keeps its position.
+      // 行内后代会影响部分可见文本块的换行，因此保留这类小分支；仅将屏外
+      // 布局盒替换为定尺寸占位，使可见子树维持原位置。
+      if (!display.startsWith('inline')) {
+        cloneChild.replaceChildren();
+        cloneChild.style.blockSize = `${rect.height}px`;
+        cloneChild.style.boxSizing = 'border-box';
+        cloneChild.style.contain = 'strict';
+        cloneChild.style.contentVisibility = 'hidden';
+      }
+      return;
+    }
+
+    pruneOffscreenCaptureBranches(sourceChild, cloneChild);
+  });
+}
 
 function createRenderer(): ContentParticleRenderer | null {
   const canvas = document.createElement('canvas');
@@ -273,20 +411,49 @@ export function prewarmContentParticleRenderer(): void {
   if (!supportsExperimentalMotion() || !isExperimentalMotionEnabled()) {
     return;
   }
-  if (sharedRenderer?.gl.isContextLost()) {
-    destroyRenderer(sharedRenderer);
-    sharedRenderer = null;
+  if (!supportsWorkerParticleRenderer()) {
+    if (sharedRenderer?.gl.isContextLost()) {
+      destroyRenderer(sharedRenderer);
+      sharedRenderer = null;
+    }
+    if (!sharedRenderer) sharedRenderer = createRenderer();
+    if (!sharedRenderer || sharedRenderer.inUse) return;
+    resizeRenderer(sharedRenderer);
+    sharedRenderer.gl.viewport(0, 0, sharedRenderer.canvas.width, sharedRenderer.canvas.height);
+    sharedRenderer.gl.clearColor(0, 0, 0, 0);
+    sharedRenderer.gl.clear(sharedRenderer.gl.COLOR_BUFFER_BIT);
+    sharedRenderer.gl.flush();
   }
-  if (!sharedRenderer) sharedRenderer = createRenderer();
-  if (!sharedRenderer || sharedRenderer.inUse) return;
-  resizeRenderer(sharedRenderer);
-  sharedRenderer.gl.viewport(0, 0, sharedRenderer.canvas.width, sharedRenderer.canvas.height);
-  sharedRenderer.gl.clearColor(0, 0, 0, 0);
-  sharedRenderer.gl.clear(sharedRenderer.gl.COLOR_BUFFER_BIT);
-  sharedRenderer.gl.flush();
+
+  const page = getDocsPageElement();
+  if (!page || captureMatchesCurrentPage(page)) return;
+  discardPreparedContentParticleTransition();
+  // Prewarm captures the destination as the next fully visible outgoing page,
+  // independent of its current enter-animation opacity. Otherwise the second
+  // navigation replays a structurally valid but transparent particle texture.
+  // 预热捕获的是下一次完整可见的退场页，不继承当前入场动画的透明度；否则
+  // 第二次导航会播放结构有效但完全透明的粒子纹理。
+  const transition = createUncachedContentParticleTransition('1');
+  if (!transition) return;
+  preparedCapture = {
+    ...getCurrentCaptureSnapshot(page),
+    transition,
+  };
 }
 
 export function createContentParticleTransition(): ContentParticleTransition | null {
+  const page = getDocsPageElement();
+  if (page && captureMatchesCurrentPage(page) && preparedCapture) {
+    const prepared = preparedCapture.transition;
+    preparedCapture = null;
+    return prepared;
+  }
+
+  discardPreparedContentParticleTransition();
+  return createUncachedContentParticleTransition();
+}
+
+function createUncachedContentParticleTransition(captureOpacity?: string): ContentParticleTransition | null {
   if (!supportsExperimentalMotion() || !isExperimentalMotionEnabled()) {
     return null;
   }
@@ -294,12 +461,8 @@ export function createContentParticleTransition(): ContentParticleTransition | n
   const page = getDocsPageElement();
   if (!page) return null;
 
-  const renderer = acquireRenderer();
-  if (!renderer) return null;
   const particlePreset =
     getEffectiveMotionLevel() === 'medium' ? PARTICLE_PRESETS.medium : PARTICLE_PRESETS.high;
-  const { canvas: output, gl, program, texture, uniforms, vao } = renderer;
-  const setProgram = gl.useProgram.bind(gl);
 
   const source = document.createElement('canvas') as PaintableCanvas;
   source.className = 'nd-content-particle-source';
@@ -307,12 +470,12 @@ export function createContentParticleTransition(): ContentParticleTransition | n
   source.setAttribute('layoutsubtree', 'true');
   const sourceContext = source.getContext('2d') as ElementImageContext | null;
   if (!sourceContext?.drawElementImage || !source.requestPaint) {
-    releaseRenderer(renderer);
     return null;
   }
 
   const clone = page.cloneNode(true) as HTMLElement;
-  const contentOpacity = getComputedStyle(page.firstElementChild ?? page).opacity;
+  const contentOpacity =
+    captureOpacity ?? getComputedStyle(page.firstElementChild ?? page).opacity;
   clone.dataset.particleCapture = '';
   clone.inert = true;
   clone.setAttribute('aria-hidden', 'true');
@@ -325,15 +488,26 @@ export function createContentParticleTransition(): ContentParticleTransition | n
   clone.querySelectorAll(CAPTURE_EXCLUDE_SELECTOR).forEach((node) => {
     node.remove();
   });
+  pruneOffscreenCaptureBranches(page, clone);
   const pageRect = page.getBoundingClientRect();
   const pageAnchor = page.firstElementChild;
   const cloneAnchor = clone.firstElementChild;
   clone.style.width = `${pageRect.width}px`;
   clone.style.margin = '0';
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const workerRenderer = createWorkerParticleRenderer(dpr, pageRect, particlePreset);
+  const renderer = workerRenderer ? null : acquireRenderer();
+  if (!workerRenderer && !renderer) return null;
+  const output = workerRenderer?.canvas ?? renderer?.canvas;
+  if (!output) {
+    workerRenderer?.worker.terminate();
+    if (renderer) releaseRenderer(renderer);
+    return null;
+  }
   source.append(clone);
   document.body.append(source);
 
-  const dpr = resizeRenderer(renderer);
+  if (renderer) resizeRenderer(renderer);
   const width = output.width;
   const height = output.height;
   source.width = width;
@@ -345,10 +519,39 @@ export function createContentParticleTransition(): ContentParticleTransition | n
   let playRequested = false;
   let firstFrameDrawn = false;
   let onFirstFrame: (() => void) | null = null;
+  let onFailure: (() => void) | null = null;
+  let failed = false;
   let startedAt = 0;
 
+  const fail = (message: string, error?: unknown) => {
+    if (failed || destroyed) return;
+    failed = true;
+    console.error(message, error);
+    onFailure?.();
+    onFailure = null;
+  };
+
+  if (workerRenderer) {
+    workerRenderer.worker.onmessage = (event: MessageEvent<ContentParticleWorkerResponse>) => {
+      if (destroyed) return;
+      if (event.data.type === 'error') {
+        fail('Content particle worker error:', event.data.message);
+        return;
+      }
+      if (!firstFrameDrawn) {
+        firstFrameDrawn = true;
+        onFirstFrame?.();
+        onFirstFrame = null;
+      }
+    };
+    workerRenderer.worker.onerror = (event) => {
+      fail('Content particle worker error:', event.message);
+    };
+  }
+
   const draw = (now: number) => {
-    if (destroyed || !ready) return;
+    if (destroyed || !ready || !renderer) return;
+    const { gl, program, texture, uniforms, vao } = renderer;
     const progress = Math.min(Math.max((now - startedAt) / TRANSITION_DURATION_MS.content, 0), 1);
     const density = Math.max(
       particlePreset.density,
@@ -362,7 +565,8 @@ export function createContentParticleTransition(): ContentParticleTransition | n
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.BLEND);
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-    setProgram(program);
+    const activateProgram = gl.useProgram.bind(gl);
+    activateProgram(program);
     gl.bindVertexArray(vao);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -428,17 +632,31 @@ export function createContentParticleTransition(): ContentParticleTransition | n
       // drawElementImage 会按设备分辨率捕获 CSS 内容，但目标偏移使用 Canvas
       // 网格像素。这里只换算偏移；缩放整个上下文会放大所有文字和卡片。
       sourceContext.drawElementImage?.(clone, captureX * dpr, captureY * dpr);
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
-      ready = true;
+      if (workerRenderer) {
+        void createImageBitmap(source)
+          .then((bitmap) => {
+            if (destroyed) {
+              bitmap.close();
+              return;
+            }
+            workerRenderer.worker.postMessage({ type: 'texture', bitmap }, [bitmap]);
+            ready = true;
+          })
+          .catch((error: unknown) => fail('Content particle bitmap error:', error));
+      } else if (renderer) {
+        const { gl, texture } = renderer;
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+        ready = true;
+      }
       source.onpaint = null;
       source.remove();
-      if (playRequested) {
+      if (playRequested && renderer) {
         startedAt = performance.now();
         frameId = window.requestAnimationFrame(draw);
       }
     } catch (error) {
-      console.error('Content particle capture error:', error);
+      fail('Content particle capture error:', error);
     }
   };
   source.requestPaint?.();
@@ -450,19 +668,30 @@ export function createContentParticleTransition(): ContentParticleTransition | n
       destroyed = true;
       window.cancelAnimationFrame(frameId);
       onFirstFrame = null;
+      onFailure = null;
       source.onpaint = null;
       source.remove();
-      releaseRenderer(renderer);
+      workerRenderer?.worker.terminate();
+      if (renderer) releaseRenderer(renderer);
     },
-    play(handleFirstFrame) {
+    play(handleFirstFrame, handleFailure) {
       if (destroyed) return;
-      if (firstFrameDrawn) {
-        handleFirstFrame?.();
+      if (failed) {
+        handleFailure?.();
         return;
       }
-      if (handleFirstFrame) onFirstFrame = handleFirstFrame;
+      if (firstFrameDrawn) {
+        handleFirstFrame?.();
+      } else if (handleFirstFrame) {
+        onFirstFrame = handleFirstFrame;
+      }
+      if (handleFailure) onFailure = handleFailure;
       if (playRequested) return;
       playRequested = true;
+      if (workerRenderer) {
+        workerRenderer.worker.postMessage({ type: 'play' });
+        return;
+      }
       if (!ready) return;
       startedAt = performance.now();
       frameId = window.requestAnimationFrame(draw);
