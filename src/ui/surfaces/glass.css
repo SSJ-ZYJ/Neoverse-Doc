@@ -329,17 +329,13 @@ body::before {
   contain: strict;
 }
 
-/* On the homepage, body::before is redundant: .home-page::before already
-   provides a dedicated ambient orb layer with its own blur and drift
-   animation. Running both layers simultaneously doubles the GPU blur cost
-   for no visual gain (the homepage orbs fully cover the viewport). Hiding
-   body::before here eliminates the 100px real-time blur on a viewport-sized
-   element — the single largest static GPU cost on the homepage.
-   主页上 body::before 是冗余的：.home-page::before 已提供专属环境光球层
-   （带模糊与漂移动画）。同时运行两层会使 GPU 模糊开销翻倍且无视觉收益
-   （主页光球已完全覆盖视口）。此处隐藏 body::before 消除了视口尺寸
-   元素上的 100px 实时模糊 —— 主页最大的静态 GPU 开销。 */
-body:has(.home-page)::before {
+/* Pages with their own full-canvas ambience do not need the global fixed blur.
+   The homepage owns its animated orb layer, while documentation owns the
+   circuit canvas. Hiding the duplicate viewport-sized 100px filter removes a
+   persistent GPU sampling surface without changing either page's visual scene.
+   自带完整环境画布的页面无需全局 fixed 模糊。主页已有动态光球层，文档页已有
+   电路画布；隐藏重复的视口级 100px 滤镜可移除持续 GPU 采样，同时不改变场景。 */
+body:has(:is(.home-page, #nd-docs-layout))::before {
   display: none;
 }
 

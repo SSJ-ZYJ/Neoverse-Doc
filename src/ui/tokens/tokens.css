@@ -162,13 +162,24 @@
   --docs-nav-background: color-mix(in srgb, var(--surface-glass) 62%, transparent);
   --docs-nav-shadow: var(--shadow-edge), var(--glass-shadow);
   --docs-sidebar-background: color-mix(in srgb, var(--surface-elevated) 68%, var(--surface-glass));
+  --docs-sidebar-static-background: color-mix(
+    in srgb,
+    var(--docs-canvas-surface) 86%,
+    var(--surface-elevated)
+  );
+  --docs-sidebar-dynamic-background: color-mix(
+    in srgb,
+    var(--docs-canvas-surface) 82%,
+    transparent
+  );
+  --docs-chrome-dynamic-blur: calc(var(--glass-blur-soft) * 0.75);
   --docs-sidebar-shadow: var(--shadow-edge);
   --docs-sidebar-hover-background: color-mix(in srgb, var(--accent-primary) 14%, transparent);
   --docs-sidebar-active-background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
   --docs-sidebar-active-foreground: var(--accent-primary);
   --docs-page-background:
     linear-gradient(145deg, color-mix(in srgb, var(--edge-light) 20%, transparent), transparent 32%),
-    color-mix(in srgb, var(--surface-glass) 46%, transparent);
+    color-mix(in srgb, var(--docs-canvas-surface) 78%, var(--surface-elevated));
   --docs-page-shadow: var(--shadow-edge), var(--shadow-float);
   /* Document quote tokens create a quiet editorial surface with a restrained
      cyan-to-mint guide rail, keeping quoted prose distinct from alerts.
@@ -464,7 +475,8 @@
       180deg,
       color-mix(in srgb, var(--docs-canvas-surface) 58%, transparent),
       color-mix(in srgb, var(--background-primary) 46%, transparent)
-    );
+    ),
+    color-mix(in srgb, var(--docs-canvas-surface) 78%, var(--surface-elevated));
   --docs-page-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--edge-light) 32%, transparent),
     0 1.5rem 4rem -2.4rem color-mix(in srgb, var(--text-muted) 22%, transparent);

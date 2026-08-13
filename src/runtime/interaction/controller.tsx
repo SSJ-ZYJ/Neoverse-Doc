@@ -45,7 +45,6 @@ const SURFACE_SELECTOR = [
   // File trees reuse the shared document-surface particle field instead of owning another emitter.
   // 文件树复用文档表面的共享粒子场，避免维护另一套粒子发射器。
   '.mdx-files',
-  '.mermaid-wrapper:not([data-maximized])',
   '.markdown-alert',
   '.markdown-details',
   // Plain Markdown quotes are document surfaces too; keep their click feedback

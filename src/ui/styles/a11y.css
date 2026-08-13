@@ -22,6 +22,9 @@
   :where(#nd-subnav),
   :where(#nd-sidebar),
   :where(#nd-sidebar-mobile),
+  html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile),
+  html[data-nd-motion-level="high"] #nd-docs-layout #nd-nav > div,
+  html[data-nd-motion-level="high"] #nd-docs-layout > :is(header, #nd-subnav),
   #nd-docs-layout header.border-b.backdrop-blur-sm,
   #nd-subnav > button.inline-flex.items-center,
   #nd-sidebar

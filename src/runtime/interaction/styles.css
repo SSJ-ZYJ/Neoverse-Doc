@@ -51,27 +51,13 @@
   isolation: isolate;
 }
 
-/* .mermaid-wrapper is intentionally excluded from the isolation: isolate rule
-   above. isolation: isolate makes an element a backdrop root (per the Filter
-   Effects spec), which would trap the floating .mermaid-toolbar's
-   backdrop-filter inside the wrapper. The toolbar could then only sample the
-   wrapper's ::before tint (semi-transparent) — blurring that is invisible, so
-   the toolbar reads as transparent. By leaving the wrapper without isolation,
-   the toolbar's nearest backdrop root becomes #nd-page, giving the toolbar's
-   blur real content to sample (page background + circuit grid + SVG).
-   The wrapper keeps position: relative from its own rule in mermaid.css, and
-   the immersive particle layer works independently (it has its own
-   contain: layout paint + overflow: hidden, and the wrapper's overflow:
-   hidden clips any overflow).
-   .mermaid-wrapper 刻意不从上面的 isolation: isolate 规则中继承。isolation:
-   isolate 会使元素成为 backdrop root（按 Filter Effects 规范），把悬浮
-   .mermaid-toolbar 的 backdrop-filter 困在 wrapper 内部。工具栏就只能采样
-   wrapper 的 ::before 底色（半透明），模糊半透明底色不可见，工具栏因此
-   看起来透明。不给 wrapper 设 isolation，工具栏的最近 backdrop root 变成
-   #nd-page，工具栏的模糊能采样到真实内容（页面背景 + 电路网格 + SVG）。
-   wrapper 仍从 mermaid.css 自身规则获得 position: relative，沉浸式粒子层
-   独立工作（自身有 contain: layout paint + overflow: hidden，wrapper 的
-   overflow: hidden 裁剪溢出）。 */
+/* .mermaid-wrapper stays outside this isolation rule so the floating toolbar
+   can sample the document backdrop. Mermaid canvases are intentionally not
+   particle surfaces: diagram drag already owns pointer movement for pan/zoom,
+   and DOM particle emission would compete with that interaction.
+   .mermaid-wrapper 不加入此隔离规则，使悬浮工具栏仍可采样文档背景。Mermaid
+   画布不再作为粒子表面：图表拖拽已使用指针移动处理平移缩放，DOM 粒子发射
+   会与该交互争用性能。 */
 
 :where(
   .control-surface,

@@ -13,7 +13,6 @@ import { source } from '@/adapters/fumadocs/source';
 import { DocsBackToTop } from '@/components/docs-back-to-top';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
 import { DocsPageActions } from '@/components/docs-page-actions';
-import { DocsPageGradualBlur } from '@/components/docs-page-gradual-blur';
 import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { JsonLd } from '@/components/seo/json-ld';
@@ -137,7 +136,6 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
         {header}
         {pageContent}
       </DeferredDocsPage>
-      <DocsPageGradualBlur />
       <DocsBackToTop key={slugKey} label={dict.backToTop} />
       {/* Keep community height and scrolling outside the Fumadocs article container.
           将社区模块的高度与滚动隔离在 Fumadocs 正文容器之外。 */}

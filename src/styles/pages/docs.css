@@ -582,7 +582,12 @@ body:has(> [data-reading-return]) .docs-back-to-top {
     radial-gradient(circle at center, var(--docs-circuit-node) 0 1.5px, transparent 2px),
     linear-gradient(var(--docs-circuit-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--docs-circuit-line) 1px, transparent 1px);
-  background-attachment: fixed;
+  /* Keep the circuit canvas in the normal paint flow. Fixed backgrounds force
+     viewport-wide repaint work while the document scrolls, especially when
+     translucent surfaces overlap the canvas. */
+  /* 电路画布保持在普通绘制流中；fixed 背景在文档滚动时会触发视口级重绘，
+     与半透明表面重叠时成本尤其明显。 */
+  background-attachment: scroll;
   background-position:
     center,
     center,
@@ -631,14 +636,28 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   border-color: var(--docs-surface-border) !important;
   background: var(--docs-nav-background) !important;
   box-shadow: var(--docs-nav-shadow) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 #nd-sidebar:not([data-collapsed="true"]) {
   border-inline-end: 1px solid var(--docs-surface-border) !important;
-  background: var(--docs-sidebar-background) !important;
+  background: var(--docs-sidebar-static-background) !important;
   box-shadow: var(--docs-sidebar-shadow) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* High motion opts into one restrained live backdrop sample for both desktop
+   and mobile sidebars. Keeping the same filter in every open/collapsed state
+   preserves Fumadocs' original movement without a mid-transition blur jump.
+   高动效档位为桌面与移动侧栏启用一层克制的实时背景模糊；展开与折叠状态
+   始终使用同一滤镜，保留 Fumadocs 原有动画并避免途中发生模糊跳变。 */
+html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
+  background: var(--docs-sidebar-dynamic-background) !important;
+  -webkit-backdrop-filter: blur(var(--docs-chrome-dynamic-blur))
+    saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--docs-chrome-dynamic-blur)) saturate(var(--glass-saturate)) !important;
 }
 
 #nd-sidebar,
@@ -885,9 +904,11 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   border: 1px solid var(--docs-surface-border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
+  /* Keep the layered glass tint as a static surface without a live
+     document-sized backdrop sample on every scroll frame. */
+  /* 保留分层玻璃色调的静态表面，同时避免滚动时实时采样整篇文档背景。 */
   background: var(--docs-page-background);
   box-shadow: var(--docs-page-shadow);
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
 }
 
 /* The discussion remains a separate grid surface but follows the page's natural
@@ -910,60 +931,6 @@ body:has(> [data-reading-return]) .docs-back-to-top {
 #nd-page > article,
 #nd-page [data-docs-body] {
   max-inline-size: var(--docs-reading-width);
-}
-
-/* A low-cost, three-layer blur stays fixed to the viewport edge while its width
-   follows only the document card. Visibility is observer-driven, so scrolling
-   does not trigger per-frame JavaScript work or affect the separate community card.
-   低成本三层模糊固定在视口边缘，宽度只跟随正文卡片；可见性由 Observer 驱动，
-   滚动时没有逐帧 JavaScript 工作，也不会影响独立的社区卡片。 */
-.docs-page-gradual-blur {
-  position: fixed;
-  inset-block-end: 0;
-  z-index: 20;
-  contain: layout style;
-  pointer-events: none;
-}
-
-.gradual-blur__inner {
-  position: relative;
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-}
-
-.gradual-blur__layer {
-  position: absolute;
-  inset: 0;
-  display: block;
-  -webkit-backdrop-filter: blur(0);
-  backdrop-filter: blur(0);
-  transition:
-    -webkit-backdrop-filter var(--motion-standard) linear,
-    backdrop-filter var(--motion-standard) linear;
-}
-
-.docs-page-gradual-blur[data-visible] .gradual-blur__layer {
-  -webkit-backdrop-filter: blur(var(--gradual-blur-radius));
-  backdrop-filter: blur(var(--gradual-blur-radius));
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gradual-blur__layer {
-    transition: none;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .docs-page-gradual-blur {
-    display: none;
-  }
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .docs-page-gradual-blur {
-    display: none;
-  }
 }
 
 /* Author meta row hosts the contributor line and the right-aligned page actions
@@ -2241,44 +2208,10 @@ html[data-nd-route-transition="content"] #nd-toc {
   }
 }
 
-/* Mobile keeps restrained blur on the article and detached discussion cards
-   while disabling it on other viewport-sized surfaces. This preserves both
-   document-card surfaces without restoring the heavier multi-layer sampling
-   that caused scroll jank. iOS also avoids fixed-background repaints below.
-   移动端为正文与独立讨论卡片保留克制模糊，其他大尺寸表面继续关闭滤镜，
-   在保持两块文档卡片层次的同时避免重新引入过重的多层采样；下方也继续
-   规避 iOS 固定背景重绘。 */
+/* Mobile disables filters on other viewport-sized surfaces as well. The page
+   canvas already uses the static layered glass surface defined above.
+   移动端同样关闭其他视口级表面的滤镜；正文画布已复用上方静态分层玻璃表面。 */
 @media (max-width: 768px) {
-  /* background-attachment: fixed forces iOS Safari to repaint the background
-     on every scroll frame. Switching to scroll lets the background scroll
-     with content (visually indistinguishable for the ambient gradients) and
-     eliminates the repaint cost.
-     background-attachment: fixed 强制 iOS Safari 在每帧滚动时重绘背景。
-     改为 scroll 让背景随内容滚动（对环境光渐变视觉无差异）并消除重绘开销。 */
-  #nd-docs-layout {
-    background-attachment: scroll !important;
-  }
-
-  /* A half-strength blur gives the article a visible glass body while keeping
-     the only live filter on the primary reading surface.
-     半强度模糊让正文卡片恢复可见玻璃层，并将实时滤镜限制在主要阅读表面。 */
-  #nd-page {
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur-soft) * 0.5))
-      saturate(var(--glass-saturate)) !important;
-    backdrop-filter: blur(calc(var(--glass-blur-soft) * 0.5)) saturate(var(--glass-saturate)) !important;
-  }
-
-  /* Keep the detached discussion card on the same restrained mobile glass tier
-     as the article. Disabling its filter left the shared translucent
-     --docs-page-background visually transparent against the circuit canvas.
-     独立讨论卡片在移动端与正文复用同一层克制玻璃。此前关闭滤镜后，共用的
-     半透明 --docs-page-background 会直接透出电路画布，看起来近似全透明。 */
-  .docs-community-module {
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur-soft) * 0.5))
-      saturate(var(--glass-saturate)) !important;
-    backdrop-filter: blur(calc(var(--glass-blur-soft) * 0.5)) saturate(var(--glass-saturate)) !important;
-  }
-
   /* Top nav glass surface: same trade-off as #nd-page. The nav background
      variable already carries translucency, so removing the blur keeps the
      frosted look without the sampling cost.
@@ -2295,20 +2228,18 @@ html[data-nd-route-transition="content"] #nd-toc {
   #nd-docs-layout > #nd-subnav {
     background: var(--docs-canvas-surface) !important;
   }
+}
 
-  /* The highest motion tier can afford one live header filter on mobile.
-     Keep medium and low on the opaque performance fallback above.
-     高动效档位在移动端启用一层实时顶栏滤镜；中、低档继续使用上方的
-     不透明性能降级。 */
-  html[data-nd-motion-level="high"] #nd-docs-layout > #nd-subnav {
-    background: var(--glass-refraction-fill), var(--glass-mobile-header-high-surface) !important;
-    -webkit-backdrop-filter: blur(var(--glass-mobile-header-high-blur))
-      saturate(calc(var(--glass-saturate) + 10%)) brightness(var(--glass-brightness))
-      contrast(var(--glass-contrast)) !important;
-    backdrop-filter: blur(var(--glass-mobile-header-high-blur))
-      saturate(calc(var(--glass-saturate) + 10%)) brightness(var(--glass-brightness))
-      contrast(var(--glass-contrast)) !important;
-  }
+/* High motion gives desktop and mobile document headers the same restrained
+   live blur as the sidebars. Lower motion levels keep the static surface above.
+   高动效档位让桌面与移动文档顶栏复用侧栏的克制动态模糊；中、低档继续使用
+   上方静态表面。 */
+html[data-nd-motion-level="high"] #nd-docs-layout #nd-nav > div,
+html[data-nd-motion-level="high"] #nd-docs-layout > :is(header, #nd-subnav) {
+  background: var(--docs-nav-background) !important;
+  -webkit-backdrop-filter: blur(var(--docs-chrome-dynamic-blur))
+    saturate(var(--glass-saturate)) !important;
+  backdrop-filter: blur(var(--docs-chrome-dynamic-blur)) saturate(var(--glass-saturate)) !important;
 }
 
 /* Code block language icons: PowerShell and CMD/Batch ship fixed brand colors

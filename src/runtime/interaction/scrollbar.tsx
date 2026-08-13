@@ -9,7 +9,6 @@ import { getFumadocsTopChromeElements } from '@/adapters/fumadocs/dom';
 interface ScrollbarMetrics {
   maxScroll: number;
   thumbHeight: number;
-  thumbTop: number;
   trackHeight: number;
   visible: boolean;
 }
@@ -43,7 +42,14 @@ export default function ImmersiveScrollbar() {
 
     const trackElement: HTMLDivElement = mountedTrackElement;
 
-    let animationFrame = 0;
+    let layoutAnimationFrame = 0;
+    let scrollAnimationFrame = 0;
+    let metrics: ScrollbarMetrics = {
+      maxScroll: 0,
+      thumbHeight: 0,
+      trackHeight: 0,
+      visible: false,
+    };
     let dragState: DragState | null = null;
     // Paused while the tab is hidden so background pages do not keep firing
     // ResizeObserver / scroll / resize callbacks for a scrollbar no one sees.
@@ -139,7 +145,6 @@ export default function ImmersiveScrollbar() {
       // 同时读取 html/body 指标，兼容文档布局切换滚动归属的情况。
       const viewportHeight = Math.max(window.innerHeight, root.clientHeight);
       const scrollHeight = Math.max(root.scrollHeight, document.body.scrollHeight);
-      const scrollTop = Math.max(window.scrollY, root.scrollTop, document.body.scrollTop);
       const maxScroll = Math.max(scrollHeight - viewportHeight, 0);
       const visible = maxScroll > 1 && trackHeight > 0;
 
@@ -147,7 +152,6 @@ export default function ImmersiveScrollbar() {
         return {
           maxScroll,
           thumbHeight: 0,
-          thumbTop: 0,
           trackHeight,
           visible: false,
         };
@@ -155,22 +159,34 @@ export default function ImmersiveScrollbar() {
 
       const proportionalHeight = (viewportHeight / scrollHeight) * trackHeight;
       const thumbHeight = clamp(proportionalHeight, MIN_THUMB_HEIGHT, trackHeight);
-      const maxThumbTop = Math.max(trackHeight - thumbHeight, 0);
-      const thumbTop = maxScroll > 0 ? (scrollTop / maxScroll) * maxThumbTop : 0;
 
       return {
         maxScroll,
         thumbHeight,
-        thumbTop: clamp(thumbTop, 0, maxThumbTop),
         trackHeight,
         visible,
       };
     }
 
+    function applyScrollPosition() {
+      const scrollTop = Math.max(window.scrollY, root.scrollTop, document.body.scrollTop);
+      const thumbTop = getThumbTop(metrics, scrollTop);
+
+      trackElement.style.setProperty('--immersive-scrollbar-thumb-offset', `${thumbTop}px`);
+    }
+
+    function getThumbTop(currentMetrics: ScrollbarMetrics, scrollTop: number) {
+      const maxThumbTop = Math.max(currentMetrics.trackHeight - currentMetrics.thumbHeight, 0);
+      const thumbTop =
+        currentMetrics.maxScroll > 0 ? (scrollTop / currentMetrics.maxScroll) * maxThumbTop : 0;
+
+      return clamp(thumbTop, 0, maxThumbTop);
+    }
+
     function applyMetrics() {
       updateChromeOffset();
 
-      const metrics = readMetrics();
+      metrics = readMetrics();
 
       trackElement.dataset.visible = metrics.visible ? 'true' : 'false';
       root.classList.toggle(ROOT_ACTIVE_CLASS, metrics.visible);
@@ -178,18 +194,27 @@ export default function ImmersiveScrollbar() {
         '--immersive-scrollbar-thumb-height',
         `${metrics.thumbHeight}px`,
       );
-      trackElement.style.setProperty('--immersive-scrollbar-thumb-offset', `${metrics.thumbTop}px`);
+      applyScrollPosition();
     }
 
     function scheduleApplyMetrics() {
       // Skip scheduling while the tab is hidden; visibilitychange handler
       // will trigger a single applyMetrics() on resume.
       // 标签页隐藏时跳过调度；visibilitychange 处理器会在恢复时触发一次 applyMetrics。
-      if (animationFrame !== 0 || paused) return;
+      if (layoutAnimationFrame !== 0 || paused) return;
 
-      animationFrame = window.requestAnimationFrame(() => {
-        animationFrame = 0;
+      layoutAnimationFrame = window.requestAnimationFrame(() => {
+        layoutAnimationFrame = 0;
         applyMetrics();
+      });
+    }
+
+    function scheduleScrollPosition() {
+      if (scrollAnimationFrame !== 0 || paused) return;
+
+      scrollAnimationFrame = window.requestAnimationFrame(() => {
+        scrollAnimationFrame = 0;
+        applyScrollPosition();
       });
     }
 
@@ -207,15 +232,18 @@ export default function ImmersiveScrollbar() {
     }
 
     function handlePointerDown(event: PointerEvent) {
-      const metrics = readMetrics();
+      const currentMetrics = readMetrics();
 
-      if (!metrics.visible || event.button !== 0) return;
+      if (!currentMetrics.visible || event.button !== 0) return;
 
       const trackRect = trackElement.getBoundingClientRect();
       const localY = event.clientY - trackRect.top;
-      const isThumbHit =
-        localY >= metrics.thumbTop && localY <= metrics.thumbTop + metrics.thumbHeight;
-      const offsetY = isThumbHit ? localY - metrics.thumbTop : metrics.thumbHeight / 2;
+      const thumbTop = getThumbTop(
+        currentMetrics,
+        Math.max(window.scrollY, root.scrollTop, document.body.scrollTop),
+      );
+      const isThumbHit = localY >= thumbTop && localY <= thumbTop + currentMetrics.thumbHeight;
+      const offsetY = isThumbHit ? localY - thumbTop : currentMetrics.thumbHeight / 2;
 
       event.preventDefault();
       dragState = {
@@ -257,10 +285,17 @@ export default function ImmersiveScrollbar() {
     // 仅监听 childList —— 属性变化（class、style）不影响选择器匹配的元素集合。
     const chromeMutationObserver = new MutationObserver(() => {
       topChromeCacheDirty = true;
+      scheduleApplyMetrics();
     });
     chromeMutationObserver.observe(document.body, { childList: true, subtree: true });
 
-    window.addEventListener('scroll', scheduleApplyMetrics, { passive: true });
+    // Scrolling updates only the composited thumb transform. Layout reads for
+    // track and top-chrome geometry stay on resize/DOM changes and scroll end,
+    // keeping the browser's asynchronous scroll path free of forced layout.
+    // 滚动期间仅更新合成层中的 thumb transform；轨道与顶部控件的布局读取
+    // 留给 resize、DOM 变化及滚动结束，避免阻塞浏览器异步滚动路径。
+    window.addEventListener('scroll', scheduleScrollPosition, { passive: true });
+    window.addEventListener('scrollend', scheduleApplyMetrics, { passive: true });
     window.addEventListener('resize', scheduleApplyMetrics);
     trackElement.addEventListener('pointerdown', handlePointerDown);
     trackElement.addEventListener('pointermove', handlePointerMove);
@@ -273,9 +308,13 @@ export default function ImmersiveScrollbar() {
     // 标签页隐藏时暂停；恢复时执行一次同步更新，使 thumb 立即反映当前滚动位置。
     const handleVisibilityChange = () => {
       paused = document.hidden;
-      if (animationFrame !== 0) {
-        window.cancelAnimationFrame(animationFrame);
-        animationFrame = 0;
+      if (layoutAnimationFrame !== 0) {
+        window.cancelAnimationFrame(layoutAnimationFrame);
+        layoutAnimationFrame = 0;
+      }
+      if (scrollAnimationFrame !== 0) {
+        window.cancelAnimationFrame(scrollAnimationFrame);
+        scrollAnimationFrame = 0;
       }
       if (!paused) {
         applyMetrics();
@@ -285,13 +324,17 @@ export default function ImmersiveScrollbar() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      if (animationFrame !== 0) {
-        window.cancelAnimationFrame(animationFrame);
+      if (layoutAnimationFrame !== 0) {
+        window.cancelAnimationFrame(layoutAnimationFrame);
+      }
+      if (scrollAnimationFrame !== 0) {
+        window.cancelAnimationFrame(scrollAnimationFrame);
       }
 
       resizeObserver.disconnect();
       chromeMutationObserver.disconnect();
-      window.removeEventListener('scroll', scheduleApplyMetrics);
+      window.removeEventListener('scroll', scheduleScrollPosition);
+      window.removeEventListener('scrollend', scheduleApplyMetrics);
       window.removeEventListener('resize', scheduleApplyMetrics);
       trackElement.removeEventListener('pointerdown', handlePointerDown);
       trackElement.removeEventListener('pointermove', handlePointerMove);

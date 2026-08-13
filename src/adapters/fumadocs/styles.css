@@ -73,15 +73,10 @@
   --glass-mobile-header-tint: color-mix(in srgb, var(--glass-tint-search) 90%, transparent);
   --glass-mobile-title-header-tint: color-mix(in srgb, var(--glass-tint-search) 84%, transparent);
   --glass-mobile-title-header-blur: var(--glass-blur);
-  /* Mobile sidebar drawer keeps a moderate blur with a denser tint so text
-     remains legible without losing the glass relationship to page content.
-     移动端侧栏使用适中模糊与稍浓 tint，在保留玻璃透视关系的同时提升可读性。 */
-  --glass-sidebar-drawer-tint: color-mix(
-    in srgb,
-    var(--glass-tint-strong) 62%,
-    var(--glass-tint) 38%
-  );
-  --glass-sidebar-drawer-blur: 8px;
+  /* The drawer uses the static document surface so transform animation remains
+     compositor-only instead of resampling a viewport-height backdrop. */
+  /* 抽屉使用静态文档表面，使位移动画停留在合成线程，避免重新采样视口高度背景。 */
+  --glass-sidebar-drawer-tint: var(--docs-sidebar-static-background);
   --glass-sidebar-drawer-edge-shadow:
     inset 1px 0 0 color-mix(in srgb, var(--glass-highlight) 42%, transparent),
     -1rem 0 2.75rem -2.35rem color-mix(in srgb, var(--foreground) 26%, transparent);
@@ -109,7 +104,7 @@
 .dark {
   --glass-mobile-header-tint: color-mix(in srgb, var(--docs-canvas-surface) 72%, transparent);
   --glass-mobile-title-header-tint: color-mix(in srgb, var(--docs-canvas-surface) 36%, transparent);
-  --glass-sidebar-drawer-tint: color-mix(in srgb, var(--docs-canvas-surface) 88%, transparent);
+  --glass-sidebar-drawer-tint: var(--docs-sidebar-static-background);
   --glass-sidebar-drawer-edge-shadow:
     inset 1px 0 0 color-mix(in srgb, var(--edge-light) 24%, transparent),
     -1rem 0 2.75rem -2.35rem color-mix(in srgb, var(--text-muted) 20%, transparent);
@@ -392,11 +387,9 @@
    second-level navigation surface rendered in the mobile aside.
    移动端侧栏抽屉：让移动端 aside 中的二级导航表面与 PC 侧栏玻璃语言统一。 */
 :where(#nd-sidebar-mobile) {
-  background-color: var(--glass-sidebar-drawer-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  background: var(--glass-sidebar-drawer-tint) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
   border-inline-start: 1px solid var(--glass-border-hairline) !important;
   box-shadow: var(--glass-sidebar-drawer-edge-shadow), var(--glass-shadow) !important;
   backface-visibility: hidden;
@@ -418,27 +411,20 @@
     box-shadow var(--theme-transition-duration) ease !important;
 }
 
-/* Mobile drawer closing keeps the same glass layer while it slides out, so
-   backdrop-filter and tint do not flash back to the default surface.
-   移动抽屉收回时保持同一层玻璃与滤镜，只让位移动画执行，避免背景突然闪回默认面。 */
+/* Mobile drawer closing keeps the same static surface while only its transform
+   animates, preventing both visual flashes and live backdrop sampling.
+   移动抽屉收回时保持同一静态表面，仅执行位移动画，避免视觉闪烁与实时背景采样。 */
 :where(#nd-sidebar-mobile)[data-state="closed"],
 :where(#nd-sidebar-mobile)[data-state="open"] {
-  background-color: var(--glass-sidebar-drawer-tint) !important;
-  -webkit-backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
-  backdrop-filter: blur(var(--glass-sidebar-drawer-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast)) !important;
+  background: var(--glass-sidebar-drawer-tint) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
   box-shadow: var(--glass-sidebar-drawer-edge-shadow), var(--glass-shadow) !important;
   opacity: 1 !important;
-  /* `will-change: transform` is scoped to animation states only (open/closed).
-     The browser promotes the drawer to its own compositing layer, caching the
-     backdrop-filter sample so each transform frame re-composites rather than
-     re-samples. After the close animation completes, fumadocs sets the drawer
-     to display: none, which releases the compositing layer and GPU memory.
-     `will-change: transform` 仅限动画状态（open/closed）。浏览器将抽屉提升
-     为独立合成层，缓存 backdrop-filter 采样结果，使每帧 transform 变化
-     重新合成而非重新采样。关闭动画结束后，fumadocs 将抽屉设为 display: none，
-     释放合成层与 GPU 内存。 */
+  /* Open/closed states are the drawer's mounted animation window. Promote only
+     during that window; Presence releases the layer after the close animation.
+     open/closed 状态即抽屉挂载的动画窗口；仅在此期间提升合成层，关闭完成后
+     Presence 会释放该层。 */
   will-change: transform;
 }
 
@@ -449,6 +435,17 @@
 
 :where(#nd-sidebar-mobile)[data-state="open"] {
   animation: fd-sidebar-in var(--glass-sidebar-drawer-duration) ease both !important;
+}
+
+/* The mobile overlay fades as a static tint. Fumadocs' backdrop-blur utility
+   otherwise repaints the full viewport while the drawer moves. */
+/* 移动遮罩以静态色淡入淡出；Fumadocs 的 backdrop-blur 工具类会在抽屉移动时
+   重绘整个视口。 */
+:where(.fixed.z-40.inset-0.backdrop-blur-xs:has(+ #nd-sidebar-mobile)) {
+  background: var(--color-fd-overlay);
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  will-change: opacity;
 }
 
 :where(#nd-sidebar-mobile) > div {
@@ -646,44 +643,37 @@
   }
 }
 
-/* Docs left sidebar: expanded state gets full glassification; collapsed state uses glass-edge only to avoid double blur.
-   文档左侧栏：展开态完整玻璃化；折叠态外框只走 glass-edge 修饰，避免双重 blur。 */
+/* Desktop sidebar uses one static surface in both states so its movement does
+   not toggle or resample a viewport-height backdrop. */
+/* 桌面侧栏在两种状态下复用同一静态表面，移动时不再切换或重采样视口高度背景。 */
 :where(#nd-sidebar):not([data-collapsed="true"]) {
-  background-color: var(--glass-tint);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  background: var(--docs-sidebar-static-background);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   border-inline-end-color: var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
 }
 
-/* Collapsed state (panel translated off-screen).
-   Keep the SAME blur + shadow as the floating state so the slide-in/out animation
-   stays visually consistent — only background-color transitions, never a backdrop-filter jump.
-   折叠态（面板被移出屏幕外）：保留与悬浮态相同的 blur + 阴影，
-   使滑入 / 滑出动画中只有 background-color 在过渡，backdrop-filter 恒定，
-   不再出现"收回途中变透明"的跳变。 */
+/* The collapsed panel keeps the same static surface while Fumadocs retains its
+   original layout and movement transitions.
+   折叠面板保持同一静态表面，同时完整保留 Fumadocs 原有的布局与位移动画。 */
 :where(#nd-sidebar)[data-collapsed="true"] {
-  background-color: color-mix(in srgb, var(--glass-tint-strong) 64%, var(--glass-tint));
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  background: var(--docs-sidebar-static-background);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   border: 1px solid var(--glass-border-hairline);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     var(--glass-shadow);
 }
 
-/* Floating state (collapsed + hovered): the sidebar slides out as a detached panel over the page.
-   Inherits blur + shadow from the collapsed rule; only background-color differs for hover feedback.
-   悬浮态（折叠 + 悬停）：侧栏作为分离面板滑出覆盖在页面之上。
-   blur / 阴影沿用折叠态规则，仅 background-color 在 hover 时切换以给出反馈。 */
+/* Floating state (collapsed + hovered): the sidebar slides out as a detached
+   static panel over the page and reuses the same shadow and surface.
+   悬浮态（折叠 + 悬停）：侧栏作为静态分离面板滑出覆盖页面，并复用相同阴影与表面。 */
 :where(#nd-sidebar)[data-collapsed="true"][data-hovered="true"] {
-  background-color: color-mix(in srgb, var(--glass-tint-strong) 64%, var(--glass-tint));
+  background: var(--docs-sidebar-static-background);
 }
 
 /* ── Sidebar Buttons Glassification / 侧栏按钮玻璃化 ────────────────────── */
@@ -2031,6 +2021,7 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar {
     0 0 16px -6px var(--glass-rim-glow),
     0 2px 10px -8px color-mix(in srgb, var(--foreground) 42%, transparent);
   transform: translateY(var(--immersive-scrollbar-thumb-offset));
+  will-change: transform;
   transition:
     background-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease,
