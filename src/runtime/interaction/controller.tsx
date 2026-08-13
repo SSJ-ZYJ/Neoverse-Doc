@@ -48,6 +48,10 @@ const SURFACE_SELECTOR = [
   '.mermaid-wrapper:not([data-maximized])',
   '.markdown-alert',
   '.markdown-details',
+  // Plain Markdown quotes are document surfaces too; keep their click feedback
+  // aligned with alerts, details, tables, and other reading cards.
+  // 普通 Markdown 引用同样属于文档表面，与提示、折叠块、表格及其他阅读卡片共享点击反馈。
+  `:where(${FUMADOCS_DOCS_PAGE_SELECTOR}) blockquote`,
   FUMADOCS_CODE_TABS_SELECTOR,
   FUMADOCS_MOBILE_TITLE_SELECTOR,
   `:where(${FUMADOCS_DOCS_PAGE_SELECTOR}) :where(.prose-no-margin):has(> table)`,
