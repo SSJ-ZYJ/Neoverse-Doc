@@ -1051,10 +1051,7 @@
      hover without illuminating the complete segmented control.
      浅色桌面导航与侧栏复用同一套清晰的未激活图标悬浮态，不提亮整个分段切换器。 */
   .light :is(#nd-nav, #nd-sidebar) [data-theme-toggle] > button:not(.bg-fd-accent):hover,
-  :root:not(.dark)
-    :is(#nd-nav, #nd-sidebar)
-    [data-theme-toggle]
-    > button:not(.bg-fd-accent):hover {
+  :root:not(.dark) :is(#nd-nav, #nd-sidebar) [data-theme-toggle] > button:not(.bg-fd-accent):hover {
     color: color-mix(in srgb, var(--text-primary) 84%, var(--accent-primary)) !important;
     background-color: var(--glass-theme-light-hover-tint) !important;
   }
@@ -1520,10 +1517,7 @@ html[data-nd-motion-level="low"]
     transform: none;
   }
 
-  #nd-sidebar
-    div:has(> [data-theme-toggle])
-    > button[data-motion-settings-trigger]:hover
-    > svg {
+  #nd-sidebar div:has(> [data-theme-toggle]) > button[data-motion-settings-trigger]:hover > svg {
     filter: drop-shadow(0 0 0.4rem color-mix(in srgb, var(--accent-primary) 42%, transparent));
     transform: rotate(-5deg) scale(1.08);
   }
@@ -1544,10 +1538,7 @@ html[data-nd-motion-level="low"]
   transform: none;
 }
 
-#nd-sidebar
-  div:has(> [data-theme-toggle])
-  > button[data-motion-settings-trigger]:active
-  > svg {
+#nd-sidebar div:has(> [data-theme-toggle]) > button[data-motion-settings-trigger]:active > svg {
   transform: scale(0.94);
 }
 
@@ -1573,9 +1564,7 @@ html[data-nd-motion-level="low"]
    侧栏底部父工具条：悬浮主题切换器时保持基础玻璃面，
    避免父级 :has(button:hover) 再叠一层矩形 hover 背景。 */
 #nd-sidebar
-.bg-fd-secondary\/50:has(
-  > :is([data-theme-toggle], button[data-motion-settings-trigger]):hover
-) {
+.bg-fd-secondary\/50:has(> :is([data-theme-toggle], button[data-motion-settings-trigger]):hover) {
   background-color: var(--glass-tint) !important;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
@@ -1615,8 +1604,7 @@ html[data-nd-motion-level="low"]
 /* A shared inset surface follows the existing footer padding without turning
    the whole footer container into a large glass block.
    共享内嵌表面沿用页脚原有内边距，避免整个页脚容器变成大面积玻璃块。 */
-#nd-sidebar
-> div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])::before {
+#nd-sidebar > div:has(> button[aria-haspopup="dialog"]):has(> div > [data-theme-toggle])::before {
   position: absolute;
   inset: calc(var(--spacing) * 2) calc(var(--spacing) * 4) calc(var(--spacing) * 4);
   z-index: 0;

@@ -96,10 +96,7 @@ function renderFrame(now, progress) {
   if (!renderer || !ready) return;
   const { dark, dpr, gl, pageRect, preset, program, texture, uniforms, vao } = renderer;
   const { viewportHeight, viewportWidth } = renderer;
-  const density = Math.max(
-    preset.density,
-    Math.sqrt((viewportWidth * viewportHeight) / 800_000),
-  );
+  const density = Math.max(preset.density, Math.sqrt((viewportWidth * viewportHeight) / 800_000));
   const gridX = Math.ceil(viewportWidth / density);
   const gridY = Math.ceil(viewportHeight / density);
 

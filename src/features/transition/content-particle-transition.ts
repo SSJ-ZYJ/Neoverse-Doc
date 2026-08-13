@@ -160,9 +160,11 @@ interface WorkerParticleRenderer {
 }
 
 let sharedRenderer: ContentParticleRenderer | null = null;
-let preparedCapture: ContentParticleCaptureSnapshot & {
-  transition: ContentParticleTransition;
-} | null = null;
+let preparedCapture:
+  | (ContentParticleCaptureSnapshot & {
+      transition: ContentParticleTransition;
+    })
+  | null = null;
 let cachedWorkerParticleSupport: boolean | undefined;
 
 function supportsWorkerParticleRenderer(): boolean {
@@ -453,7 +455,9 @@ export function createContentParticleTransition(): ContentParticleTransition | n
   return createUncachedContentParticleTransition();
 }
 
-function createUncachedContentParticleTransition(captureOpacity?: string): ContentParticleTransition | null {
+function createUncachedContentParticleTransition(
+  captureOpacity?: string,
+): ContentParticleTransition | null {
   if (!supportsExperimentalMotion() || !isExperimentalMotionEnabled()) {
     return null;
   }
@@ -474,8 +478,7 @@ function createUncachedContentParticleTransition(captureOpacity?: string): Conte
   }
 
   const clone = page.cloneNode(true) as HTMLElement;
-  const contentOpacity =
-    captureOpacity ?? getComputedStyle(page.firstElementChild ?? page).opacity;
+  const contentOpacity = captureOpacity ?? getComputedStyle(page.firstElementChild ?? page).opacity;
   clone.dataset.particleCapture = '';
   clone.inert = true;
   clone.setAttribute('aria-hidden', 'true');

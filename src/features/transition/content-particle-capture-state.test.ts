@@ -18,9 +18,15 @@ describe('content particle capture state', () => {
   });
 
   it('invalidates after navigation, scrolling, resizing, or page replacement', () => {
-    assert.equal(matchesContentParticleCapture({ ...current, path: '/zh/docs/other' }, current), false);
+    assert.equal(
+      matchesContentParticleCapture({ ...current, path: '/zh/docs/other' }, current),
+      false,
+    );
     assert.equal(matchesContentParticleCapture({ ...current, scrollY: 241 }, current), false);
     assert.equal(matchesContentParticleCapture({ ...current, width: 1280 }, current), false);
-    assert.equal(matchesContentParticleCapture({ ...current, page: {} as HTMLElement }, current), false);
+    assert.equal(
+      matchesContentParticleCapture({ ...current, page: {} as HTMLElement }, current),
+      false,
+    );
   });
 });
