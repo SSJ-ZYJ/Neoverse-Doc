@@ -2,13 +2,12 @@
 
 # Neoverse-Docs
 
-**一份面向计算机专业学生的文档**
+**一份面向计算机相关专业学生的文档**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js&logoColor=white)](https://nextjs.org)
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![fumadocs](https://img.shields.io/badge/fumadocs-16.14-FF5C5C)](https://fumadocs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Bun](https://img.shields.io/badge/Bun-1.0-F9F1E0?logo=bun&logoColor=black)](https://bun.sh)
 
@@ -28,7 +27,7 @@
 
 Neoverse-Docs 是一份持续更新的开源在线学习文档，面向计算机科班学生与开发者。
 
-网站支持中文 / English 双语阅读，英文内容仍在建设中；具体章节与内容状态以站点实际内容为准。
+网站支持中文 / English 双语阅读，英文内容仍在建设中。具体章节与内容状态以站点实际内容为准。
 
 ## 技术栈
 
