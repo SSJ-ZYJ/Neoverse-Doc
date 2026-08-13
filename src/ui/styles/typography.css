@@ -150,6 +150,17 @@ figure.shiki .line > span:empty::before {
   margin-block-start: 0;
 }
 
+/* Consecutive quote paragraphs share the normal line rhythm; prose margins
+   would otherwise create a blank-line-sized gap at every Markdown line break.
+   连续引用段落沿用正常行距，避免正文 margin 在每次 Markdown 换行间形成空行。 */
+:where(#nd-page blockquote > p:has(+ p)) {
+  margin-block-end: 0;
+}
+
+:where(#nd-page blockquote > p + p) {
+  margin-block-start: 0;
+}
+
 /* Remark emits GFM alerts as divs, so include them in the same edge reset.
    The particle controller temporarily appends its owned layer after the prose;
    keep the preceding content edge reset while that dynamic layer is present.
