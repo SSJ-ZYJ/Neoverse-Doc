@@ -329,14 +329,22 @@ body::before {
   contain: strict;
 }
 
-/* Pages with their own full-canvas ambience do not need the global fixed blur.
-   The homepage owns its animated orb layer, while documentation owns the
-   circuit canvas. Hiding the duplicate viewport-sized 100px filter removes a
-   persistent GPU sampling surface without changing either page's visual scene.
-   自带完整环境画布的页面无需全局 fixed 模糊。主页已有动态光球层，文档页已有
-   电路画布；隐藏重复的视口级 100px 滤镜可移除持续 GPU 采样，同时不改变场景。 */
-body:has(:is(.home-page, #nd-docs-layout))::before {
+/* The homepage owns its animated orb layer, so it does not need the global
+   fixed ambient surface. 主页已有动态光球层，无需全局固定环境光。 */
+body:has(.home-page)::before {
   display: none;
+}
+
+/* Documentation reuses the fixed ambient surface for two pre-softened lights.
+   With no live filter, they stay viewport-anchored without adding blur sampling
+   during scroll. 文档页复用固定环境层绘制两个预柔化光点；不使用实时滤镜，
+   滚动时保持视口定位，同时不增加模糊采样成本。 */
+body:has(#nd-docs-layout)::before {
+  display: block;
+  background-image:
+    radial-gradient(circle at 18% 12%, var(--docs-canvas-ambient-primary), transparent 28rem),
+    radial-gradient(circle at 86% 68%, var(--docs-canvas-ambient-secondary), transparent 30rem);
+  filter: none;
 }
 
 /* Mobile equivalent: replace real-time 100px blur with a pre-softened static

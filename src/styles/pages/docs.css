@@ -562,23 +562,25 @@ body:has(> [data-reading-return]) .docs-back-to-top {
   }
 }
 
+body:has(#nd-docs-layout) {
+  background: var(--docs-canvas-surface);
+}
+
 #nd-docs-layout {
   --fd-layout-width: 100rem;
   --docs-reading-width: var(--reading-max);
   --fd-page-width: var(--docs-reading-width);
-  /* Layered circuit grid and ambient nodes enrich the reading canvas while
-     keeping Fumadocs' stable layout grid untouched.
-     分层电路网格与环境节点丰富阅读画布，同时不改变 Fumadocs 的稳定布局网格。 */
+  /* The circuit grid stays in the document paint flow while the two ambient
+     lights live on the fixed body layer.
+     电路网格保留在文档绘制流中，两个环境光点则由固定的 body 层承载。 */
   /* Style containment keeps selector invalidation local without creating the
      fixed-position containing block produced by layout containment. This lets
      Fumadocs' collapsed sidebar actions remain anchored to the viewport.
      样式隔离可限制选择器失效范围，同时避免 layout 隔离创建 fixed 定位包含块，
      让 Fumadocs 折叠侧栏操作始终相对视口固定。 */
   contain: style;
-  background-color: var(--docs-canvas-surface);
+  background-color: transparent;
   background-image:
-    radial-gradient(circle at 18% 12%, var(--docs-canvas-ambient-primary), transparent 28rem),
-    radial-gradient(circle at 86% 68%, var(--docs-canvas-ambient-secondary), transparent 30rem),
     radial-gradient(circle at center, var(--docs-circuit-node) 0 1.5px, transparent 2px),
     linear-gradient(var(--docs-circuit-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--docs-circuit-line) 1px, transparent 1px);
@@ -589,14 +591,10 @@ body:has(> [data-reading-return]) .docs-back-to-top {
      与半透明表面重叠时成本尤其明显。 */
   background-attachment: scroll;
   background-position:
-    center,
-    center,
     1.75rem 1.75rem,
     center,
     center;
   background-size:
-    auto,
-    auto,
     7rem 7rem,
     3.5rem 3.5rem,
     3.5rem 3.5rem;
@@ -655,8 +653,7 @@ body:has(> [data-reading-return]) .docs-back-to-top {
    始终使用同一滤镜，保留 Fumadocs 原有动画并避免途中发生模糊跳变。 */
 html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
   background: var(--docs-sidebar-dynamic-background) !important;
-  -webkit-backdrop-filter: blur(var(--docs-chrome-dynamic-blur))
-    saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter: blur(var(--docs-chrome-dynamic-blur)) saturate(var(--glass-saturate)) !important;
   backdrop-filter: blur(var(--docs-chrome-dynamic-blur)) saturate(var(--glass-saturate)) !important;
 }
 
@@ -2157,8 +2154,6 @@ html[data-nd-route-transition="content"] #nd-toc {
     --fd-toc-popover-height: calc(var(--spacing) * 13) !important;
 
     background-size:
-      auto,
-      auto,
       6rem 6rem,
       3rem 3rem,
       3rem 3rem;
@@ -2237,8 +2232,7 @@ html[data-nd-route-transition="content"] #nd-toc {
 html[data-nd-motion-level="high"] #nd-docs-layout #nd-nav > div,
 html[data-nd-motion-level="high"] #nd-docs-layout > :is(header, #nd-subnav) {
   background: var(--docs-nav-background) !important;
-  -webkit-backdrop-filter: blur(var(--docs-chrome-dynamic-blur))
-    saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter: blur(var(--docs-chrome-dynamic-blur)) saturate(var(--glass-saturate)) !important;
   backdrop-filter: blur(var(--docs-chrome-dynamic-blur)) saturate(var(--glass-saturate)) !important;
 }
 
