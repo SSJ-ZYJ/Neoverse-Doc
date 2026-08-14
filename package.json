@@ -5,9 +5,9 @@
   "scripts": {
     "generate:mermaid": "bun scripts/generate-mermaid-assets.ts",
     "predev": "bun run generate:mermaid",
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "prebuild": "bun run generate:mermaid --allow-client-fallback",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "serve out",
     "postinstall": "fumadocs-mdx",
     "typecheck": "next typegen && fumadocs-mdx && tsc --noEmit",
