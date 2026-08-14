@@ -7,7 +7,7 @@
     "predev": "bun run generate:mermaid",
     "dev": "next dev",
     "prebuild": "bun run generate:mermaid --allow-client-fallback",
-    "build": "next build --webpack",
+    "build": "next build",
     "start": "serve out",
     "postinstall": "fumadocs-mdx",
     "typecheck": "next typegen && fumadocs-mdx && tsc --noEmit",

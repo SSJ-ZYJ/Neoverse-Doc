@@ -1,0 +1,7 @@
+{
+  "name": "neoverse-doc",
+  "buildCommand": "bun run build",
+  "installCommand": "bun install",
+  "outputDirectory": "out",
+  "nodeVersion": "22.11.0"
+}
