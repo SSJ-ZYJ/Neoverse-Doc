@@ -1,6 +1,7 @@
 ---
 title: What is an Algorithm
 description: Algorithms — Introduction to the Algorithms Chapter
+draft: true
 author:
     - "Collinor(https://github.com/Collinor)"
 ---
