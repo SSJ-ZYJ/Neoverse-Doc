@@ -91,13 +91,18 @@ bun dev
       <Folder name="en" disabled title="英文内容树" />
     </Folder>
     <Folder name="public" disabled title="静态资源与 Mermaid 产物" />
-    <Folder name="scripts" disabled title="构建期生成脚本" />
+    <Folder name="scripts" disabled title="构建期生成脚本（Mermaid 资源等）" />
     <Folder name="src" defaultOpen>
+      <Folder name="adapters" disabled title="框架适配层（Fumadocs 布局、内容源与 DOM 工具）" />
       <Folder name="app" disabled title="Next.js App Router 页面" />
       <Folder name="components" disabled title="站点与 MDX 组件" />
+      <Folder name="content" disabled title="内容 Schema、MDX 插件与搜索索引" />
       <Folder name="dictionaries" disabled title="界面 i18n 字典" />
-      <Folder name="generated" disabled title="生成的资源映射" />
-      <Folder name="lib" disabled title="配置、内容源与工具函数" />
+      <Folder name="features" disabled title="按领域组织的功能模块（搜索、转场、Mermaid 等）" />
+      <Folder name="lib" disabled title="工具函数与集中配置" />
+      <Folder name="runtime" disabled title="交互、动效与导航运行时" />
+      <Folder name="styles" disabled title="页面级样式" />
+      <Folder name="ui" disabled title="设计系统（Token、表面与样式）" />
     </Folder>
     <File name="source.config.ts" title="内容 Schema 与 MDX 插件" />
     <File name="next.config.ts" title="Next.js 与静态导出配置" />
@@ -126,6 +131,28 @@ bun dev
 - **现有设计系统优先**：复用 Token、组件与样式模式，同时检查移动端、浅色 / 深色主题和减少动态效果。
 
 新增用户可见 UI 文本必须接入 `src/dictionaries/` 的现有 i18n 体系，并同步当前语言字典。新增依赖需要先说明名称、用途、版本与现有方案不足之处。
+
+### 命名规范
+
+| 类型 | 规范 | 示例 |
+| :--- | :--- | :--- |
+| 文件名 | 小写 + 连字符 | `guestbook.tsx` |
+| 组件名 | PascalCase | `Guestbook` |
+| 函数名 | camelCase | `getDictionary` |
+| 常量 | UPPER_SNAKE_CASE | `DEFAULT_LOCALE` |
+| CSS 类 | 小写 + 连字符 | `liquid-glass` |
+
+### 详细实现原则
+
+视觉、动效、Mermaid、转场、任务与评论等模块的详细实现原则按专题维护，修改对应模块前请先阅读：
+
+- [项目结构与静态构建](../project/architecture)；
+- [内容管线与 MDX 增强](../project/content-engineering)；
+- [设计系统与主题](../project/design-system)；
+- [首页与沉浸式交互](../project/home-and-immersive)；
+- [搜索、导航与社区](../project/search-navigation)；
+- [路由转场系统](../project/transitions)；
+- [Mermaid 与性能](../project/mermaid-performance)。
 
 ## 六、修改文档
 
@@ -182,6 +209,17 @@ todoProgress: false
 
 ## 八、提交 Pull Request
 
+### 提交前检查
+
+- [ ] 已更新相关文档；
+- [ ] 已更新 `meta.json`（如新增文档）；
+- [ ] 代码通过类型检查：`bun typecheck`；
+- [ ] 代码通过 Lint 检查：`bun lint`；
+- [ ] 代码已格式化：`bun format`；
+- [ ] 本地构建成功：`bun run build`。
+
+> [!NOTE] `bun check`（带 `--write`）会修改工作区文件，不要当作默认只读检查；执行后必须检查 Diff。
+
 ### 建议流程
 
 1. 从最新 `main` 创建范围明确的分支；
@@ -234,8 +272,33 @@ PR 标题可以沿用相同格式。
 - 代码中的用户可见输出与教学性注释按上下文翻译，语法标识符保持原样；
 - 翻译完成后单独检查 locale 路径、站内链接和页面注册。
 
+### 添加新语言
+
+1. 在 `src/lib/i18n.ts` 的 `defineI18n` 中注册语言：
+
+   ```typescript
+   export const i18n = defineI18n({
+     defaultLanguage: 'zh',
+     languages: ['zh', 'en', 'ja'], // 新增 'ja'
+     parser: 'dir',
+     fallbackLanguage: null,
+   });
+   ```
+
+2. 在 `src/dictionaries/` 创建语言包文件 `ja.ts`，并在 `src/dictionaries/index.ts` 中导入注册；
+3. 在 `src/adapters/fumadocs/layout.tsx` 添加 fumadocs UI 翻译；
+4. 在 `content/docs/` 创建 `ja/` 目录并翻译文档；
+5. 完成后单独检查 locale 路由、站内链接与页面注册。
+
 ## 十、协作准则
+
+参与贡献即表示你同意遵守以下原则：
+
+- 尊重所有贡献者；
+- 接受建设性的批评和建议；
+- 关注对社区最有利的事情；
+- 对他人保持同理心。
 
 尊重其他贡献者及其时间，围绕事实和改动讨论；欢迎建设性批评，也请解释判断依据。不要公开私人信息，不要使用攻击性表达，不要通过大范围无关改动迫使审查者接受目标之外的变化。
 
-感谢你对 Neoverse-Doc 的贡献。遇到不确定的问题时，还请先在 [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) 中讨论。
+感谢你对 Neoverse-Docs 的贡献。遇到不确定的问题时，还请先在 [GitHub Issues](https://github.com/SSJ-ZYJ/Neoverse-Doc/issues) 中讨论。

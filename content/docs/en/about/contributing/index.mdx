@@ -91,13 +91,18 @@ Open `http://localhost:3000` in a browser to preview. Do not add, remove, upgrad
       <Folder name="en" disabled title="English content tree" />
     </Folder>
     <Folder name="public" disabled title="Static assets and Mermaid output" />
-    <Folder name="scripts" disabled title="Build-time generation scripts" />
+    <Folder name="scripts" disabled title="Build-time generation scripts (Mermaid assets, etc.)" />
     <Folder name="src" defaultOpen>
+      <Folder name="adapters" disabled title="Framework adapters (Fumadocs layout, content source, and DOM utilities)" />
       <Folder name="app" disabled title="Next.js App Router pages" />
       <Folder name="components" disabled title="Site and MDX components" />
+      <Folder name="content" disabled title="Content Schema, MDX plugins, and search index" />
       <Folder name="dictionaries" disabled title="UI i18n dictionaries" />
-      <Folder name="generated" disabled title="Generated asset mappings" />
-      <Folder name="lib" disabled title="Configuration, content sources, and utility functions" />
+      <Folder name="features" disabled title="Feature modules organized by domain (search, transitions, Mermaid, etc.)" />
+      <Folder name="lib" disabled title="Utility functions and centralized configuration" />
+      <Folder name="runtime" disabled title="Interaction, motion, and navigation runtime" />
+      <Folder name="styles" disabled title="Page-level styles" />
+      <Folder name="ui" disabled title="Design system (tokens, surfaces, and styles)" />
     </Folder>
     <File name="source.config.ts" title="Content Schema and MDX plugins" />
     <File name="next.config.ts" title="Next.js and static export configuration" />
@@ -126,6 +131,28 @@ Before starting changes, read the root `AGENTS.md`, the affected files, and thei
 - **Existing design system first**: reuse Tokens, components, and style patterns, while also checking mobile, light / dark themes, and reduced motion.
 
 New user-visible UI text must be wired into the existing i18n system under `src/dictionaries/`, keeping the current language dictionaries in sync. Adding a dependency requires first explaining its name, purpose, version, and why the existing solutions are insufficient.
+
+### Naming Conventions
+
+| Type | Convention | Example |
+| :--- | :--- | :--- |
+| File names | lowercase + hyphens | `guestbook.tsx` |
+| Component names | PascalCase | `Guestbook` |
+| Function names | camelCase | `getDictionary` |
+| Constants | UPPER_SNAKE_CASE | `DEFAULT_LOCALE` |
+| CSS classes | lowercase + hyphens | `liquid-glass` |
+
+### Detailed Implementation Principles
+
+Detailed implementation principles for visuals, motion, Mermaid, transitions, tasks, and comments are maintained per topic. Read the relevant topic before modifying its module:
+
+- [Project Structure and Static Build](../project/architecture);
+- [Content Pipeline and MDX Enhancements](../project/content-engineering);
+- [Design System and Theme](../project/design-system);
+- [Home Page and Immersive Interactions](../project/home-and-immersive);
+- [Search, Navigation, and Community](../project/search-navigation);
+- [Route Transition System](../project/transitions);
+- [Mermaid and Performance](../project/mermaid-performance).
 
 ## 6. Modifying Documents
 
@@ -182,6 +209,17 @@ Verification should match the risk of the change; there is no need to mechanical
 
 ## 8. Submitting a Pull Request
 
+### Pre-submission Checklist
+
+- [ ] Updated related documentation;
+- [ ] Updated `meta.json` (when adding a document);
+- [ ] Code passes type checking: `bun typecheck`;
+- [ ] Code passes Lint: `bun lint`;
+- [ ] Code is formatted: `bun format`;
+- [ ] Local build succeeds: `bun run build`.
+
+> [!NOTE] `bun check` (with `--write`) modifies workspace files; do not treat it as a default read-only check and always review the Diff after running it.
+
 ### Suggested Workflow
 
 1. Create a focused branch from the latest `main`;
@@ -234,7 +272,32 @@ PR titles can follow the same format.
 - Translate user-visible output in code and instructional comments by context, while keeping syntax identifiers unchanged;
 - After finishing the translation, check locale paths, in-site links, and page registration separately.
 
+### Adding a New Language
+
+1. Register the language in `defineI18n` in `src/lib/i18n.ts`:
+
+   ```typescript
+   export const i18n = defineI18n({
+     defaultLanguage: 'zh',
+     languages: ['zh', 'en', 'ja'], // add 'ja'
+     parser: 'dir',
+     fallbackLanguage: null,
+   });
+   ```
+
+2. Create the dictionary file `ja.ts` under `src/dictionaries/` and import it in `src/dictionaries/index.ts`;
+3. Add the fumadocs UI translations in `src/adapters/fumadocs/layout.tsx`;
+4. Create the `ja/` directory under `content/docs/` and translate the documents;
+5. After finishing, check locale routes, in-site links, and page registration separately.
+
 ## 10. Collaboration Guidelines
+
+By contributing, you agree to the following principles:
+
+- Respect all contributors;
+- Accept constructive criticism and suggestions;
+- Focus on what is best for the community;
+- Show empathy toward others.
 
 Respect other contributors and their time, and discuss around facts and changes; constructive criticism is welcome, and please explain your reasoning. Do not make private information public, do not use aggressive language, and do not force reviewers to accept changes beyond the goal through large-scale unrelated modifications.
 
