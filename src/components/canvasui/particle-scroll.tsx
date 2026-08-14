@@ -68,7 +68,7 @@ const DEFAULTS: Required<ParticleScrollOptions> = {
   swirl: 60,
   stagger: 0.7,
   fade: 0.85,
-  settle: 1.2,
+  settle: 0.6,
   smoothing: 0.6,
 };
 
