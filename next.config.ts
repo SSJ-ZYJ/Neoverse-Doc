@@ -22,15 +22,27 @@ const nextConfig: NextConfig = {
   // Limit build concurrency and memory for memory-constrained static hosting
   // runners: EdgeOne builds inside a RAM-backed /dev/shm tmpfs, where worker
   // processes, the build filesystem cache and node_modules all compete for
-  // the same limited memory. One build worker plus no build-time filesystem
-  // cache keeps the peak low enough to avoid the OOM (SIGKILL) seen with
-  // default settings.
+  // the same limited memory. One build worker plus webpack's memory
+  // optimizations keep the peak low enough to avoid the OOM (SIGKILL) seen
+  // with Turbopack (which peaks at ~10GB and cannot be capped in builds).
   // 限制构建并发与内存：EdgeOne 在内存盘 /dev/shm 中构建，worker、构建期
-  // 文件系统缓存与 node_modules 都占用同一份受限内存。单个构建 worker 且
-  // 关闭构建期文件系统缓存，可避免此前默认配置触发的 OOM（SIGKILL）。
+  // 文件系统缓存与 node_modules 都占用同一份受限内存。单个构建 worker 配合
+  // webpack 内存优化可将峰值控制在 ~1.9GB，避免 Turbopack（构建峰值约
+  // 10GB 且无法在构建期限流）触发的 OOM（SIGKILL）。
   experimental: {
     cpus: 1,
-    turbopackFileSystemCacheForBuild: false,
+    webpackMemoryOptimizations: true,
+  },
+  // Skip webpack's on-disk filesystem cache for production builds: on EdgeOne
+  // the cache lands in RAM-backed tmpfs and is never reused (fresh clone per
+  // build), so it only wastes memory. Dev builds keep their cache.
+  // 生产构建关闭 webpack 磁盘缓存：EdgeOne 每次构建都是全新克隆，缓存写入
+  // 内存盘既不会被复用，还白白占用 RAM；本地构建不受影响。
+  webpack(config, { dev }) {
+    if (!dev) {
+      config.cache = false;
+    }
+    return config;
   },
   ...(process.env.NODE_ENV === 'production'
     ? { output: 'export' as const }
