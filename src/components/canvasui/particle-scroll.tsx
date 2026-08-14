@@ -394,10 +394,13 @@ export function createParticleScroll(
       output.width = width;
       output.height = height;
     }
-    contentMaxX = Math.min(
-      1,
-      Math.max(0.05, content.clientWidth / Math.max(output.clientWidth, 1)),
-    );
+    // clientWidth excludes a scroll container's reserved scrollbar gutter.
+    // Use the border-box width so a native scrollbar cannot turn a viewport-sized
+    // output into a clipped strip on the right.
+    // clientWidth 会扣除滚动容器预留的滚动条槽；使用 border box 宽度，避免
+    // 原生滚动条把与视口等宽的输出误裁成右侧空白条。
+    const contentWidth = Math.max(content.offsetWidth, content.clientWidth);
+    contentMaxX = Math.min(1, Math.max(0.05, contentWidth / Math.max(output.clientWidth, 1)));
     if (htmlInCanvas) {
       const cssWidth = Math.max(1, Math.round(source.clientWidth));
       const cssHeight = Math.max(1, Math.round(source.clientHeight));
@@ -775,7 +778,11 @@ export function ParticleScroll({ children, className, style, ...options }: Parti
               position: 'relative',
               width: '100%',
               height: '100%',
-              overflow: 'auto',
+              // The particle viewport is vertically scrollable only; transformed
+              // decorative layers must not make the homepage horizontally draggable.
+              // 粒子视口只允许垂直滚动；装饰层变换不能让主页产生横向拖动区域。
+              overflowX: 'clip',
+              overflowY: 'auto',
             }}
           >
             {children}

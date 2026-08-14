@@ -360,7 +360,11 @@
   margin: 0;
   color: var(--text-primary);
   font-weight: 760;
-  font-size: clamp(1.85rem, min(8.4vw, 10svh), 7rem);
+  /* Keep the Orbitron wordmark inside its particle canvas at tall desktop
+     aspect ratios, where the viewport-based size can exceed the 66rem measure.
+     在高而宽的桌面视口中，避免基于视口的字号超过 66rem 粒子画布宽度，
+     从而裁切 Orbitron 字标。 */
+  font-size: clamp(1.85rem, min(8.4vw, 10svh, 5.25rem), 5.25rem);
   line-height: 0.92;
   letter-spacing: clamp(0.018em, 0.34vw, 0.052em);
   text-wrap: balance;
@@ -1590,6 +1594,15 @@ html[data-page-hidden] .ai-compute__pulse {
    负偏移；内容位置保持不变，同时消除画布上方的纯色横条。 */
 .home-particle-scroll[data-particle-scroll-native] .home-hero {
   margin-block-start: 0;
+}
+
+/* HTML-in-Canvas applies a capture transform to the scroll content, which
+   makes the fixed ambient layer's negative inset contribute a wide horizontal
+   capture area. Keep the same viewport-bound layer without the extra strip.
+   HTML-in-Canvas 会对滚动内容应用捕获变换，使固定环境层的负 inset 被计入
+   宽阔的捕获区域。保留视口范围内的环境层，同时消除额外横向区域。 */
+.home-particle-scroll[data-particle-scroll-native] .home-page::before {
+  inset: 0;
 }
 
 /* HTML-in-Canvas clips the CTA's broad outer shadow to its capture bounds,
