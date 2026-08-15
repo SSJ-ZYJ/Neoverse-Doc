@@ -294,8 +294,7 @@ function elapsedSeconds(startedAtNs: bigint): string {
 // rendering is a separate process and is not visible here.
 // 仅统计本脚本进程的峰值驻留内存；渲染用的无头 Chromium 是独立进程，不在此列。
 function maxRssMb(): number {
-  const usage =
-    typeof process.resourceUsage === 'function' ? process.resourceUsage() : undefined;
+  const usage = typeof process.resourceUsage === 'function' ? process.resourceUsage() : undefined;
   const maxRssBytes = usage ? usage.maxRSS * 1024 : process.memoryUsage().rss;
   return Math.round(maxRssBytes / 1024 / 1024);
 }

@@ -29,7 +29,17 @@ const SRC_ROOT = path.join(process.cwd(), 'src');
 // registered here consciously.
 // 未知目标层会直接报错，强制新顶层目录显式登记进矩阵。
 const ALLOWED: Readonly<Record<string, readonly string[]>> = {
-  app: ['features', 'runtime', 'content', 'ui', 'adapters', 'components', 'lib', 'dictionaries', 'styles'],
+  app: [
+    'features',
+    'runtime',
+    'content',
+    'ui',
+    'adapters',
+    'components',
+    'lib',
+    'dictionaries',
+    'styles',
+  ],
   components: ['features', 'runtime', 'content', 'ui', 'lib', 'dictionaries'],
   features: ['runtime', 'content', 'ui', 'adapters', 'lib', 'dictionaries'],
   runtime: ['adapters', 'ui', 'lib', 'dictionaries'],
@@ -91,7 +101,9 @@ function resolveSpecifier(
   specifier: string,
   importerDirPosix: string,
 ): { layer: string; segments: string[] } | undefined {
-  if (IGNORED_PREFIXES.some((prefix) => specifier === prefix || specifier.startsWith(`${prefix}/`))) {
+  if (
+    IGNORED_PREFIXES.some((prefix) => specifier === prefix || specifier.startsWith(`${prefix}/`))
+  ) {
     return undefined;
   }
 
@@ -103,7 +115,10 @@ function resolveSpecifier(
   }
 
   if (specifier.startsWith('@/')) {
-    const segments = specifier.slice(2).split('/').filter((segment) => segment !== '');
+    const segments = specifier
+      .slice(2)
+      .split('/')
+      .filter((segment) => segment !== '');
     if (segments.length === 0) return undefined;
     return { layer: segments[0], segments };
   }
@@ -190,7 +205,11 @@ async function main(): Promise<void> {
       crossLayerImports += 1;
 
       if (!(targetLayer in ALLOWED)) {
-        recordViolation(file, specifier, `未知目标层 '${targetLayer}'：请登记进 ALLOWED 矩阵或修正导入`);
+        recordViolation(
+          file,
+          specifier,
+          `未知目标层 '${targetLayer}'：请登记进 ALLOWED 矩阵或修正导入`,
+        );
         continue;
       }
 
@@ -211,7 +230,8 @@ async function main(): Promise<void> {
       // 路径；同 feature 内部深导入不受限。
       if (targetLayer === 'features' && segments.length > 2) {
         const targetFeature = `features/${segments[1]}`;
-        const importerFeaturePrefix = importerDirPosix.startsWith(targetFeature) ||
+        const importerFeaturePrefix =
+          importerDirPosix.startsWith(targetFeature) ||
           relativePosix.startsWith(`${targetFeature}/`);
         if (!importerFeaturePrefix) {
           recordViolation(
@@ -245,7 +265,9 @@ async function main(): Promise<void> {
   if (violations.length > 0) {
     for (const violation of violations) {
       const target = violation.specifier ? ` → ${violation.specifier}` : '';
-      console.error(`Architecture violation: src/${violation.file}${target}\n  ${violation.message}`);
+      console.error(
+        `Architecture violation: src/${violation.file}${target}\n  ${violation.message}`,
+      );
     }
     console.error(
       `\nArchitecture check failed: ${violations.length} violation(s) across ${files.length} files. ` +

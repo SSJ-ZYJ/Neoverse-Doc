@@ -47,7 +47,7 @@ async function countHtmlFiles(directory: string): Promise<number> {
 }
 
 async function formatMegabytes(entryPath: string): Promise<string> {
-  return `${(await fileSize(entryPath) / 1024 / 1024).toFixed(1)}MB`;
+  return `${((await fileSize(entryPath)) / 1024 / 1024).toFixed(1)}MB`;
 }
 
 async function main(): Promise<void> {

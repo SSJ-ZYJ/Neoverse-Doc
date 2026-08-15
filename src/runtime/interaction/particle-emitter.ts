@@ -6,9 +6,9 @@
 
 import { MOTION_DURATION_MS } from '@/runtime/motion/config';
 import {
-  PARTICLE_SAFE_INSET_PX,
   clamp,
   distanceToEdge,
+  PARTICLE_SAFE_INSET_PX,
   randomBetween,
   ratioBetween,
 } from './geometry';
