@@ -67,6 +67,7 @@ export function CustomCodeBlock(props: CodeBlockPreProps) {
       dir="ltr"
       tabIndex={-1}
       className={`my-4 glass-codeblock rounded-xl shiki relative not-prose overflow-hidden text-sm ${className || ''}`}
+      data-nd-interaction="surface"
       {...rest}
     >
       <div className="flex text-fd-muted-foreground items-center gap-2 h-9.5 border-b px-4">

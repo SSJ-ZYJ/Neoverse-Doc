@@ -43,6 +43,7 @@ export function Files({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
     <div
       className={joinClassNames('not-prose mdx-files', className)}
       data-file-tree=""
+      data-nd-interaction="surface"
       {...props}
     />
   );

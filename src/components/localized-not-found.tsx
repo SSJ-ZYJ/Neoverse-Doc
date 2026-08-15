@@ -46,15 +46,24 @@ export function LocalizedNotFound({ variant = 'default' }: LocalizedNotFoundProp
           <p className="special-fallback__description">{dict.notFoundDesc}</p>
         </div>
         <div className="special-fallback__actions">
-          <button type="button" onClick={handleBack} className="control-surface cursor-pointer">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="control-surface cursor-pointer"
+            data-nd-interaction="control"
+          >
             <ArrowLeft size={16} />
             {dict.notFoundBack}
           </button>
-          <TransitionLink href={homeHref} className="control-surface">
+          <TransitionLink href={homeHref} className="control-surface" data-nd-interaction="control">
             <Home size={16} />
             {dict.notFoundHome}
           </TransitionLink>
-          <TransitionLink href={docsHref} className="control-surface control-surface--primary">
+          <TransitionLink
+            href={docsHref}
+            className="control-surface control-surface--primary"
+            data-nd-interaction="control"
+          >
             <BookOpen size={16} />
             {dict.notFoundDocs}
           </TransitionLink>

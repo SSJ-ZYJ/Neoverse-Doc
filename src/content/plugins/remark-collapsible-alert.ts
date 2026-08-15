@@ -240,6 +240,7 @@ export const remarkCollapsibleAlert: Plugin<[], Root> = () => {
         hName: 'details',
         hProperties: {
           className: ['markdown-details', `markdown-details-${collapsibleType}`],
+          'data-nd-interaction': 'surface',
           open: isOpen || undefined,
         },
       };

@@ -229,7 +229,12 @@ export function TaskListProgress() {
   const progressLabel = fillProgressLabel(copy.taskListProgressLabel, progress);
 
   return (
-    <section className="glass-card mdx-task-progress" data-card="true" aria-label={progressLabel}>
+    <section
+      className="glass-card mdx-task-progress"
+      data-card="true"
+      data-nd-interaction="control"
+      aria-label={progressLabel}
+    >
       <div className="mdx-task-progress__heading">
         <span className="mdx-task-progress__icon" aria-hidden="true">
           <ListChecks size={18} />

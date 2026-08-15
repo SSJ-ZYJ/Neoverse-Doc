@@ -172,6 +172,7 @@ export const remarkGithubAlert: Plugin<[], Root> = () => {
         hName: 'div',
         hProperties: {
           className: ['markdown-alert', `markdown-alert-${alertType}`],
+          'data-nd-interaction': 'surface',
           dir: 'auto',
         },
       };

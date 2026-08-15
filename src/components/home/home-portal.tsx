@@ -71,6 +71,7 @@ export function HomePortal({ chapters, dict, locale }: HomePortalProps) {
           <div className="home-community__actions">
             <a
               className="control-surface control-surface--primary"
+              data-nd-interaction="control"
               href={`${REPO_URL}/blob/main/CONTRIBUTING.MD`}
               rel="noreferrer"
               target="_blank"
@@ -80,6 +81,7 @@ export function HomePortal({ chapters, dict, locale }: HomePortalProps) {
             </a>
             <TransitionLink
               className="control-surface"
+              data-nd-interaction="control"
               href={`/${locale}/guestbook`}
               transition="surface"
             >

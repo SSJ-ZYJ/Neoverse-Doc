@@ -62,6 +62,7 @@ export function DocsDraftControls({
         <div className="docs-draft__actions">
           <TransitionLink
             className="control-surface docs-draft__action docs-draft__action--previous"
+            data-nd-interaction="control"
             href={previousHref}
           >
             <ArrowLeft aria-hidden="true" size={18} />

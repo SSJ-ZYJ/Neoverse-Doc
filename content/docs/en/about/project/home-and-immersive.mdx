@@ -146,22 +146,34 @@ These components are adapted by the project from the React Bits library, importe
 
 ## 8. Immersive particle interaction
 
-`src/components/immersive-interaction-controller.tsx` implements a HarmonyOS-style photon field: it continuously generates small dot photons along the pointer path, with responsive density and smooth outward spread.
+The `src/runtime/interaction/` module family implements a HarmonyOS-style photon field: it continuously generates small dot photons along the pointer path, with responsive density and smooth outward spread.
 
-### Selector grouping
+### Interaction contract
 
-The controller registers different particle behaviors for different element types:
+Neoverse-owned components declare interaction capability explicitly through the `data-nd-interaction` attribute; the runtime no longer maintains business CSS class lists:
 
-| Selector constant | Targets | Behavior |
+| Kind | Declared on | Behavior |
 | :--- | :--- | :--- |
-| `CONTROL_SELECTOR` | `.control-surface`, `.chapter-card`, `.mdx-doc-card`, `#nd-nav button` | Control-level particles |
-| `SURFACE_SELECTOR` | `.surface-panel`, `.glass-codeblock`, `.markdown-alert`, `.markdown-details` | Surface-level particles |
-| `SIDEBAR_FOOTER_PARTICLE_HOST_SELECTOR` | Sidebar bottom toolbar | Treated as a particle host as a whole |
-| `CODE_TABS_PARTICLE_HOST_SELECTOR` | Code tabs | Share one particle layer |
+| `control` | `.control-surface` variants (home / fallback pages / draft controls), `.chapter-card`, `.mdx-doc-card`, the task progress card, Mermaid toolbar buttons | Control-level particles |
+| `surface` | `.glass-codeblock`, `.mdx-files`, `.guestbook-page__surface`, remark-generated `.markdown-alert` / `.markdown-details` | Surface-level particles (~70% density, longer sampling distance) |
+| `cta` | The homepage primary CTA (`.home-cta`) | Control-level density + a tighter birth ring |
+
+Fumadocs-generated elements that cannot carry the contract (nav / sidebar controls, code tabs, the mobile title bar, the sidebar footer) and pipeline outputs (plain `blockquote`s, table scroll wrappers) are translated to kinds by the adapter layer in `registry.ts`; no other runtime module learns Fumadocs DOM.
+
+### Module responsibilities
+
+| Module | Responsibility |
+| :--- | :--- |
+| `controller.tsx` | Receives pointer events, resolves targets, creates / updates sessions, invokes the emission engine, and owns lifecycle management |
+| `registry.ts` | The only module importing Fumadocs DOM constants: contract `closest()` → adapter fallback chain, outputs `{ target, kind, geometryMode }` |
+| `geometry.ts` | Bounds, radius, inset pseudo-surface translation, containment tests, and coordinate transforms |
+| `pointer-session.ts` | Pointer session state machine, RAF batching, interpolated step planning |
+| `particle-policy.ts` | Interaction kind × pointer type × motion level → particle counts / sampling distance / caps (all constants live here) |
+| `particle-emitter.ts` | Particle layer lifecycle and DOM particle creation |
 
 ### Core algorithm
 
-- `burstConfig()`: adjusts particle count and emission distance based on `pointerType` (touch / pen / mouse), surface type, and motion level (halved at medium);
+- `resolveParticlePolicy()`: adjusts particle count and emission distance based on interaction kind, `pointerType` (touch / pen / mouse), and motion level (halved at medium);
 - `emitBursts()`: computes the initial ring-band distribution, travel direction, edge distance, travel cap, and sway of particles; all CSS custom properties are assigned in a single pass through `style.cssText` to reduce style reflow;
 - `processMoves()`: RAF-scheduled, interpolates pointer samples (`MAX_INTERPOLATED_STEPS = 14`), with fragment / append / trim / cleanup shared within the same frame batch;
 - `getLayer()`: reuses the mounted `.immersive-particle-layer`, sets `contain: layout style paint` + `will-change: transform, opacity`, and cleans up on removal.
@@ -281,8 +293,9 @@ On mobile, priority goes to content width, reachable navigation, and touch targe
 | `src/components/home/home-footer.tsx` | Homepage footer |
 | `src/lib/home-sections.ts` | Data source for homepage chapters and search tags |
 | `src/styles/pages/home.css` | Homepage styles and constraints |
-| `src/components/immersive-interaction-controller.tsx` | Particle interaction controller |
-| `src/components/immersive-scrollbar.tsx` | Viewport scrollbar and TOC thumb |
+| `src/runtime/interaction/controller.tsx` | Particle interaction controller (event orchestration) |
+| `src/runtime/interaction/registry.ts` | Interaction contract resolution and Fumadocs adapter |
+| `src/runtime/interaction/scrollbar.tsx` | Viewport scrollbar |
 | `src/components/docs-page-gradual-blur.tsx` | Progressive blur for documentation pages |
 | `src/components/inline-code-wrap-controller.tsx` | Inline code wrapping detection |
 | `src/components/docs-motion-settings.tsx` | Motion settings panel |

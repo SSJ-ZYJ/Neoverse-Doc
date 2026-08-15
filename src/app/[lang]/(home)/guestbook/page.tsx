@@ -84,7 +84,7 @@ export default async function GuestbookPage({ params }: PageProps<'/[lang]/guest
           <h1 className="mt-5 mb-2 text-3xl font-bold text-fd-foreground">{dict.guestbookTitle}</h1>
           <p className="m-0 text-base text-fd-muted-foreground">{dict.guestbookDesc}</p>
         </div>
-        <div className="guestbook-page__surface">
+        <div className="guestbook-page__surface" data-nd-interaction="surface">
           <Guestbook slugKey={GUESTBOOK_SLUG_KEY} />
         </div>
       </div>

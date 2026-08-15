@@ -57,6 +57,7 @@ export function DocCard({ children, description, href, title }: DocCardProps) {
         className="mdx-doc-card"
         data-card="true"
         data-external="true"
+        data-nd-interaction="control"
         href={href}
         rel="noopener noreferrer"
         target="_blank"
@@ -67,7 +68,12 @@ export function DocCard({ children, description, href, title }: DocCardProps) {
   }
 
   return (
-    <TransitionLink className="mdx-doc-card" data-card="true" href={href}>
+    <TransitionLink
+      className="mdx-doc-card"
+      data-card="true"
+      data-nd-interaction="control"
+      href={href}
+    >
       {cardContent}
     </TransitionLink>
   );

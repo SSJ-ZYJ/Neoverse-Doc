@@ -66,11 +66,12 @@ export function LocalizedError({ variant = 'default', reset, retry }: LocalizedE
             disabled={isRetrying}
             aria-busy={isRetrying}
             className="control-surface control-surface--primary pointer-events-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+            data-nd-interaction="control"
           >
             <RotateCw className={isRetrying ? 'animate-spin' : undefined} size={16} />
             {dict.errorRetry}
           </button>
-          <TransitionLink href={homeHref} className="control-surface">
+          <TransitionLink href={homeHref} className="control-surface" data-nd-interaction="control">
             <Home size={16} />
             {dict.backToHome}
           </TransitionLink>

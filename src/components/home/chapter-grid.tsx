@@ -18,6 +18,7 @@ export function ChapterGrid({ actionLabel, chapters }: ChapterGridProps) {
         <TransitionLink
           className="chapter-card"
           data-bento-card
+          data-nd-interaction="control"
           href={chapter.href}
           key={chapter.href}
         >

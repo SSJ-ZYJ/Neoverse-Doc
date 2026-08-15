@@ -732,6 +732,7 @@ export function Mermaid({ chart }: { chart: string }) {
             title={labels.mermaidViewRender}
             className="mermaid-toolbar__btn mermaid-toolbar__view-btn"
             data-active={viewMode === 'render' || undefined}
+            data-nd-interaction="control"
           >
             <Eye className="size-4" />
           </button>
@@ -746,6 +747,7 @@ export function Mermaid({ chart }: { chart: string }) {
             title={labels.mermaidViewCode}
             className="mermaid-toolbar__btn mermaid-toolbar__view-btn"
             data-active={viewMode === 'code' || undefined}
+            data-nd-interaction="control"
           >
             <Code2 className="size-4" />
           </button>
@@ -761,6 +763,7 @@ export function Mermaid({ chart }: { chart: string }) {
             disabled={isInteractionLocked || !canZoomOut || viewMode === 'code'}
             aria-label={labels.mermaidZoomOut}
             className="mermaid-toolbar__btn"
+            data-nd-interaction="control"
           >
             <ZoomOut className="size-4" />
           </button>
@@ -775,6 +778,7 @@ export function Mermaid({ chart }: { chart: string }) {
             disabled={isInteractionLocked || !canZoomIn || viewMode === 'code'}
             aria-label={labels.mermaidZoomIn}
             className="mermaid-toolbar__btn"
+            data-nd-interaction="control"
           >
             <ZoomIn className="size-4" />
           </button>
@@ -788,6 +792,7 @@ export function Mermaid({ chart }: { chart: string }) {
             disabled={isInteractionLocked || !canResetZoom || viewMode === 'code'}
             aria-label={labels.mermaidReset}
             className="mermaid-toolbar__btn"
+            data-nd-interaction="control"
           >
             <RotateCcw className="size-4" />
           </button>
@@ -797,6 +802,7 @@ export function Mermaid({ chart }: { chart: string }) {
             disabled={isInteractionLocked}
             aria-label={isMaximized ? labels.mermaidRestore : labels.mermaidMaximize}
             className="mermaid-toolbar__btn"
+            data-nd-interaction="control"
           >
             {isMaximized ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
           </button>

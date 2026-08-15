@@ -16,6 +16,7 @@ export function PrimaryAction({ href, label }: PrimaryActionProps) {
     <Magnet className="home-primary-action">
       <TransitionLink
         className="control-surface control-surface--primary home-cta"
+        data-nd-interaction="cta"
         href={href}
         transition="aperture"
       >
