@@ -71,11 +71,11 @@ Open `http://localhost:3000` in a browser to preview. Do not add, remove, upgrad
 
 | Command | Purpose | Writes to workspace |
 | :--- | :--- | :---: |
-| `bun dev` | Generate Mermaid assets and start the Turbopack development server | Yes |
+| `bun dev` | Run the content prepare pipeline and start the development server | Yes |
 | `bun lint` | Run Biome Lint | No |
 | `bun typecheck` | Generate route and content types; validate MDX, Frontmatter, and TypeScript | Yes |
-| `bun run generate:mermaid` | Regenerate Mermaid static SVGs and the asset mapping | Yes |
-| `bun run build` | Generate Mermaid assets and run the production static build | Yes |
+| `bun run generate:content` | Content prepare pipeline: validate content and incrementally generate Mermaid static SVGs and the asset mapping | Yes |
+| `bun run build` | Run content validation and the production static build (no Mermaid rendering) | Yes |
 | `bun format` | Format the workspace with Biome | Yes |
 | `bun check` | Run Biome Check with `--write` | **Yes** |
 | `bun run start` | Preview the already generated `out/` static output | No |
@@ -203,7 +203,7 @@ See [Syntax and Component Reference](./syntax-example) for the complete syntax a
 | :--- | :--- |
 | Pure TypeScript / React / CSS changes | `bun lint`, `bun typecheck` |
 | Markdown / MDX or Frontmatter | `bun typecheck` |
-| Mermaid content or count changes | `bun run generate:mermaid`, and check the generated assets |
+| Mermaid content or count changes | `bun run generate:content`, and check the generated assets |
 | Static routes, build configuration, or larger content changes | `bun run build` |
 | Write-mode formatting commands used | Check `git status` and the full Diff |
 

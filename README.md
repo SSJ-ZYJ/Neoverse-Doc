@@ -73,19 +73,20 @@ bun dev         # 启动开发服务器，浏览器打开 http://localhost:3000
 ### 构建部署
 
 ```bash
-bun run generate:mermaid # 在本机生成 Mermaid 静态 SVG
+bun run generate:content # 内容准备：校验内容并在本机增量生成 Mermaid 静态 SVG
 bun run build   # 生产构建，产物位于 out/ 目录
 bun run start   # 本地预览静态产物
 ```
 
-构建会优先复用已生成的 Mermaid 静态 SVG；如果托管环境无法启动 Chrome，缺失图表会回退到浏览器端渲染，不会阻塞静态导出。提交文档前仍应在本机运行 `bun run generate:mermaid` 并提交生成产物，以保持正常页面无需加载 Mermaid 布局引擎。生产构建还会生成 `robots.txt`、`sitemap.xml` 与社交分享图；构建结束后会自动校验产物完整性（页面数量、搜索索引与 Mermaid 资产清单）。构建产物均为纯静态文件，可部署到任意静态托管平台。
+内容准备会优先复用已生成的 Mermaid 静态 SVG，仅渲染变化部分；生产构建不渲染图表，只按 Content IR 对资产做哈希与完整性校验，缺失或过期会直接失败——提交文档前应在本机运行 `bun run generate:content` 并提交生成产物，保持正常页面无需加载 Mermaid 布局引擎。生产构建还会生成 `robots.txt`、`sitemap.xml` 与社交分享图；构建结束后会自动校验产物完整性（页面数量、搜索索引与 Mermaid 资产清单）。构建产物均为纯静态文件，可部署到任意静态托管平台。
 
 ## 可用命令
 
 | 命令 | 说明 |
 | :--- | :--- |
-| `bun dev` | 启动开发服务器 |
-| `bun run generate:mermaid` | 生成 Mermaid 静态 SVG 与资源清单 |
+| `bun dev` | 启动开发服务器（`predev` 自动执行内容准备管线） |
+| `bun run generate:content` | 内容准备管线：Content IR 派生、内容校验与 Mermaid 静态 SVG 增量生成 |
+| `bun run check:content` | 内容校验 + Mermaid 资产哈希对账（`prebuild` 自动执行，零 Puppeteer） |
 | `bun run check:architecture` | 架构层依赖边界检查（`prebuild` 自动执行） |
 | `bun run build` | 生产构建（输出至 `out/`） |
 | `bun run typecheck` | 类型检查（含 MDX 内容校验） |

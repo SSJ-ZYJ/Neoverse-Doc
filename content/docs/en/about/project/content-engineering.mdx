@@ -37,7 +37,7 @@ On top of these page-state fields, Schema v2 adds a set of **entirely optional**
 | `prerequisites` | Content ID array | Learning prerequisites pointing at locale-independent Content IDs (e.g. `docs:ch1/1.11-Operating-Systems`) |
 | `related` | Content ID array | Related recommendations, also pointing at Content IDs |
 
-Enum, format, and numeric constraints are enforced by zod at compile time; cross-page references (ID uniqueness, reference existence, self-reference guard, translation-pairing path symmetry) are validated by `scripts/check-content.ts` against the compiled content manifest (`bun run check:content`, wired into `prebuild`). References follow locale-loose semantics — a target existing in any language is valid, so translation gaps never break content relations.
+Enum, format, and numeric constraints are enforced by zod at compile time; cross-page references (ID uniqueness, reference existence, self-reference guard, translation-pairing path symmetry) are validated by `scripts/content-pipeline.ts` against the Content IR (`bun run check:content`, wired into `prebuild`). References follow locale-loose semantics — a target existing in any language is valid, so translation gaps never break content relations.
 
 `translationKey`, `status`, and `lastReviewed` are deliberately absent: the translation-key duty is explicitly carried by "the zh and en versions of the same content declare the same `id`"; publishing state already exists as `draft`; review dates treat git history as the source of truth. Existing pages are annotated incrementally — no batch migration.
 
@@ -51,6 +51,26 @@ The required frontmatter `id` of every page is the content's stable identity, fu
 - **Path symmetry contract**: fumadocs' directory-based translation pairing (page tree, alternates, routing) still requires locale variants of one `id` to live at the same path — now an explicit check in `check:content`.
 
 Runtime consumers: GFM task progress persists under the `docs:<id>` bucket (localStorage key `neoverse-mdx-task-state:v2:docs:<id>`), sharing check state across locales of the same content, with legacy path-keyed data migrated automatically on first visit; search index record identities likewise use `docs:<id>:<locale>`, while navigation still goes through `url`.
+
+### Content IR and Build Pipeline
+
+`src/content/ir.ts` is the single normalized content data plane (Content IR): derived in one pass from the Fumadocs source, each IR entry carries the stable Content ID, `locale`, `url`, `slugs`, title and description, schema metadata, content relations, `sourcePath` (posix-relative), and the mermaid diagram sources found in the page (extracted by `src/content/mermaid-text.ts`). Fumadocs stays the only MDX compiler; the IR is 100% machine-derived at import time — never materialized to a file, never hand-maintained, so there is no cache that can go stale (decision record in `docs/adr/0004-content-ir-build-pipeline.md`).
+
+The build pipeline collapses into two commands:
+
+| Command | Stage | Behavior |
+| :--- | :--- | :--- |
+| `bun run generate:content` | Content prepare (auto-run by `predev`) | Derive IR → validate content → incrementally render mermaid assets (the only command that may launch Puppeteer, and zero launches when everything hits cache) |
+| `bun run check:content` | Production gate (auto-run by `prebuild`) | Derive IR → validate content → hash-check mermaid assets; never imports Puppeteer |
+
+How each system consumes it:
+
+- **Content Manifest** (`src/content/generated/manifest.ts`) becomes a consumer view over the IR, stripping IR-only build fields (`sourcePath`, `mermaid`); the sitemap-facing API is unchanged;
+- **Content validation** (ID uniqueness, translation pairing, reference existence, self-reference) runs on the IR;
+- **Mermaid** detection is driven by the IR instead of walking `content/docs`; assets are content-addressed by the source + renderer signature + config hash (see [Mermaid and Performance](./mermaid-performance));
+- **Search** intentionally stays on the Fumadocs source pipeline (indexes need tokenized structuredData; putting it into the IR would turn it into a body dump) — the one declared content consumer outside the IR. Index generation stays build-time; Search UI is a separate client consumer.
+
+Generated-artifact policy: mermaid SVGs (`public/mermaid/`) and the asset manifest (`src/features/mermaid/generated/assets.ts`) are committed so a fresh clone passes verification builds; `.source/` and `out/` are build-time only; the IR never lands on disk.
 
 ## 2. Author Parsing and Display
 

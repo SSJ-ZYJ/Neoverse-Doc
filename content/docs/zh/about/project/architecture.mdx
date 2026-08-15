@@ -22,7 +22,7 @@ Neoverse-Doc/
 ├── public/
 │   └── mermaid/                  # 生成的 Mermaid SVG
 ├── scripts/
-│   ├── generate-mermaid-assets.ts
+│   ├── content-pipeline.ts        # 内容管线：IR 派生、校验与 Mermaid 生成 / 对账
 │   ├── check-architecture.ts
 │   └── verify-build-output.ts
 ├── src/
@@ -136,26 +136,25 @@ flowchart TD
     G --> H[Next.js build]
     H --> I[out 静态站点]
 
-    A --> J[Mermaid 生成脚本]
-    J --> K[SVG 与资源映射]
-    K --> G
-
-    F --> L[类型化 Content Manifest]
-    L --> M[静态搜索索引与 sitemap]
-    M --> H
+    F --> J[Content IR 派生]
+    J --> K[Content Manifest 与内容校验]
+    K --> H
+    J --> L[Mermaid 资产生成 / 对账]
+    L --> G
 ```
 
-`src/content/generated/manifest.ts` 直接从编译后的 Source 派生只读内容清单，稳定 ID 使用 `docs:${slugs.join('/')}`，同路径多语言页面共享 ID。Manifest 保留草稿标记，由 sitemap 等消费者自行过滤，不存在第二份手写内容事实来源。生产构建还会生成 `robots.txt`、只包含已发布页面的 `sitemap.xml`，以及统一的 PNG 社交分享图。
+`src/content/ir.ts` 从编译后的 Source 单遍派生 Content IR（含 Mermaid 图表检测），是唯一的规范化内容数据面；`src/content/generated/manifest.ts` 是其消费视图，稳定 ID 来自 frontmatter 必填 `id` 加 `docs:` 前缀，同 ID 多语言页面共享身份。Manifest 保留草稿标记，由 sitemap 等消费者自行过滤，不存在第二份手写内容事实来源。生产构建还会生成 `robots.txt`、只包含已发布页面的 `sitemap.xml`，以及统一的 PNG 社交分享图。
 
 不同命令承担不同验证范围：
 
 | 命令 | 管线作用 |
 | :--- | :--- |
-| `bun dev` | 先生成 Mermaid，再启动 Turbopack 开发服务器 |
+| `bun dev` | 先执行内容准备管线（IR 派生、校验与 Mermaid 增量生成），再启动开发服务器 |
 | `bun typecheck` | 生成路由类型、编译 Fumadocs 内容并执行 TypeScript 检查 |
 | `bun run check:architecture` | 扫描导入图，校验架构层依赖边界（亦作为 `prebuild` 第一步） |
-| `bun run generate:mermaid` | 更新静态 SVG 与资源映射 |
-| `bun run build` | 执行架构检查、Mermaid 生成与 Next.js 生产构建 |
+| `bun run generate:content` | 内容准备：更新静态 SVG 与资源映射（唯一会启动 Puppeteer 的命令） |
+| `bun run check:content` | 内容校验与 Mermaid 资产哈希对账，零 Puppeteer |
+| `bun run build` | 执行架构检查、内容校验与 Next.js 生产构建（不渲染 Mermaid） |
 | `bun run start` | 预览已经存在的 `out/` |
 
 ## 六、静态导出的约束与收益
@@ -240,6 +239,6 @@ VS Code 的 MDX Preview 扩展无法自动识别项目自定义组件，只内�
 | `src/app/[lang]/docs/[...slug]/page.tsx` | 文档页面装配 |
 | `src/app/[lang]/docs-source/[...slug]/route.ts` | Markdown 静态源码端点 |
 | `src/components/deployment-skew-guard.tsx` | 部署偏斜检测与恢复 |
-| `scripts/generate-mermaid-assets.ts` | Mermaid 静态资源生成 |
+| `scripts/content-pipeline.ts` | 内容管线：Content IR 消费、内容校验与 Mermaid 生成 / 对账 |
 | `scripts/check-architecture.ts` | 架构层依赖边界检查 |
 | `scripts/verify-build-output.ts` | 构建产物完整性校验 |

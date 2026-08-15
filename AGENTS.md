@@ -102,16 +102,18 @@ Design System、Motion 分级、转场、首页、搜索、Mermaid 的详细实�
 
 | 命令 | 说明 |
 | :--- | :--- |
-| `bun dev` | 启动开发服务器 |
+| `bun dev` | 启动开发服务器（`predev` 自动执行内容准备管线） |
+| `bun run generate:content` | 内容准备管线：派生 Content IR、校验内容并增量生成 Mermaid 资产（唯一会启动 Puppeteer 的命令） |
+| `bun run check:content` | 内容校验 + Mermaid 资产哈希对账（零 Puppeteer，生产构建门禁） |
 | `bun lint` | Biome Lint 检查 |
 | `bun typecheck` | 类型检查（先执行 `next typegen` 与 `fumadocs-mdx`，同时校验 MDX 与 Frontmatter） |
-| `bun run build` | 生产构建（`prebuild` 自动执行架构边界检查、内容检查并生成 Mermaid 资源） |
+| `bun run build` | 生产构建（`prebuild` 自动执行架构边界检查与内容校验，不渲染 Mermaid） |
 | `bun format` | Biome 格式化（`--write`） |
 | `bun run start` | 本地预览 `out/` 静态产物 |
 
 说明：
 
-* 修改涉及 Mermaid 图表（新增、调整或数目变化）时，通过 `bun run generate:mermaid` 或 `prebuild` 重新生成静态资源并验证产物正常。
+* 修改涉及 Mermaid 图表（新增、调整或数目变化）时，通过 `bun run generate:content` 重新生成静态资源；生产构建只校验资产完整性，缺失或哈希不匹配会直接失败。
 * 修改 MDX 文档或 Frontmatter 后，运行 `bun typecheck` 校验内容可被正确解析。
 * `bun check` 执行带 `--write` 的 Biome Check，**会修改工作区文件**；不得当作只读检查，执行后必须检查 Diff。
 * 若用户明确限制测试范围，应严格执行；不得声称未实际执行的检查已经通过。

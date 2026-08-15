@@ -7,7 +7,7 @@ author:
 ---
 
 > [!DETAILS-AI] 本章 AI 摘要
-> Mermaid 图表在构建期由 Puppeteer 预渲染为去重静态 SVG，浏览器正常路径不加载 Mermaid 运行时；客户端只负责视图切换、缩放、拖拽与最大化。性能策略集中在 Server-first、按需加载、离屏延迟绘制与客户端边界控制。设计系统与无障碍降级独立成 [专题](./design-system) 说明。
+> Mermaid 图表在内容准备阶段由 Puppeteer 预渲染为去重静态 SVG，生产构建只做哈希对账、不启动浏览器；浏览器正常路径不加载 Mermaid 运行时，客户端只负责视图切换、缩放、拖拽与最大化。性能策略集中在 Server-first、按需加载、离屏延迟绘制与客户端边界控制。设计系统与无障碍降级独立成 [专题](./design-system) 说明。
 
 ## 一、构建期优先的渲染策略
 
@@ -21,38 +21,41 @@ Mermaid 需要解析语法、计算图布局、测量文字并生成 SVG。若�
 
 项目因此采用"构建期优先，运行时兜底"：发布前生成可以直接展示的 SVG，浏览器只有在静态资源缺失时才动态导入 Mermaid。
 
-## 二、静态资源生成
+## 二、静态资源生成与校验
 
-`scripts/generate-mermaid-assets.ts` 在 `bun dev` 与 `bun run build` 之前自动执行，也可以通过 `bun run generate:mermaid` 单独运行。
+Mermaid 资产由内容管线 `scripts/content-pipeline.ts` 管理，图表检测来自 Content IR（见[内容管线与 MDX 增强](./content-engineering#content-ir-与构建管线)），不再独立扫描 `content/docs`。管线分两个模式：
+
+- **generate**（`bun run generate:content`，`predev` 自动执行）：派生 IR → 内容校验 → 增量渲染。仅当存在待渲染图表时才启动 Puppeteer，全部命中缓存时零浏览器启动；
+- **verify**（`bun run check:content`，`prebuild` 自动执行）：派生 IR → 内容校验 → 按 IR 重算期望文件名，与资产清单、磁盘文件三方对账。**绝不导入 Puppeteer、绝不启动浏览器**，缺失或哈希不匹配直接使构建失败并提示运行 generate。
 
 ```mermaid
 flowchart TD
-    A[扫描 content/docs] --> B[提取 Mermaid 代码块]
-    B --> C[规范化源码]
-    C --> D[按源码 ID 去重]
-    D --> E{静态资源存在?}
-    E -->|是| F[复用 SVG]
-    E -->|否| G[Puppeteer 渲染]
-    G --> H[写入 public/mermaid]
-    F --> I[生成资源映射]
-    H --> I
-    I --> J[删除失效旧资源]
+    A[Content IR 派生] --> B[提取已规范化的图表源码]
+    B --> C[按源码 ID 去重]
+    C --> D{静态资源存在?}
+    D -->|是| E[复用 SVG]
+    D -->|否| F[Puppeteer 渲染（仅 generate）]
+    F --> G[写入 public/mermaid]
+    E --> H[生成资源映射]
+    G --> H
+    H --> I[删除失效旧资源]
+    I --> J[verify：清单与磁盘哈希对账]
 ```
 
 ### 稳定身份与缓存
 
-`src/features/mermaid/asset-id.ts` 根据规范化 Mermaid 源码生成 source ID。最终文件名由全部渲染输入（Mermaid 浏览器 bundle、度量样式 `styles.css` 与共享配置）的内容哈希构成，任一输入变化都会自动产生新文件名，无需手工维护版本号，因此：
+`src/lib/mermaid-id.ts` 根据规范化 Mermaid 源码生成 source ID（Content IR 提取器、构建管线与浏览器运行时共享同一实现）。最终文件名由全部渲染输入（Mermaid 浏览器 bundle、度量样式 `styles.css` 与共享配置）的内容哈希构成，任一输入变化都会自动产生新文件名，无需手工维护版本号，因此：
 
 - 相同源码只生成一份资源；
 - 未变化图表可以跨构建复用；
 - Mermaid 升级、样式或影响测量的配置变化会自动重新渲染；
 - 不再被任何内容引用的 SVG 可以安全清理。
 
-`src/features/mermaid/generated/assets.ts` 是 source ID 到文件名的只读映射，由脚本生成，不应手工编辑。
+`src/features/mermaid/generated/assets.ts` 是 source ID 到文件名的只读映射，由管线的 generate 阶段生成，不应手工编辑。
 
 ### 与站点样式一致
 
-生成脚本通过 Puppeteer 加载项目 Mermaid 配置、字体和 `src/features/mermaid/styles.css`。影响节点尺寸的样式在 Mermaid 测量阶段就生效，避免先用默认字体布局、再在站点中套样式造成裁剪。
+渲染器（`scripts/mermaid-renderer.ts`，仅被 generate 阶段动态加载）通过 Puppeteer 加载项目 Mermaid 配置、字体和 `src/features/mermaid/styles.css`。影响节点尺寸的样式在 Mermaid 测量阶段就生效，避免先用默认字体布局、再在站点中套样式造成裁剪。
 
 渲染结果保留 Mermaid 图型自身的 `viewBox`，只有实际内容越界时才扩展边界。通用测量不会覆盖 `gitGraph` 等专用图型的布局。
 
@@ -171,25 +174,26 @@ flowchart TD
 修改 Mermaid 源码、数量、主题测量样式或渲染配置后，应运行：
 
 ```bash
-bun run generate:mermaid
+bun run generate:content
 ```
 
 并检查：
 
-- 控制台中的生成、复用和清理数量；
+- 控制台中的 IR 条目数、图表数与生成、复用和清理数量；
 - `public/mermaid/` 新增与删除是否符合内容变化；
 - `src/features/mermaid/generated/assets.ts` 是否只包含生成映射；
 - 浅色 / 深色下节点、标签和边界是否完整；
 - 大图、小图、源码视图与最大化操作是否正常。
 
-较大变更继续运行 `bun run build`，确保 Puppeteer 生成、Fumadocs 编译和静态导出在同一生产管线中通过。
+较大变更继续运行 `bun run build`：内容校验、资产哈希对账与静态导出会在同一生产管线中通过，该管线不启动 Puppeteer；若资产缺失或过期，`check:content` 会指出具体图表并提示重新运行 generate。
 
 ## 十、关键文件
 
 | 文件 | 职责 |
 | :--- | :--- |
-| `scripts/generate-mermaid-assets.ts` | 扫描、去重、渲染与清理 |
-| `src/features/mermaid/asset-id.ts` | 稳定源码 ID |
+| `scripts/content-pipeline.ts` | 内容管线：IR 消费、内容校验与 Mermaid 生成 / 对账 |
+| `scripts/mermaid-renderer.ts` | Puppeteer 渲染器（仅 generate 阶段动态加载） |
+| `src/lib/mermaid-id.ts` | 稳定源码 ID 与源码规范化 |
 | `src/features/mermaid/generated/assets.ts` | 静态资源映射 |
 | `src/features/mermaid/components/mermaid.tsx` | 图表外壳与工具栏 |
 | `src/features/mermaid/hooks/use-mermaid-render.ts` | 静态资源与兜底 |

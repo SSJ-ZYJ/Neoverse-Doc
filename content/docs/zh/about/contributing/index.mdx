@@ -71,11 +71,11 @@ bun dev
 
 | 命令 | 用途 | 是否写入工作区 |
 | :--- | :--- | :---: |
-| `bun dev` | 生成 Mermaid 资源并启动 Turbopack 开发服务器 | 是 |
+| `bun dev` | 执行内容准备管线并启动开发服务器 | 是 |
 | `bun lint` | 运行 Biome Lint | 否 |
 | `bun typecheck` | 生成路由与内容类型，校验 MDX、Frontmatter 和 TypeScript | 是 |
-| `bun run generate:mermaid` | 重新生成 Mermaid 静态 SVG 与资源映射 | 是 |
-| `bun run build` | 生成 Mermaid 资源并执行生产静态构建 | 是 |
+| `bun run generate:content` | 内容准备管线：校验内容并增量生成 Mermaid 静态 SVG 与资源映射 | 是 |
+| `bun run build` | 执行内容校验与生产静态构建（不渲染 Mermaid） | 是 |
 | `bun format` | 使用 Biome 格式化工作区 | 是 |
 | `bun check` | 使用带 `--write` 的 Biome Check | **是** |
 | `bun run start` | 预览已经生成的 `out/` 静态产物 | 否 |
@@ -203,7 +203,7 @@ todoProgress: false
 | :--- | :--- |
 | 纯 TypeScript / React / CSS 修改 | `bun lint`、`bun typecheck` |
 | Markdown / MDX 或 Frontmatter | `bun typecheck` |
-| Mermaid 内容或数量变化 | `bun run generate:mermaid`，并检查生成资源 |
+| Mermaid 内容或数量变化 | `bun run generate:content`，并检查生成资源 |
 | 静态路由、构建配置或较大内容变更 | `bun run build` |
 | 使用了写入型格式化命令 | 检查 `git status` 与完整 Diff |
 

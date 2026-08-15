@@ -1,8 +1,17 @@
 // Search index construction belongs to the content layer; the route only exports it.
+// Search intentionally builds from the Fumadocs source instead of the Content
+// IR: indexes need tokenized structuredData, which would turn the IR into a
+// giant body dump — the one content consumer allowed beside the IR pipeline
+// (see docs/adr/0004). Index generation stays build-time; Search UI stays a
+// separate client consumer.
 // 搜索索引构建属于内容层，路由仅负责导出。
+// 搜索有意直接基于 Fumadocs 内容源而非 Content IR：索引需要 token 化的
+// structuredData，塞进 IR 会把它变成巨型正文转储 —— 因此是 IR 管线之外
+// 唯一被允许的内容消费方（见 docs/adr/0004）。索引生成保持在构建期，
+// Search UI 保持为独立的客户端消费方。
 import { createFromSource } from 'fumadocs-core/search/server';
 import { source } from '@/adapters/fumadocs/source';
-import { createContentId } from '../generated/manifest';
+import { createContentId } from '../ir';
 import { createMixedTokenizer, markPinyinIndexContent } from './tokenizer';
 
 export const { staticGET: staticSearchGET } = createFromSource(source, {

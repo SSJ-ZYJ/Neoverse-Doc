@@ -1,6 +1,19 @@
-import { source } from '@/adapters/fumadocs/source';
+/**
+ * Content Manifest — the consumer-facing view over the Content IR. Identity
+ * and location fields are carried over verbatim; IR-only build information
+ * (sourcePath, mermaid sources) is deliberately stripped so consumers such as
+ * the sitemap see exactly the page data they need. All normalization lives in
+ * the IR (see src/content/ir.ts and docs/adr/0004) — this module never touches
+ * the content source again.
+ *
+ * Content Manifest —— 基于 Content IR 的消费视图。身份与位置字段原样透传；
+ * IR 专属的构建期信息（sourcePath、mermaid 源码）被刻意剥离，sitemap 等
+ * 消费方看到的就是所需的页面数据。全部规范化职责在 IR（见
+ * src/content/ir.ts 与 docs/adr/0004）—— 本模块不再接触内容源。
+ */
+import { type ContentIrEntry, contentIr } from '@/content/ir';
 import type { ContentTrack, ContentType, Difficulty } from '@/content/schema/docs';
-import { i18n, type Locale } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n';
 
 export interface ContentManifestEntry {
   // Identity vs location, deliberately separate: `id` is the stable logical
@@ -30,70 +43,27 @@ export interface ContentManifestEntry {
   related?: string[];
 }
 
-type ManifestPage = {
-  data: {
-    id: string;
-    title: string;
-    description?: string;
-    draft?: boolean;
-    type?: ContentType;
-    topics?: string[];
-    track?: ContentTrack[];
-    difficulty?: Difficulty;
-    estimatedMinutes?: number;
-    prerequisites?: string[];
-    related?: string[];
-  };
-  locale?: string;
-  slugs: string[];
-  url: string;
-};
-
-// Derives the full Content ID from the stable frontmatter id. The identity is
-// owned by frontmatter, not by path — file moves, URL adjustments and title
-// edits never change it (see docs/adr/0003).
-// 由稳定 frontmatter id 派生完整 Content ID。身份归属 frontmatter 而非路径
-// —— 文件移动、URL 调整与标题修改都不会改变它（见 docs/adr/0003）。
-export function createContentId(id: string): string {
-  return `docs:${id}`;
-}
-
-// Copy only the v2 fields a page actually declares, keeping entries free of
-// undefined noise (same convention as description / draft above).
-// 仅复制页面实际声明的 v2 字段，条目不携带 undefined 噪声
-// （与上方 description / draft 的处理约定一致）。
-function pickV2Fields(data: ManifestPage['data']): Partial<ContentManifestEntry> {
+export function createManifestEntry(entry: ContentIrEntry): ContentManifestEntry {
   return {
-    ...(data.type !== undefined ? { type: data.type } : {}),
-    ...(data.topics !== undefined ? { topics: data.topics } : {}),
-    ...(data.track !== undefined ? { track: data.track } : {}),
-    ...(data.difficulty !== undefined ? { difficulty: data.difficulty } : {}),
-    ...(data.estimatedMinutes !== undefined ? { estimatedMinutes: data.estimatedMinutes } : {}),
-    ...(data.prerequisites !== undefined ? { prerequisites: data.prerequisites } : {}),
-    ...(data.related !== undefined ? { related: data.related } : {}),
-  };
-}
-
-export function createContentManifestEntry(
-  page: ManifestPage,
-  locale: Locale,
-): ContentManifestEntry {
-  return {
-    id: createContentId(page.data.id),
-    locale,
-    url: page.url,
-    title: page.data.title,
-    ...(page.data.description ? { description: page.data.description } : {}),
-    slugs: [...page.slugs],
-    ...(page.data.draft === true ? { draft: true } : {}),
-    ...pickV2Fields(page.data),
+    id: entry.id,
+    locale: entry.locale,
+    url: entry.url,
+    title: entry.title,
+    ...(entry.description !== undefined ? { description: entry.description } : {}),
+    slugs: [...entry.slugs],
+    ...(entry.draft === true ? { draft: true } : {}),
+    ...(entry.type !== undefined ? { type: entry.type } : {}),
+    ...(entry.topics !== undefined ? { topics: entry.topics } : {}),
+    ...(entry.track !== undefined ? { track: entry.track } : {}),
+    ...(entry.difficulty !== undefined ? { difficulty: entry.difficulty } : {}),
+    ...(entry.estimatedMinutes !== undefined ? { estimatedMinutes: entry.estimatedMinutes } : {}),
+    ...(entry.prerequisites !== undefined ? { prerequisites: entry.prerequisites } : {}),
+    ...(entry.related !== undefined ? { related: entry.related } : {}),
   };
 }
 
 export const contentManifest = Object.freeze(
-  i18n.languages.flatMap((locale) =>
-    source.getPages(locale).map((page) => createContentManifestEntry(page, locale)),
-  ),
+  contentIr.map((entry) => createManifestEntry(entry)),
 ) satisfies readonly ContentManifestEntry[];
 
 const entriesByIdentity = new Map(

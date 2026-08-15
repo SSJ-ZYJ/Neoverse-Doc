@@ -6,9 +6,12 @@ export function normalizeMermaidSource(source: string): string {
 }
 
 // A compact source identifier keeps complete chart definitions out of the
-// client manifest. Build and browser paths call this exact shared function.
-// 紧凑源码标识可避免把完整图表定义重复写入客户端清单；构建端与浏览器端
-// 调用同一个函数，避免两份哈希实现发生偏差。
+// client manifest. The Content IR extractor, the build pipeline and the
+// browser runtime all call this exact shared function, so a diagram keeps one
+// identity from MDX extraction to client asset lookup.
+// 紧凑源码标识可避免把完整图表定义重复写入客户端清单。Content IR 提取器、
+// 构建管线与浏览器运行时调用同一个函数，使一张图从 MDX 提取到客户端资产
+// 查找始终保持同一身份。
 export function getMermaidSourceId(source: string): string {
   const normalized = normalizeMermaidSource(source);
   let hash = FNV_OFFSET_BASIS_64;

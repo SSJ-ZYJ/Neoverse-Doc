@@ -352,7 +352,7 @@ flowchart LR
     C --> D[Record the conclusion]
 ```
 
-After modifying Mermaid content or the diagram count, run `bun run generate:mermaid` or `bun run build`, and check the generated SVGs and `src/features/mermaid/generated/assets.ts`.
+After modifying Mermaid content or the diagram count, run `bun run generate:content` and check the generated SVGs and `src/features/mermaid/generated/assets.ts`; `bun run build` only verifies asset integrity and does not render.
 
 ## 8. In-Site Links and Heading Anchors
 

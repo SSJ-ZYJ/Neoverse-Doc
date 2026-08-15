@@ -19,7 +19,7 @@ Neoverse-Doc/
 ├── public/
 │   └── mermaid/                  # Generated Mermaid SVGs
 ├── scripts/
-│   ├── generate-mermaid-assets.ts
+│   ├── content-pipeline.ts        # Content pipeline: IR derivation, validation, and Mermaid generate / verify
 │   ├── check-architecture.ts
 │   └── verify-build-output.ts
 ├── src/
@@ -133,26 +133,25 @@ flowchart TD
     G --> H[Next.js build]
     H --> I[out static site]
 
-    A --> J[Mermaid generation script]
-    J --> K[SVG and asset map]
-    K --> G
-
-    F --> L[Typed Content Manifest]
-    L --> M[Static search index and sitemap]
-    M --> H
+    F --> J[Content IR derivation]
+    J --> K[Content Manifest and content validation]
+    K --> H
+    J --> L[Mermaid asset generation / verification]
+    L --> G
 ```
 
-`src/content/generated/manifest.ts` derives a read-only content list directly from the compiled Source. Stable IDs use `docs:${slugs.join('/')}`, so localized pages at the same path share an ID. The Manifest retains draft flags and consumers such as sitemap perform their own filtering; there is no second hand-maintained content source. The production build also generates `robots.txt`, a published-only `sitemap.xml`, and a unified PNG social share image.
+`src/content/ir.ts` derives the Content IR in one pass from the compiled Source (including mermaid diagram detection) — the single normalized content data plane. `src/content/generated/manifest.ts` is its consumer view; stable IDs come from the required frontmatter `id` prefixed with `docs:`, so localized versions of one page share an identity. The Manifest retains draft flags and consumers such as sitemap perform their own filtering; there is no second hand-maintained content source. The production build also generates `robots.txt`, a published-only `sitemap.xml`, and a unified PNG social share image.
 
 Different commands cover different verification scopes:
 
 | Command | Pipeline role |
 | :--- | :--- |
-| `bun dev` | Generates Mermaid first, then starts the Turbopack development server |
+| `bun dev` | Runs the content prepare pipeline (IR derivation, validation, incremental Mermaid generation) before starting the development server |
 | `bun typecheck` | Generates route types, compiles Fumadocs content, and runs the TypeScript check |
 | `bun run check:architecture` | Scans the import graph and verifies architecture layer boundaries (also the first `prebuild` step) |
-| `bun run generate:mermaid` | Updates the static SVGs and asset map |
-| `bun run build` | Runs the architecture check, Mermaid generation, and the Next.js production build |
+| `bun run generate:content` | Content prepare: updates the static SVGs and asset map (the only command that may launch Puppeteer) |
+| `bun run check:content` | Content validation and Mermaid asset hash reconciliation, zero Puppeteer |
+| `bun run build` | Runs the architecture check, content validation, and the Next.js production build (no Mermaid rendering) |
 | `bun run start` | Previews an existing `out/` |
 
 ## 6. Constraints and benefits of static export
@@ -237,6 +236,6 @@ The loading scene only appears in the brief window of a route transition and doe
 | `src/app/[lang]/docs/[...slug]/page.tsx` | Document page assembly |
 | `src/app/[lang]/docs-source/[...slug]/route.ts` | Static Markdown source endpoint |
 | `src/components/deployment-skew-guard.tsx` | Deployment skew detection and recovery |
-| `scripts/generate-mermaid-assets.ts` | Mermaid static asset generation |
+| `scripts/content-pipeline.ts` | Content pipeline: Content IR consumption, content validation, and Mermaid generate / verify |
 | `scripts/check-architecture.ts` | Architecture layer boundary check |
 | `scripts/verify-build-output.ts` | Build output integrity verification |

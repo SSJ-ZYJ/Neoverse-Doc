@@ -1,4 +1,4 @@
-import { getMermaidSourceId } from './asset-id';
+import { getMermaidSourceId } from '@/lib/mermaid-id';
 import { MERMAID_ASSET_PATHS } from './generated/assets';
 
 export function getPreRenderedMermaidPath(source: string): string | null {

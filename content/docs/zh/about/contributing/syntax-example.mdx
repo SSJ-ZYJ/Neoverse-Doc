@@ -352,7 +352,7 @@ flowchart LR
     C --> D[记录结论]
 ```
 
-修改 Mermaid 内容或图表数量后，运行 `bun run generate:mermaid` 或 `bun run build`，并检查生成的 SVG 与 `src/features/mermaid/generated/assets.ts`。
+修改 Mermaid 内容或图表数量后，运行 `bun run generate:content`，并检查生成的 SVG 与 `src/features/mermaid/generated/assets.ts`；`bun run build` 只校验资产完整性，不负责渲染。
 
 ## 八、站内链接与标题锚点
 
