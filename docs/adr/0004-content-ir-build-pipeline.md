@@ -8,7 +8,7 @@ Manifest、Search、Mermaid、Content Validation 各自消费文档数据，其�
 
 - **IR 物化为 JSON 文件**：Next 静态导出反正要在 build 进程内加载 source 渲染页面，物化无性能收益，却引入"改了 MDX 忘记重新生成"的陈旧风险。改为派生模块：数据 100% 机器派生、导入即构建、永不手工维护，也就没有可陈旧的缓存（Cache 失效问题从根上消除）。
 - **Search Corpus 由 IR 生成**：索引需要 token 化 structuredData，塞进 IR 会把它变成巨型正文转储，违反 IR 只存元数据的原则。Search 有意留在 source 管线（`createFromSource` 在 build 进程内复用同一份已加载的 source，不构成同进程重复扫描），是 IR 之外唯一被声明的内容消费方；索引生成（构建期）与 Search UI（客户端）保持分离。
-- **保留 `--allow-client-fallback`**：其服务场景（构建环境无 Puppeteer）随 verify-only prebuild 一并消失；降级修剪 manifest 会静默放弃静态资产。改为严格 verify：IR 中每张图必须有清单条目、重算哈希一致且文件存在，孤儿条目同样失败，并提示运行 `generate:content`。客户端运行时兜底（fetch miss → 浏览器渲染）保留为鲁棒性措施，不作为构建策略。
+- **保留 `--allow-client-fallback`**：其服务场景（构建环境无 Puppeteer）随 verify-only prebuild 一并消失；降级修剪 manifest 会静默放弃静态资产。改为严格 verify：IR 中每张图必须有清单条目、重算哈希一致且文件存在，失效条目同样失败，并提示运行 `generate:content`。客户端运行时兜底（fetch miss → 浏览器渲染）保留为鲁棒性措施，不作为构建策略。
 
 ## 决策要点
 

@@ -252,7 +252,7 @@ if (mode === 'generate') {
   const chartIds = new Set(charts.keys());
   for (const sourceId of Object.keys(MERMAID_ASSET_PATHS)) {
     if (!chartIds.has(sourceId)) {
-      problems.push(`资产清单包含孤儿条目 ${sourceId}（内容中已不存在该图表）`);
+      problems.push(`资产清单包含失效条目 ${sourceId}（内容中已不存在该图表）`);
     }
   }
 
