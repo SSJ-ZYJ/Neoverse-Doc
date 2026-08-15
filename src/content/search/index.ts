@@ -11,36 +11,75 @@
 // Search UI 保持为独立的客户端消费方。
 import { createFromSource } from 'fumadocs-core/search/server';
 import { source } from '@/adapters/fumadocs/source';
+import { i18n, type Locale } from '@/lib/i18n';
 import { createContentId } from '../ir';
+import { getSearchMetadataTags } from './facets';
+import { getSearchPageMetadata } from './metadata';
+import { createSearchCorpus, toFumadocsSearchIndexInput } from './schema';
 import { createMixedTokenizer, markPinyinIndexContent } from './tokenizer';
+
+export type { SearchRankingContext, SearchTaxonomyFilters } from './facets';
+export { createSearchFilterTags, getSearchMetadataTags } from './facets';
+export { getSearchPageMetadata, searchMetadataSidecar } from './metadata';
+export type {
+  SearchDocument,
+  SearchDocumentInput,
+  SearchDocumentRecordKind,
+  SearchStructuredData,
+} from './schema';
+export {
+  createSearchCorpus,
+  toFumadocsSearchIndexInput,
+} from './schema';
+
+function isLocale(value: string | undefined): value is Locale {
+  return value !== undefined && (i18n.languages as readonly string[]).includes(value);
+}
 
 export const { staticGET: staticSearchGET } = createFromSource(source, {
   buildIndex(page) {
-    const pinyinEnabled = page.locale === 'zh';
+    if (!isLocale(page.locale)) {
+      throw new Error('Search source page is missing a configured locale.');
+    }
+    const locale = page.locale;
+    const contentId = createContentId(page.data.id);
+    const metadata = getSearchPageMetadata(contentId, locale);
+    if (metadata === undefined) {
+      throw new Error(`Search metadata is missing for structured content ${contentId}:${locale}.`);
+    }
+    const corpus = createSearchCorpus(
+      {
+        contentId,
+        locale,
+        url: page.url,
+        title: page.data.title,
+        description: page.data.description,
+        structuredData: page.data.structuredData,
+      },
+      metadata,
+    );
+    const indexInput = toFumadocsSearchIndexInput(corpus);
+    const pinyinEnabled = locale === 'zh';
     const structuredData = pinyinEnabled
       ? {
-          ...page.data.structuredData,
-          headings: page.data.structuredData.headings.map((heading) => ({
+          ...indexInput.structuredData,
+          headings: indexInput.structuredData.headings.map((heading) => ({
             ...heading,
             content: markPinyinIndexContent(heading.content),
           })),
         }
-      : page.data.structuredData;
+      : indexInput.structuredData;
 
     return {
-      // Record identity is the stable Content ID plus locale (keeps zh/en
-      // variants distinct); navigation still goes through `url`. The client
-      // only uses `id` for dedup, so switching it away from the URL is safe
-      // and keeps search records stable across URL adjustments (ADR 0003).
-      // 记录身份使用稳定 Content ID 加 locale（区分中英文版本）；导航仍走
-      // `url`。客户端仅用 `id` 去重，因此从 URL 切换过来是安全的，且让搜索
-      // 记录在 URL 调整后保持稳定（ADR 0003）。
-      id: `${createContentId(page.data.id)}:${page.locale}`,
-      title: pinyinEnabled ? markPinyinIndexContent(page.data.title) : page.data.title,
-      description: page.data.description,
-      url: page.url,
+      // The pure corpus is joined by Content ID before it is lowered to
+      // Fumadocs' fixed index shape. Tags carry the metadata dimensions that
+      // the mature static engine can filter without a custom schema.
+      // 纯语料先按 Content ID 完成 join，再降级为 Fumadocs 固定索引形状。
+      // tag 携带现有静态引擎可直接过滤的元数据维度，无需自定义 Schema。
+      ...indexInput,
+      title: pinyinEnabled ? markPinyinIndexContent(indexInput.title) : indexInput.title,
       structuredData,
-      tag: page.slugs[0],
+      tag: getSearchMetadataTags(metadata),
     };
   },
   localeMap: {

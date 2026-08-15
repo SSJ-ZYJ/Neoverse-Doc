@@ -23,7 +23,15 @@ flowchart LR
     F --> G[全文结果或 Chapter 范围]
 ```
 
-每条索引记录包含页面 URL、标题、描述、结构化正文与一级 slug。一级 slug 同时写入 Fumadocs `tag`，因此 Chapter 筛选直接复用内容路径，不需要维护第二份章节映射。
+Fumadocs 的页级索引 ID 使用稳定的 `docs:<id>:<locale>`，导航仍走 URL。全文索引记录保留页面 URL、标题、描述和 structured content；一级 slug 继续作为原始 `tag`，因此既有 Chapter 筛选直接复用内容路径，不需要维护第二份章节映射。
+
+### Search Schema v2 与元数据 Join
+
+`src/content/search/schema.ts` 在应用层定义 `SearchDocument`：每条页、描述、小节或正文记录都可表达 `contentId`、`locale`、标题、描述、可选 heading ID / 标题、正文，以及 `contentType`、Topic、Track 和 Difficulty。这里使用 `contentType` 而不是 `type`，避免与 Fumadocs 的 page / heading / text 记录类型混淆。
+
+正文继续只来自 Fumadocs 的 structured content。构建索引时，`src/content/search/index.ts` 以稳定 `contentId + locale` 从 Manifest 派生的 Search Metadata Projection 连接 taxonomy；找不到匹配项会使构建失败，而不会悄悄生成缺少 metadata 的记录。正文不进入 Content IR，也不会复制到 metadata Sidecar。
+
+现有静态搜索引擎保持不变。为兼容其固定 Schema，Chapter 原始 tag 外还会写入 `track:<id>`、`topic:<id>`、`content-type:<id>` 和 `difficulty:<id>` 等 namespaced tag。静态 `/api/search-metadata` Sidecar 按稳定页级搜索 ID 输出这些 metadata，供未来的 Search UI 或结果增强消费；当前 Search Dialog 不请求它，也不新增筛选控件。
 
 ## 二、中英混合与拼音检索
 
@@ -112,6 +120,8 @@ flowchart LR
 搜索弹窗关闭时，组件会在捕获阶段监听 Fumadocs 的 `Ctrl + K` / `Cmd + K` 快捷键。若读者在 `#nd-page` 正文容器内保留了完整选区，弹窗打开前会把选区规范化为空格分隔的单行查询，并取前 200 个字符（`MAX_SELECTED_SEARCH_LENGTH`）；点击搜索入口、跨出正文的选区和可编辑控件中的选区都保持原有查询行为。
 
 范围菜单只是查询约束，不维护独立内容状态。新增 Chapter 并注册页面树后，它会自然进入搜索范围。
+
+Chapter 仍是作者的线性内容编排；它只用于兼容的搜索范围，不能推导 Topic，也不是 Learn、Explore 或 Reference 的分类来源。Topic、Track、Content Type 和 Difficulty 的查询数据只来自 `content/search` 的 Projection / Schema 接口，Search Feature 不重新解析 Frontmatter 或 Taxonomy。
 
 ## 五、搜索聚光灯
 
@@ -238,7 +248,10 @@ Giscus 仍然是外部增强：网络不可用或用户没有 GitHub 账号时�
 | 文件 | 职责 |
 | :--- | :--- |
 | `src/app/api/search/route.ts` | 静态搜索索引 |
+| `src/app/api/search-metadata/route.ts` | 静态 Search metadata Sidecar |
 | `src/content/search/index.ts` | 服务端索引构建与静态 GET |
+| `src/content/search/schema.ts` | Search Document v2 与 structured content Join |
+| `src/content/search/facets.ts` | Chapter 兼容与 taxonomy tag / 未来过滤接口 |
 | `src/content/search/tokenizer.ts` | 中文、英文与拼音混合分词 |
 | `src/features/search/client.ts` | 搜索结果增强流水线 |
 | `src/features/search/selection.ts` | 正文选区校验与搜索查询规范化 |

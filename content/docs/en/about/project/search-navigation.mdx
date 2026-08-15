@@ -23,7 +23,15 @@ flowchart LR
     F --> G[Full-text results or Chapter scope]
 ```
 
-Each index record contains the page URL, title, description, structured content, and first-level slug. The first-level slug is also written to the Fumadocs `tag`, so Chapter filtering directly reuses the content path without maintaining a second chapter mapping.
+The Fumadocs page-level index ID uses stable `docs:<id>:<locale>`, while navigation still uses URLs. Full-text index records retain the page URL, title, description, and structured content; the first-level slug remains the raw `tag`, so existing Chapter filtering directly reuses the content path without a second chapter mapping.
+
+### Search Schema v2 and metadata join
+
+`src/content/search/schema.ts` defines the application-level `SearchDocument`: every page, description, heading, or body record can express `contentId`, `locale`, title, description, optional heading ID / title, body, plus `contentType`, Topic, Track, and Difficulty. It uses `contentType` rather than `type` to avoid colliding with Fumadocs' page / heading / text record type.
+
+Body text continues to come only from Fumadocs structured content. While building the index, `src/content/search/index.ts` joins taxonomy from the Manifest-derived Search Metadata Projection by stable `contentId + locale`; a missing match fails the build rather than silently producing a record without metadata. Body text never enters Content IR or the metadata sidecar.
+
+The existing static search engine remains unchanged. To work with its fixed schema, the raw Chapter tag is supplemented with namespaced tags such as `track:<id>`, `topic:<id>`, `content-type:<id>`, and `difficulty:<id>`. The static `/api/search-metadata` sidecar emits this metadata by stable page-level search ID for a future Search UI or result enhancer; the current Search Dialog neither fetches it nor adds filter controls.
 
 ## 2. Mixed Chinese-English and pinyin search
 
@@ -112,6 +120,8 @@ Scope options come from the current locale's page tree:
 While the search dialog is closed, the component listens for Fumadocs' `Ctrl + K` / `Cmd + K` shortcuts in the capture phase. If the reader has kept a full selection inside the `#nd-page` content container, the selection is normalized into a single-line, space-separated query before the dialog opens, taking the first 200 characters (`MAX_SELECTED_SEARCH_LENGTH`); selections triggered by clicking the search entrance, selections extending outside the content, and selections inside editable controls all keep the original query behavior.
 
 The scope menu is only a query constraint; it doesn't maintain separate content state. After a new Chapter is registered in the page tree, it naturally enters the search scopes.
+
+Chapter remains the author's linear content arrangement. It is used only for the compatible search scope; it cannot derive a Topic and is not the classification source for Learn, Explore, or Reference. Query data for Topic, Track, Content Type, and Difficulty comes only from the `content/search` Projection / Schema interface, never from Search Feature frontmatter or taxonomy parsing.
 
 ## 5. Search spotlight
 
@@ -238,7 +248,10 @@ None of this state needs an account or a database, and it doesn't sync across de
 | File | Responsibility |
 | :--- | :--- |
 | `src/app/api/search/route.ts` | Static search index |
+| `src/app/api/search-metadata/route.ts` | Static Search metadata sidecar |
 | `src/content/search/index.ts` | Server index construction and static GET |
+| `src/content/search/schema.ts` | Search Document v2 and structured-content join |
+| `src/content/search/facets.ts` | Chapter compatibility plus taxonomy tags / future filters |
 | `src/content/search/tokenizer.ts` | Mixed Chinese, English, and pinyin tokenization |
 | `src/features/search/client.ts` | Search result enhancement pipeline |
 | `src/features/search/selection.ts` | Content selection validation and search query normalization |

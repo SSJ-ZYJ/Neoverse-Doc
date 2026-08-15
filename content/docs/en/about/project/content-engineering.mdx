@@ -71,7 +71,9 @@ How each system consumes it:
 - **Content validation** (ID uniqueness, translation pairing, reference existence, duplicates, self-references, cross-locale relation conflicts, and prerequisite cycles) runs on the IR;
 - **Knowledge Graph** (`src/content/graph/`) compiles Stable Content ID nodes plus forward and reverse relations from the IR without re-scanning MDX;
 - **Mermaid** detection is driven by the IR instead of walking `content/docs`; assets are content-addressed by the source + renderer signature + config hash (see [Mermaid and Performance](./mermaid-performance));
-- **Search** intentionally stays on the Fumadocs source pipeline (indexes need tokenized structuredData; putting it into the IR would turn it into a body dump) — the one declared content consumer outside the IR. This phase adds neither a taxonomy Filter nor custom index fields; index generation remains build-time and Search UI remains a separate client consumer.
+- **Product projections** (`src/content/projections/`) derive pure product data views from the unified Content IR, Manifest, Taxonomy Registry, and Content Graph: Learn organizes stable Content IDs by Track, taxonomy order, and explicit prerequisite edges; Explore groups only by explicit Topics; Reference admits only the canonical Content Type. Projections do not duplicate names, display text, or a second metadata registry, so product consumers still resolve those from the Manifest and Registry;
+- **Search** intentionally stays on the Fumadocs source pipeline (indexes need tokenized structuredData; putting it into the IR would turn it into a body dump), but `src/content/search/` joins structured content with the Manifest Search Metadata Projection through `docs:<id>:<locale>`. The application-level `SearchDocument` models page, heading, and body records with taxonomy dimensions, while Fumadocs remains responsible for the mature full-text index and result grouping;
+- **Search metadata sidecar** (`/api/search-metadata`) emits only stable search-page IDs and taxonomy metadata, never duplicate body text. The raw Chapter scope remains a tag; Track, Topic, Content Type, and Difficulty are additionally encoded as namespaced tags, while the current Search UI deliberately exposes no new filter controls.
 
 Generated-artifact policy: mermaid SVGs (`public/mermaid/`) and the asset manifest (`src/features/mermaid/generated/assets.ts`) are committed so a fresh clone passes verification builds; `.source/` and `out/` are build-time only; the IR never lands on disk.
 
@@ -268,6 +270,9 @@ The boundary principle is "client code stops where the interaction is", rather t
 | `src/content/plugins/remark-github-alert.ts` | GitHub Alert syntax |
 | `src/content/plugins/remark-lang-alias.ts` | Non-built-in language identifier rewrite |
 | `src/content/plugins/remark-long-code-block.ts` | Long code block fallback |
+| `src/content/projections/` | Pure Learn, Explore, Reference, and Search Metadata product projections |
+| `src/content/search/schema.ts` | Search Document v2 and Fumadocs index-shape conversion |
+| `src/content/search/metadata.ts` | Static metadata sidecar keyed by stable search-page IDs |
 | `src/content/plugins/transformer-meta-title.ts` | Title attribute transformation and icon restoration |
 | `src/components/mdx/custom-codeblock.tsx` | Server-side code block shell |
 | `src/components/mdx/code-tabs.tsx` | Tabs and sliding underline |

@@ -71,7 +71,9 @@ author:
 - **内容校验**（ID 唯一、翻译配对、引用存在、重复、自引用、跨 locale 关系冲突与 prerequisite 环）在 IR 上执行；
 - **Knowledge Graph**（`src/content/graph/`）从 IR 编译 Stable Content ID 节点与前向、反向关系，不重新扫描 MDX；
 - **Mermaid** 检测由 IR 驱动，不再自行扫描 `content/docs`；资产按「源码 + 渲染器签名 + 配置」哈希内容寻址（见 [Mermaid 与性能](./mermaid-performance)）；
-- **搜索索引**有意留在 Fumadocs source 管线（需要 token 化 structuredData，塞入 IR 会变成正文转储），是 IR 之外唯一被声明的内容消费方；本阶段不为其新增 taxonomy Filter 或自定义记录字段，索引生成仍在构建期，Search UI 仍是独立的客户端消费方。
+- **产品投影**（`src/content/projections/`）从统一的 Content IR、Manifest、Taxonomy Registry 和 Content Graph 派生纯数据产品视图：Learn 以 Track、Taxonomy 顺序与显式 prerequisite 边组织稳定 Content ID；Explore 只按显式 Topic 分组；Reference 只按 Content Type 准入。Projection 不复制名称、显示文案或第二份 metadata，产品消费方仍通过 Manifest 与 Registry 解析它们；
+- **搜索索引**有意留在 Fumadocs source 管线（需要 token 化 structuredData，塞入 IR 会变成正文转储），但会在 `src/content/search/` 通过 `docs:<id>:<locale>` 将 structured content 与 Manifest 的 Search Metadata Projection 连接。应用层 `SearchDocument` 表达页、小节与正文记录及其 taxonomy 维度；Fumadocs 继续负责成熟的全文索引和结果分组；
+- **搜索元数据 Sidecar**（`/api/search-metadata`）只输出稳定搜索页 ID 与 taxonomy 元数据，不复制正文。Chapter Scope 保留原始 tag；Track、Topic、Content Type 与 Difficulty 同时编码为 namespaced tag，当前 Search UI 暂不展示新的过滤控件。
 
 生成物策略：Mermaid SVG（`public/mermaid/`）与资产清单（`src/features/mermaid/generated/assets.ts`）提交仓库，保证 clone 后即可通过校验构建；`.source/` 与 `out/` 构建期生成、不提交；IR 不落盘。
 
@@ -268,6 +270,9 @@ value       = checked / unchecked
 | `src/content/plugins/remark-github-alert.ts` | GitHub Alert 语法 |
 | `src/content/plugins/remark-lang-alias.ts` | 非内置语言标识符重写 |
 | `src/content/plugins/remark-long-code-block.ts` | 超长代码块降级 |
+| `src/content/projections/` | Learn、Explore、Reference 与 Search Metadata 的纯数据产品投影 |
+| `src/content/search/schema.ts` | Search Document v2 与 Fumadocs 索引形状转换 |
+| `src/content/search/metadata.ts` | 稳定搜索页 ID 的静态 metadata Sidecar |
 | `src/content/plugins/transformer-meta-title.ts` | 标题属性转换与图标恢复 |
 | `src/components/mdx/custom-codeblock.tsx` | 代码块服务端外壳 |
 | `src/components/mdx/code-tabs.tsx` | Tabs 与滑动下划线 |
