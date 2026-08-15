@@ -3,7 +3,7 @@
 
 import { ArrowUpRight } from 'lucide-react';
 import { MagicBento } from '@/components/react-bits/magic-bento';
-import { TransitionLink } from '@/features/transition/transition-link';
+import { TransitionLink } from '@/features/transition';
 import type { HomeChapter } from '@/lib/home-sections';
 
 interface ChapterGridProps {

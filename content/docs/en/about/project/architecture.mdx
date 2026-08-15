@@ -6,7 +6,7 @@ author:
 ---
 
 > [!DETAILS-AI] AI Summary of This Chapter
-> The project clearly layers content, site components, parsing logic, generation scripts, and styling. Fumadocs compiles `content/docs/{locale}/` into a type-safe content source, Next.js generates all locales and slugs from the page tree, and the production environment outputs the `out/` static site through `output: 'export'`. Search, document sources, Mermaid assets, and site-level constants are also completed at build time or in centralized configuration.
+> The project clearly layers content, site components, parsing logic, generation scripts, and styling. Fumadocs compiles `content/docs/{locale}/` into a type-safe content source, Next.js generates all locales and slugs from the page tree, and the production environment outputs the `out/` static site through `output: 'export'`. Search, document sources, Mermaid assets, and site-level constants are also completed at build time or in centralized configuration. Dependency directions between the nine architecture layers are checked automatically before each build.
 
 ## 1. Directory responsibilities
 
@@ -19,6 +19,7 @@ Neoverse-Doc/
 │   └── mermaid/                  # Generated Mermaid SVGs
 ├── scripts/
 │   ├── generate-mermaid-assets.ts
+│   ├── check-architecture.ts
 │   └── verify-build-output.ts
 ├── src/
 │   ├── app/                      # Routes, data reads, and page composition
@@ -42,6 +43,30 @@ Neoverse-Doc/
 `src/components/mdx/` is the unified enhancement layer. Every document obtains code blocks, Mermaid, task items, Tabs, document cards, and file hierarchies through the same component registry, without per-page imports.
 
 Mature product capabilities live under `src/features/`; navigation, motion, and interaction state shared across features is provided by `src/runtime/`. The Fumadocs Loader, Layout, TOC, and complex DOM selectors are isolated in `src/adapters/fumadocs/`. Generated artifacts go to `public/mermaid/`, `src/features/mermaid/generated/`, `.source/`, and `out/`.
+
+### Dependency directions and the architecture check
+
+Dependency directions between the nine top-level directories are guarded automatically by `scripts/check-architecture.ts` (`bun run check:architecture`, also the first step of `prebuild`). The script scans every TypeScript import under `src/` (including dynamic `import(...)`) and flags layer violations against this matrix:
+
+| Source layer | Allowed dependencies |
+| :--- | :--- |
+| `app` | all lower layers |
+| `components` | `features` `runtime` `content` `ui` `lib` `dictionaries` |
+| `features` | `runtime` `content` `ui` `adapters` `lib` `dictionaries` |
+| `runtime` | `adapters` `ui` `lib` `dictionaries` |
+| `content` | `adapters` `lib` |
+| `adapters` | `lib` |
+| `lib` | `adapters` `dictionaries` |
+| `dictionaries` | `lib` |
+
+`lib` and `dictionaries` form the site-glue cluster (locale definitions and UI dictionaries reference each other) — the only intentional bidirectional pair in the matrix. `ui` must stay CSS-only; any `.ts` / `.tsx` file there fails the check immediately.
+
+Two additional rules:
+
+- **Barrel rule**: cross-boundary consumers of a feature must go through its `index.ts` public entry; importing an internal file under `features/A/` directly is rejected, while imports inside the feature itself are unrestricted. Public entries only expose capabilities genuinely needed across boundaries — no whole-directory re-exports.
+- **Exception list**: legitimate bridges (for example, a Fumadocs adapter writing state into the navigation runtime) are registered centrally in the script's `EXCEPTIONS` constant, each with a documented reason, instead of loosening the whole rule; stale exceptions trigger a warning to clean up.
+
+New top-level directories must be registered in the `ALLOWED` matrix, otherwise the check fails as an "unknown layer". The full decision record lives in `docs/adr/0001-architecture-boundary-check.md` in the repository.
 
 ## 2. Routing and layout
 
@@ -124,8 +149,9 @@ Different commands cover different verification scopes:
 | :--- | :--- |
 | `bun dev` | Generates Mermaid first, then starts the Turbopack development server |
 | `bun typecheck` | Generates route types, compiles Fumadocs content, and runs the TypeScript check |
+| `bun run check:architecture` | Scans the import graph and verifies architecture layer boundaries (also the first `prebuild` step) |
 | `bun run generate:mermaid` | Updates the static SVGs and asset map |
-| `bun run build` | Runs Mermaid generation and the Next.js production build |
+| `bun run build` | Runs the architecture check, Mermaid generation, and the Next.js production build |
 | `bun run start` | Previews an existing `out/` |
 
 ## 6. Constraints and benefits of static export
@@ -211,4 +237,5 @@ The loading scene only appears in the brief window of a route transition and doe
 | `src/app/[lang]/docs-source/[...slug]/route.ts` | Static Markdown source endpoint |
 | `src/components/deployment-skew-guard.tsx` | Deployment skew detection and recovery |
 | `scripts/generate-mermaid-assets.ts` | Mermaid static asset generation |
+| `scripts/check-architecture.ts` | Architecture layer boundary check |
 | `scripts/verify-build-output.ts` | Build output integrity verification |

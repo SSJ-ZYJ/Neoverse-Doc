@@ -8,7 +8,7 @@ import { useParams, usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { StatusCodeDisplay } from '@/components/status-code-display';
 import { getPageDictionary } from '@/dictionaries';
-import { TransitionLink } from '@/features/transition/transition-link';
+import { TransitionLink } from '@/features/transition';
 import { resolveLocaleFromRouteContext } from '@/lib/route-locale';
 
 interface LocalizedErrorProps {

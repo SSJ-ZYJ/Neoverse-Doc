@@ -7,7 +7,7 @@
 
 import { ArrowLeft, Eye } from 'lucide-react';
 import type { MouseEvent } from 'react';
-import { TransitionLink } from '@/features/transition/transition-link';
+import { TransitionLink } from '@/features/transition';
 
 interface DocsDraftControlsProps {
   badge: string;

@@ -4,7 +4,7 @@
 
 import { ArrowUpRight } from 'lucide-react';
 import { Magnet } from '@/components/react-bits/magnet';
-import { TransitionLink } from '@/features/transition/transition-link';
+import { TransitionLink } from '@/features/transition';
 
 interface PrimaryActionProps {
   href: string;

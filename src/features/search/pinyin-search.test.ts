@@ -1,14 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { create, insert, search } from 'zbsearch';
-import {
-  cleanSearchResultContent,
-  mergePinyinSearchResults,
-  preferSearchResultAnchors,
-  rankSearchResultGroups,
-} from '@/features/search/client';
-import { addSearchSpotlightParams, getSpotlightScrollDelta } from '@/features/search/spotlight';
-import { createMixedTokenizer, createPinyinSearchQuery, markPinyinIndexContent } from './tokenizer';
+import { cleanSearchResultContent, mergePinyinSearchResults, preferSearchResultAnchors, rankSearchResultGroups } from './client';
+import { addSearchSpotlightParams, getSpotlightScrollDelta } from './spotlight';
+import { createMixedTokenizer, createPinyinSearchQuery, markPinyinIndexContent } from '@/content/search/tokenizer';
 
 function createTestDB() {
   return create({

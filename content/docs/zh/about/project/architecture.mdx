@@ -6,7 +6,7 @@ author:
 ---
 
 > [!DETAILS-AI] 本章 AI 摘要
-> 项目把内容、站点组件、解析逻辑、生成脚本和样式明确分层。Fumadocs 将 `content/docs/{locale}/` 编译为类型安全内容源，Next.js 根据页面树生成全部 locale 与 slug，生产环境通过 `output: 'export'` 输出 `out/` 静态站点。搜索、文档源码、Mermaid 资源与站点级常量也在构建期或集中配置中完成。
+> 项目把内容、站点组件、解析逻辑、生成脚本和样式明确分层。Fumadocs 将 `content/docs/{locale}/` 编译为类型安全内容源，Next.js 根据页面树生成全部 locale 与 slug，生产环境通过 `output: 'export'` 输出 `out/` 静态站点。搜索、文档源码、Mermaid 资源与站点级常量也在构建期或集中配置中完成。九个架构层的依赖方向由轻量脚本在构建前自动检查。
 
 ## 一、目录职责
 
@@ -19,6 +19,7 @@ Neoverse-Doc/
 │   └── mermaid/                  # 生成的 Mermaid SVG
 ├── scripts/
 │   ├── generate-mermaid-assets.ts
+│   ├── check-architecture.ts
 │   └── verify-build-output.ts
 ├── src/
 │   ├── app/                      # 路由、数据读取与页面组合
@@ -42,6 +43,30 @@ Neoverse-Doc/
 `src/components/mdx/` 是统一增强层。每篇文档都通过同一个组件注册表获得代码块、Mermaid、任务项、Tabs、文档卡片和文件层级，不需要逐页导入。
 
 成熟业务能力收敛到 `src/features/`，跨 Feature 的导航、动效和交互状态由 `src/runtime/` 提供；Fumadocs 的 Loader、Layout、TOC 与复杂 DOM 选择器统一经过 `src/adapters/fumadocs/`。`scripts/` 只负责开发或构建前需要批量完成的工作，生成产物分别进入 `public/mermaid/`、`src/features/mermaid/generated/`、`.source/` 与 `out/`。
+
+### 依赖方向与架构检查
+
+九个顶层目录的依赖方向由 `scripts/check-architecture.ts` 自动守护（`bun run check:architecture`，并作为 `prebuild` 的第一步执行）。脚本扫描 `src/` 全部 TypeScript 导入（含 `import(...)` 动态形式），按下表判定层级违规：
+
+| 源层 | 允许依赖 |
+| :--- | :--- |
+| `app` | 全部下层 |
+| `components` | `features` `runtime` `content` `ui` `lib` `dictionaries` |
+| `features` | `runtime` `content` `ui` `adapters` `lib` `dictionaries` |
+| `runtime` | `adapters` `ui` `lib` `dictionaries` |
+| `content` | `adapters` `lib` |
+| `adapters` | `lib` |
+| `lib` | `adapters` `dictionaries` |
+| `dictionaries` | `lib` |
+
+`lib` 与 `dictionaries` 同属站点胶水簇（locale 定义与 UI 字典互相引用），是矩阵中唯一的有意双向对；`ui` 必须保持纯 CSS，出现任何 `.ts` / `.tsx` 文件都会直接失败。
+
+两条附加规则：
+
+- **桶规则（Barrel）**：跨边界消费 feature 必须经由其 `index.ts` 公共入口，直接引用 `features/A/` 内部文件会被拒绝；feature 内部引用不受限。公共入口只暴露真正需要跨边界使用的能力，不整目录转发。
+- **例外清单**：确属合理的桥接（如 Fumadocs 适配器向导航运行时写入状态）集中登记在脚本的 `EXCEPTIONS` 常量中并逐条注明理由，不因此放宽整条规则；例外失效时脚本会告警提示清理。
+
+新增顶层目录必须在 `ALLOWED` 矩阵登记，否则按“未知层”失败。完整决策记录见仓库内 `docs/adr/0001-architecture-boundary-check.md`。
 
 ## 二、路由与布局
 
@@ -124,8 +149,9 @@ flowchart TD
 | :--- | :--- |
 | `bun dev` | 先生成 Mermaid，再启动 Turbopack 开发服务器 |
 | `bun typecheck` | 生成路由类型、编译 Fumadocs 内容并执行 TypeScript 检查 |
+| `bun run check:architecture` | 扫描导入图，校验架构层依赖边界（亦作为 `prebuild` 第一步） |
 | `bun run generate:mermaid` | 更新静态 SVG 与资源映射 |
-| `bun run build` | 执行 Mermaid 生成与 Next.js 生产构建 |
+| `bun run build` | 执行架构检查、Mermaid 生成与 Next.js 生产构建 |
 | `bun run start` | 预览已经存在的 `out/` |
 
 ## 六、静态导出的约束与收益
@@ -211,4 +237,5 @@ VS Code 的 MDX Preview 扩展无法自动识别项目自定义组件，只内�
 | `src/app/[lang]/docs-source/[...slug]/route.ts` | Markdown 静态源码端点 |
 | `src/components/deployment-skew-guard.tsx` | 部署偏斜检测与恢复 |
 | `scripts/generate-mermaid-assets.ts` | Mermaid 静态资源生成 |
+| `scripts/check-architecture.ts` | 架构层依赖边界检查 |
 | `scripts/verify-build-output.ts` | 构建产物完整性校验 |

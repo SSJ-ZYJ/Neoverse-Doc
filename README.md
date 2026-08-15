@@ -86,6 +86,7 @@ bun run start   # 本地预览静态产物
 | :--- | :--- |
 | `bun dev` | 启动开发服务器 |
 | `bun run generate:mermaid` | 生成 Mermaid 静态 SVG 与资源清单 |
+| `bun run check:architecture` | 架构层依赖边界检查（`prebuild` 自动执行） |
 | `bun run build` | 生产构建（输出至 `out/`） |
 | `bun run typecheck` | 类型检查（含 MDX 内容校验） |
 | `bun run lint` | Biome Lint |
