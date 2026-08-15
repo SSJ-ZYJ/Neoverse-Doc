@@ -20,7 +20,7 @@ author:
 
 这类问题的原因多数不在代码本身，而在环境——操作系统、CPU 架构、依赖库版本、配置、环境变量，哪一处不一样都可能导致结果不同。而 Docker 能把运行环境里的相当一部分固化下来、打包带走，但解决不了所有差异。
 
-Docker 是一个开源的容器化平台。它把“应用 + 运行环境”一起打包成**镜像**，放进**仓库**分发；别人把镜像拉下来，就能在装有 Docker 的机器上用**容器**跑起来，省掉的正是装依赖、配环境这一步。这套机制在 2.2 会逐个阐述。
+Docker 是一个开源的容器化平台。它把“应用 + 运行环境”一起打包成**镜像**，放进**仓库**分发；别人把镜像拉下来，就能在装有 Docker 的机器上用**容器**跑起来，省掉的正是装依赖、配环境这一步。具体机制在 2.2 展开。
 
 镜像把应用和它依赖的用户空间一起打包，至少解决了“依赖版本对不上”这类问题。但容器共享的是宿主机的 Linux 内核，CPU 架构、挂载的文件、环境变量、网络、外部服务这些仍然会影响结果，所以“用同一个镜像”并不等于“跑出来的结果一定一模一样”。
 
@@ -74,7 +74,7 @@ flowchart LR
 装 [Docker Desktop](https://www.docker.com/products/docker-desktop/) 就行，它把图形界面、Docker CLI、Compose 等一揽子带齐了。装之前先核对系统要求、组织许可和你要用的虚拟化后端。
 
 > [!IMPORTANT] Windows 后端
-> Docker Desktop 在 Windows 上默认用 WSL 2 后端，部分版本和场景也支持 Hyper-V 后端。若采用 WSL 2，请先按 [1.14 配置环境](/zh/docs/ch1/1.14-Environment-Setup) 装好 WSL，并在 Docker Desktop 里确认 WSL 集成已开启。
+> Docker Desktop 在 Windows 上默认用 WSL 2 后端，部分版本和场景也支持 Hyper-V 后端。若采用 WSL 2，请先按 [1.14 WSL 环境配置](/zh/docs/ch1/1.14-Environment-Setup-WSL) 装好 WSL，并在 Docker Desktop 里确认 WSL 集成已开启。
 
 ### 3.2 Linux
 

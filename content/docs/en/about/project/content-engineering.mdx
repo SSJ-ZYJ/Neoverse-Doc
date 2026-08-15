@@ -25,19 +25,21 @@ A centralized Schema lets the Fumadocs compilation stage validate Frontmatter di
 
 ### Content Schema v2
 
-On top of these page-state fields, Schema v2 adds a set of **entirely optional** knowledge-system metadata, providing the data foundation for evolving from chapter-based directories toward a general technical knowledge system (learning paths, topic aggregation, knowledge graph, search ranking). Field decisions are recorded in `docs/adr/0002-content-schema-v2.md`:
+On top of these page-state fields, Schema v2 adds a set of **entirely optional** knowledge-system metadata, providing the data foundation for evolving from chapter-based directories toward a general technical knowledge system. The current taxonomy and graph decisions are recorded in `docs/adr/0007-taxonomy-registry-and-content-graph.md`:
 
 | Field | Values | Purpose |
 | :--- | :--- | :--- |
-| `type` | `concept` / `guide` / `reference` | What the content is: concept explanation, practice-oriented guide, or reference material; structural pages such as chapter indexes stay untyped |
-| `topics` | kebab-case string array | Knowledge topic tags, decoupled from directories; a page may carry several (e.g. `shell`, `terminal`) |
-| `track` | registry enum array | Learning track, constrained to `CONTENT_TRACKS` in the schema (currently only `computer-essentials`) |
-| `difficulty` | `beginner` / `intermediate` / `advanced` | Required prior level, deliberately coarse at three values |
+| `type` | Taxonomy Registry ID | What the content is: concept explanation, practice-oriented guide, or reference material; structural pages such as chapter indexes stay untyped |
+| `topics` | Taxonomy Registry ID array | Knowledge topics, decoupled from directories; a page may carry several (e.g. `shell`, `terminal`) |
+| `tracks` | Taxonomy Registry ID array | Learning paths (currently only `computer-essentials`) |
+| `difficulty` | Taxonomy Registry ID | Required prior level, deliberately coarse at three values |
 | `estimatedMinutes` | positive integer | Estimated reading time in minutes |
 | `prerequisites` | Content ID array | Learning prerequisites pointing at locale-independent Content IDs (e.g. `docs:ch1/1.11-Operating-Systems`) |
 | `related` | Content ID array | Related recommendations, also pointing at Content IDs |
 
-Enum, format, and numeric constraints are enforced by zod at compile time; cross-page references (ID uniqueness, reference existence, self-reference guard, translation-pairing path symmetry) are validated by `scripts/content-pipeline.ts` against the Content IR (`bun run check:content`, wired into `prebuild`). References follow locale-loose semantics — a target existing in any language is valid, so translation gaps never break content relations.
+`src/content/taxonomy/` is the sole source of `type`, `topics`, `tracks`, and `difficulty`: it declares legal IDs, display order, bilingual labels, and descriptions, while the Schema derives legal values from it. Numeric constraints remain zod compile-time checks; `scripts/content-pipeline.ts` validates cross-page relations against Content IR (`bun run check:content`, wired into `prebuild`), including ID uniqueness, translation-pair path symmetry, target existence, duplicates, self-references, explicit locale-declaration consistency, and prerequisite cycles. A missing locale relation declaration means the metadata has not been added yet.
+
+`src/content/graph/` aggregates IR into one node per Stable Content ID and exposes `getContentNode`, `getPrerequisites`, `getRequiredBy`, `getRelated`, and `getRelatedBy`. `related` remains an author-declared directed relation; its reverse index does not mutate the target page's `related` list.
 
 `translationKey`, `status`, and `lastReviewed` are deliberately absent: the translation-key duty is explicitly carried by "the zh and en versions of the same content declare the same `id`"; publishing state already exists as `draft`; review dates treat git history as the source of truth. Existing pages are annotated incrementally — no batch migration.
 
@@ -65,10 +67,11 @@ The build pipeline collapses into two commands:
 
 How each system consumes it:
 
-- **Content Manifest** (`src/content/generated/manifest.ts`) becomes a consumer view over the IR, stripping IR-only build fields (`sourcePath`, `mermaid`); the sitemap-facing API is unchanged;
-- **Content validation** (ID uniqueness, translation pairing, reference existence, self-reference) runs on the IR;
+- **Content Manifest** (`src/content/generated/manifest.ts`) is the consumer view over the IR, passing through taxonomy and relation fields while stripping IR-only build fields (`sourcePath`, `mermaid`); the sitemap-facing API is unchanged;
+- **Content validation** (ID uniqueness, translation pairing, reference existence, duplicates, self-references, cross-locale relation conflicts, and prerequisite cycles) runs on the IR;
+- **Knowledge Graph** (`src/content/graph/`) compiles Stable Content ID nodes plus forward and reverse relations from the IR without re-scanning MDX;
 - **Mermaid** detection is driven by the IR instead of walking `content/docs`; assets are content-addressed by the source + renderer signature + config hash (see [Mermaid and Performance](./mermaid-performance));
-- **Search** intentionally stays on the Fumadocs source pipeline (indexes need tokenized structuredData; putting it into the IR would turn it into a body dump) — the one declared content consumer outside the IR. Index generation stays build-time; Search UI is a separate client consumer.
+- **Search** intentionally stays on the Fumadocs source pipeline (indexes need tokenized structuredData; putting it into the IR would turn it into a body dump) — the one declared content consumer outside the IR. This phase adds neither a taxonomy Filter nor custom index fields; index generation remains build-time and Search UI remains a separate client consumer.
 
 Generated-artifact policy: mermaid SVGs (`public/mermaid/`) and the asset manifest (`src/features/mermaid/generated/assets.ts`) are committed so a fresh clone passes verification builds; `.source/` and `out/` are build-time only; the IR never lands on disk.
 

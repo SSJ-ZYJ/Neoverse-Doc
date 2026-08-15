@@ -56,15 +56,15 @@ React 组件默认保持为 Server Component。只有状态、交互或浏览器
 
 | 专题 | 主要内容 |
 | :--- | :--- |
-| [项目结构与静态构建](./architecture) | 仓库目录、路由布局、内容源、编译管线、静态导出、站点配置与 MDX Preview |
-| [内容管线与 MDX 增强](./content-engineering) | Frontmatter Schema、MDX 组件、代码块、折叠块、任务、文件层级、文档卡片、Remark 插件与客户端边界 |
-| [设计系统与主题](./design-system) | 语义 Token、Glass 视觉体系、主题切换、Motion 分级与无障碍降级 |
-| [首页与沉浸式交互](./home-and-immersive) | 首页视觉构成、环境动效、章节卡片、沉浸式粒子、TOC 滚动条与动效偏好 |
-| [搜索、导航与社区](./search-navigation) | 中英混合与拼音搜索、结果增强、章节范围、阅读返回、源码端点、i18n 与 Giscus |
-| [路由转场系统](./transitions) | 五种转场语义、非对称行为、DOM 克隆、content 粒子转场与 contain 隔离 |
-| [Mermaid 与性能](./mermaid-performance) | 构建期图表、缩放交互、工具栏、性能策略与移动端降级 |
+| [项目结构与静态构建](./project/architecture) | 仓库目录、路由布局、内容源、编译管线、静态导出、站点配置与 MDX Preview |
+| [内容管线与 MDX 增强](./project/content-engineering) | Frontmatter Schema、MDX 组件、代码块、折叠块、任务、文件层级、文档卡片、Remark 插件与客户端边界 |
+| [设计系统与主题](./project/design-system) | 语义 Token、Glass 视觉体系、主题切换、Motion 分级与无障碍降级 |
+| [首页与沉浸式交互](./project/home-and-immersive) | 首页视觉构成、环境动效、章节卡片、沉浸式粒子、TOC 滚动条与动效偏好 |
+| [搜索、导航与社区](./project/search-navigation) | 中英混合与拼音搜索、结果增强、章节范围、阅读返回、源码端点、i18n 与 Giscus |
+| [路由转场系统](./project/transitions) | 五种转场语义、非对称行为、DOM 克隆、content 粒子转场与 contain 隔离 |
+| [Mermaid 与性能](./project/mermaid-performance) | 构建期图表、缩放交互、工具栏、性能策略与移动端降级 |
 
-面向贡献者的操作约束以 [贡献指南](../contributing) 为准；Markdown 与 MDX 作者写法集中在 [语法与组件参考](../contributing/syntax-example)。
+面向贡献者的操作约束以 [贡献指南](./contributing) 为准；Markdown 与 MDX 作者写法集中在 [语法与组件参考](./contributing/syntax-example)。
 
 ## 五、技术栈快照
 

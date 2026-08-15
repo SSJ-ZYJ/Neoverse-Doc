@@ -96,13 +96,15 @@ console.info(
 //   2. translation pairing contract: locale variants sharing one stable id
 //      must live at the same slugs
 //   3. prerequisites / related reference existence (locale-loose)
-//   4. self-reference guard
+//   4. duplicate and self-reference guards
+//   5. locale-variant relation consistency and prerequisite DAG cycles
 // 枚举 / 格式 / 数值约束位于 zod schema，在 frontmatter 编译处强制；
 // 以下检查需要全量内容视角：
 //   1. Content ID 唯一性（id + locale 维度）
 //   2. 翻译配对契约：共享同一稳定 id 的各语言版本必须位于相同 slugs
 //   3. prerequisites / related 引用存在性（宽松 locale 语义）
-//   4. 自引用防护
+//   4. 重复引用与自引用防护
+//   5. locale 版本关系一致性与 prerequisite DAG 环检测
 interface Violation {
   identity: string;
   field: string;
@@ -154,32 +156,8 @@ for (const [id, variants] of slugPathsById) {
   }
 }
 
-const knownIds = new Set(contentIr.map((entry) => entry.id));
-const RELATION_FIELDS = ['prerequisites', 'related'] as const;
-
-for (const entry of contentIr) {
-  for (const field of RELATION_FIELDS) {
-    const references = entry[field];
-    if (references === undefined) continue;
-    for (const reference of references) {
-      if (reference === entry.id) {
-        violations.push({
-          identity: `${entry.id}:${entry.locale}`,
-          field,
-          message: `自引用 '${reference}'：内容不应以自身为前置或相关项`,
-        });
-        continue;
-      }
-      if (!knownIds.has(reference)) {
-        violations.push({
-          identity: `${entry.id}:${entry.locale}`,
-          field,
-          message: `引用了不存在的 Content ID '${reference}'（任意 locale 均无此内容）`,
-        });
-      }
-    }
-  }
-}
+const { validateContentRelations } = await import('../src/content/graph/validation');
+violations.push(...validateContentRelations(contentIr));
 
 if (violations.length > 0) {
   for (const violation of violations) {
@@ -189,7 +167,7 @@ if (violations.length > 0) {
   }
   console.error(
     `\nContent check failed: ${violations.length} violation(s) across ${contentIr.length} IR entries. ` +
-      'Rules: scripts/content-pipeline.ts · Schema: src/content/schema/docs.ts · Decisions: docs/adr/0002, docs/adr/0003, docs/adr/0004',
+      'Rules: scripts/content-pipeline.ts · Schema: src/content/schema/docs.ts · Decisions: docs/adr/0002, docs/adr/0003, docs/adr/0004, docs/adr/0007',
   );
   process.exit(1);
 }
@@ -201,7 +179,7 @@ const relations = contentIr.reduce(
 const annotated = contentIr.filter((entry) => entry.type !== undefined).length;
 console.info(
   `Content check passed: ${contentIr.length} entries, ${annotated} typed page(s), ` +
-    `${relations} relation reference(s), all references resolved.`,
+    `${relations} relation reference(s), all relation rules satisfied.`,
 );
 
 // --- Stage 3: Mermaid assets ------------------------------------------------

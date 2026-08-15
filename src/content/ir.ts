@@ -17,7 +17,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { source } from '@/adapters/fumadocs/source';
-import type { ContentTrack, ContentType, Difficulty } from '@/content/schema/docs';
+import type { ContentTopic, ContentTrack, ContentType, Difficulty } from '@/content/taxonomy';
 import { i18n, type Locale } from '@/lib/i18n';
 import { extractMermaidBlocks } from './mermaid-text';
 
@@ -48,8 +48,8 @@ export interface ContentIrEntry {
   sourcePath: string;
   draft?: boolean;
   type?: ContentType;
-  topics?: string[];
-  track?: ContentTrack[];
+  topics?: ContentTopic[];
+  tracks?: ContentTrack[];
   difficulty?: Difficulty;
   estimatedMinutes?: number;
   prerequisites?: string[];
@@ -64,8 +64,8 @@ type IrPage = {
     description?: string;
     draft?: boolean;
     type?: ContentType;
-    topics?: string[];
-    track?: ContentTrack[];
+    topics?: ContentTopic[];
+    tracks?: ContentTrack[];
     difficulty?: Difficulty;
     estimatedMinutes?: number;
     prerequisites?: string[];
@@ -85,7 +85,7 @@ function pickV2Fields(data: IrPage['data']): Partial<ContentIrEntry> {
   return {
     ...(data.type !== undefined ? { type: data.type } : {}),
     ...(data.topics !== undefined ? { topics: data.topics } : {}),
-    ...(data.track !== undefined ? { track: data.track } : {}),
+    ...(data.tracks !== undefined ? { tracks: data.tracks } : {}),
     ...(data.difficulty !== undefined ? { difficulty: data.difficulty } : {}),
     ...(data.estimatedMinutes !== undefined ? { estimatedMinutes: data.estimatedMinutes } : {}),
     ...(data.prerequisites !== undefined ? { prerequisites: data.prerequisites } : {}),

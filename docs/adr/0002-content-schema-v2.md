@@ -1,6 +1,6 @@
 # Content Schema v2 采用派生 Content ID 与全可选元数据字段
 
-> 状态：本 ADR 中「Content ID 继续由 slug 派生」及拒绝显式 id / translationKey 的论证前提已被 [ADR 0003](./0003-stable-content-identity.md) 取代（现采用必填 frontmatter `id`，翻译配对由「同 id」显式承担）；其余字段决策继续有效。
+> 状态：本 ADR 中「Content ID 继续由 slug 派生」及拒绝显式 id / translationKey 的论证前提已被 [ADR 0003](./0003-stable-content-identity.md) 取代（现采用必填 frontmatter `id`，翻译配对由「同 id」显式承担）；开放 topics、`track` 字段与 Schema 内枚举的决定已被 [ADR 0007](./0007-taxonomy-registry-and-content-graph.md) 取代；其余字段决策继续有效。
 
 为支撑从 Chapter-based Docs 演进为泛技术知识体系（/learn、Topic 聚合、Knowledge Graph、搜索排序），项目在 Frontmatter Schema 与 Content Manifest 中引入可选知识体系元数据。核心决策：**全部字段可选、Content ID 继续由 slug 派生、不做批量迁移**，仅以少量试点页面打通 Schema → Manifest → Validation 全链路。
 

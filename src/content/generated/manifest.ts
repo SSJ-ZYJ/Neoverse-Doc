@@ -12,7 +12,7 @@
  * src/content/ir.ts 与 docs/adr/0004）—— 本模块不再接触内容源。
  */
 import { type ContentIrEntry, contentIr } from '@/content/ir';
-import type { ContentTrack, ContentType, Difficulty } from '@/content/schema/docs';
+import type { ContentTopic, ContentTrack, ContentType, Difficulty } from '@/content/taxonomy';
 import type { Locale } from '@/lib/i18n';
 
 export interface ContentManifestEntry {
@@ -33,10 +33,10 @@ export interface ContentManifestEntry {
   // re-parse disk content. See docs/adr/0002 for the field decisions.
   // Content Schema v2 —— 可选知识体系元数据，自 frontmatter 透传，
   // 搜索、/learn、知识图谱等消费方无需重复解析磁盘内容。
-  // 字段取舍见 docs/adr/0002。
+  // 字段取舍见 docs/adr/0002 与 docs/adr/0007。
   type?: ContentType;
-  topics?: string[];
-  track?: ContentTrack[];
+  topics?: ContentTopic[];
+  tracks?: ContentTrack[];
   difficulty?: Difficulty;
   estimatedMinutes?: number;
   prerequisites?: string[];
@@ -54,7 +54,7 @@ export function createManifestEntry(entry: ContentIrEntry): ContentManifestEntry
     ...(entry.draft === true ? { draft: true } : {}),
     ...(entry.type !== undefined ? { type: entry.type } : {}),
     ...(entry.topics !== undefined ? { topics: entry.topics } : {}),
-    ...(entry.track !== undefined ? { track: entry.track } : {}),
+    ...(entry.tracks !== undefined ? { tracks: entry.tracks } : {}),
     ...(entry.difficulty !== undefined ? { difficulty: entry.difficulty } : {}),
     ...(entry.estimatedMinutes !== undefined ? { estimatedMinutes: entry.estimatedMinutes } : {}),
     ...(entry.prerequisites !== undefined ? { prerequisites: entry.prerequisites } : {}),

@@ -9,7 +9,7 @@ type: guide
 topics:
   - shell
   - terminal
-track:
+tracks:
   - computer-essentials
 difficulty: beginner
 estimatedMinutes: 60
@@ -23,7 +23,7 @@ related:
 > 本节区分终端与 Shell，介绍文件操作、搜索、权限、管道、重定向和 Bash 脚本。重点不是背命令，而是看懂参数、输入输出和执行结果，并在修改文件前先确认操作对象。
 
 > [!INFO]
-> 图形界面适合交互式操作而批量处理文件、管理远程服务器和重复执行流程时，Shell 更便于组合命令与记录步骤。
+> 图形界面适合交互式操作；而批量处理文件、管理远程服务器、重复执行流程时，Shell 更便于组合命令与记录步骤。
 
 ## 一、Shell 与终端
 
@@ -48,14 +48,14 @@ Shell 是读取并执行命令的程序。它会解析命令、展开变量和�
 | fish | 开箱即用，自动补全强，但语法不兼容 bash |
 | PowerShell | Windows 上的现代 shell，面向对象，语法独立 |
 
-> [!TIP] Before Learning
+> [!TIP] 学习提示
 > 本节以 **bash** 为基准。zsh 的交互操作与 bash 有不少相似之处，但脚本语法和扩展并非完全兼容；脚本应明确解释器并在目标环境中测试。
 
 ### 1.3 现代交互 Shell 与提示符
 
 `bash` 适合学习通用命令和编写可移植脚本。
 
-`zsh`、`fish` 更偏向交互式使用。选择交互 Shell 时，应把“脚本解释器”和“日常命令行环境”分开考虑：脚本文件通过 shebang 指定 `bash` 或其他解释器，不会因为当前终端使用 zsh 或 fish 就自动改变语法。
+`zsh`、`fish` 更偏向交互式使用。选择交互 Shell 时，应将“脚本解释器”和“日常命令行环境”分开考虑：脚本文件通过 shebang 指定 `bash` 或其他解释器，不会因为当前终端使用 zsh 或 fish 就自动改变语法。
 
 | Shell | 适合场景 | 配置入口 | 需要注意 |
 | :--- | :--- | :--- | :--- |
@@ -155,7 +155,7 @@ error_symbol = "[✗](bold red) "
 | macOS | 启动台 → 终端，或 `Cmd + Space` 搜“terminal” |
 
 > [!IMPORTANT] 命令环境
-> 本节的命令以 bash 为准（Linux / macOS / WSL / Git Bash 通用）。Windows 的 CMD 和 PowerShell 语法不同，不在本节范围内。建议用 [WSL](/zh/docs/ch1/1.14-Environment-Setup) 或 Git Bash 练习。
+> 本节的命令以 bash 为准（Linux / macOS / WSL / Git Bash 通用）。Windows 的 CMD 和 PowerShell 语法不同，不在本节范围内。建议用 [WSL](/zh/docs/ch1/1.14-Environment-Setup-WSL) 或 Git Bash 练习。
 
 ## 二、提示符与命令结构
 
@@ -369,7 +369,7 @@ history | awk '{print $2}' | sort | uniq -c | sort -rn | head -5  # 历史命令
 ```
 
 > [!TIP] Unix 哲学
-> 许多 Unix 工具专注于一种文本处理任务，并通过标准输入与标准输出组合。管道的价值正在于此：先确认每一步的输入输出，再把简单命令连成完整流程。
+> 许多 Unix 工具专注于一种文本处理任务，并通过标准输入与标准输出组合。管道的好处在于，先确认每一步的输入输出，再把简单命令连成完整流程。
 
 ## 五、环境变量
 
@@ -659,7 +659,7 @@ kill "$last_pid"        # 按 PID 结束该进程
 ```
 
 > [!NOTE] 学习路径
-> Shell 脚本不需要一次学精，先会读、会改简单脚本即可。等发现经常重复输入一组命令时，就到了写脚本的时候。后续 [1.13 Shell 中的文本编辑](/zh/docs/ch1/1.13-Shell-Text-Editing) 会介绍如何在终端里编辑脚本文件。
+> Shell 脚本不需要一次学精，先会读、会改简单脚本即可。等发现经常重复输入一组命令时，就到了写脚本的时候。在终端里编辑脚本文件的方法见 [1.13 Shell 中的文本编辑](/zh/docs/ch1/1.13-Shell-Text-Editing)。
 
 ## 十、TODO 清单
 
@@ -672,12 +672,12 @@ kill "$last_pid"        # 按 PID 结束该进程
 - [ ] 了解 shebang、`set -euo pipefail` 和脚本退出状态
 - [ ] 了解 `if`、`for`、`while` 写简单的条件与循环
 - [ ] 删除、移动或提权前会先预览目标，确认无误后再执行
-- [ ] 尝试安装并初始化 Starship，查查 `starship.toml` 与进行配置
+- [ ] 尝试安装并初始化 Starship，了解并配置 `starship.toml`
 
 ## 十一、值得我们思考的问题
 
 > [!DETAILS-FAQ] 为什么示例总强调“先预览”？
-> Shell 会忠实执行展开后的路径和参数，而变量、通配符或当前目录可能与预期不一致。先运行只读命令查看目标，再执行写入或删除操作，是最值得养成的命令行习惯。
+> Shell 会忠实执行展开后的路径和参数，而变量、通配符或当前目录可能与预期不一致。先运行只读命令查看目标，再执行写入或删除操作，这个习惯最值得养成。
 
 > [!DETAILS-FAQ] 如何判断陌生命令是否可靠？
 > 先确认命令来自哪个程序，再查看本机的 `--help`、`man` 或项目官方文档。还要分清当前操作系统、Shell 和命令实现；同名命令在 GNU、BSD 与 BusyBox 环境中的选项可能不同。

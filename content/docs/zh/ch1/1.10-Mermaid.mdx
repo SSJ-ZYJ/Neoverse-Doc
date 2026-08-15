@@ -8,7 +8,7 @@ author:
 ---
 
 > [!DETAILS-AI] 本节 AI 摘要
-> 本节介绍 Mermaid 图表工具：流程图（Flowchart）、时序图（Sequence）、类图（Class）、状态图（State）、实体关系图（ER）、Git 图（Git Graph）、甘特图（Gantt）、饼图（Pie）、思维导图（Mindmap）与时间轴（Timeline）等常用类型的语法与用法，并总览其余类型。学完能用纯文本绘制各类结构化图表，配合 Markdown 写出图文并茂的文档。
+> 本节介绍 Mermaid 图表工具：流程图（Flowchart）、时序图（Sequence）、类图（Class）、状态图（State）、实体关系图（ER）、Git 图（Git Graph）、甘特图（Gantt）、饼图（Pie）、思维导图（Mindmap）与时间轴（Timeline）等常用类型的语法与用法，并总览其余类型。学完可用纯文本绘制各类结构化图表，配合 Markdown 写出图文并茂的文档。
 
 > [!INFO]
 > [Mermaid](https://mermaid.js.org/) 使用文本语法描述图表结构，由渲染器生成图形。图表源码可以与 Markdown 一起进入版本控制，结构变化也能通过文本差异审查。配合 [1.8 Markdown](/zh/docs/ch1/1.8-Markdown) 使用，可以在文档中维护流程、交互与状态关系；数学公式与版式文档则可参考 [1.9 LaTeX](/zh/docs/ch1/1.9-LaTeX)。
@@ -69,7 +69,7 @@ Mermaid 提供二十余种图表类型，常用类型见下表：
 | 用户旅程图 | `journey` | 用户交互流程与体验 |
 | 象限图 | `quadrantChart` | 四象限定位与对比 |
 
-上表之外还有需求图（Requirement）、C4 架构图、ZenUML、Sankey、XY 图表、看板（Kanban）等面向特定领域的类型，本文档中较少涉及。下面逐一介绍常用类型。
+上表之外还有需求图（Requirement）、C4 架构图、ZenUML、Sankey、XY 图表、看板（Kanban）等面向特定领域的类型，本文档中较少涉及。下面逐个介绍常用类型。
 
 ## 三、流程图（Flowchart）
 
@@ -179,8 +179,6 @@ sequenceDiagram
     Note over A,B: 这是关键步骤
     B-->>A: 返回响应
 ```
-
-类图可用于描述面向对象设计的类型成员与类之间的关系。
 
 ## 五、类图（Class Diagram）
 

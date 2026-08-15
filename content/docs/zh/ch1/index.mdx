@@ -5,7 +5,7 @@ description: 那些我们应该知道的东西……
 todoProgress: true
 author:
   - "Shenshijun(https://github.com/SSJ-ZYJ)"
-track:
+tracks:
   - computer-essentials
 ---
 
@@ -57,7 +57,8 @@ flowchart TD
 
     subgraph S5[Stage 5：配置环境]
         direction TB
-        S5_1["1.14 配置环境<br/>开发环境搭建"]
+        S5_1["1.14 WSL 环境配置<br/>Linux 开发环境搭建"]
+        S5_2["1.14 Windows 环境配置<br/>scoop 开发环境搭建"]
     end
 
     subgraph S6[Stage 6：版本控制]
@@ -114,7 +115,8 @@ flowchart TD
 
 | 小节 | 目标 |
 | :------------------------------------ | :------------------------------------------------ |
-| [1.14 配置环境](./ch1/1.14-Environment-Setup) | 串联 WSL、Git、Node.js、Python、VS Code 与 Docker，搭建完整环境 |
+| [1.14 WSL 环境配置](./ch1/1.14-Environment-Setup-WSL) | 安装 WSL 与 Linux 工具链，配置 VS Code 远程开发、SSH 与 Docker |
+| [1.14 Windows 环境配置](./ch1/1.14-Environment-Setup-Windows) | 用 scoop 安装 Git、Node.js、Python 与 MSYS2 C/C++ 工具链 |
 
 ### Stage 6：版本控制
 
@@ -137,6 +139,6 @@ flowchart TD
 - [ ] 完成 Stage 2：[如何提问](./ch1/1.5-Asking-Questions)、[社区](./ch1/1.6-Community-Platforms)
 - [ ] 完成 Stage 3：[文本编辑](./ch1/1.7-Text-Editing)、[Markdown](./ch1/1.8-Markdown)、[LaTeX](./ch1/1.9-LaTeX)、[Mermaid](./ch1/1.10-Mermaid)
 - [ ] 完成 Stage 4：[主流操作系统](./ch1/1.11-Operating-Systems)、[Shell 基础](./ch1/1.12-Shell-Basics)、[Shell 中的文本编辑](./ch1/1.13-Shell-Text-Editing)
-- [ ] 完成 Stage 5：[环境配置](./ch1/1.14-Environment-Setup)
+- [ ] 完成 Stage 5：[WSL 环境配置](./ch1/1.14-Environment-Setup-WSL)与 [Windows 环境配置](./ch1/1.14-Environment-Setup-Windows)
 - [ ] 完成 Stage 6：[版本控制 Git](./ch1/1.15-Version-Control-Git)、[代码托管平台](./ch1/1.16-Code-Hosting-Platform)
 - [ ] 完成 Stage 7：[Docker 基础](./ch1/1.17-Docker-Basics)、[Kubernetes 基础](./ch1/1.18-Kubernetes-Basics)

@@ -54,14 +54,14 @@ describe('content manifest', () => {
     const entry = createManifestEntry({
       ...baseIrEntry,
       topics: ['shell', 'terminal'],
-      track: ['computer-essentials'],
+      tracks: ['computer-essentials'],
       difficulty: 'beginner',
       estimatedMinutes: 60,
       prerequisites: ['docs:ch1/1.11-Operating-Systems'],
       related: ['docs:ch1/1.13-Shell-Text-Editing'],
     });
     assert.deepEqual(entry.topics, ['shell', 'terminal']);
-    assert.deepEqual(entry.track, ['computer-essentials']);
+    assert.deepEqual(entry.tracks, ['computer-essentials']);
     assert.equal(entry.difficulty, 'beginner');
     assert.equal(entry.estimatedMinutes, 60);
     assert.deepEqual(entry.prerequisites, ['docs:ch1/1.11-Operating-Systems']);
@@ -71,7 +71,7 @@ describe('content manifest', () => {
     for (const field of [
       'type',
       'topics',
-      'track',
+      'tracks',
       'difficulty',
       'estimatedMinutes',
       'prerequisites',
@@ -87,7 +87,7 @@ describe('content manifest', () => {
     for (const locale of ['zh', 'en'] as const) {
       const entry = getContentManifestEntry('docs:ch1/1.12-Shell-Basics', locale);
       assert.equal(entry?.type, 'guide');
-      assert.deepEqual(entry?.track, ['computer-essentials']);
+      assert.deepEqual(entry?.tracks, ['computer-essentials']);
       assert.deepEqual(entry?.prerequisites, ['docs:ch1/1.11-Operating-Systems']);
     }
   });

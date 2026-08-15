@@ -25,19 +25,21 @@ author:
 
 ### 内容 Schema v2
 
-在上述页面状态字段之上，Schema v2 增加一组**全部可选**的知识体系元数据，为内容从章节目录演进为泛技术知识体系（学习路径、主题聚合、知识图谱、搜索排序）提供数据基础。字段取舍与决策记录见 `docs/adr/0002-content-schema-v2.md`：
+在上述页面状态字段之上，Schema v2 增加一组**全部可选**的知识体系元数据，为内容从章节目录演进为泛技术知识体系提供数据基础。分类模型与图关系的当前约定见 `docs/adr/0007-taxonomy-registry-and-content-graph.md`：
 
 | 字段 | 取值 | 用途 |
 | :--- | :--- | :--- |
-| `type` | `concept` / `guide` / `reference` | 内容是什么：概念讲解、带实践的教学、查阅型资料；章节首页等结构页不标 |
-| `topics` | kebab-case 字符串数组 | 知识主题标签，与目录解耦，一篇可属多个（如 `shell`、`terminal`） |
-| `track` | 注册表枚举数组 | 学习路径，取值收敛于 schema 中的 `CONTENT_TRACKS`（当前仅 `computer-essentials`） |
-| `difficulty` | `beginner` / `intermediate` / `advanced` | 先备水平，刻意保持三值粗粒度 |
+| `type` | Taxonomy Registry ID | 内容是什么：概念讲解、带实践的教学、查阅型资料；章节首页等结构页不标 |
+| `topics` | Taxonomy Registry ID 数组 | 知识主题，与目录解耦，一篇可属多个（如 `shell`、`terminal`） |
+| `tracks` | Taxonomy Registry ID 数组 | 学习路径（当前仅 `computer-essentials`） |
+| `difficulty` | Taxonomy Registry ID | 先备水平，刻意保持三值粗粒度 |
 | `estimatedMinutes` | 正整数 | 预计阅读时长（分钟） |
 | `prerequisites` | Content ID 数组 | 学习前置，指向跨 locale 稳定的内容 ID（如 `docs:ch1/1.11-Operating-Systems`） |
 | `related` | Content ID 数组 | 相关推荐，同样指向 Content ID |
 
-枚举、格式与数值约束由 zod 在编译期强制；跨页引用（ID 唯一、引用存在、自引用防护、翻译配对路径对称）由 `scripts/content-pipeline.ts` 基于 Content IR 校验（`bun run check:content`，已挂入 `prebuild`）。引用采用宽松 locale 语义——目标在任意语言下存在即合法，翻译缺口不破坏内容关系。
+`src/content/taxonomy/` 是 `type`、`topics`、`tracks`、`difficulty` 的唯一来源：它同时声明合法 ID、顺序、双语显示名和描述；Schema 只从 Registry 派生合法值。数值约束仍由 zod 在编译期强制；跨页引用由 `scripts/content-pipeline.ts` 基于 Content IR 校验（`bun run check:content`，已挂入 `prebuild`），包括 ID 唯一、翻译配对路径对称、目标存在、重复与自引用、显式 locale 声明一致性及 prerequisite 环。目标在任意语言下存在即合法，缺失的 locale 关系声明视为尚未补标。
+
+`src/content/graph/` 将 IR 按 Stable Content ID 聚合为一个节点，提供 `getContentNode`、`getPrerequisites`、`getRequiredBy`、`getRelated` 与 `getRelatedBy`。`related` 保持作者声明的有向关系；反向索引不会自动改写另一页的 `related`。
 
 `translationKey`、`status`、`lastReviewed` 刻意未加入：翻译键职责已由「同一内容的中英文页面声明相同 `id`」显式承担；发布状态已有 `draft`；评审日期以 git 历史为事实来源。存量页面渐进补标，不做批量迁移。
 
@@ -65,10 +67,11 @@ author:
 
 各系统的消费关系：
 
-- **Content Manifest**（`src/content/generated/manifest.ts`）改为 IR 的消费视图，剥离 `sourcePath` 与 `mermaid` 等构建期字段，sitemap 等消费方接口不变；
-- **内容校验**（ID 唯一、翻译配对、引用存在、自引用）在 IR 上执行；
+- **Content Manifest**（`src/content/generated/manifest.ts`）是 IR 的消费视图，透传 Taxonomy 与关系字段并剥离 `sourcePath`、`mermaid` 等构建期字段，sitemap 等消费方接口不变；
+- **内容校验**（ID 唯一、翻译配对、引用存在、重复、自引用、跨 locale 关系冲突与 prerequisite 环）在 IR 上执行；
+- **Knowledge Graph**（`src/content/graph/`）从 IR 编译 Stable Content ID 节点与前向、反向关系，不重新扫描 MDX；
 - **Mermaid** 检测由 IR 驱动，不再自行扫描 `content/docs`；资产按「源码 + 渲染器签名 + 配置」哈希内容寻址（见 [Mermaid 与性能](./mermaid-performance)）；
-- **搜索索引**有意留在 Fumadocs source 管线（需要 token 化 structuredData，塞入 IR 会变成正文转储），是 IR 之外唯一被声明的内容消费方；索引生成在构建期，Search UI 是独立的客户端消费方。
+- **搜索索引**有意留在 Fumadocs source 管线（需要 token 化 structuredData，塞入 IR 会变成正文转储），是 IR 之外唯一被声明的内容消费方；本阶段不为其新增 taxonomy Filter 或自定义记录字段，索引生成仍在构建期，Search UI 仍是独立的客户端消费方。
 
 生成物策略：Mermaid SVG（`public/mermaid/`）与资产清单（`src/features/mermaid/generated/assets.ts`）提交仓库，保证 clone 后即可通过校验构建；`.source/` 与 `out/` 构建期生成、不提交；IR 不落盘。
 

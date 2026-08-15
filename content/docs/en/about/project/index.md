@@ -56,15 +56,15 @@ The technical implementation is divided into seven articles by responsibility, c
 
 | Topic | Main content |
 | :--- | :--- |
-| [Project structure and static build](./architecture) | Repository directories, routing layout, content source, compilation pipeline, static export, site configuration, and MDX Preview |
-| [Content pipeline and MDX enhancements](./content-engineering) | Frontmatter Schema, MDX components, code blocks, collapsible blocks, tasks, file hierarchies, document cards, Remark plugins, and client boundaries |
-| [Design system and theme](./design-system) | Semantic tokens, Glass visual system, theme switching, motion tiers, and accessibility fallbacks |
-| [Home page and immersive interactions](./home-and-immersive) | Home page visual composition, ambient animation, chapter cards, immersive particles, TOC scrollbar, and motion preferences |
-| [Search, navigation, and community](./search-navigation) | Mixed Chinese-English and pinyin search, result enhancement, chapter scoping, reading return, source endpoints, i18n, and Giscus |
-| [Route transition system](./transitions) | Five transition semantics, asymmetric behavior, DOM cloning, content particle transitions, and contain isolation |
-| [Mermaid and performance](./mermaid-performance) | Build-time diagrams, zoom interactions, toolbar, performance strategies, and mobile fallbacks |
+| [Project structure and static build](./project/architecture) | Repository directories, routing layout, content source, compilation pipeline, static export, site configuration, and MDX Preview |
+| [Content pipeline and MDX enhancements](./project/content-engineering) | Frontmatter Schema, MDX components, code blocks, collapsible blocks, tasks, file hierarchies, document cards, Remark plugins, and client boundaries |
+| [Design system and theme](./project/design-system) | Semantic tokens, Glass visual system, theme switching, motion tiers, and accessibility fallbacks |
+| [Home page and immersive interactions](./project/home-and-immersive) | Home page visual composition, ambient animation, chapter cards, immersive particles, TOC scrollbar, and motion preferences |
+| [Search, navigation, and community](./project/search-navigation) | Mixed Chinese-English and pinyin search, result enhancement, chapter scoping, reading return, source endpoints, i18n, and Giscus |
+| [Route transition system](./project/transitions) | Five transition semantics, asymmetric behavior, DOM cloning, content particle transitions, and contain isolation |
+| [Mermaid and performance](./project/mermaid-performance) | Build-time diagrams, zoom interactions, toolbar, performance strategies, and mobile fallbacks |
 
-Operational constraints for contributors follow the [Contribution guide](../contributing); Markdown and MDX authoring conventions are collected in the [Syntax and component reference](../contributing/syntax-example).
+Operational constraints for contributors follow the [Contribution guide](./contributing); Markdown and MDX authoring conventions are collected in the [Syntax and component reference](./contributing/syntax-example).
 
 ## 5. Tech stack snapshot
 
