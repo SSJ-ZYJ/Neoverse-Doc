@@ -3,6 +3,11 @@ import type { ContentTrack, ContentType, Difficulty } from '@/content/schema/doc
 import { i18n, type Locale } from '@/lib/i18n';
 
 export interface ContentManifestEntry {
+  // Identity vs location, deliberately separate: `id` is the stable logical
+  // identity shared across locales; `url` / `slugs` describe where the page
+  // currently lives and may change; `locale` selects the language variant.
+  // 身份与位置刻意分离：`id` 是跨语言共享的稳定逻辑身份；`url` / `slugs`
+  // 描述页面当前所在位置、可以变化；`locale` 选择语言版本。
   id: string;
   locale: Locale;
   url: string;
@@ -27,6 +32,7 @@ export interface ContentManifestEntry {
 
 type ManifestPage = {
   data: {
+    id: string;
     title: string;
     description?: string;
     draft?: boolean;
@@ -43,8 +49,13 @@ type ManifestPage = {
   url: string;
 };
 
-export function createContentId(slugs: readonly string[]): string {
-  return `docs:${slugs.join('/')}`;
+// Derives the full Content ID from the stable frontmatter id. The identity is
+// owned by frontmatter, not by path — file moves, URL adjustments and title
+// edits never change it (see docs/adr/0003).
+// 由稳定 frontmatter id 派生完整 Content ID。身份归属 frontmatter 而非路径
+// —— 文件移动、URL 调整与标题修改都不会改变它（见 docs/adr/0003）。
+export function createContentId(id: string): string {
+  return `docs:${id}`;
 }
 
 // Copy only the v2 fields a page actually declares, keeping entries free of
@@ -68,7 +79,7 @@ export function createContentManifestEntry(
   locale: Locale,
 ): ContentManifestEntry {
   return {
-    id: createContentId(page.slugs),
+    id: createContentId(page.data.id),
     locale,
     url: page.url,
     title: page.data.title,

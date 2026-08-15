@@ -1,9 +1,10 @@
 /**
  * Client boundary for one Markdown task item. Completion state is persisted
- * by page pathname and normalized task text so standard MDX syntax stays unchanged.
+ * by the stable Content ID and normalized task text so standard MDX syntax
+ * stays unchanged; progress is shared across locales of the same content.
  *
- * 单个 Markdown 任务项的客户端边界。完成状态按页面路径与规范化任务文本持久化，
- * 文档作者无需改变标准 MDX 语法。
+ * 单个 Markdown 任务项的客户端边界。完成状态按稳定 Content ID 与规范化任务
+ * 文本持久化，文档作者无需改变标准 MDX 语法；同一内容的各语言版本共享进度。
  */
 'use client';
 
@@ -12,6 +13,7 @@ import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useState } from 'react';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
+import { useContentId } from '@/runtime/content-id';
 import { publishTaskStateChange } from '../runtime/store';
 
 interface InteractiveTaskListItemProps {
@@ -36,7 +38,16 @@ type TaskAnimation = 'complete' | 'reopen';
 // 关键帧（mdx-task-row-sheen），缓冲确保移除属性前所有动画均已结束。
 const TASK_ANIMATION_RESET_DELAY = 600;
 
-const TASK_STORAGE_PREFIX = 'neoverse-mdx-task-state:v1';
+// v2 keys by stable Content ID (cross-locale shared). v1 keys by pathname are
+// lazily migrated on first visit: if v2 is still empty, the v1 payload moves
+// over verbatim; the v1 key is then always removed. Whichever locale visits
+// first wins the merge — the other locale's v1 payload is discarded, which is
+// the accepted cost of unifying per-locale duplicates.
+// v2 按稳定 Content ID 分桶（跨语言共享）。v1 按路径分桶，首次访问时懒迁移：
+// v2 仍为空则原样搬运 v1 数据；随后 v1 key 总是被删除。先访问的语言赢得合并
+// —— 另一语言的 v1 数据被放弃，这是合并各语言重复数据的既定代价。
+const TASK_STORAGE_PREFIX = 'neoverse-mdx-task-state:v2';
+const LEGACY_TASK_STORAGE_PREFIX = 'neoverse-mdx-task-state:v1';
 
 function getStoredTaskState(storageKey: string): Record<string, boolean> {
   try {
@@ -78,16 +89,42 @@ export function InteractiveTaskListItem({
   taskLabel,
 }: InteractiveTaskListItemProps) {
   const pathname = usePathname();
+  const contentId = useContentId();
   const { locale } = useI18n();
   const copy = getPageDictionary(resolveLocale(locale));
   const normalizedLabel = taskLabel || copy.taskListItem;
-  const storageKey = `${TASK_STORAGE_PREFIX}:${pathname}`;
+  // Inside the docs page the stable Content ID keys the bucket; without a
+  // provider (e.g. MDX preview) fall back to pathname keying with the legacy
+  // prefix, which also keeps the migration source addressable.
+  // 文档页内以稳定 Content ID 分桶；无 Provider（如 MDX 预览）时回退按路径
+  // 分桶并沿用旧前缀，同时保证迁移源 key 仍可寻址。
+  const legacyPathnameKey = `${LEGACY_TASK_STORAGE_PREFIX}:${pathname}`;
+  const storageKey = contentId
+    ? `${TASK_STORAGE_PREFIX}:${contentId}`
+    : `${LEGACY_TASK_STORAGE_PREFIX}:${pathname}`;
   const taskKey = hashTaskLabel(normalizedLabel);
   const [checked, setChecked] = useState(initialChecked);
   // Animation intent is set only by direct interaction, so restoring persisted
   // tasks never launches a burst across the page during hydration.
   // 动画意图仅由直接交互设置，恢复持久化任务时不会在 hydration 阶段触发整页粒子效果。
   const [animation, setAnimation] = useState<TaskAnimation>();
+
+  // Lazy v1 → v2 migration, declared before the reader so it settles first.
+  // v1 → v2 懒迁移，声明在读取 effect 之前以确保先完成迁移。
+  useEffect(() => {
+    if (!contentId) return;
+    try {
+      const legacyState = localStorage.getItem(legacyPathnameKey);
+      if (legacyState === null) return;
+      if (localStorage.getItem(storageKey) === null) {
+        localStorage.setItem(storageKey, legacyState);
+      }
+      localStorage.removeItem(legacyPathnameKey);
+    } catch {
+      // Storage unavailable (private mode etc.) — keep using in-memory state.
+      // 存储不可用（隐私模式等）—— 继续使用内存内状态。
+    }
+  }, [contentId, legacyPathnameKey, storageKey]);
 
   useEffect(() => {
     const storedState = getStoredTaskState(storageKey);

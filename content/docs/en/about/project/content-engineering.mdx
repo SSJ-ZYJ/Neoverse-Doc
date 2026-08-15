@@ -1,4 +1,5 @@
 ---
+id: about/project/content-engineering
 title: Content Pipeline and MDX Enhancements
 description: Frontmatter, MDX components, code blocks, collapsible content, task progress, Remark plugins, and client boundaries
 author:
@@ -14,6 +15,7 @@ author:
 
 | Field | Type | Purpose |
 | :--- | :--- | :--- |
+| `id` | required string | Stable content identity, shared across locales (see "Stable Content Identity" below) |
 | `author` | string or string array | Primary author |
 | `contributor` / `contributors` | string or string array | Contributors after the body |
 | `draft` | boolean, default `false` | Soft gating for drafts |
@@ -35,9 +37,20 @@ On top of these page-state fields, Schema v2 adds a set of **entirely optional**
 | `prerequisites` | Content ID array | Learning prerequisites pointing at locale-independent Content IDs (e.g. `docs:ch1/1.11-Operating-Systems`) |
 | `related` | Content ID array | Related recommendations, also pointing at Content IDs |
 
-Enum, format, and numeric constraints are enforced by zod at compile time; cross-page references (ID uniqueness, reference existence, self-reference guard) are validated by `scripts/check-content.ts` against the compiled content manifest (`bun run check:content`, wired into `prebuild`). References follow locale-loose semantics — a target existing in any language is valid, so translation gaps never break content relations.
+Enum, format, and numeric constraints are enforced by zod at compile time; cross-page references (ID uniqueness, reference existence, self-reference guard, translation-pairing path symmetry) are validated by `scripts/check-content.ts` against the compiled content manifest (`bun run check:content`, wired into `prebuild`). References follow locale-loose semantics — a target existing in any language is valid, so translation gaps never break content relations.
 
-`translationKey`, `status`, and `lastReviewed` are deliberately absent: the translation-key duty is already carried by directory-based locale pairing and locale-independent derived IDs; publishing state already exists as `draft`; review dates treat git history as the source of truth. Existing pages are annotated incrementally — no batch migration.
+`translationKey`, `status`, and `lastReviewed` are deliberately absent: the translation-key duty is explicitly carried by "the zh and en versions of the same content declare the same `id`"; publishing state already exists as `draft`; review dates treat git history as the source of truth. Existing pages are annotated incrementally — no batch migration.
+
+### Stable Content Identity
+
+The required frontmatter `id` of every page is the content's stable identity, fully decoupled from file location, URL, and title (decision record in `docs/adr/0003-stable-content-identity.md`):
+
+- **Two-layer shape**: frontmatter stores the bare value (e.g. `id: ch1/1.12-Shell-Basics`, allowing alphanumerics, `-`, `.`, `/`); the Content Manifest, `prerequisites` / `related` references, and client-side persistence all use the `docs:<id>` prefixed form;
+- **Shared across locales**: the zh and en versions of the same content declare the same `id`; the manifest distinguishes language variants by the `id + locale` composite key;
+- **Identity immutability**: title edits, file moves, and URL adjustments never change the identity; only an explicit `id` edit does, and build-time validation catches stale references;
+- **Path symmetry contract**: fumadocs' directory-based translation pairing (page tree, alternates, routing) still requires locale variants of one `id` to live at the same path — now an explicit check in `check:content`.
+
+Runtime consumers: GFM task progress persists under the `docs:<id>` bucket (localStorage key `neoverse-mdx-task-state:v2:docs:<id>`), sharing check state across locales of the same content, with legacy path-keyed data migrated automatically on first visit; search index record identities likewise use `docs:<id>:<locale>`, while navigation still goes through `url`.
 
 ## 2. Author Parsing and Display
 

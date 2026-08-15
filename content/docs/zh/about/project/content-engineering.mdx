@@ -1,4 +1,5 @@
 ---
+id: about/project/content-engineering
 title: 内容管线与 MDX 增强
 description: Frontmatter、MDX 组件、代码块、折叠内容、任务进度、Remark 插件与客户端边界
 author:
@@ -14,6 +15,7 @@ author:
 
 | 字段 | 类型 | 用途 |
 | :--- | :--- | :--- |
+| `id` | 必填字符串 | 稳定内容身份，跨语言共享（见下文「稳定 Content Identity」） |
 | `author` | 字符串或字符串数组 | 主要作者 |
 | `contributor` / `contributors` | 字符串或字符串数组 | 正文后的贡献者 |
 | `draft` | 布尔值，默认 `false` | 显示草稿软门控 |
@@ -35,9 +37,20 @@ author:
 | `prerequisites` | Content ID 数组 | 学习前置，指向跨 locale 稳定的内容 ID（如 `docs:ch1/1.11-Operating-Systems`） |
 | `related` | Content ID 数组 | 相关推荐，同样指向 Content ID |
 
-枚举、格式与数值约束由 zod 在编译期强制；跨页引用（ID 唯一、引用存在、自引用防护）由 `scripts/check-content.ts` 基于编译后的内容清单校验（`bun run check:content`，已挂入 `prebuild`）。引用采用宽松 locale 语义——目标在任意语言下存在即合法，翻译缺口不破坏内容关系。
+枚举、格式与数值约束由 zod 在编译期强制；跨页引用（ID 唯一、引用存在、自引用防护、翻译配对路径对称）由 `scripts/check-content.ts` 基于编译后的内容清单校验（`bun run check:content`，已挂入 `prebuild`）。引用采用宽松 locale 语义——目标在任意语言下存在即合法，翻译缺口不破坏内容关系。
 
-`translationKey`、`status`、`lastReviewed` 刻意未加入：翻译键职责已由目录式 locale 配对与 locale 无关的派生 ID 承担；发布状态已有 `draft`；评审日期以 git 历史为事实来源。存量页面渐进补标，不做批量迁移。
+`translationKey`、`status`、`lastReviewed` 刻意未加入：翻译键职责已由「同一内容的中英文页面声明相同 `id`」显式承担；发布状态已有 `draft`；评审日期以 git 历史为事实来源。存量页面渐进补标，不做批量迁移。
+
+### 稳定 Content Identity
+
+每页 frontmatter 的必填 `id` 是内容的稳定身份，与文件位置、URL、标题彻底解耦（决策记录见 `docs/adr/0003-stable-content-identity.md`）：
+
+- **两层形态**：frontmatter 写裸值（如 `id: ch1/1.12-Shell-Basics`，允许字母数字、`-`、`.`、`/`）；Content Manifest、`prerequisites` / `related` 引用与客户端持久化统一使用 `docs:<id>` 前缀形态；
+- **跨语言共享**：同一内容的中英文页面声明相同 `id`，manifest 以 `id + locale` 复合键区分语言版本；
+- **身份不变性**：修改标题、移动文件、调整 URL 都不改变身份；只有作者显式修改 `id` 才会，且构建期校验会拦截漏改的引用；
+- **路径对称契约**：fumadocs 的目录式翻译配对（page tree、alternates、路由）仍要求同 `id` 各语言版本位于相同路径，该校验已在 `check:content` 中显式声明。
+
+运行期消费方：GFM 任务进度按 `docs:<id>` 分桶持久化（localStorage key `neoverse-mdx-task-state:v2:docs:<id>`），同一内容跨语言共享勾选状态，旧版按路径存储的数据在首次访问时自动迁移；搜索索引记录身份同样使用 `docs:<id>:<locale>`，导航仍走 `url`。
 
 ## 二、作者解析与展示
 

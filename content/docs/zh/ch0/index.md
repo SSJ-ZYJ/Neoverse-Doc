@@ -1,4 +1,5 @@
 ---
+id: ch0
 title: 0.0 从这里开始
 description: Neoverse-Docs 的自述
 author:

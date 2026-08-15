@@ -1,4 +1,5 @@
 ---
+id: about/contributing
 title: Contributing Guide
 description: Report issues, improve content, or participate in Neoverse-Docs development
 author:
@@ -168,6 +169,7 @@ Frontmatter must conform to the Schema in `source.config.ts`. Besides the basic 
 
 ```yaml
 ---
+id: ch1/your-page-name
 title: Page Title
 description: Page Description
 author:
@@ -179,7 +181,7 @@ todoProgress: false
 ---
 ```
 
-`author`, `contributor`, and `contributors` accept a single string or an array of strings; `draft` and `todoProgress` both default to `false`. Do not write custom fields that are not declared by the Schema.
+`id` is the required stable content identity: when creating a page, take the value matching its final path (e.g. `ch1/your-page-name`); the zh and en versions must declare the same `id`. After that, never change it when moving the file or adjusting the URL. `author`, `contributor`, and `contributors` accept a single string or an array of strings; `draft` and `todoProgress` both default to `false`. Do not write custom fields that are not declared by the Schema.
 
 ### Body Text Rules
 

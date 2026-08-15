@@ -1,4 +1,5 @@
 ---
+id: about/contributing
 title: 贡献指南
 description: 报告问题、改进内容或参与 Neoverse-Docs 开发
 author:
@@ -168,6 +169,7 @@ Frontmatter 必须符合 `source.config.ts` 的 Schema。除 Fumadocs 基础字�
 
 ```yaml
 ---
+id: ch1/your-page-name
 title: 页面标题
 description: 页面描述
 author:
@@ -179,7 +181,7 @@ todoProgress: false
 ---
 ```
 
-`author`、`contributor` 和 `contributors` 支持单个字符串或字符串数组；`draft` 与 `todoProgress` 默认均为 `false`。不要写入 Schema 未声明的自定义字段。
+`id` 是必填的稳定内容身份：新建页面时取与最终路径一致的值（如 `ch1/your-page-name`），中英文版本必须声明相同 `id`；此后移动文件或调整 URL 都不要改它。`author`、`contributor` 和 `contributors` 支持单个字符串或字符串数组；`draft` 与 `todoProgress` 默认均为 `false`。不要写入 Schema 未声明的自定义字段。
 
 ### 正文规则
 

@@ -6,6 +6,9 @@
 //   2. prerequisites / related reference existence (locale-loose: an ID valid
 //      in ANY locale passes — translation gaps must not break relations)
 //   3. self-reference guard
+//   4. translation pairing contract: all locale variants sharing one stable id
+//      must live at the same slugs (fumadocs dir-based pairing still relies on
+//      symmetric paths — see docs/adr/0003)
 // Frontmatter only materialises inside the Next pipeline, so we register the
 // official fumadocs-mdx Bun plugin before importing the manifest — otherwise
 // page data comes back empty under plain Bun. Run via `bun run check:content`
@@ -17,6 +20,8 @@
 //   2. prerequisites / related 引用存在性（宽松 locale 语义：任意语言存在
 //      即可通过 —— 翻译缺口不应破坏内容关系）
 //   3. 自引用防护
+//   4. 翻译配对契约：共享同一稳定 id 的各语言版本必须位于相同 slugs
+//      （fumadocs 目录式配对仍依赖路径对称 —— 见 docs/adr/0003）
 // frontmatter 只在 Next 管线内物化，因此导入 manifest 前先注册官方
 // fumadocs-mdx Bun 插件 —— 否则在纯 Bun 下页面数据为空。
 // 通过 `bun run check:content` 运行（会先重新生成 .source），亦挂入 prebuild。
@@ -62,6 +67,37 @@ for (const entry of contentManifest) {
   seenIdentities.add(identity);
 }
 
+// --- 1b. Translation pairing: one stable id must map to one slug path ------
+// The stable id is locale-independent by design, but fumadocs dir-based i18n
+// pairing still resolves translations from symmetric paths. Make that implicit
+// dependency an explicit contract: locale variants sharing an id must share
+// the same slugs, otherwise page tree / alternates / routing silently split.
+// 翻译配对：稳定 id 按设计与 locale 无关，但 fumadocs 目录式 i18n 配对仍从
+// 路径对称性解析翻译。把这一隐式依赖升级为显式契约：共享同一 id 的各语言
+// 版本必须位于相同 slugs，否则 page tree / alternates / 路由会静默分裂。
+const slugPathsById = new Map<string, Map<string, string[]>>();
+for (const entry of contentManifest) {
+  let variants = slugPathsById.get(entry.id);
+  if (variants === undefined) {
+    variants = new Map();
+    slugPathsById.set(entry.id, variants);
+  }
+  variants.set(entry.locale, entry.slugs);
+}
+for (const [id, variants] of slugPathsById) {
+  const distinctPaths = new Set([...variants.values()].map((slugs) => slugs.join('/')));
+  if (distinctPaths.size > 1) {
+    const detail = [...variants.entries()]
+      .map(([locale, slugs]) => `${locale}=${slugs.join('/')}`)
+      .join(', ');
+    violations.push({
+      identity: id,
+      field: 'id',
+      message: `同一稳定 id 的各语言版本 slugs 不一致（${detail}）；翻译配对要求路径对称，请移动文件或拆分 id`,
+    });
+  }
+}
+
 // --- 2 & 3. Relation existence (locale-loose) + self-reference -------------
 const knownIds = new Set(contentManifest.map((entry) => entry.id));
 const RELATION_FIELDS = ['prerequisites', 'related'] as const;
@@ -98,7 +134,7 @@ if (violations.length > 0) {
   }
   console.error(
     `\nContent check failed: ${violations.length} violation(s) across ${contentManifest.length} manifest entries. ` +
-      'Rules: scripts/check-content.ts · Schema: src/content/schema/docs.ts · Decisions: docs/adr/0002',
+      'Rules: scripts/check-content.ts · Schema: src/content/schema/docs.ts · Decisions: docs/adr/0002, docs/adr/0003',
   );
   process.exitCode = 1;
 } else {

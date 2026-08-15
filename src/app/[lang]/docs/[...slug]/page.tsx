@@ -23,6 +23,7 @@ import { LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, resolveLocale } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
 import { createBreadcrumbJsonLd, createTechArticleJsonLd, getDocumentSeoLinks } from '@/lib/seo';
 import { REPO_URL, SOCIAL_IMAGE } from '@/lib/site-config';
+import { ContentIdProvider } from '@/runtime/content-id';
 
 export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   const { slug, lang } = await props.params;
@@ -134,7 +135,11 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
         tableOfContent={{ style: 'normal' }}
       >
         {header}
-        {pageContent}
+        {/* Stable identity for client consumers (task progress): derived from
+            frontmatter id, survives file moves and URL changes (ADR 0003).
+            为客户端消费方（任务进度）提供稳定身份：由 frontmatter id 派生，
+            不随文件移动或 URL 变化而失效（ADR 0003）。 */}
+        <ContentIdProvider contentId={`docs:${page.data.id}`}>{pageContent}</ContentIdProvider>
       </DeferredDocsPage>
       <DocsBackToTop key={slugKey} label={dict.backToTop} />
       {/* Keep community height and scrolling outside the Fumadocs article container.

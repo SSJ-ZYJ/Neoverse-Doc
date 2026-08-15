@@ -23,12 +23,26 @@ const {
 } = await import('./manifest');
 
 describe('content manifest', () => {
-  it('keeps IDs stable across locales and title changes', () => {
-    assert.equal(createContentId(['ch1', 'intro']), 'docs:ch1/intro');
+  it('keeps IDs stable across locales, title changes and file moves', () => {
+    assert.equal(createContentId('ch1/intro'), 'docs:ch1/intro');
     assert.equal(
       createContentManifestEntry(
-        { data: { title: 'Renamed' }, slugs: ['ch1', 'intro'], url: '/en/docs/ch1/intro' },
+        { data: { id: 'ch1/intro', title: 'Renamed' }, slugs: ['ch1', 'intro'], url: '/en/docs/ch1/intro' },
         'en',
+      ).id,
+      'docs:ch1/intro',
+    );
+    // Identity is owned by frontmatter, not by path: moving the file (new
+    // slugs / url) must not change the Content ID.
+    // 身份归属 frontmatter 而非路径：移动文件（新的 slugs / url）不得改变 Content ID。
+    assert.equal(
+      createContentManifestEntry(
+        {
+          data: { id: 'ch1/intro', title: 'Moved' },
+          slugs: ['ch1', 'intro-moved'],
+          url: '/zh/docs/ch1/intro-moved',
+        },
+        'zh',
       ).id,
       'docs:ch1/intro',
     );
@@ -45,7 +59,7 @@ describe('content manifest', () => {
 
   it('retains draft state for consumer-side filtering', () => {
     const entry = createContentManifestEntry(
-      { data: { title: 'Draft', draft: true }, slugs: ['draft'], url: '/zh/docs/draft' },
+      { data: { id: 'draft', title: 'Draft', draft: true }, slugs: ['draft'], url: '/zh/docs/draft' },
       'zh',
     );
     assert.equal(entry.draft, true);
@@ -55,6 +69,7 @@ describe('content manifest', () => {
     const entry = createContentManifestEntry(
       {
         data: {
+          id: 'ch1/1.12-Shell-Basics',
           title: 'Shell 基础',
           type: 'guide',
           topics: ['shell', 'terminal'],
@@ -78,7 +93,7 @@ describe('content manifest', () => {
     assert.deepEqual(entry.related, ['docs:ch1/1.13-Shell-Text-Editing']);
 
     const plain = createContentManifestEntry(
-      { data: { title: 'Plain' }, slugs: ['plain'], url: '/zh/docs/plain' },
+      { data: { id: 'plain', title: 'Plain' }, slugs: ['plain'], url: '/zh/docs/plain' },
       'zh',
     );
     for (const field of [

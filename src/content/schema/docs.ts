@@ -35,15 +35,30 @@ export const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'] as const;
 
 export type Difficulty = (typeof DIFFICULTIES)[number];
 
-// Relations reference locale-independent Content IDs derived from slugs
-// (see createContentId in the content manifest), so they survive translation.
-// Reference existence is checked at build time by scripts/check-content.ts.
-// 内容关系引用由 slug 派生、与 locale 无关的 Content ID（见内容清单中的
-// createContentId），因此可跨语言复用；引用存在性由 scripts/check-content.ts
-// 在构建期校验。
+// Relations reference locale-independent Content IDs derived from the stable
+// frontmatter id (see createContentId in the content manifest), so they survive
+// translation. Reference existence is checked at build time by
+// scripts/check-content.ts.
+// 内容关系引用由稳定 frontmatter id 派生、与 locale 无关的 Content ID（见内容
+// 清单中的 createContentId），因此可跨语言复用；引用存在性由
+// scripts/check-content.ts 在构建期校验。
 const contentIdSchema = z.string().regex(/^docs:\S+$/);
 
+// Stable page identity declared in frontmatter and shared across locales —
+// the zh and en versions of the same content write the same value. The bare
+// value must not contain whitespace or the `docs:` prefix; the manifest adds
+// the prefix when deriving the full Content ID. Once declared it never changes
+// with file moves, URL adjustments or title edits (see docs/adr/0003).
+// 在 frontmatter 中声明、跨语言共享的稳定页面身份 —— 同一内容的中英文版本
+// 写同一个值。裸值不得包含空白或 `docs:` 前缀；manifest 派生完整 Content ID
+// 时再加前缀。声明后不随文件移动、URL 调整或标题修改而变化
+// （见 docs/adr/0003）。
+const stableIdSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9][A-Za-z0-9./-]*$/, 'stable id must be path-like ASCII without spaces');
+
 export const docsPageSchema = pageSchema.extend({
+  id: stableIdSchema,
   author: personFieldSchema.optional(),
   contributor: personFieldSchema.optional(),
   contributors: personFieldSchema.optional(),
