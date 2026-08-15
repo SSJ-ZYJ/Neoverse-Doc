@@ -9,18 +9,18 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { i18nProvider, i18nUI } from '@/adapters/fumadocs/layout';
 import { DocumentLanguageSetter } from '@/components/document-language';
+import { getSearchChapterTags } from '@/content/home-sections';
+import { getHomeAlternates } from '@/content/seo';
 import { getPageDictionary } from '@/dictionaries';
 import { GuestbookReturnTracker } from '@/features/community';
 import { DefaultSearchDialog, SearchSpotlight } from '@/features/search';
 import { TransitionProvider } from '@/features/transition';
-import { getSearchChapterTags } from '@/lib/home-sections';
 import {
   generateLocaleStaticParams,
   LANGUAGE_TAGS,
   OPEN_GRAPH_LOCALES,
   resolveLocale,
 } from '@/lib/i18n';
-import { getHomeAlternates } from '@/lib/seo';
 import { SOCIAL_IMAGE } from '@/lib/site-config';
 
 export const generateStaticParams = generateLocaleStaticParams;

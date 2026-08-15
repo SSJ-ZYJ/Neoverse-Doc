@@ -7,7 +7,7 @@ author:
 ---
 
 > [!DETAILS-AI] AI Summary of This Chapter
-> The project clearly layers content, site components, parsing logic, generation scripts, and styling. Fumadocs compiles `content/docs/{locale}/` into a type-safe content source, Next.js generates all locales and slugs from the page tree, and the production environment outputs the `out/` static site through `output: 'export'`. Search, document sources, Mermaid assets, and site-level constants are also completed at build time or in centralized configuration. Dependency directions between the nine architecture layers are checked automatically before each build.
+> The project clearly layers content, site components, parsing logic, generation scripts, and styling. Fumadocs compiles `content/docs/{locale}/` into a type-safe content source, Next.js generates all locales and slugs from the page tree, and the production environment outputs the `out/` static site through `output: 'export'`. Search, document sources, Mermaid assets, and site-level constants are also completed at build time or in centralized configuration. Dependency directions between architecture layers form a strict single-direction DAG, checked automatically before each build.
 
 ## 1. Directory responsibilities
 
@@ -24,14 +24,14 @@ Neoverse-Doc/
 │   └── verify-build-output.ts
 ├── src/
 │   ├── app/                      # Routes, data reads, and page composition
-│   ├── content/                  # Schema, MDX plugins, search index, and Manifest
-│   ├── features/                 # Search, Reading, Tasks, Mermaid, Transition, Community
+│   ├── content/                  # Schema, MDX plugins, IR, search index, SEO, and Manifest
+│   ├── features/                 # Docs-shell, Search, Reading, Tasks, Mermaid, Transition, Community
 │   ├── runtime/                  # Navigation, Motion, and Interaction external stores
-│   ├── adapters/fumadocs/        # Source, Layout, and third-party DOM adapters
+│   ├── adapters/fumadocs/        # Source, Layout config, and third-party DOM adapters
 │   ├── ui/                       # Tokens, surfaces, and global styles
 │   ├── components/               # Remaining shared components and MDX registry
 │   ├── dictionaries/             # Project UI dictionaries
-│   └── lib/                      # Low-coupling i18n, SEO, and site configuration
+│   └── lib/                      # i18n and business-agnostic pure utilities
 ├── source.config.ts              # Content source, Schema, and MDX Pipeline assembly
 ├── next.config.ts                # Static export and Next.js configuration
 └── package.json                  # Dependencies and project commands
@@ -47,27 +47,28 @@ Mature product capabilities live under `src/features/`; navigation, motion, and 
 
 ### Dependency directions and the architecture check
 
-Dependency directions between the nine top-level directories are guarded automatically by `scripts/check-architecture.ts` (`bun run check:architecture`, also the first step of `prebuild`). The script scans every TypeScript import under `src/` (including dynamic `import(...)`) and flags layer violations against this matrix:
+Dependency directions between the top-level directories are guarded automatically by `scripts/check-architecture.ts` (`bun run check:architecture`, also the first step of `prebuild`). The script scans every TypeScript import under `src/` (including dynamic `import(...)`) and flags layer violations against this matrix:
 
 | Source layer | Allowed dependencies |
 | :--- | :--- |
-| `app` | all lower layers |
-| `components` | `features` `runtime` `content` `ui` `lib` `dictionaries` |
-| `features` | `runtime` `content` `ui` `adapters` `lib` `dictionaries` |
-| `runtime` | `adapters` `ui` `lib` `dictionaries` |
-| `content` | `adapters` `lib` |
+| `app` | all lower layers (`ui` is consumed only via CSS `@import` in `globals.css`) |
+| `components` | `features` `runtime` `content` `lib` `dictionaries` |
+| `features` | `runtime` `content` `adapters` `lib` `dictionaries` |
+| `runtime` | `adapters` |
+| `content` | `adapters` `lib` `dictionaries` |
 | `adapters` | `lib` |
-| `lib` | `adapters` `dictionaries` |
+| `lib` | none (pure utility leaf layer) |
 | `dictionaries` | `lib` |
 
-`lib` and `dictionaries` form the site-glue cluster (locale definitions and UI dictionaries reference each other) — the only intentional bidirectional pair in the matrix. `ui` must stay CSS-only; any `.ts` / `.tsx` file there fails the check immediately.
+The matrix is a **strict single-direction DAG**: no two layers may reference each other. Before scanning, the script validates the matrix itself with a topological sort — any cycle fails immediately. After scanning, allowed edges with zero real imports trigger a warning so the matrix gets pruned back to the actual dependency graph (the CSS-consumed `app → ui` edge is exempted via `CSS_CONSUMED_EDGES`). `ui` and `styles` must stay CSS-only; any `.ts` / `.tsx` file there fails the check immediately.
 
-Two additional rules:
+Three additional rules:
 
 - **Barrel rule**: cross-boundary consumers of a feature must go through its `index.ts` public entry; importing an internal file under `features/A/` directly is rejected, while imports inside the feature itself are unrestricted. Public entries only expose capabilities genuinely needed across boundaries — no whole-directory re-exports.
-- **Exception list**: legitimate bridges (for example, a Fumadocs adapter writing state into the navigation runtime) are registered centrally in the script's `EXCEPTIONS` constant, each with a documented reason, instead of loosening the whole rule; stale exceptions trigger a warning to clean up.
+- **Exception list**: the `EXCEPTIONS` mechanism is kept but currently empty — the four historical bridge exceptions were eliminated through proper boundaries (the `features/docs-shell` migration and `baseOptions` dependency injection). New exceptions require a strong documented reason.
+- **Adapter purity**: `adapters` only holds third-party seams (Fumadocs configuration, the source, DOM accessors); product content (nav title, dictionary copy) is injected by app-layer callers, and adapters never compose upper-layer modules in reverse.
 
-New top-level directories must be registered in the `ALLOWED` matrix, otherwise the check fails as an "unknown layer". The full decision record lives in `docs/adr/0001-architecture-boundary-check.md` in the repository.
+New top-level directories must be registered in the `ALLOWED` matrix, otherwise the check fails as an "unknown layer". The full decision records live in `docs/adr/0001-architecture-boundary-check.md` and `docs/adr/0005-strict-layer-dag.md` in the repository.
 
 ## 2. Routing and layout
 

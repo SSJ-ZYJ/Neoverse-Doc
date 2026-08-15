@@ -2,32 +2,38 @@
 // layer dependency matrix below. Lightweight by design — this codebase routes
 // all cross-layer imports through the `@/` alias (verified: no cross-layer
 // relative imports, dynamic imports only target npm packages), so a
-// regex-level scan is reliable here. See docs/adr/0001 for the full rationale.
+// regex-level scan is reliable here. See docs/adr/0001 for the full rationale
+// and docs/adr/0005 for the strict-DAG convergence.
 // 架构边界检查：按下方层级依赖矩阵扫描 src/ 的 TS 导入图。本仓库跨层导入
 // 全部使用 `@/` 别名（已验证：无跨层相对导入、动态导入仅指向 npm 包），
-// 因此正则级扫描在此代码库可靠。完整决策见 docs/adr/0001。
+// 因此正则级扫描在此代码库可靠。完整决策见 docs/adr/0001，
+// 严格单向 DAG 收敛见 docs/adr/0005。
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 const SRC_ROOT = path.join(process.cwd(), 'src');
 
 // Layer dependency matrix: source layer → allowed target layers.
+// The matrix must stay a strict single-direction DAG — no layer pair may
+// reference each other, which detectLayerCycles() enforces at startup.
 // 层级依赖矩阵：源层 → 允许的目标层集合。
+// 矩阵必须保持严格单向 DAG —— 任意两层不得互相引用，由 detectLayerCycles() 启动时强制校验。
 //
-//   app         → all（组合层）
+//   app         → all（组合层，不被任何层依赖；ui/styles 仅经 CSS 入口消费）
 //   components  → 迁移过渡期共享组件，可消费除 adapters/app 外的层
-//   features    → 产品特性，可消费 runtime/content/ui/adapters 与纯公共层
-//   runtime     → 交互/动效/导航运行时，仅消费 adapters 与纯公共层
+//   features    → 产品特性，可消费 runtime/content/adapters 与纯公共层
+//   runtime     → 交互/动效/导航运行时，仅消费 adapters
 //   content     → 内容基础设施，仅消费 adapters（外部内容源）与纯公共层
 //   adapters    → 第三方适配，仅消费纯公共层（lib）
-//   lib         → 站点胶水，可消费 adapters 与 dictionaries
-//   dictionaries→ 字典叶子层，仅消费 lib（与 lib 构成唯一有意双向对）
+//   lib         → 纯工具层，不依赖任何项目层（叶子）
+//   dictionaries→ 字典叶子层，仅消费 lib
 //   ui/styles   → 纯样式资产层，仅作为目标存在
 //
-// lib/dictionaries 承载 i18n 配置与文案，按“纯公共能力”原则对下层开放。
 // Unknown target layers fail loudly so a new top-level directory must be
-// registered here consciously.
-// 未知目标层会直接报错，强制新顶层目录显式登记进矩阵。
+// registered here consciously. Unused allowed edges are flagged as warnings
+// so the matrix cannot over-permit silently.
+// 未知目标层会直接报错，强制新顶层目录显式登记进矩阵；
+// 零引用的允许边给出警告，避免矩阵悄悄过度授权。
 const ALLOWED: Readonly<Record<string, readonly string[]>> = {
   app: [
     'features',
@@ -40,35 +46,32 @@ const ALLOWED: Readonly<Record<string, readonly string[]>> = {
     'dictionaries',
     'styles',
   ],
-  components: ['features', 'runtime', 'content', 'ui', 'lib', 'dictionaries'],
-  features: ['runtime', 'content', 'ui', 'adapters', 'lib', 'dictionaries'],
-  runtime: ['adapters', 'ui', 'lib', 'dictionaries'],
-  content: ['adapters', 'lib'],
+  components: ['features', 'runtime', 'content', 'lib', 'dictionaries'],
+  features: ['runtime', 'content', 'adapters', 'lib', 'dictionaries'],
+  runtime: ['adapters'],
+  content: ['adapters', 'lib', 'dictionaries'],
   adapters: ['lib'],
-  lib: ['adapters', 'dictionaries'],
+  lib: [],
   dictionaries: ['lib'],
   ui: [],
   styles: [],
 };
 
+// Edges consumed only via CSS @import (src/app/globals.css → ui/*): the TS
+// import scan cannot see them, so they are exempt from the unused-edge
+// warning but stay declared here for visibility.
+// 仅经 CSS @import 消费的边（src/app/globals.css → ui/*）：TS 导入扫描
+// 不可见，因此豁免零引用警告，但仍在此登记以保持可见。
+const CSS_CONSUMED_EDGES = new Set(['app→ui']);
+
 // Documented exceptions: file (relative to src/) → { import specifier → reason }.
 // Exceptions stay visible in this list instead of silently loosening the matrix.
+// Kept empty after the ADR 0005 DAG convergence — new entries require a reason
+// strong enough to justify breaking the single-direction layer flow.
 // 记录在案的例外：文件（相对 src/）→ { 导入说明符 → 理由 }。
-// 例外集中可见，不悄悄放宽矩阵。
-const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  'adapters/fumadocs/deferred-toc-state.ts': {
-    '@/runtime/navigation/store':
-      '将 Fumadocs TOC 状态桥接进项目导航运行时：适配器向运行时写入，而非消费上层模块。',
-  },
-  'adapters/fumadocs/deferred-docs-page.tsx': {
-    '@/runtime/navigation/use-navigation':
-      '向 Fumadocs 延迟渲染的文档页注入项目导航状态，属适配器桥接职责。',
-  },
-  'adapters/fumadocs/layout.tsx': {
-    '@/components/nav-title': '组合 Fumadocs RootLayout 与站点导航标题，布局适配器是组合点。',
-    '@/dictionaries': '布局适配器组装站点外壳需要字典文案。',
-  },
-};
+// 例外集中可见，不悄悄放宽矩阵。ADR 0005 DAG 收敛后清零 ——
+// 新增条目必须有足以打破单向分层的充分理由。
+const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {};
 
 // Generated infrastructure consumed via alias, not a hand-written layer.
 // 经别名消费的生成基础设施，不属于手写层，跳过。
@@ -87,9 +90,47 @@ interface Violation {
 const violations: Violation[] = [];
 const warnings: string[] = [];
 const usedExceptions = new Set<string>();
+const usedEdges = new Set<string>();
 
 function toPosix(filePath: string): string {
   return filePath.split(path.sep).join('/');
+}
+
+/**
+ * Kahn's algorithm over the layer graph: layers that never reach in-degree
+ * zero participate in (or depend on) a dependency cycle. The matrix must be
+ * a strict DAG, so any remaining layer is a hard failure.
+ * 基于层级图的 Kahn 拓扑排序：入度始终无法归零的层参与（或依赖）循环依赖。
+ * 矩阵必须是严格 DAG，因此任何残留层都直接判定失败。
+ */
+function detectLayerCycles(allowed: Readonly<Record<string, readonly string[]>>): string[] {
+  const layers = Object.keys(allowed);
+  const registered = new Set(layers);
+  const edges: readonly (readonly [source: string, target: string])[] = layers.flatMap((source) =>
+    (allowed[source] ?? [])
+      .filter((target) => registered.has(target))
+      .map((target) => [source, target] as const),
+  );
+
+  const inDegree = new Map<string, number>(layers.map((layer) => [layer, 0]));
+  for (const [, target] of edges) {
+    inDegree.set(target, (inDegree.get(target) ?? 0) + 1);
+  }
+
+  const queue = layers.filter((layer) => (inDegree.get(layer) ?? 0) === 0);
+  const settled = new Set<string>();
+  while (queue.length > 0) {
+    const layer = queue.shift() as string;
+    settled.add(layer);
+    for (const [source, target] of edges) {
+      if (source !== layer || settled.has(target)) continue;
+      const degree = (inDegree.get(target) ?? 0) - 1;
+      inDegree.set(target, degree);
+      if (degree === 0) queue.push(target);
+    }
+  }
+
+  return layers.filter((layer) => !settled.has(layer));
 }
 
 function layerOfSegments(segments: readonly string[]): string | undefined {
@@ -179,6 +220,19 @@ async function checkUiLayerStaysCss(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  // Gate 1: the matrix itself must be an acyclic layer DAG before any file
+  // scan makes sense — a cyclic matrix cannot define "upper" or "lower".
+  // 门禁 1：矩阵自身必须是无环层级 DAG，否则“上下层”无从谈起。
+  const cyclicLayers = detectLayerCycles(ALLOWED);
+  if (cyclicLayers.length > 0) {
+    console.error(
+      `Architecture matrix is not a DAG. Layers in (or depending on) a cycle: ${cyclicLayers.join(' → ')}. ` +
+        'Remove the reverse edge in ALLOWED (scripts/check-architecture.ts).',
+    );
+    process.exitCode = 1;
+    return;
+  }
+
   const files = (await collectSourceFiles(SRC_ROOT)).sort();
   let crossLayerImports = 0;
 
@@ -223,6 +277,8 @@ async function main(): Promise<void> {
         continue;
       }
 
+      usedEdges.add(`${sourceLayer}→${targetLayer}`);
+
       // Barrel rule: cross-boundary consumers of a feature must use its public
       // entry (index.ts), never deep paths into internals. Same-feature deep
       // imports are internal and fine.
@@ -258,6 +314,21 @@ async function main(): Promise<void> {
     }
   }
 
+  // Hygiene: allowed edges without any real import over-permit the matrix —
+  // prune them so the matrix keeps describing the actual DAG. CSS-consumed
+  // edges are exempt (see CSS_CONSUMED_EDGES).
+  // 卫生检查：零引用的允许边会让矩阵过度授权 —— 剪除后矩阵才能描述真实
+  // DAG。仅经 CSS 消费的边豁免（见 CSS_CONSUMED_EDGES）。
+  const totalEdges = Object.values(ALLOWED).reduce((sum, targets) => sum + targets.length, 0);
+  for (const [source, targets] of Object.entries(ALLOWED)) {
+    for (const target of targets) {
+      const edge = `${source}→${target}`;
+      if (!usedEdges.has(edge) && !CSS_CONSUMED_EDGES.has(edge)) {
+        warnings.push(`允许边零引用，请从矩阵剪除：${source} → ${target}`);
+      }
+    }
+  }
+
   for (const warning of warnings) {
     console.warn(`Architecture check warning: ${warning}`);
   }
@@ -271,7 +342,7 @@ async function main(): Promise<void> {
     }
     console.error(
       `\nArchitecture check failed: ${violations.length} violation(s) across ${files.length} files. ` +
-        'Rules: scripts/check-architecture.ts · Exceptions & rationale: docs/adr/0001',
+        'Rules: scripts/check-architecture.ts · Exceptions & rationale: docs/adr/0001 · DAG convergence: docs/adr/0005',
     );
     process.exitCode = 1;
     return;
@@ -279,6 +350,7 @@ async function main(): Promise<void> {
 
   console.info(
     `Architecture check passed: ${files.length} files, ${crossLayerImports} cross-layer imports, ` +
+      `${usedEdges.size}/${totalEdges} matrix edges active, ` +
       `${usedExceptions.size}/${Object.values(EXCEPTIONS).reduce((sum, entry) => sum + Object.keys(entry).length, 0)} exceptions active.`,
   );
 }

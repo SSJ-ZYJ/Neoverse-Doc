@@ -12,13 +12,13 @@ import {
 } from 'fumadocs-ui/layouts/docs/page/slots/toc';
 import { usePathname } from 'next/navigation';
 import { type ComponentProps, createContext, useContext, useEffect, useState } from 'react';
+import { getDocsTocElement } from '@/adapters/fumadocs/dom';
 import { useNavigationSnapshot } from '@/runtime/navigation/use-navigation';
 import {
   advanceDeferredTocState,
   type DeferredTocPhase,
   type DeferredTocState,
 } from './deferred-toc-state';
-import { getDocsTocElement } from './dom';
 
 const DeferredTocPhaseContext = createContext<DeferredTocPhase>('visible');
 

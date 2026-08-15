@@ -6,6 +6,8 @@
 
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
 import { baseOptions } from '@/adapters/fumadocs/layout';
+import { NavTitle } from '@/components/nav-title';
+import { getPageDictionary } from '@/dictionaries';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 
 export const generateStaticParams = generateLocaleStaticParams;
@@ -13,6 +15,13 @@ export const generateStaticParams = generateLocaleStaticParams;
 export default async function HomeGroupLayout({ params, children }: LayoutProps<'/[lang]'>) {
   const { lang } = await params;
   const locale = resolveLocale(lang);
+  const dict = getPageDictionary(locale);
 
-  return <HomeLayout {...baseOptions(locale)}>{children}</HomeLayout>;
+  return (
+    <HomeLayout
+      {...baseOptions(locale, { navTitle: <NavTitle />, guestbookTitle: dict.guestbookTitle })}
+    >
+      {children}
+    </HomeLayout>
+  );
 }

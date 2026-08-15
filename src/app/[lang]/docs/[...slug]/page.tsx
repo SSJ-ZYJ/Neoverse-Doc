@@ -8,7 +8,6 @@ import { findNeighbour } from 'fumadocs-core/page-tree';
 import { DocsBody, DocsDescription, DocsTitle, PageFooter } from 'fumadocs-ui/layouts/docs/page';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { DeferredDocsPage } from '@/adapters/fumadocs/deferred-docs-page';
 import { source } from '@/adapters/fumadocs/source';
 import { DocsBackToTop } from '@/components/docs-back-to-top';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
@@ -17,12 +16,17 @@ import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { JsonLd } from '@/components/seo/json-ld';
 import { createContentId } from '@/content/ir';
+import {
+  createBreadcrumbJsonLd,
+  createTechArticleJsonLd,
+  getDocumentSeoLinks,
+} from '@/content/seo';
 import { getPageDictionary } from '@/dictionaries';
 import { DocsCommunity } from '@/features/community';
+import { DeferredDocsPage } from '@/features/docs-shell';
 import { TaskListProgress } from '@/features/tasks';
 import { LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, resolveLocale } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
-import { createBreadcrumbJsonLd, createTechArticleJsonLd, getDocumentSeoLinks } from '@/lib/seo';
 import { REPO_URL, SOCIAL_IMAGE } from '@/lib/site-config';
 import { ContentIdProvider } from '@/runtime/content-id';
 

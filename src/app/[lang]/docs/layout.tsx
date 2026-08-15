@@ -12,6 +12,7 @@ import { baseOptions } from '@/adapters/fumadocs/layout';
 import { source } from '@/adapters/fumadocs/source';
 import { DocsThemeAndMotionSettings } from '@/components/docs-motion-settings';
 import { DocsSidebarSeparator } from '@/components/docs-sidebar-separator';
+import { NavTitle } from '@/components/nav-title';
 import { SidebarProvider } from '@/components/sidebar-provider';
 import { getPageDictionary } from '@/dictionaries';
 import { DocsReadingReturn } from '@/features/reading';
@@ -28,7 +29,7 @@ export default async function Layout({ params, children }: LayoutProps<'/[lang]/
   return (
     <DocsLayout
       tree={source.pageTree[locale]}
-      {...baseOptions(locale)}
+      {...baseOptions(locale, { navTitle: <NavTitle />, guestbookTitle: dict.guestbookTitle })}
       // Fumadocs renders the repository as its native sidebar icon link.
       // Fumadocs 使用原生侧栏图标链接呈现项目仓库入口。
       githubUrl={REPO_URL}

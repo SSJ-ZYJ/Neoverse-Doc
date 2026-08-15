@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { contentManifest, getContentLanguagePaths } from '@/content/generated/manifest';
+import { absoluteUrl, createAbsoluteDocumentLanguageLinks } from '@/content/seo';
 import { i18n, LANGUAGE_TAGS } from '@/lib/i18n';
-import { absoluteUrl, createAbsoluteDocumentLanguageLinks } from '@/lib/seo';
 
 export const dynamic = 'force-static';
 

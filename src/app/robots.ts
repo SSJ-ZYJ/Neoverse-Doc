@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
+import { absoluteUrl } from '@/content/seo';
 import { i18n } from '@/lib/i18n';
-import { absoluteUrl } from '@/lib/seo';
 import { SITE_ORIGIN } from '@/lib/site-config';
 
 export const dynamic = 'force-static';

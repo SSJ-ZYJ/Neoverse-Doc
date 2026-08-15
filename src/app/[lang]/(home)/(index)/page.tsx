@@ -6,10 +6,10 @@ import { HomeFooter } from '@/components/home/home-footer';
 import { HomeParticleScroll } from '@/components/home/home-particle-scroll';
 import { HomePortal } from '@/components/home/home-portal';
 import { JsonLd } from '@/components/seo/json-ld';
+import { getHomeChapters } from '@/content/home-sections';
+import { createWebSiteJsonLd } from '@/content/seo';
 import { getPageDictionary } from '@/dictionaries';
-import { getHomeChapters } from '@/lib/home-sections';
 import { generateLocaleStaticParams, LANGUAGE_TAGS, resolveLocale } from '@/lib/i18n';
-import { createWebSiteJsonLd } from '@/lib/seo';
 
 export const generateStaticParams = generateLocaleStaticParams;
 

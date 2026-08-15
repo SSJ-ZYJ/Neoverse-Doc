@@ -5,9 +5,9 @@
 import { ArrowDown, Code2, MessageSquareText } from 'lucide-react';
 import { AnimatedContent } from '@/components/react-bits/animated-content';
 import { LightRays } from '@/components/react-bits/light-rays';
+import type { HomeChapter } from '@/content/home-sections';
 import type { Dictionary } from '@/dictionaries';
 import { TransitionLink } from '@/features/transition';
-import type { HomeChapter } from '@/lib/home-sections';
 import type { Locale } from '@/lib/i18n';
 import { REPO_URL } from '@/lib/site-config';
 import { AiComputeBackdrop } from './ai-compute-backdrop';

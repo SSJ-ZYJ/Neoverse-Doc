@@ -4,20 +4,21 @@
 //   - `i18n.translations().extend(uiTranslations()).add('ui', {...})` declares fumadocs-ui internal labels.
 //   - `i18nProvider(i18nUI, lang)` is fed into <RootProvider i18n={...} />, which
 //     also drives the auto-rendered language switcher (needs `locales` array).
-//   - `baseOptions(locale)` produces nav links per locale for DocsLayout/HomeLayout.
+//   - `baseOptions(locale, inputs)` produces nav links per locale for DocsLayout/HomeLayout.
+//     Product pieces (nav title node, guestbook label) are injected by callers so
+//     this adapter stays free of components/dictionaries dependencies.
 // 按 fumadocs 官方推荐的 i18n 模式：
 //   - i18n.translations().extend(uiTranslations()).add('ui', {...}) 声明 fumadocs-ui 内部文案；
 //   - i18nProvider(i18nUI, lang) 注入 <RootProvider i18n={...} />，自动渲染语言切换器（依赖 locales 数组）；
-//   - baseOptions(locale) 按语言生成 DocsLayout / HomeLayout 导航链接。
-
+//   - baseOptions(locale, inputs) 按语言生成 DocsLayout / HomeLayout 导航链接。
+//     产品侧内容（导航标题节点、留言墙文案）由调用方注入，适配器不依赖 components/dictionaries。
 import {
   type Translations as FumadocsUITranslations,
   i18nProvider,
   uiTranslations,
 } from 'fumadocs-ui/i18n';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { NavTitle } from '@/components/nav-title';
-import { getPageDictionary } from '@/dictionaries';
+import type { ReactNode } from 'react';
 import { i18n, type Locale } from '@/lib/i18n';
 
 // Type-checked Chinese labels for fumadocs-ui's Fuma Translate keys.
@@ -96,12 +97,22 @@ export const i18nUI = i18n
 
 export { i18nProvider };
 
-export function baseOptions(locale: Locale = i18n.defaultLanguage): BaseLayoutProps {
-  const dict = getPageDictionary(locale);
+// Product pieces injected by app-layer callers: keeps this adapter on the
+// framework seam only (fumadocs-ui + lib), never reaching components/dictionaries.
+// 由 app 层调用方注入的产品内容：适配器只留在框架接缝（fumadocs-ui + lib），
+// 不再触达 components / dictionaries。
+export interface BaseOptionsInputs {
+  navTitle: ReactNode;
+  guestbookTitle: string;
+}
 
+export function baseOptions(
+  locale: Locale = i18n.defaultLanguage,
+  inputs: BaseOptionsInputs,
+): BaseLayoutProps {
   return {
     nav: {
-      title: <NavTitle />,
+      title: inputs.navTitle,
       url: `/${locale}`,
     },
     themeSwitch: {
@@ -109,7 +120,7 @@ export function baseOptions(locale: Locale = i18n.defaultLanguage): BaseLayoutPr
     },
     links: [
       {
-        text: dict.guestbookTitle,
+        text: inputs.guestbookTitle,
         url: `/${locale}/guestbook`,
         active: 'nested-url',
       },

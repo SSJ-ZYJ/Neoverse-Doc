@@ -41,7 +41,7 @@ React 组件默认保持 Server Component，仅在需要 State / Effect、浏览
 
 ### 架构分层与依赖边界
 
-`src/` 按 app / features / runtime / content / ui / adapters 等层组织，跨层依赖由 `scripts/check-architecture.ts` 自动检查（`bun run check:architecture`，前置进 `prebuild`）。**修改涉及跨层依赖时必须遵守 Architecture Boundary Check**，不得为绕过检查而引入例外；完整依赖矩阵与例外清单见 `docs/adr/0001-architecture-boundary-check.md`。
+`src/` 按 app / components / features / runtime / content / adapters / ui / lib / dictionaries / styles 层组织，层依赖矩阵是**严格单向 DAG**（无双向对、零例外），由 `scripts/check-architecture.ts` 自动检查（`bun run check:architecture`，前置进 `prebuild`）：启动时做环检测，扫描后对零引用允许边告警提示剪除。**修改涉及跨层依赖时必须遵守 Architecture Boundary Check**，不得为绕过检查重新引入例外；矩阵与环检测决策见 `docs/adr/0005-strict-layer-dag.md`，检查器原始决策见 `docs/adr/0001-architecture-boundary-check.md`。
 
 ---
 
@@ -169,6 +169,7 @@ Design System、Motion 分级、转场、首页、搜索、Mermaid 的详细实�
 | 路由转场系统 | `content/docs/zh/about/project/transitions.mdx` |
 | Mermaid 构建期渲染与性能 | `content/docs/zh/about/project/mermaid-performance.mdx` |
 | 架构边界检查决策记录 | `docs/adr/0001-architecture-boundary-check.md` |
+| 严格单向层 DAG 收敛决策记录 | `docs/adr/0005-strict-layer-dag.md` |
 | Content Schema v2 决策记录 | `docs/adr/0002-content-schema-v2.md` |
 | 贡献流程、命名规范、PR 与翻译 | `content/docs/zh/about/contributing/index.mdx` |
 | Commit Message 格式 | `.vscode/prompt/commit-instruction.md` |

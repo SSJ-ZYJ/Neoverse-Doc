@@ -87,7 +87,7 @@ The chapter section shows the documentation entrance cards and is the homepage's
 
 ### home-sections.ts
 
-`src/lib/home-sections.ts` extracts root folders from Fumadocs `source.getPageTree(locale)` as the homepage chapters:
+`src/content/home-sections.ts` extracts root folders from Fumadocs `source.getPageTree(locale)` as the homepage chapters:
 
 - `getHomeChapters(locale)` avoids linking to sections that don't exist;
 - `getSearchChapterTags(locale)` reuses the same page tree and aligns with the server-side search index tags using the first-segment slug.
@@ -292,7 +292,7 @@ On mobile, priority goes to content width, reachable navigation, and touch targe
 | `src/components/home/chapter-grid.tsx` | Chapter card grid |
 | `src/components/home/hero-title.tsx` | Hero title animation |
 | `src/components/home/home-footer.tsx` | Homepage footer |
-| `src/lib/home-sections.ts` | Data source for homepage chapters and search tags |
+| `src/content/home-sections.ts` | Data source for homepage chapters and search tags |
 | `src/styles/pages/home.css` | Homepage styles and constraints |
 | `src/runtime/interaction/controller.tsx` | Particle interaction controller (event orchestration) |
 | `src/runtime/interaction/registry.ts` | Interaction contract resolution and Fumadocs adapter |
