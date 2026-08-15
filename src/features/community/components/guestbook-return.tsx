@@ -9,7 +9,8 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { BackLink, isPlainInternalNavigation } from '@/features/transition';
+import { BackLink } from '@/features/transition';
+import { isPlainInternalNavigation } from '@/runtime/navigation/event';
 
 const GUESTBOOK_RETURN_KEY = 'neoverse-docs:guestbook-return';
 

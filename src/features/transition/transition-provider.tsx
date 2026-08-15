@@ -12,6 +12,7 @@ import {
   TRANSITION_DURATION_MS,
   TRANSITION_TIMEOUT_MS,
 } from '@/runtime/motion/config';
+import { isPlainInternalNavigation } from '@/runtime/navigation/event';
 import { finishNavigation, setNavigationPhase } from '@/runtime/navigation/store';
 import {
   type ContentParticleTransition,
@@ -22,7 +23,6 @@ import {
 import {
   calculateRevealRadius,
   cloneTransitionSource,
-  isPlainInternalNavigation,
   resolveEventOrigin,
 } from './transition-controller';
 import { TransitionLayer } from './transition-layer';

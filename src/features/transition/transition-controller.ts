@@ -66,21 +66,3 @@ export function resolveEventOrigin(event: MouseEvent, anchor: HTMLAnchorElement)
   const rect = anchor.getBoundingClientRect();
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
-
-export function isPlainInternalNavigation(event: MouseEvent, anchor: HTMLAnchorElement): boolean {
-  if (
-    event.defaultPrevented ||
-    event.button !== 0 ||
-    event.metaKey ||
-    event.ctrlKey ||
-    event.shiftKey ||
-    event.altKey ||
-    anchor.download ||
-    (anchor.target && anchor.target !== '_self')
-  ) {
-    return false;
-  }
-
-  const target = new URL(anchor.href, window.location.href);
-  return target.origin === window.location.origin;
-}

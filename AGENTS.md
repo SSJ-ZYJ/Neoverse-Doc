@@ -43,6 +43,8 @@ React 组件默认保持 Server Component，仅在需要 State / Effect、浏览
 
 `src/` 按 app / components / features / runtime / content / adapters / ui / lib / dictionaries / styles 层组织，层依赖矩阵是**严格单向 DAG**（无双向对、零例外），由 `scripts/check-architecture.ts` 自动检查（`bun run check:architecture`，前置进 `prebuild`）：启动时做环检测，扫描后对零引用允许边告警提示剪除。**修改涉及跨层依赖时必须遵守 Architecture Boundary Check**，不得为绕过检查重新引入例外；矩阵与环检测决策见 `docs/adr/0005-strict-layer-dag.md`，检查器原始决策见 `docs/adr/0001-architecture-boundary-check.md`。
 
+`src/features/` 内每个顶层目录是独立 Feature Boundary：feature→feature 导入默认禁止，确属业务关系的直接依赖在检查器 `FEATURE_ALLOWLIST` 登记理由后保留；无论跨层还是跨 Feature，消费 Feature 必须走其 `index.ts` 公共入口（只导出真实契约，不做全量转发），真实 Feature 依赖边必须无环。多 Feature 共需的实现按归属下沉 runtime / content / lib 等公共层，不复制代码、不建 `shared/` 等垃圾桶目录。决策见 `docs/adr/0006-feature-boundary.md`。
+
 ---
 
 ## 3. 内容与 i18n

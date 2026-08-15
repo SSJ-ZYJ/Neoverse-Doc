@@ -2,12 +2,13 @@
 // layer dependency matrix below. Lightweight by design — this codebase routes
 // all cross-layer imports through the `@/` alias (verified: no cross-layer
 // relative imports, dynamic imports only target npm packages), so a
-// regex-level scan is reliable here. See docs/adr/0001 for the full rationale
-// and docs/adr/0005 for the strict-DAG convergence.
+// regex-level scan is reliable here. See docs/adr/0001 for the full rationale,
+// docs/adr/0005 for the strict-DAG convergence, and docs/adr/0006 for the
+// feature boundary rules.
 // 架构边界检查：按下方层级依赖矩阵扫描 src/ 的 TS 导入图。本仓库跨层导入
 // 全部使用 `@/` 别名（已验证：无跨层相对导入、动态导入仅指向 npm 包），
 // 因此正则级扫描在此代码库可靠。完整决策见 docs/adr/0001，
-// 严格单向 DAG 收敛见 docs/adr/0005。
+// 严格单向 DAG 收敛见 docs/adr/0005，Feature 边界规则见 docs/adr/0006。
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -73,6 +74,25 @@ const CSS_CONSUMED_EDGES = new Set(['app→ui']);
 // 新增条目必须有足以打破单向分层的充分理由。
 const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {};
 
+// Cross-feature allowlist: source feature → { target feature → reason }.
+// Feature→feature imports are denied by default; a direct dependency that is
+// itself the correct business relationship can be registered here with a
+// justification. Registered or not, the import must enter via the target's
+// public entry — deep paths into another feature's internals are always
+// rejected. Prefer extracting the shared piece into runtime/content/lib over
+// growing this list; do not introduce event buses just to dodge it.
+// 跨特性许可清单：源 feature → { 目标 feature → 理由 }。
+// feature→feature 默认禁止；确属正确业务关系的直接依赖可在此登记理由后
+// 保留。无论是否登记，导入都必须经由目标 feature 的公共入口 —— 深入其他
+// feature 内部路径一律拒绝。优先将共享实现下沉 runtime/content/lib，而非
+// 扩充此清单；也不为绕开清单而引入事件总线。
+const FEATURE_ALLOWLIST: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  'features/community': {
+    'features/transition':
+      '留言板返回导航复用转场感知的 BackLink 组件，属真实业务依赖；通用导航谓词已下沉 runtime/navigation',
+  },
+};
+
 // Generated infrastructure consumed via alias, not a hand-written layer.
 // 经别名消费的生成基础设施，不属于手写层，跳过。
 const IGNORED_PREFIXES = ['@/.source'];
@@ -91,46 +111,63 @@ const violations: Violation[] = [];
 const warnings: string[] = [];
 const usedExceptions = new Set<string>();
 const usedEdges = new Set<string>();
+// Real feature→feature edges observed in the scan (keys: 'features/a→features/b'),
+// regardless of whether the allowlist permitted them — cycle detection must see
+// the truth, not the policy.
+// 扫描所得真实 feature→feature 依赖边（键形如 'features/a→features/b'），
+// 与是否获准无关 —— 环检测必须看到事实而非策略。
+const realFeatureEdges = new Set<string>();
+const usedFeatureAllowlist = new Set<string>();
 
 function toPosix(filePath: string): string {
   return filePath.split(path.sep).join('/');
 }
 
 /**
- * Kahn's algorithm over the layer graph: layers that never reach in-degree
- * zero participate in (or depend on) a dependency cycle. The matrix must be
- * a strict DAG, so any remaining layer is a hard failure.
- * 基于层级图的 Kahn 拓扑排序：入度始终无法归零的层参与（或依赖）循环依赖。
- * 矩阵必须是严格 DAG，因此任何残留层都直接判定失败。
+ * Kahn's algorithm over a directed graph: nodes that never reach in-degree
+ * zero participate in (or depend on) a dependency cycle. Used both for the
+ * layer matrix itself and for the real feature→feature edges collected from
+ * the scan.
+ * 基于有向图的 Kahn 拓扑排序：入度始终无法归零的节点参与（或依赖）循环
+ * 依赖。既用于层级矩阵自检，也用于扫描所得真实 feature→feature 依赖边。
  */
-function detectLayerCycles(allowed: Readonly<Record<string, readonly string[]>>): string[] {
-  const layers = Object.keys(allowed);
-  const registered = new Set(layers);
-  const edges: readonly (readonly [source: string, target: string])[] = layers.flatMap((source) =>
-    (allowed[source] ?? [])
-      .filter((target) => registered.has(target))
-      .map((target) => [source, target] as const),
-  );
-
-  const inDegree = new Map<string, number>(layers.map((layer) => [layer, 0]));
+function detectCycles(
+  nodes: readonly string[],
+  edges: readonly (readonly [source: string, target: string])[],
+): string[] {
+  const inDegree = new Map<string, number>(nodes.map((node) => [node, 0]));
   for (const [, target] of edges) {
     inDegree.set(target, (inDegree.get(target) ?? 0) + 1);
   }
 
-  const queue = layers.filter((layer) => (inDegree.get(layer) ?? 0) === 0);
+  const queue = nodes.filter((node) => (inDegree.get(node) ?? 0) === 0);
   const settled = new Set<string>();
   while (queue.length > 0) {
-    const layer = queue.shift() as string;
-    settled.add(layer);
+    const node = queue.shift() as string;
+    settled.add(node);
     for (const [source, target] of edges) {
-      if (source !== layer || settled.has(target)) continue;
+      if (source !== node || settled.has(target)) continue;
       const degree = (inDegree.get(target) ?? 0) - 1;
       inDegree.set(target, degree);
       if (degree === 0) queue.push(target);
     }
   }
 
-  return layers.filter((layer) => !settled.has(layer));
+  return nodes.filter((node) => !settled.has(node));
+}
+
+/**
+ * Feature containing a src-relative file, e.g. 'features/tasks' for
+ * 'features/tasks/index.ts'. Undefined for files sitting directly in
+ * features/ (no enclosing feature) — no such files exist today.
+ * 按 src 相对路径求出所属 feature，如 'features/tasks/index.ts' 得
+ * 'features/tasks'。直接位于 features/ 根下的文件无所属 feature，
+ * 返回 undefined（当前仓库不存在此类文件）。
+ */
+function enclosingFeature(relativePosix: string): string | undefined {
+  const segments = relativePosix.split('/');
+  if (segments.length < 3 || segments[1].includes('.')) return undefined;
+  return `features/${segments[1]}`;
 }
 
 function layerOfSegments(segments: readonly string[]): string | undefined {
@@ -223,7 +260,10 @@ async function main(): Promise<void> {
   // Gate 1: the matrix itself must be an acyclic layer DAG before any file
   // scan makes sense — a cyclic matrix cannot define "upper" or "lower".
   // 门禁 1：矩阵自身必须是无环层级 DAG，否则“上下层”无从谈起。
-  const cyclicLayers = detectLayerCycles(ALLOWED);
+  const matrixEdges = Object.entries(ALLOWED).flatMap(([source, targets]) =>
+    targets.filter((target) => target in ALLOWED).map((target) => [source, target] as const),
+  );
+  const cyclicLayers = detectCycles(Object.keys(ALLOWED), matrixEdges);
   if (cyclicLayers.length > 0) {
     console.error(
       `Architecture matrix is not a DAG. Layers in (or depending on) a cycle: ${cyclicLayers.join(' → ')}. ` +
@@ -255,6 +295,44 @@ async function main(): Promise<void> {
       const resolved = resolveSpecifier(specifier, importerDirPosix);
       if (resolved === undefined) continue;
       const { layer: targetLayer, segments } = resolved;
+
+      // Feature boundary (cross-feature, same layer): feature→feature imports
+      // are denied by default; allowlisted ones must still enter via the
+      // target's public entry. Same-feature imports stay internal and free.
+      // 特性边界（同层跨 feature）：feature→feature 默认禁止；获准的依赖
+      // 也必须经由目标 feature 的公共入口。同 feature 内部导入不受限。
+      if (sourceLayer === 'features' && targetLayer === 'features') {
+        const sourceFeature = enclosingFeature(relativePosix);
+        const targetFeature = segments.length >= 2 ? `features/${segments[1]}` : undefined;
+        if (
+          sourceFeature !== undefined &&
+          targetFeature !== undefined &&
+          sourceFeature !== targetFeature
+        ) {
+          realFeatureEdges.add(`${sourceFeature}→${targetFeature}`);
+          if (segments.length > 2) {
+            recordViolation(
+              file,
+              specifier,
+              `深导入 feature 内部文件 '${targetFeature}/...'：跨 feature 只允许公共入口 '@/${targetFeature}'`,
+            );
+            continue;
+          }
+          const allowedTargets = FEATURE_ALLOWLIST[sourceFeature];
+          if (allowedTargets === undefined || !(targetFeature in allowedTargets)) {
+            recordViolation(
+              file,
+              specifier,
+              `跨 feature 依赖 '${sourceFeature}' → '${targetFeature}' 默认禁止：` +
+                '优先下沉 runtime/content/lib 等公共层，确属业务依赖则在 FEATURE_ALLOWLIST 登记理由',
+            );
+            continue;
+          }
+          usedFeatureAllowlist.add(`${sourceFeature}→${targetFeature}`);
+        }
+        continue;
+      }
+
       if (targetLayer === sourceLayer) continue;
       crossLayerImports += 1;
 
@@ -279,28 +357,54 @@ async function main(): Promise<void> {
 
       usedEdges.add(`${sourceLayer}→${targetLayer}`);
 
-      // Barrel rule: cross-boundary consumers of a feature must use its public
-      // entry (index.ts), never deep paths into internals. Same-feature deep
-      // imports are internal and fine.
-      // 桶规则：跨边界消费 feature 必须走公共入口（index.ts），禁止深入内部
-      // 路径；同 feature 内部深导入不受限。
+      // Barrel rule (cross-layer consumers): importing a feature from another
+      // layer must target its public entry (index.ts), never deep paths into
+      // internals. Cross-feature importers are handled above.
+      // 桶规则（跨层消费方）：从其他层导入 feature 必须走公共入口
+      // （index.ts），禁止深入内部路径。跨 feature 导入方已在上方处理。
       if (targetLayer === 'features' && segments.length > 2) {
-        const targetFeature = `features/${segments[1]}`;
-        const importerFeaturePrefix =
-          importerDirPosix.startsWith(targetFeature) ||
-          relativePosix.startsWith(`${targetFeature}/`);
-        if (!importerFeaturePrefix) {
-          recordViolation(
-            file,
-            specifier,
-            `深导入 feature 内部文件 '${targetFeature}/...'：请改走公共入口 '@/${targetFeature}'`,
-          );
-        }
+        recordViolation(
+          file,
+          specifier,
+          `深导入 feature 内部文件 'features/${segments[1]}/...'：请改走公共入口 '@/features/${segments[1]}'`,
+        );
       }
     }
   }
 
   await checkUiLayerStaysCss();
+
+  // Gate 2: real feature→feature edges (allowlisted or not) must stay acyclic —
+  // a cycle means the involved features can no longer be understood, tested,
+  // or released independently.
+  // 门禁 2：真实 feature→feature 依赖边（无论是否获准）必须无环 —— 有环
+  // 意味着相关 feature 无法再被独立理解、测试与发布。
+  const featureNodes = new Set<string>();
+  const featureEdgeList: (readonly [source: string, target: string])[] = [];
+  for (const edge of realFeatureEdges) {
+    const separatorIndex = edge.indexOf('→');
+    const source = edge.slice(0, separatorIndex);
+    const target = edge.slice(separatorIndex + 1);
+    featureNodes.add(source);
+    featureNodes.add(target);
+    featureEdgeList.push([source, target]);
+  }
+  const cyclicFeatures = detectCycles([...featureNodes], featureEdgeList);
+  if (cyclicFeatures.length > 0) {
+    const involvedEdges = featureEdgeList
+      .filter(
+        ([source, target]) => cyclicFeatures.includes(source) && cyclicFeatures.includes(target),
+      )
+      .map(([source, target]) => `${source} → ${target}`)
+      .join(', ');
+    console.error(
+      `Feature dependency cycle detected among: ${cyclicFeatures.join(', ')} ` +
+        `(edges: ${involvedEdges}). Break it by extracting the shared piece into ` +
+        'runtime/content/lib, or by inverting one dependency.',
+    );
+    process.exitCode = 1;
+    return;
+  }
 
   // Hygiene: flag exception entries that no longer match reality so the
   // allowlist cannot rot silently.
@@ -310,6 +414,21 @@ async function main(): Promise<void> {
       const key = `${file} → ${specifier}`;
       if (!usedExceptions.has(key)) {
         warnings.push(`例外已失效，请从 EXCEPTIONS 移除：${key}`);
+      }
+    }
+  }
+
+  // Hygiene: cross-feature allowlist entries no longer matched by a real
+  // import over-permit the boundary — remove them.
+  // 卫生检查：不再被真实导入命中的跨 feature 许可会过度授权边界 —— 移除。
+  const totalAllowlistEntries = Object.values(FEATURE_ALLOWLIST).reduce(
+    (sum, targets) => sum + Object.keys(targets).length,
+    0,
+  );
+  for (const [source, targets] of Object.entries(FEATURE_ALLOWLIST)) {
+    for (const target of Object.keys(targets)) {
+      if (!usedFeatureAllowlist.has(`${source}→${target}`)) {
+        warnings.push(`跨 feature 许可已失效，请从 FEATURE_ALLOWLIST 移除：${source} → ${target}`);
       }
     }
   }
@@ -342,7 +461,7 @@ async function main(): Promise<void> {
     }
     console.error(
       `\nArchitecture check failed: ${violations.length} violation(s) across ${files.length} files. ` +
-        'Rules: scripts/check-architecture.ts · Exceptions & rationale: docs/adr/0001 · DAG convergence: docs/adr/0005',
+        'Rules: scripts/check-architecture.ts · Exceptions & rationale: docs/adr/0001 · DAG convergence: docs/adr/0005 · Feature boundary: docs/adr/0006',
     );
     process.exitCode = 1;
     return;
@@ -350,6 +469,8 @@ async function main(): Promise<void> {
 
   console.info(
     `Architecture check passed: ${files.length} files, ${crossLayerImports} cross-layer imports, ` +
+      `${realFeatureEdges.size} cross-feature import(s), ` +
+      `${usedFeatureAllowlist.size}/${totalAllowlistEntries} feature allowlist entries active, ` +
       `${usedEdges.size}/${totalEdges} matrix edges active, ` +
       `${usedExceptions.size}/${Object.values(EXCEPTIONS).reduce((sum, entry) => sum + Object.keys(entry).length, 0)} exceptions active.`,
   );

@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import puppeteer from 'puppeteer';
 
 const outDir = resolve(import.meta.dirname, '..', 'out');
-const articlePath = '/zh/docs/ch1/1.14-Environment-Setup';
+const articlePath = '/zh/docs/ch1/1.14-Environment-Setup-WSL';
 const cpuThrottle = Number(process.env.CPU_THROTTLE ?? 6);
 const reducedMotion = process.env.REDUCED_MOTION === '1';
 

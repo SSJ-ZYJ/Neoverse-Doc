@@ -7,7 +7,7 @@ import { ArrowLeft, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { isPlainInternalNavigation } from '@/features/transition';
+import { isPlainInternalNavigation } from '@/runtime/navigation/event';
 import { DOCS_REFRESH_POINT_STORAGE_KEY } from './restore';
 
 const RETURN_POINT_STORAGE_KEY = 'neoverse-docs:reading-return';
