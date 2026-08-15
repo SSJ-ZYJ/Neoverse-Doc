@@ -27,7 +27,6 @@ const MERMAID_BROWSER_BUNDLE = path.join(
   'dist',
   'mermaid.min.js',
 );
-const RENDERER_VERSION = 'project-mermaid-11.16.1-site-context-v2';
 const ALLOW_CLIENT_FALLBACK = process.argv.includes('--allow-client-fallback');
 
 interface BrowserMermaidApi {
@@ -76,9 +75,29 @@ function extractMermaidBlocks(markdown: string): string[] {
   return blocks;
 }
 
-function createAssetName(source: string): string {
+// Asset validity is content-addressed over every renderer input: the browser
+// bundle, the metric-sensitive styles and the shared config. Any of them
+// changing re-hashes asset names, so stale SVGs can never be silently reused
+// and no manual version string needs bumping.
+// 资产有效性按渲染输入内容寻址：浏览器 bundle、度量样式与共享配置任一变化
+// 都会改变资产名哈希，因此不会静默复用过期 SVG，也无需手工维护版本号。
+async function computeRendererSignature(): Promise<string> {
+  const [styleCss, browserBundle] = await Promise.all([
+    readFile(MERMAID_STYLE_PATH, 'utf8'),
+    readFile(MERMAID_BROWSER_BUNDLE, 'utf8'),
+  ]);
+  return createHash('sha256')
+    .update('nd-mermaid-renderer\0')
+    .update(styleCss)
+    .update('\0')
+    .update(browserBundle)
+    .digest('hex')
+    .slice(0, 16);
+}
+
+function createAssetName(source: string, rendererSignature: string): string {
   const signature = JSON.stringify({
-    renderer: RENDERER_VERSION,
+    renderer: rendererSignature,
     config: MERMAID_CONFIG,
     source,
   });
@@ -185,6 +204,16 @@ async function renderWithProjectMermaid(
 }
 
 async function main(): Promise<void> {
+  let renderSeconds = '0';
+  // Phase timing uses the monotonic hrtime clock: on some Windows hosts both
+  // wall-clock and performance.now() deltas were observed inflating wildly
+  // under build load, while hrtime stayed accurate. Timings are best-effort
+  // diagnostics, never correctness inputs.
+  // 阶段计时使用单调 hrtime 时钟：某些 Windows 宿主在构建负载下曾出现
+  // 墙钟与 performance.now() 差值严重虚高的现象，而 hrtime 保持准确。
+  // 计时是尽力而为的诊断信息，绝不参与正确性判断。
+  const totalStartedAt = process.hrtime.bigint();
+  const scanStartedAt = process.hrtime.bigint();
   const files = await findContentFiles(CONTENT_ROOT);
   const charts = new Map<string, string>();
 
@@ -199,6 +228,9 @@ async function main(): Promise<void> {
       charts.set(sourceId, source);
     }
   }
+  const scanSeconds = elapsedSeconds(scanStartedAt);
+
+  const rendererSignature = await computeRendererSignature();
 
   await mkdir(ASSET_ROOT, { recursive: true });
   await mkdir(path.dirname(MANIFEST_PATH), { recursive: true });
@@ -208,7 +240,7 @@ async function main(): Promise<void> {
   let generatedCount = 0;
   let clientFallbackCount = 0;
   for (const [sourceId, source] of charts) {
-    const fileName = createAssetName(source);
+    const fileName = createAssetName(source, rendererSignature);
     manifest.set(sourceId, fileName);
     try {
       await readFile(path.join(ASSET_ROOT, fileName));
@@ -218,6 +250,7 @@ async function main(): Promise<void> {
   }
 
   if (pending.length > 0) {
+    const renderStartedAt = process.hrtime.bigint();
     const browser = await launchRendererBrowser();
     if (browser) {
       try {
@@ -230,6 +263,7 @@ async function main(): Promise<void> {
       } finally {
         await browser.close();
       }
+      renderSeconds = elapsedSeconds(renderStartedAt);
     } else {
       // Do not publish manifest entries for files that were not generated.
       // The existing browser renderer will handle only these missing charts.
@@ -239,13 +273,31 @@ async function main(): Promise<void> {
     }
   }
 
+  const cleanupStartedAt = process.hrtime.bigint();
   await writeFile(MANIFEST_PATH, createManifest(manifest), 'utf8');
   const removed = await removeStaleGeneratedAssets(new Set(manifest.values()));
+  const cleanupSeconds = elapsedSeconds(cleanupStartedAt);
+
   const clientFallbackSummary =
     clientFallbackCount > 0 ? `, ${clientFallbackCount} client fallback` : '';
   console.info(
-    `Mermaid assets: ${charts.size} total, ${generatedCount} generated, ${charts.size - pending.length} reused${clientFallbackSummary}, ${removed} stale removed.`,
+    `Mermaid assets: ${charts.size} total, ${generatedCount} generated, ${charts.size - pending.length} reused${clientFallbackSummary}, ${removed} stale removed ` +
+      `(scan ${scanSeconds}s, render ${renderSeconds}s, cleanup ${cleanupSeconds}s, total ${elapsedSeconds(totalStartedAt)}s, max rss ${maxRssMb()}MB).`,
   );
+}
+
+function elapsedSeconds(startedAtNs: bigint): string {
+  return (Number(process.hrtime.bigint() - startedAtNs) / 1e9).toFixed(2);
+}
+
+// Peak resident set of this script only; the headless Chromium spawned for
+// rendering is a separate process and is not visible here.
+// 仅统计本脚本进程的峰值驻留内存；渲染用的无头 Chromium 是独立进程，不在此列。
+function maxRssMb(): number {
+  const usage =
+    typeof process.resourceUsage === 'function' ? process.resourceUsage() : undefined;
+  const maxRssBytes = usage ? usage.maxRSS * 1024 : process.memoryUsage().rss;
+  return Math.round(maxRssBytes / 1024 / 1024);
 }
 
 await main();

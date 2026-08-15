@@ -18,7 +18,8 @@ Neoverse-Doc/
 ├── public/
 │   └── mermaid/                  # Generated Mermaid SVGs
 ├── scripts/
-│   └── generate-mermaid-assets.ts
+│   ├── generate-mermaid-assets.ts
+│   └── verify-build-output.ts
 ├── src/
 │   ├── app/                      # Routes, data reads, and page composition
 │   ├── content/                  # Schema, MDX plugins, search index, and Manifest
@@ -210,3 +211,4 @@ The loading scene only appears in the brief window of a route transition and doe
 | `src/app/[lang]/docs-source/[...slug]/route.ts` | Static Markdown source endpoint |
 | `src/components/deployment-skew-guard.tsx` | Deployment skew detection and recovery |
 | `scripts/generate-mermaid-assets.ts` | Mermaid static asset generation |
+| `scripts/verify-build-output.ts` | Build output integrity verification |

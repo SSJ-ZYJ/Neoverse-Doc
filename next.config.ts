@@ -19,18 +19,14 @@ const GISCUS_THEME_ASSET_PATHS = ['/giscus-light.css', '/giscus-dark.css'] as co
 // generateStaticParams 中预生成的路径直接抛 "missing param" 错，无法走 not-found
 // 兜底。dev 下关闭它即可保留正常的 404 行为，生产产物仍是纯静态导出。
 const nextConfig: NextConfig = {
-  // Limit build concurrency and memory for memory-constrained static hosting
-  // runners: EdgeOne builds inside a RAM-backed /dev/shm tmpfs, where worker
-  // processes, the build filesystem cache and node_modules all compete for
-  // the same limited memory. One build worker plus webpack's memory
+  // Keep webpack's memory optimizations for memory-constrained static hosting
+  // runners: EdgeOne builds inside a RAM-backed /dev/shm tmpfs, and webpack's
   // optimizations keep the peak low enough to avoid the OOM (SIGKILL) seen
   // with Turbopack (which peaks at ~10GB and cannot be capped in builds).
-  // 限制构建并发与内存：EdgeOne 在内存盘 /dev/shm 中构建，worker、构建期
-  // 文件系统缓存与 node_modules 都占用同一份受限内存。单个构建 worker 配合
-  // webpack 内存优化可将峰值控制在 ~1.9GB，避免 Turbopack（构建峰值约
-  // 10GB 且无法在构建期限流）触发的 OOM（SIGKILL）。
+  // 保留 webpack 内存优化：EdgeOne 在内存盘 /dev/shm 中构建，webpack 内存
+  // 优化可将峰值维持在可接受范围，避免 Turbopack（构建峰值约 10GB 且无法
+  // 在构建期限流）触发的 OOM（SIGKILL）。构建 worker 数不再固定为 1。
   experimental: {
-    cpus: 1,
     webpackMemoryOptimizations: true,
   },
   // Skip webpack's on-disk filesystem cache for production builds: on EdgeOne

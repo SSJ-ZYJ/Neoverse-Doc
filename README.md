@@ -78,7 +78,7 @@ bun run build   # 生产构建，产物位于 out/ 目录
 bun run start   # 本地预览静态产物
 ```
 
-构建会优先复用已生成的 Mermaid 静态 SVG；如果托管环境无法启动 Chrome，缺失图表会回退到浏览器端渲染，不会阻塞静态导出。提交文档前仍应在本机运行 `bun run generate:mermaid` 并提交生成产物，以保持正常页面无需加载 Mermaid 布局引擎。生产构建还会生成 `robots.txt`、`sitemap.xml` 与社交分享图；构建产物均为纯静态文件，可部署到任意静态托管平台。
+构建会优先复用已生成的 Mermaid 静态 SVG；如果托管环境无法启动 Chrome，缺失图表会回退到浏览器端渲染，不会阻塞静态导出。提交文档前仍应在本机运行 `bun run generate:mermaid` 并提交生成产物，以保持正常页面无需加载 Mermaid 布局引擎。生产构建还会生成 `robots.txt`、`sitemap.xml` 与社交分享图；构建结束后会自动校验产物完整性（页面数量、搜索索引与 Mermaid 资产清单）。构建产物均为纯静态文件，可部署到任意静态托管平台。
 
 ## 可用命令
 

@@ -40,11 +40,11 @@ flowchart TD
 
 ### 稳定身份与缓存
 
-`src/features/mermaid/asset-id.ts` 根据规范化 Mermaid 源码生成 source ID。最终文件名还包含渲染器版本与项目样式签名，因此：
+`src/features/mermaid/asset-id.ts` 根据规范化 Mermaid 源码生成 source ID。最终文件名由全部渲染输入（Mermaid 浏览器 bundle、度量样式 `styles.css` 与共享配置）的内容哈希构成，任一输入变化都会自动产生新文件名，无需手工维护版本号，因此：
 
 - 相同源码只生成一份资源；
 - 未变化图表可以跨构建复用；
-- Mermaid 版本或影响测量的配置变化会产生新资源；
+- Mermaid 升级、样式或影响测量的配置变化会自动重新渲染；
 - 不再被任何内容引用的 SVG 可以安全清理。
 
 `src/features/mermaid/generated/assets.ts` 是 source ID 到文件名的只读映射，由脚本生成，不应手工编辑。

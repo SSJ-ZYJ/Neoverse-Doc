@@ -18,7 +18,8 @@ Neoverse-Doc/
 ├── public/
 │   └── mermaid/                  # 生成的 Mermaid SVG
 ├── scripts/
-│   └── generate-mermaid-assets.ts
+│   ├── generate-mermaid-assets.ts
+│   └── verify-build-output.ts
 ├── src/
 │   ├── app/                      # 路由、数据读取与页面组合
 │   ├── content/                  # Schema、MDX 插件、搜索索引与 Manifest
@@ -210,3 +211,4 @@ VS Code 的 MDX Preview 扩展无法自动识别项目自定义组件，只内�
 | `src/app/[lang]/docs-source/[...slug]/route.ts` | Markdown 静态源码端点 |
 | `src/components/deployment-skew-guard.tsx` | 部署偏斜检测与恢复 |
 | `scripts/generate-mermaid-assets.ts` | Mermaid 静态资源生成 |
+| `scripts/verify-build-output.ts` | 构建产物完整性校验 |
