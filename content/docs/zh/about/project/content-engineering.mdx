@@ -21,6 +21,24 @@ author:
 
 集中 Schema 让 Fumadocs 编译阶段直接校验 Frontmatter，也避免从标题、文件名或 DOM 猜测内容状态。
 
+### 内容 Schema v2
+
+在上述页面状态字段之上，Schema v2 增加一组**全部可选**的知识体系元数据，为内容从章节目录演进为泛技术知识体系（学习路径、主题聚合、知识图谱、搜索排序）提供数据基础。字段取舍与决策记录见 `docs/adr/0002-content-schema-v2.md`：
+
+| 字段 | 取值 | 用途 |
+| :--- | :--- | :--- |
+| `type` | `concept` / `guide` / `reference` | 内容是什么：概念讲解、带实践的教学、查阅型资料；章节首页等结构页不标 |
+| `topics` | kebab-case 字符串数组 | 知识主题标签，与目录解耦，一篇可属多个（如 `shell`、`terminal`） |
+| `track` | 注册表枚举数组 | 学习路径，取值收敛于 schema 中的 `CONTENT_TRACKS`（当前仅 `computer-essentials`） |
+| `difficulty` | `beginner` / `intermediate` / `advanced` | 先备水平，刻意保持三值粗粒度 |
+| `estimatedMinutes` | 正整数 | 预计阅读时长（分钟） |
+| `prerequisites` | Content ID 数组 | 学习前置，指向跨 locale 稳定的内容 ID（如 `docs:ch1/1.11-Operating-Systems`） |
+| `related` | Content ID 数组 | 相关推荐，同样指向 Content ID |
+
+枚举、格式与数值约束由 zod 在编译期强制；跨页引用（ID 唯一、引用存在、自引用防护）由 `scripts/check-content.ts` 基于编译后的内容清单校验（`bun run check:content`，已挂入 `prebuild`）。引用采用宽松 locale 语义——目标在任意语言下存在即合法，翻译缺口不破坏内容关系。
+
+`translationKey`、`status`、`lastReviewed` 刻意未加入：翻译键职责已由目录式 locale 配对与 locale 无关的派生 ID 承担；发布状态已有 `draft`；评审日期以 git 历史为事实来源。存量页面渐进补标，不做批量迁移。
+
 ## 二、作者解析与展示
 
 作者与贡献者使用 `Name(https://github.com/name)` 形式时，`src/lib/parse-author.ts` 会解析名称与 GitHub 地址：

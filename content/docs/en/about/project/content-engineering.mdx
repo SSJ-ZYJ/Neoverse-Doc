@@ -21,6 +21,24 @@ author:
 
 A centralized Schema lets the Fumadocs compilation stage validate Frontmatter directly, and also avoids guessing content state from titles, file names, or the DOM.
 
+### Content Schema v2
+
+On top of these page-state fields, Schema v2 adds a set of **entirely optional** knowledge-system metadata, providing the data foundation for evolving from chapter-based directories toward a general technical knowledge system (learning paths, topic aggregation, knowledge graph, search ranking). Field decisions are recorded in `docs/adr/0002-content-schema-v2.md`:
+
+| Field | Values | Purpose |
+| :--- | :--- | :--- |
+| `type` | `concept` / `guide` / `reference` | What the content is: concept explanation, practice-oriented guide, or reference material; structural pages such as chapter indexes stay untyped |
+| `topics` | kebab-case string array | Knowledge topic tags, decoupled from directories; a page may carry several (e.g. `shell`, `terminal`) |
+| `track` | registry enum array | Learning track, constrained to `CONTENT_TRACKS` in the schema (currently only `computer-essentials`) |
+| `difficulty` | `beginner` / `intermediate` / `advanced` | Required prior level, deliberately coarse at three values |
+| `estimatedMinutes` | positive integer | Estimated reading time in minutes |
+| `prerequisites` | Content ID array | Learning prerequisites pointing at locale-independent Content IDs (e.g. `docs:ch1/1.11-Operating-Systems`) |
+| `related` | Content ID array | Related recommendations, also pointing at Content IDs |
+
+Enum, format, and numeric constraints are enforced by zod at compile time; cross-page references (ID uniqueness, reference existence, self-reference guard) are validated by `scripts/check-content.ts` against the compiled content manifest (`bun run check:content`, wired into `prebuild`). References follow locale-loose semantics — a target existing in any language is valid, so translation gaps never break content relations.
+
+`translationKey`, `status`, and `lastReviewed` are deliberately absent: the translation-key duty is already carried by directory-based locale pairing and locale-independent derived IDs; publishing state already exists as `draft`; review dates treat git history as the source of truth. Existing pages are annotated incrementally — no batch migration.
+
 ## 2. Author Parsing and Display
 
 When authors and contributors use the `Name(https://github.com/name)` form, `src/lib/parse-author.ts` parses the name and the GitHub URL:
