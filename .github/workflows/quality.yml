@@ -1,0 +1,119 @@
+# PR quality gate: fast checks only, per-check jobs so each result can be
+# required independently in branch protection. Mermaid is verified (hash
+# reconciliation) but never re-generated here — see docs/adr/0009.
+# PR 质量门禁：只做快速检查，按检查项拆分为独立 job，便于在分支保护中
+# 分别设为 Required。Mermaid 只做产物对账、不重新生成 —— 见 docs/adr/0009。
+name: Quality
+
+on:
+  pull_request:
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.0
+      - uses: oven-sh/setup-bun@v2
+      - name: Cache bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: bun install --frozen-lockfile
+      - name: Lint
+        run: bun run lint
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.0
+      - uses: oven-sh/setup-bun@v2
+      - name: Cache bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        run: bun run typecheck
+
+  architecture:
+    name: Architecture Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.0
+      - uses: oven-sh/setup-bun@v2
+      - name: Cache bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: bun install --frozen-lockfile
+      - name: Architecture Check
+        run: bun run check:architecture
+
+  content:
+    name: Content Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.0
+      - uses: oven-sh/setup-bun@v2
+      - name: Cache bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: bun install --frozen-lockfile
+      - name: Content Check (schema, taxonomy, relations, prerequisite DAG, mermaid verify)
+        run: bun run check:content
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.0
+      - uses: oven-sh/setup-bun@v2
+      - name: Cache bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: bun install --frozen-lockfile
+      - name: Test
+        run: bun run test

@@ -15,6 +15,7 @@
     "postinstall": "fumadocs-mdx",
     "typecheck": "next typegen && fumadocs-mdx && tsc --noEmit",
     "lint": "biome lint .",
+    "test": "bun test",
     "format": "biome format --write .",
     "check": "biome check --write ."
   },

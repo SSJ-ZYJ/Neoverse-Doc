@@ -1,0 +1,39 @@
+# Post-merge production build gate: full static export on main. `bun run build`
+# already runs prebuild (architecture + content checks) and postbuild
+# (artifact verification) internally, so this workflow runs nothing twice —
+# quality checks are guaranteed by the PR gate, see docs/adr/0009.
+# main 合并后的生产构建门禁：`bun run build` 内部已含 prebuild 的架构与
+# 内容校验、postbuild 的产物完整性验证，本流程不重复执行任何子检查；
+# 快速质量检查由 PR 门禁保证 —— 见 docs/adr/0009。
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: build-main
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.0
+      - uses: oven-sh/setup-bun@v2
+      - name: Cache bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: bun install --frozen-lockfile
+      - name: Production build
+        run: bun run build
