@@ -79,6 +79,57 @@ const sources: ContentProjectionSources = {
   graph,
 };
 
+const lifecycleManifestEntries: readonly ContentManifestEntry[] = [
+  {
+    id: 'docs:lifecycle/stable',
+    locale: 'zh',
+    url: '/zh/docs/lifecycle/stable',
+    title: 'Stable',
+    slugs: ['lifecycle', 'stable'],
+    status: 'stable',
+    tracks: ['computer-essentials'],
+  },
+  {
+    id: 'docs:lifecycle/review',
+    locale: 'zh',
+    url: '/zh/docs/lifecycle/review',
+    title: 'Review',
+    slugs: ['lifecycle', 'review'],
+    status: 'review',
+    tracks: ['computer-essentials'],
+  },
+  {
+    id: 'docs:lifecycle/draft',
+    locale: 'zh',
+    url: '/zh/docs/lifecycle/draft',
+    title: 'Draft',
+    slugs: ['lifecycle', 'draft'],
+    status: 'draft',
+    tracks: ['computer-essentials'],
+  },
+  {
+    id: 'docs:lifecycle/deprecated',
+    locale: 'zh',
+    url: '/zh/docs/lifecycle/deprecated',
+    title: 'Deprecated',
+    slugs: ['lifecycle', 'deprecated'],
+    status: 'deprecated',
+    replacement: 'docs:lifecycle/stable',
+    tracks: ['computer-essentials'],
+  },
+];
+
+const lifecycleSources: ContentProjectionSources = {
+  ...sources,
+  manifest: lifecycleManifestEntries,
+  ir: lifecycleManifestEntries.map((entry) => ({
+    ...entry,
+    sourcePath: entry.url,
+    contentRevision: 'b'.repeat(64),
+    mermaid: [],
+  })),
+};
+
 describe('content product projections', () => {
   it('orders track steps by prerequisites while retaining cross-page stable IDs', () => {
     const learn = createLearnProjection('zh', sources);
@@ -93,6 +144,15 @@ describe('content product projections', () => {
     assert.deepEqual(
       getRecommendedNextSteps(learn, new Set(['docs:learning/a'])).map((step) => step.contentId),
       ['docs:learning/b'],
+    );
+  });
+
+  it('exposes only readable lifecycle states in public learning routes', () => {
+    const learn = createLearnProjection('zh', lifecycleSources);
+
+    assert.deepEqual(
+      learn.tracks[0]?.steps.map((step) => step.contentId),
+      ['docs:lifecycle/stable', 'docs:lifecycle/review'],
     );
   });
 

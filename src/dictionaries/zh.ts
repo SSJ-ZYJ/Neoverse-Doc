@@ -15,6 +15,7 @@ export const zh = {
   // 可视化加载跑马灯标签。
   loadingMarquee: 'LOADING...',
   enterDocs: '进入文档',
+  learnTitle: '学习路线',
   languageGatewayTitle: '选择阅读语言',
   languageGatewayDescription: '本站会根据浏览器语言自动选择入口，你也可以手动进入中文站点。',
   languageGatewayAction: '进入中文站点',
@@ -77,6 +78,34 @@ export const zh = {
   deprecatedDescription:
     '这篇文档已不再作为当前推荐内容维护；如果存在替代页面，请优先阅读替代版本。',
   replacementAction: '前往替代页面',
+  // Learn route copy / 学习路线文案
+  learn: {
+    eyebrow: 'LEARN',
+    title: '学习路线',
+    description: '按照明确的路线、前置关系与知识图谱，决定下一步该读什么。',
+    availableTracks: '当前可用路线',
+    viewTrack: '查看路线',
+    stepsLabel: '个学习步骤',
+    orderLabel: '学习顺序',
+    orderDescription:
+      '顺序由路线归属与知识图谱中的前置关系共同决定；没有明确关系的内容保持稳定的内容源顺序。',
+    prerequisitesLabel: '前置关系',
+    noPrerequisites: '没有声明前置内容',
+    outsideTrackPrerequisite: '路线外前置',
+    prerequisiteUnavailable: '当前不在公开学习路线中',
+    replacedBy: '已由替代内容取代：',
+    reviewBadge: '复核中',
+    returnToLearn: '返回学习路线',
+    trackNavigationLabel: '学习路线导航',
+    belongsToTrack: '所属路线',
+    previousStep: '上一节',
+    nextStep: '下一节',
+    trackStart: '这是路线的第一步',
+    trackEnd: '这是路线的最后一步',
+    noTracksTitle: '暂时没有可用路线',
+    noTracksDescription: '当前还没有满足公开学习条件的路线内容。',
+    minutes: '分钟',
+  },
   // Homepage portal copy / 首页内容门户文案
   home: {
     eyebrow: 'DO SOMETHING GREAT',

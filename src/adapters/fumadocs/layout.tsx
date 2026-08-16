@@ -102,6 +102,7 @@ export { i18nProvider };
 // 由 app 层调用方注入的产品内容：适配器只留在框架接缝（fumadocs-ui + lib），
 // 不再触达 components / dictionaries。
 export interface BaseOptionsInputs {
+  learnTitle: string;
   navTitle: ReactNode;
   guestbookTitle: string;
 }
@@ -119,6 +120,11 @@ export function baseOptions(
       mode: 'light-dark-system',
     },
     links: [
+      {
+        text: inputs.learnTitle,
+        url: `/${locale}/learn`,
+        active: 'nested-url',
+      },
       {
         text: inputs.guestbookTitle,
         url: `/${locale}/guestbook`,

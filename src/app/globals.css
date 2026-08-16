@@ -14,6 +14,7 @@
 @import "../ui/styles/motion.css";
 @import "../ui/surfaces/glass.css";
 @import "../features/tasks/styles.css";
+@import "../features/learn/styles.css";
 @import "../ui/styles/typography.css";
 @import "../adapters/fumadocs/styles.css";
 @import "../features/community/styles.css";

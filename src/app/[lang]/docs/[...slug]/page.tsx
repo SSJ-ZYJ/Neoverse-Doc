@@ -26,6 +26,7 @@ import {
 import { getPageDictionary } from '@/dictionaries';
 import { DocsCommunity } from '@/features/community';
 import { DeferredDocsPage } from '@/features/docs-shell';
+import { LearnDocNavigation } from '@/features/learn';
 import { LearningRegistryProvider, TaskListProgress } from '@/features/tasks';
 import { i18n, LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, resolveLocale } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
@@ -162,6 +163,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
         tableOfContent={{ style: 'normal' }}
       >
         {header}
+        <LearnDocNavigation contentId={contentId} copy={dict.learn} locale={locale} />
         {/* Stable identity for client consumers (task progress): derived from
             frontmatter id, survives file moves and URL changes (ADR 0003).
             为客户端消费方（任务进度）提供稳定身份：由 frontmatter id 派生，

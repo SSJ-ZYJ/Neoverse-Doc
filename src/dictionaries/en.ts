@@ -15,6 +15,7 @@ export const en = {
   // 可视化加载跑马灯标签。
   loadingMarquee: 'LOADING...',
   enterDocs: 'Enter',
+  learnTitle: 'Learning paths',
   languageGatewayTitle: 'Choose your language',
   languageGatewayDescription:
     'The site chooses an entry from your browser language, or you can continue in English.',
@@ -83,6 +84,35 @@ export const en = {
   deprecatedDescription:
     'This document is no longer maintained as the current recommendation. Prefer the replacement page when one is available.',
   replacementAction: 'Open replacement page',
+  // Learn route copy / 学习路线文案
+  learn: {
+    eyebrow: 'LEARN',
+    title: 'Learning paths',
+    description:
+      'Use explicit routes, prerequisites, and the knowledge graph to decide what to read next.',
+    availableTracks: 'Available paths',
+    viewTrack: 'View path',
+    stepsLabel: 'learning steps',
+    orderLabel: 'Learning order',
+    orderDescription:
+      'The order combines track membership with prerequisite relations; content without an explicit relation keeps the stable content-source order.',
+    prerequisitesLabel: 'Prerequisites',
+    noPrerequisites: 'No prerequisites declared',
+    outsideTrackPrerequisite: 'Outside this path',
+    prerequisiteUnavailable: 'Not currently in a public learning path',
+    replacedBy: 'Replaced by:',
+    reviewBadge: 'Under review',
+    returnToLearn: 'Back to learning paths',
+    trackNavigationLabel: 'Learning path navigation',
+    belongsToTrack: 'Learning path',
+    previousStep: 'Previous',
+    nextStep: 'Next',
+    trackStart: 'This is the first step',
+    trackEnd: 'This is the final step',
+    noTracksTitle: 'No learning paths yet',
+    noTracksDescription: 'There are no routes with publicly readable content yet.',
+    minutes: 'min',
+  },
   // Homepage portal copy / 首页内容门户文案
   home: {
     eyebrow: 'DO SOMETHING GREAT',

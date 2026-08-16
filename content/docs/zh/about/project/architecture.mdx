@@ -80,7 +80,10 @@ Neoverse-Doc/
 src/app/[lang]/
 ├── (home)/
 │   ├── (index)/page.tsx          # 首页
-│   └── guestbook/page.tsx        # 留言墙
+│   ├── guestbook/page.tsx        # 留言墙
+│   └── learn/
+│       ├── page.tsx              # 学习路线入口
+│       └── [track]/page.tsx      # Track 学习路线
 ├── docs/
 │   ├── layout.tsx                # DocsLayout
 │   └── [...slug]/page.tsx        # 文档正文
@@ -91,8 +94,10 @@ src/app/[lang]/
 路由组让首页与文档页共享 locale，却使用不同布局：
 
 - 首页使用顶部导航和内容门户，不加载文档侧栏；
+- `/learn` 使用同一首页布局，路线数据来自 Taxonomy Registry 与 Learn Projection；
 - 文档页使用 Fumadocs `DocsLayout`，包含侧栏、正文与本页目录；
 - 留言墙复用首页布局，但使用独立页面；
+- 文档正文中的 Track 导航是轻量产品入口，不替代 Fumadocs Chapter Navigation；
 - `docs-source` 为每篇内容生成可静态访问的原始 Markdown。
 
 根路径是静态语言分流入口：浏览器根据 `navigator.languages` 选择中文或英文，未知语言回退到英文；无脚本环境仍可使用页面中的两个显式入口。自动判断只发生在 `/`，不会改写读者主动访问的 `/zh` 或 `/en`。项目不使用 Middleware 在请求时判断 locale，因为生产部署没有长期运行的 Next.js 服务器。
@@ -233,7 +238,7 @@ VS Code 的 MDX Preview 扩展无法自动识别项目自定义组件，只内�
 | `src/content/generated/manifest.ts` | 从 Source 派生的类型化 Content Manifest |
 | `next.config.ts` | 生产静态导出、图片与开发响应配置 |
 | `src/adapters/fumadocs/` | Fumadocs Source、Layout、TOC 与 DOM 适配 |
-| `src/features/` | 七个成熟功能边界（各自公共入口 + 跨 Feature 许可清单） |
+| `src/features/` | 八个成熟功能边界（各自公共入口 + 跨 Feature 许可清单） |
 | `src/runtime/` | Navigation、Motion 与 Interaction 协调层 |
 | `src/lib/i18n.ts` | locale 单一来源 |
 | `src/lib/site-config.ts` | 仓库、作者、协议与 Giscus 配置 |

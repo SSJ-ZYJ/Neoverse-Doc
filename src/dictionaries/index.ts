@@ -21,6 +21,7 @@ export interface Dictionary {
   // 可视化加载跑马灯标签。
   loadingMarquee: string;
   enterDocs: string;
+  learnTitle: string;
   // Root language gateway fallback / 根语言分流入口兜底文案
   languageGatewayTitle: string;
   languageGatewayDescription: string;
@@ -82,6 +83,32 @@ export interface Dictionary {
   deprecatedBadge: string;
   deprecatedDescription: string;
   replacementAction: string;
+  learn: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    availableTracks: string;
+    viewTrack: string;
+    stepsLabel: string;
+    orderLabel: string;
+    orderDescription: string;
+    prerequisitesLabel: string;
+    noPrerequisites: string;
+    outsideTrackPrerequisite: string;
+    prerequisiteUnavailable: string;
+    replacedBy: string;
+    reviewBadge: string;
+    returnToLearn: string;
+    trackNavigationLabel: string;
+    belongsToTrack: string;
+    previousStep: string;
+    nextStep: string;
+    trackStart: string;
+    trackEnd: string;
+    noTracksTitle: string;
+    noTracksDescription: string;
+    minutes: string;
+  };
   home: {
     eyebrow: string;
     heroDescription: string;

@@ -1,0 +1,365 @@
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  Clock3,
+  GitBranch,
+  Route,
+} from 'lucide-react';
+import type { ReactNode } from 'react';
+import type { ContentStatus } from '@/content/maintenance';
+import { contentProjectionSources, getLearnProjection } from '@/content/projections';
+import type { ContentTrack } from '@/content/taxonomy';
+import { CONTENT_TRACK_REGISTRY } from '@/content/taxonomy';
+import type { Dictionary } from '@/dictionaries';
+import { TransitionLink } from '@/features/transition';
+import { LANGUAGE_TAGS, type Locale } from '@/lib/i18n';
+
+export type LearnCopy = Dictionary['learn'];
+
+export interface LearnTrackView {
+  readonly id: ContentTrack;
+  readonly label: string;
+  readonly description?: string;
+  readonly href: string;
+  readonly backHref: string;
+  readonly stepCount: number;
+}
+
+export interface LearnPrerequisiteView {
+  readonly id: string;
+  readonly title: string;
+  readonly href?: string;
+  readonly isInTrack: boolean;
+  readonly replacement?: {
+    readonly title: string;
+    readonly href: string;
+  };
+}
+
+export interface LearnStepView {
+  readonly number: number;
+  readonly title: string;
+  readonly description?: string;
+  readonly href: string;
+  readonly status: ContentStatus;
+  readonly estimatedMinutes?: number;
+  readonly prerequisites: readonly LearnPrerequisiteView[];
+}
+
+export function LearnLandingPage({
+  copy,
+  tracks,
+}: {
+  copy: LearnCopy;
+  tracks: readonly LearnTrackView[];
+}) {
+  return (
+    <div className="learn-page__inner">
+      <header className="learn-page__header">
+        <p className="learn-page__eyebrow">{copy.eyebrow}</p>
+        <h1>{copy.title}</h1>
+        <p>{copy.description}</p>
+      </header>
+
+      {tracks.length > 0 ? (
+        <section aria-labelledby="learn-available-tracks" className="learn-track-section">
+          <div className="learn-section-heading">
+            <div>
+              <p className="learn-section-heading__eyebrow">{copy.eyebrow}</p>
+              <h2 id="learn-available-tracks">{copy.availableTracks}</h2>
+            </div>
+            <Route aria-hidden="true" className="learn-section-heading__icon" size={24} />
+          </div>
+          <div className="learn-track-grid">
+            {tracks.map((track) => (
+              <TransitionLink
+                className="learn-track-card glass-card glass-interactive"
+                data-card="true"
+                data-nd-interaction="control"
+                href={track.href}
+                key={track.id}
+              >
+                <span className="learn-track-card__topline">
+                  <span className="learn-track-card__icon" aria-hidden="true">
+                    <BookOpen size={18} />
+                  </span>
+                  <ArrowRight aria-hidden="true" size={18} />
+                </span>
+                <span className="learn-track-card__content">
+                  <strong>{track.label}</strong>
+                  {track.description && <span>{track.description}</span>}
+                </span>
+                <span className="learn-track-card__footer">
+                  <span>
+                    {track.stepCount} {copy.stepsLabel}
+                  </span>
+                  <span>{copy.viewTrack}</span>
+                </span>
+              </TransitionLink>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section className="learn-empty-state glass-card" data-card="true">
+          <Route aria-hidden="true" size={24} />
+          <h2>{copy.noTracksTitle}</h2>
+          <p>{copy.noTracksDescription}</p>
+        </section>
+      )}
+    </div>
+  );
+}
+
+export function LearnTrackPage({
+  copy,
+  steps,
+  track,
+}: {
+  copy: LearnCopy;
+  steps: readonly LearnStepView[];
+  track: LearnTrackView;
+}) {
+  return (
+    <div className="learn-page__inner">
+      <header className="learn-page__header learn-track-header">
+        <TransitionLink className="learn-page__back-link" href={track.backHref}>
+          <ArrowLeft aria-hidden="true" size={16} />
+          {copy.returnToLearn}
+        </TransitionLink>
+        <p className="learn-page__eyebrow">{copy.eyebrow}</p>
+        <h1>{track.label}</h1>
+        {track.description && <p>{track.description}</p>}
+        <div className="learn-track-summary glass-card" data-card="true">
+          <span className="learn-track-summary__item">
+            <strong>{track.stepCount}</strong>
+            <span>{copy.stepsLabel}</span>
+          </span>
+          <span className="learn-track-summary__divider" aria-hidden="true" />
+          <span className="learn-track-summary__item">
+            <GitBranch aria-hidden="true" size={17} />
+            <span>{copy.orderLabel}</span>
+          </span>
+        </div>
+      </header>
+
+      <section aria-labelledby="learn-track-order" className="learn-order-section">
+        <div className="learn-section-heading">
+          <div>
+            <p className="learn-section-heading__eyebrow">{copy.eyebrow}</p>
+            <h2 id="learn-track-order">{copy.orderLabel}</h2>
+            <p>{copy.orderDescription}</p>
+          </div>
+          <GitBranch aria-hidden="true" className="learn-section-heading__icon" size={24} />
+        </div>
+
+        <ol className="learn-step-list">
+          {steps.map((step) => (
+            <li className="learn-step" key={step.href}>
+              <span aria-hidden="true" className="learn-step__number">
+                {String(step.number).padStart(2, '0')}
+              </span>
+              <div className="learn-step__body">
+                <div className="learn-step__heading">
+                  <TransitionLink href={step.href}>
+                    <h3>{step.title}</h3>
+                  </TransitionLink>
+                  {step.status === 'review' && (
+                    <span className="learn-status-badge">{copy.reviewBadge}</span>
+                  )}
+                </div>
+                {step.description && <p className="learn-step__description">{step.description}</p>}
+                {step.estimatedMinutes !== undefined && (
+                  <span className="learn-step__duration">
+                    <Clock3 aria-hidden="true" size={15} />
+                    {step.estimatedMinutes} {copy.minutes}
+                  </span>
+                )}
+                <LearnPrerequisites copy={copy} prerequisites={step.prerequisites} />
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </div>
+  );
+}
+
+function LearnPrerequisites({
+  copy,
+  prerequisites,
+}: {
+  copy: LearnCopy;
+  prerequisites: readonly LearnPrerequisiteView[];
+}) {
+  if (prerequisites.length === 0) {
+    return (
+      <p className="learn-step__prerequisites learn-step__prerequisites--empty">
+        <CheckCircle2 aria-hidden="true" size={15} />
+        {copy.noPrerequisites}
+      </p>
+    );
+  }
+
+  return (
+    <div className="learn-step__prerequisites">
+      <p className="learn-step__prerequisites-label">
+        <GitBranch aria-hidden="true" size={15} />
+        {copy.prerequisitesLabel}
+      </p>
+      <ul>
+        {prerequisites.map((prerequisite) => (
+          <li key={prerequisite.id}>
+            <span className="learn-prerequisite__scope">
+              {prerequisite.isInTrack ? copy.orderLabel : copy.outsideTrackPrerequisite}
+            </span>
+            {prerequisite.href ? (
+              <TransitionLink href={prerequisite.href}>{prerequisite.title}</TransitionLink>
+            ) : (
+              <span>{prerequisite.title}</span>
+            )}
+            {prerequisite.replacement && (
+              <span className="learn-prerequisite__replacement">
+                {copy.replacedBy}{' '}
+                <TransitionLink href={prerequisite.replacement.href}>
+                  {prerequisite.replacement.title}
+                </TransitionLink>
+              </span>
+            )}
+            {!prerequisite.href && !prerequisite.replacement && (
+              <span className="learn-prerequisite__unavailable">
+                {copy.prerequisiteUnavailable}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function LearnDocNavigation({
+  contentId,
+  copy,
+  locale,
+}: {
+  contentId: string;
+  copy: LearnCopy;
+  locale: Locale;
+}) {
+  const manifestById = new Map(
+    contentProjectionSources.manifest
+      .filter((entry) => entry.locale === locale)
+      .map((entry) => [entry.id, entry] as const),
+  );
+  const projection = getLearnProjection(locale);
+  const items = projection.tracks.flatMap((track) => {
+    const currentIndex = track.steps.findIndex((step) => step.contentId === contentId);
+    const trackEntry = CONTENT_TRACK_REGISTRY.find((entry) => entry.id === track.trackId);
+    if (currentIndex < 0 || !trackEntry || !manifestById.has(contentId)) return [];
+
+    const previousEntry = track.steps[currentIndex - 1]
+      ? manifestById.get(track.steps[currentIndex - 1].contentId)
+      : undefined;
+    const nextEntry = track.steps[currentIndex + 1]
+      ? manifestById.get(track.steps[currentIndex + 1].contentId)
+      : undefined;
+
+    return [
+      {
+        id: track.trackId,
+        label: trackEntry.label[locale],
+        href: `/${locale}/learn/${track.trackId}`,
+        previous: previousEntry
+          ? { title: previousEntry.title, href: previousEntry.url }
+          : undefined,
+        next: nextEntry ? { title: nextEntry.title, href: nextEntry.url } : undefined,
+      },
+    ];
+  });
+
+  if (items.length === 0) return null;
+
+  return (
+    <nav aria-label={copy.trackNavigationLabel} className="learn-doc-navigation">
+      {items.map((item) => (
+        <div className="learn-doc-navigation__track" key={item.id}>
+          <div className="learn-doc-navigation__heading">
+            <span className="learn-doc-navigation__icon" aria-hidden="true">
+              <Route size={17} />
+            </span>
+            <div>
+              <span>{copy.belongsToTrack}</span>
+              <TransitionLink href={item.href}>{item.label}</TransitionLink>
+            </div>
+          </div>
+          <div className="learn-doc-navigation__links">
+            <LearnDocNavigationLink
+              copy={copy.previousStep}
+              emptyLabel={copy.trackStart}
+              link={item.previous}
+              side="previous"
+            />
+            <LearnDocNavigationLink
+              copy={copy.nextStep}
+              emptyLabel={copy.trackEnd}
+              link={item.next}
+              side="next"
+            />
+          </div>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+function LearnDocNavigationLink({
+  copy,
+  emptyLabel,
+  link,
+  side,
+}: {
+  copy: string;
+  emptyLabel: string;
+  link?: { title: string; href: string };
+  side: 'next' | 'previous';
+}) {
+  const icon =
+    side === 'previous' ? (
+      <ArrowLeft aria-hidden="true" size={16} />
+    ) : (
+      <ArrowRight aria-hidden="true" size={16} />
+    );
+
+  if (!link) {
+    return (
+      <span className="learn-doc-navigation__link learn-doc-navigation__link--disabled">
+        {icon}
+        <span>
+          <small>{copy}</small>
+          <strong>{emptyLabel}</strong>
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <TransitionLink className="learn-doc-navigation__link" href={link.href}>
+      {side === 'previous' && icon}
+      <span>
+        <small>{copy}</small>
+        <strong>{link.title}</strong>
+      </span>
+      {side === 'next' && icon}
+    </TransitionLink>
+  );
+}
+
+export function LearnPageShell({ children, locale }: { children: ReactNode; locale: Locale }) {
+  return (
+    <main className="learn-page" lang={LANGUAGE_TAGS[locale]}>
+      {children}
+    </main>
+  );
+}

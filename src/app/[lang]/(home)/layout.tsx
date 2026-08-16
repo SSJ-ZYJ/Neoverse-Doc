@@ -19,7 +19,11 @@ export default async function HomeGroupLayout({ params, children }: LayoutProps<
 
   return (
     <HomeLayout
-      {...baseOptions(locale, { navTitle: <NavTitle />, guestbookTitle: dict.guestbookTitle })}
+      {...baseOptions(locale, {
+        learnTitle: dict.learnTitle,
+        navTitle: <NavTitle />,
+        guestbookTitle: dict.guestbookTitle,
+      })}
     >
       {children}
     </HomeLayout>

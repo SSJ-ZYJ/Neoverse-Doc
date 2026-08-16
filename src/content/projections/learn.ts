@@ -1,3 +1,4 @@
+import { isContentIndexable } from '@/content/maintenance';
 import type { ContentTrack } from '@/content/taxonomy';
 import type { Locale } from '@/lib/i18n';
 import type { ContentProjectionSources } from './sources';
@@ -24,6 +25,10 @@ function orderTrackContentIds(
   sources: ContentProjectionSources,
   locale: Locale,
 ): string[] {
+  // The graph is authoritative for precedence. The canonical content order is
+  // only the stable fallback when several ready steps are incomparable.
+  // 图谱关系决定前后顺序；只有多个可学习步骤互不相干时，才使用规范内容顺序
+  // 作为稳定 fallback。
   const sourceOrder = getLocaleContentOrder(sources, locale);
   const trackContentIds = new Set(contentIds);
   const remainingPrerequisites = new Map(
@@ -71,11 +76,13 @@ function orderTrackContentIds(
 
 /**
  * Derives locale-specific learning routes. Track membership comes exclusively
- * from the taxonomy fields; explicit graph edges remain stable Content IDs,
- * including prerequisites outside the current track or locale.
+ * from the taxonomy fields; only readable lifecycle states enter the public
+ * route. Explicit graph edges remain stable Content IDs, including
+ * prerequisites outside the current track or locale.
  *
- * 派生 locale 专属的学习路线。Track 归属只来自 taxonomy 字段；显式图谱边
- * 始终保留为稳定 Content ID，包括当前 Track 或 locale 之外的前置条件。
+ * 派生 locale 专属的学习路线。Track 归属只来自 taxonomy 字段；只有可阅读的
+ * 生命周期状态进入公开路线。显式图谱边始终保留为稳定 Content ID，包括当前
+ * Track 或 locale 之外的前置条件。
  */
 export function createLearnProjection(
   locale: Locale,
@@ -89,7 +96,7 @@ export function createLearnProjection(
       .sort((left, right) => left.order - right.order)
       .flatMap((track) => {
         const contentIds = localeEntries
-          .filter((entry) => entry.tracks?.includes(track.id))
+          .filter((entry) => isContentIndexable(entry.status) && entry.tracks?.includes(track.id))
           .map((entry) => entry.id);
         if (contentIds.length === 0) return [];
 

@@ -29,7 +29,11 @@ export default async function Layout({ params, children }: LayoutProps<'/[lang]/
   return (
     <DocsLayout
       tree={source.pageTree[locale]}
-      {...baseOptions(locale, { navTitle: <NavTitle />, guestbookTitle: dict.guestbookTitle })}
+      {...baseOptions(locale, {
+        learnTitle: dict.learnTitle,
+        navTitle: <NavTitle />,
+        guestbookTitle: dict.guestbookTitle,
+      })}
       // Fumadocs renders the repository as its native sidebar icon link.
       // Fumadocs 使用原生侧栏图标链接呈现项目仓库入口。
       githubUrl={REPO_URL}

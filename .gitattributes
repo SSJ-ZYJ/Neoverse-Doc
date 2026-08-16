@@ -34,3 +34,7 @@
 *.ogg binary
 *.wav binary
 *.webm binary
+
+# Avoid GitHub language statistics focusing on document language.
+*.md linguist-detectable=false
+*.mdx linguist-detectable=false

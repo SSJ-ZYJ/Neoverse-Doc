@@ -77,7 +77,10 @@ New top-level directories must be registered in the `ALLOWED` matrix, otherwise 
 src/app/[lang]/
 ├── (home)/
 │   ├── (index)/page.tsx          # Home page
-│   └── guestbook/page.tsx        # Guestbook
+│   ├── guestbook/page.tsx        # Guestbook
+│   └── learn/
+│       ├── page.tsx              # Learning path entry
+│       └── [track]/page.tsx      # Track learning path
 ├── docs/
 │   ├── layout.tsx                # DocsLayout
 │   └── [...slug]/page.tsx        # Article body
@@ -88,8 +91,10 @@ src/app/[lang]/
 Route groups let the home page and document pages share a locale while using different layouts:
 
 - the home page uses the top navigation and content portal, without loading the document sidebar;
+- `/learn` reuses the home layout, with routes derived from the Taxonomy Registry and Learn Projection;
 - document pages use the Fumadocs `DocsLayout`, including the sidebar, article body, and on-page TOC;
 - the guestbook reuses the home page layout but lives on its own page;
+- Track navigation inside an article is a lightweight product entry and does not replace Fumadocs Chapter Navigation;
 - `docs-source` generates statically accessible raw Markdown for every piece of content.
 
 The root path is the static language routing entry: the browser chooses Chinese or English based on `navigator.languages`, falling back to English for unknown languages; script-free environments can still use the two explicit entries on the page. Automatic detection happens only at `/` and never rewrites `/zh` or `/en` visited deliberately by readers. The project does not use Middleware to determine the locale at request time, because the production deployment has no long-running Next.js server.
@@ -230,7 +235,7 @@ The loading scene only appears in the brief window of a route transition and doe
 | `src/content/generated/manifest.ts` | Typed Content Manifest derived from Source |
 | `next.config.ts` | Production static export, image, and development response configuration |
 | `src/adapters/fumadocs/` | Fumadocs Source, Layout, TOC, and DOM adapters |
-| `src/features/` | Seven mature feature boundaries (each with a public entry + the cross-feature allowlist) |
+| `src/features/` | Eight mature feature boundaries (each with a public entry + the cross-feature allowlist) |
 | `src/runtime/` | Navigation, Motion, and Interaction coordination |
 | `src/lib/i18n.ts` | Single source for locales |
 | `src/lib/site-config.ts` | Repository, author, license, and Giscus configuration |
