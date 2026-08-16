@@ -20,7 +20,6 @@ export interface Dictionary {
   // Visual loading marquee label.
   // 可视化加载跑马灯标签。
   loadingMarquee: string;
-  enterDocs: string;
   learnTitle: string;
   topicsTitle: string;
   // Root language gateway fallback / 根语言分流入口兜底文案
@@ -141,7 +140,18 @@ export interface Dictionary {
   home: {
     eyebrow: string;
     heroDescription: string;
+    primaryAction: string;
     scrollHint: string;
+    entriesEyebrow: string;
+    entriesTitle: string;
+    entriesDescription: string;
+    learnEntryTitle: string;
+    learnTrackCount: string;
+    learnStepCount: string;
+    topicsEntryTitle: string;
+    topicCount: string;
+    referenceEntryTitle: string;
+    referenceCount: string;
     chaptersEyebrow: string;
     chaptersTitle: string;
     chaptersDescription: string;

@@ -7,11 +7,11 @@ author:
 ---
 
 > [!DETAILS-AI] AI Summary of This Chapter
-> The homepage is organized by `HomePortal` into a three-section structure of Hero, chapters, and community, with an ambient motion controller providing a shared animation clock and frame budget. The immersive interaction generates a HarmonyOS-style photon field along the pointer path, the TOC scrollbar continuously tracks the directory highlight with a 4px thumb, and progressive blur on documentation pages plus inline code wrapping detection use `IntersectionObserver` and `MutationObserver` for on-demand measurement. All continuous animations respect `prefers-reduced-motion`, and RAF and the particle layer pause when the tab is hidden.
+> The homepage is organized by `HomePortal` into Hero, primary knowledge entries, secondary Chapter browsing, and community layers. The primary entries consume the Learn / Explore / Reference Product Projections, while Chapters remain a secondary linear-browsing option. An ambient motion controller provides a shared animation clock and frame budget. The immersive interaction generates a HarmonyOS-style photon field along the pointer path, the TOC scrollbar continuously tracks the directory highlight with a 4px thumb, and progressive blur on documentation pages plus inline code wrapping detection use `IntersectionObserver` and `MutationObserver` for on-demand measurement. All continuous animations respect `prefers-reduced-motion`, and RAF and the particle layer pause when the tab is hidden.
 
-## 1. Three-section homepage structure
+## 1. Homepage knowledge portal structure
 
-`src/components/home/home-portal.tsx` is the homepage entrance component. It wraps three sections of content with `AmbientMotionController`:
+`src/components/home/home-portal.tsx` is the homepage entrance component. It wraps four layers of content with `AmbientMotionController`:
 
 ```text
 HomePortal
@@ -20,9 +20,12 @@ HomePortal
 │   │   ├── LightRays (light-ray background)
 │   │   ├── .home-hero__network (grid background)
 │   │   ├── HeroTitle (particle text title)
-│   │   └── PrimaryAction (primary action button)
-│   ├── Chapter section
+│   │   └── PrimaryAction (start learning)
+│   ├── Primary knowledge-entry section
 │   │   ├── AiComputeBackdrop variant="knowledge" (AI accelerator backdrop)
+│   │   ├── HomeEntryGrid (Learn / Topics / Reference)
+│   │   └── Counts derived from Product Projections
+│   ├── Secondary Chapter section
 │   │   ├── AnimatedContent (scroll entrance)
 │   │   └── ChapterGrid (chapter card grid)
 │   └── Community section
@@ -31,7 +34,7 @@ HomePortal
 │       └── TransitionLink transition="surface" (community entrance)
 ```
 
-The three-section structure gives the homepage a clear information hierarchy: first establish the project identity, then present the content entrances, and finally guide participation.
+The homepage first establishes project identity, then answers “what do I want to do now?”, followed by complete Chapter browsing and contribution links. Learn, Topics, and Reference are formal product entries; the Chapter page tree only supplies the secondary linear navigation.
 
 ## 2. Ambient motion controller
 
@@ -64,15 +67,15 @@ The Hero section is the first screen of the homepage and is responsible for esta
 - `LightRays` provides a sweeping light-ray effect;
 - `.home-hero__network::before` is the grid layer, which moves a single expanded layer on the compositor to avoid repainting a large background area every frame.
 
-## 4. Chapter section and AI accelerator backdrop
+## 4. Primary knowledge entries and secondary Chapter section
 
-The chapter section shows the documentation entrance cards and is the homepage's core navigation area.
+The primary knowledge-entry section uses the `variant="knowledge"` accelerator backdrop for the three formal product entries. The Chapter section shows the complete Chapter tree derived from the page tree. It is a secondary linear-browsing area and does not classify or order Learn, Topics, or Reference.
 
 ### AiComputeBackdrop
 
-`src/components/home/ai-compute-backdrop.tsx` renders a structured SVG animation as the chapter section's backdrop:
+`src/components/home/ai-compute-backdrop.tsx` renders a structured SVG animation as the primary knowledge-entry section's backdrop:
 
-- `variant="knowledge"` is used for the chapter section, presenting a knowledge-network visual;
+- `variant="knowledge"` is used for the primary entry section, presenting a knowledge-network visual;
 - `variant="community"` is used for the community section, presenting a community-connection visual;
 - The SVG animation is isolated with `contain: layout style paint` so it doesn't interfere with the content layout.
 
@@ -83,11 +86,11 @@ The chapter section shows the documentation entrance cards and is the homepage's
 - A 12-column grid where `.chapter-card` occupies 4 columns;
 - Cards use `--home-map-card-surface` and `--home-map-card-blur: 8px`;
 - `Magic Bento` provides cursor tracking and hover lift effects;
-- Card content (title, description, status) is read dynamically from `home-sections.ts`.
+- Card content (title and description) is derived dynamically from the page-tree data in `home-sections.ts`.
 
 ### home-sections.ts
 
-`src/content/home-sections.ts` extracts root folders from Fumadocs `source.getPageTree(locale)` as the homepage chapters:
+`src/content/home-sections.ts` extracts root folders from Fumadocs `source.getPageTree(locale)` as secondary homepage Chapter entries:
 
 - `getHomeChapters(locale)` avoids linking to sections that don't exist;
 - `getSearchChapterTags(locale)` reuses the same page tree and aligns with the server-side search index tags using the first-segment slug.
@@ -286,7 +289,8 @@ On mobile, priority goes to content width, reachable navigation, and touch targe
 
 | File | Responsibility |
 | :--- | :--- |
-| `src/components/home/home-portal.tsx` | Three-section homepage entrance |
+| `src/components/home/home-portal.tsx` | Homepage knowledge portal entrance |
+| `src/components/home/home-entry-grid.tsx` | Primary Learn / Topics / Reference entries |
 | `src/components/home/ambient-motion-controller.tsx` | Shared animation clock |
 | `src/components/home/ai-compute-backdrop.tsx` | AI accelerator backdrop |
 | `src/components/home/chapter-grid.tsx` | Chapter card grid |

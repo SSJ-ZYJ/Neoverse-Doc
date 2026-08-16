@@ -546,6 +546,10 @@
     contain-intrinsic-block-size: auto 66rem;
   }
 
+  .home-knowledge {
+    contain-intrinsic-block-size: auto 42rem;
+  }
+
   .home-community {
     contain-intrinsic-block-size: auto 28rem;
   }
@@ -572,17 +576,6 @@
    42% 混合后产生可察觉的矩形）。环境光球层（.home-page::before）已通过
    漂移色彩渐变为 section 间提供视觉分隔 —— 无需额外的区段级表面。
    移除后同时消除可见矩形问题和每 section 的背景绘制开销。 */
-
-/* Lower sections use a restrained AI accelerator board: a visible processor,
-   compute cores, memory banks, and orthogonal buses replace the former web of
-   unrelated curves. 首页下方使用克制的 AI 加速器板：处理器、计算核心、存储单元
-   与正交总线取代此前杂乱的曲线网络。 */
-.home-chapters::before {
-  background:
-    radial-gradient(circle at 14% 28%, var(--ambient-ice), transparent 22rem),
-    radial-gradient(circle at 82% 70%, var(--ambient-violet), transparent 24rem),
-    color-mix(in srgb, var(--surface-glass) 62%, transparent);
-}
 
 .ai-compute {
   position: absolute;
@@ -758,10 +751,87 @@
 /* Card collections stay readable while their parent settles into position,
    eliminating the transparent-to-loaded flash during fast scrolling.
    卡片集合在父级归位期间保持可读，消除快速滚动时从透明到加载完成的闪现。 */
+.home-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.home-entry-card {
+  display: flex;
+  min-block-size: 18rem;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.home-entry-card__topline,
+.home-entry-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.home-entry-card__icon {
+  display: grid;
+  inline-size: 2.7rem;
+  block-size: 2.7rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, var(--border-subtle));
+  border-radius: var(--radius-xs);
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+}
+
+.home-entry-card__arrow {
+  color: var(--accent-primary);
+  transition: transform var(--motion-fast) var(--motion-ease-standard);
+}
+
+.home-entry-card__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.home-entry-card__content strong {
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  line-height: 1.2;
+}
+
+.home-entry-card__content > span {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.home-entry-card__meta {
+  justify-content: flex-start;
+  padding-block-start: 0.85rem;
+  border-block-start: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (hover: hover) {
+  .home-entry-card:hover .home-entry-card__arrow {
+    transform: translate(0.18rem, -0.18rem);
+  }
+}
+
 :where(.chapter-grid) {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.home-section__reveal > .home-entry-grid {
+  opacity: 1;
+  transform: translateY(0.45rem);
 }
 
 .home-section__reveal > .chapter-grid {
@@ -770,7 +840,7 @@
 }
 
 .home-section__reveal[data-visible="true"]
-  > :is(.home-section__heading, .chapter-grid, div:first-child),
+  > :is(.home-section__heading, .home-entry-grid, .chapter-grid, div:first-child),
 .home-section__reveal[data-visible="true"] > .home-community__actions {
   opacity: 1;
   transform: translateY(0);
@@ -779,7 +849,8 @@
     transform var(--motion-standard) var(--motion-ease-emphasized) 90ms;
 }
 
-.home-section__reveal[data-visible="true"] > :is(.chapter-grid, .home-community__actions) {
+.home-section__reveal[data-visible="true"]
+  > :is(.home-entry-grid, .chapter-grid, .home-community__actions) {
   transition-delay: var(--motion-stagger);
 }
 
@@ -1354,6 +1425,10 @@
   }
 
   @supports (content-visibility: auto) {
+    .home-knowledge {
+      contain-intrinsic-block-size: auto 62rem;
+    }
+
     .home-chapters {
       contain-intrinsic-block-size: auto 86rem;
     }
@@ -1445,6 +1520,15 @@
     display: block;
   }
 
+  .home-entry-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .home-entry-card {
+    min-block-size: 14rem;
+  }
+
   .chapter-card {
     min-block-size: 15rem;
     margin-block-end: 0.75rem;
@@ -1478,8 +1562,13 @@
   }
 
   .rb-magnet,
-  .chapter-card {
+  .chapter-card,
+  .home-entry-card {
     transform: none !important;
+  }
+
+  .home-entry-card__arrow {
+    transition: none;
   }
 
   .chapter-card::before,
@@ -1529,8 +1618,12 @@ html[data-nd-motion-level="low"] .home-section__reveal > * {
   transition: none !important;
 }
 
-html[data-nd-motion-level="low"] :is(.rb-magnet, .chapter-card) {
+html[data-nd-motion-level="low"] :is(.rb-magnet, .chapter-card, .home-entry-card) {
   transform: none !important;
+}
+
+html[data-nd-motion-level="low"] .home-entry-card__arrow {
+  transition: none;
 }
 
 html[data-nd-motion-level="low"] :is(.chapter-card::before, .chapter-card::after) {
@@ -1625,6 +1718,14 @@ html[data-page-hidden] .ai-compute__pulse {
    HTML-in-Canvas 会把章节卡片的背景模糊拆成捕获图块，在卡片内部与间隙留下
    不透明竖块。原生粒子分支移除该滤镜后，现有折射填充与边框仍保留玻璃层级。 */
 .home-particle-scroll[data-particle-scroll-native] .chapter-card {
+  backdrop-filter: none;
+}
+
+/* The native capture branch also drops the entry-card blur so the three
+   primary links keep clean boundaries inside the captured canvas.
+   原生捕获分支同样移除主入口卡片的模糊，保证三张主入口卡片在画布内
+   保持清晰边界。 */
+.home-particle-scroll[data-particle-scroll-native] .home-entry-card {
   backdrop-filter: none;
 }
 

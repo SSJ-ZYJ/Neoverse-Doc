@@ -1,6 +1,6 @@
-// Homepage chapter entries are derived from Fumadocs' locale page tree so
-// the portal never links to categories that do not exist in the repository.
-// 首页章节入口来自 Fumadocs 对应语言页面树，避免链接到仓库中不存在的栏目。
+// Secondary homepage Chapter entries are derived from Fumadocs' locale page
+// tree, so the portal never links to categories that do not exist in the repo.
+// 首页次级 Chapter 入口来自 Fumadocs 对应语言页面树，避免链接到仓库中不存在的栏目。
 
 import type { Folder, Item } from 'fumadocs-core/page-tree';
 import { source } from '@/adapters/fumadocs/source';

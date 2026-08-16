@@ -98,6 +98,16 @@ _Avoid_: 从 Chapter、slug 或 URL 推导 Topic
 按统一 Content Type 准入的查阅型内容视图。
 _Avoid_: 用 Chapter 位置、页面名称或局部标签判断参考内容
 
+### 首页信息架构
+
+**Home Knowledge Portal（首页知识门户）**:
+首页面向用户目标组织的知识入口，优先连接 Learn、Topics 与 Reference，再提供 Chapter 线性浏览。
+_Avoid_: 以 Chapter 展示页作为首页唯一产品结构、首页专用 Track 或 Topic 元数据
+
+**Chapter Entry（章节入口）**:
+由现有页面树派生的线性阅读入口，用于兼容作者编排与完整章节浏览，不承担产品分类或推荐语义。
+_Avoid_: 把 Chapter 顺序当作 Learn、Topics 或 Reference 的数据来源
+
 **Search Document（搜索文档）**:
 由 structured content 正文和 Manifest 元数据通过 Stable Content ID 连接得到的细粒度搜索语料记录。
 _Avoid_: 将正文塞入 Content IR、由 Search Feature 重新解析 Frontmatter

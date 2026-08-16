@@ -7,11 +7,11 @@ author:
 ---
 
 > [!DETAILS-AI] 本章 AI 摘要
-> 首页由 `HomePortal` 组织成 Hero、章节、共建三段式结构，环境动效控制器提供共享动画时钟与帧率预算。沉浸式交互沿指针路径生成 HarmonyOS 风格光子场，TOC 滚动条以 4px thumb 连续追踪目录高亮，文档页渐进模糊与行内代码换行检测通过 `IntersectionObserver` 与 `MutationObserver` 实现按需测量。所有持续动画尊重 `prefers-reduced-motion`，标签页隐藏时暂停 RAF 与粒子层。
+> 首页由 `HomePortal` 组织成 Hero、知识主入口、Chapter 线性浏览与共建四个层级；知识主入口消费 Learn / Explore / Reference Product Projection，Chapter 只保留为次级浏览方式。环境动效控制器提供共享动画时钟与帧率预算。沉浸式交互沿指针路径生成 HarmonyOS 风格光子场，TOC 滚动条以 4px thumb 连续追踪目录高亮，文档页渐进模糊与行内代码换行检测通过 `IntersectionObserver` 与 `MutationObserver` 实现按需测量。所有持续动画尊重 `prefers-reduced-motion`，标签页隐藏时暂停 RAF 与粒子层。
 
-## 一、首页三段式结构
+## 一、首页知识门户结构
 
-`src/components/home/home-portal.tsx` 是首页入口组件，由 `AmbientMotionController` 包裹三段内容：
+`src/components/home/home-portal.tsx` 是首页入口组件，由 `AmbientMotionController` 包裹四个层级：
 
 ```text
 HomePortal
@@ -20,9 +20,12 @@ HomePortal
 │   │   ├── LightRays（光线背景）
 │   │   ├── .home-hero__network（网格背景）
 │   │   ├── HeroTitle（粒子文字标题）
-│   │   └── PrimaryAction（主操作按钮）
-│   ├── 章节段
+│   │   └── PrimaryAction（开始学习）
+│   ├── 知识主入口段
 │   │   ├── AiComputeBackdrop variant="knowledge"（AI 加速器背景）
+│   │   ├── HomeEntryGrid（Learn / Topics / Reference）
+│   │   └── Product Projection 派生的数量摘要
+│   ├── Chapter 次级段
 │   │   ├── AnimatedContent（滚动入场）
 │   │   └── ChapterGrid（章节卡片网格）
 │   └── 共建段
@@ -31,7 +34,7 @@ HomePortal
 │       └── TransitionLink transition="surface"（共建入口）
 ```
 
-三段式结构让首页有明确的信息层级：先建立项目身份，再展示内容入口，最后引导参与。
+首页先建立项目身份，再回答“我现在想做什么”，然后提供完整章节的线性浏览与共建入口。Learn / Topics / Reference 是正式产品入口，Chapter 页面树只用于次级线性导航。
 
 ## 二、环境动效控制器
 
@@ -64,15 +67,15 @@ Hero 段是首页第一屏，承担项目身份建立。
 - `LightRays` 提供光线扫射效果；
 - `.home-hero__network::before` 是网格层，通过合成器移动单个扩展层，避免每帧重绘大面积背景位置。
 
-## 四、章节段与 AI 加速器背景
+## 四、知识主入口与 Chapter 次级段
 
-章节段展示文档入口卡片，是首页的核心导航区。
+知识主入口段使用 `variant="knowledge"` 加速器背景承载三个正式产品入口。Chapter 段展示从 Fumadocs 页面树派生的完整章节入口，是首页的次级线性浏览区，不参与 Learn、Topics 或 Reference 的分类与排序。
 
 ### AiComputeBackdrop
 
-`src/components/home/ai-compute-backdrop.tsx` 渲染结构化 SVG 动画作为章节段背景：
+`src/components/home/ai-compute-backdrop.tsx` 渲染结构化 SVG 动画作为知识主入口段背景：
 
-- `variant="knowledge"` 用于章节段，呈现知识网络视觉；
+- `variant="knowledge"` 用于知识主入口段，呈现知识网络视觉；
 - `variant="community"` 用于共建段，呈现社区连接视觉；
 - SVG 动画通过 `contain: layout style paint` 隔离，避免与正文布局互相影响。
 
@@ -83,11 +86,11 @@ Hero 段是首页第一屏，承担项目身份建立。
 - 12 列网格，`.chapter-card` 占 4 列；
 - 卡片使用 `--home-map-card-surface` 与 `--home-map-card-blur: 8px`；
 - `Magic Bento` 提供光标追踪与悬浮抬升效果；
-- 卡片内容（标题、描述、状态）从 `home-sections.ts` 动态读取。
+- 卡片内容（标题、描述）从 `home-sections.ts` 的页面树派生数据动态读取。
 
 ### home-sections.ts
 
-`src/lib/home-sections.ts` 从 Fumadocs `source.getPageTree(locale)` 提取 root folders 作为首页章节：
+`src/content/home-sections.ts` 从 Fumadocs `source.getPageTree(locale)` 提取 root folders 作为首页 Chapter 次级入口：
 
 - `getHomeChapters(locale)` 避免链接到不存在的栏目；
 - `getSearchChapterTags(locale)` 复用同一页面树，并以首段 slug 对齐服务端搜索索引标签。
@@ -286,7 +289,8 @@ TOC thumb 遵循项目约束：
 
 | 文件 | 职责 |
 | :--- | :--- |
-| `src/components/home/home-portal.tsx` | 首页三段式入口 |
+| `src/components/home/home-portal.tsx` | 首页知识门户入口 |
+| `src/components/home/home-entry-grid.tsx` | Learn / Topics / Reference 主入口 |
 | `src/components/home/ambient-motion-controller.tsx` | 共享动画时钟 |
 | `src/components/home/ai-compute-backdrop.tsx` | AI 加速器背景 |
 | `src/components/home/chapter-grid.tsx` | 章节卡片网格 |

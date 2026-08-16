@@ -14,7 +14,6 @@ export const en = {
   // Visual loading marquee label.
   // 可视化加载跑马灯标签。
   loadingMarquee: 'LOADING...',
-  enterDocs: 'Enter',
   learnTitle: 'Learning paths',
   topicsTitle: 'Topics',
   languageGatewayTitle: 'Choose your language',
@@ -145,14 +144,26 @@ export const en = {
   },
   // Homepage portal copy / 首页内容门户文案
   home: {
-    eyebrow: 'DO SOMETHING GREAT',
+    eyebrow: 'TECHNICAL KNOWLEDGE PORTAL',
     heroDescription:
-      'A document under construction for computer science learners, focused on "technical" topics.',
-    scrollHint: 'Explore the knowledge map',
-    chaptersEyebrow: 'Knowledge coordinates',
-    chaptersTitle: 'Knowledge map',
-    chaptersDescription: 'What is currently available',
-    chapterAction: 'Open chapter',
+      'A broad technical knowledge base for computer learners—start with a learning path, explore by topic, or look up a reference.',
+    primaryAction: 'Start learning',
+    scrollHint: 'Choose an entry',
+    entriesEyebrow: 'START HERE',
+    entriesTitle: 'What do you want to do?',
+    entriesDescription:
+      'Enter Neoverse through a learning path, a topic, or a reference—depending on what you need now.',
+    learnEntryTitle: 'Learn systematically',
+    learnTrackCount: 'paths',
+    learnStepCount: 'steps',
+    topicsEntryTitle: 'Explore by topic',
+    topicCount: 'topics',
+    referenceEntryTitle: 'Quick reference',
+    referenceCount: 'items',
+    chaptersEyebrow: 'LINEAR BROWSE',
+    chaptersTitle: 'All chapters',
+    chaptersDescription: 'Prefer the author’s sequence? Browse the full Chapter structure here.',
+    chapterAction: 'Browse chapter',
     communityEyebrow: 'Built together',
     communityTitle: 'Help the knowledge network grow',
     communityDescription:
