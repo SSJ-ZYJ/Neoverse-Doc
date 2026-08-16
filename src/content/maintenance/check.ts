@@ -37,7 +37,12 @@ function issue(
   field: string,
   message: string,
 ): ContentMaintenanceIssue {
-  return { identity: `${entry.id}:${entry.locale}`, field, message };
+  return {
+    identity: `${entry.id}:${entry.locale}`,
+    field,
+    message,
+    ...(entry.sourcePath !== undefined ? { sourcePath: entry.sourcePath } : {}),
+  };
 }
 
 /**

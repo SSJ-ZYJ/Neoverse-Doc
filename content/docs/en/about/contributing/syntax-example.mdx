@@ -21,12 +21,12 @@ Pages must provide Frontmatter conforming to `source.config.ts`. The common fiel
 ---
 title: Page Title
 description: One sentence describing what problem the page solves
-author:
-  - "Main Author(https://github.com/your-name)"
-contributors:
-  - "Contributor(https://github.com/contributor-name)"
-status: stable
-todoProgress: false
+type: guide
+topics:
+  - shell
+tracks:
+  - computer-essentials
+difficulty: beginner
 ---
 ```
 
@@ -34,6 +34,13 @@ todoProgress: false
 | :--- | :---: | :--- |
 | `title` | Yes | Page title, rendered by the layout; the body does not need a first-level heading |
 | `description` | Yes | Used for page metadata and content summary |
+| `type` | No | Content type; legal IDs are available from `bun run report:content -- --taxonomy` |
+| `topics` | No | Topic ID array; legal IDs are available from `bun run report:content -- --taxonomy` |
+| `tracks` | No | Learning-track ID array; legal IDs are available from `bun run report:content -- --taxonomy` |
+| `difficulty` | No | Difficulty ID; legal IDs are available from `bun run report:content -- --taxonomy` |
+| `estimatedMinutes` | No | Estimated learning time in positive integer minutes |
+| `prerequisites` | No | Array of prerequisite Stable Content IDs |
+| `related` | No | Array of related Stable Content IDs |
 | `author` | No | Main author, accepts a string or an array of strings |
 | `contributor` / `contributors` | No | Contributors, accept a string or an array of strings |
 | `status` | No | Defaults to `stable`; accepts `draft`, `review`, `stable`, or `deprecated` |
@@ -43,6 +50,8 @@ todoProgress: false
 | `todoProgress` | No | Defaults to `false`; summarizes task progress before the body when enabled |
 
 Do not add fields not declared by the Schema. When new content semantics are needed, extend `source.config.ts` uniformly first instead of guessing from file names, URLs, or the body.
+
+For a new page, `type`, `topics`, `tracks`, and `difficulty` are recommended first additions; add `estimatedMinutes`, `prerequisites`, `related`, and `lastReviewed` incrementally as the content warrants. Run `bun run report:content` for Coverage and `bun run report:content -- --taxonomy` for legal Registry IDs. Low Coverage is an authoring warning only and does not block CI.
 
 ### Headings and Paragraphs
 

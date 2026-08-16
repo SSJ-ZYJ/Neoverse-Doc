@@ -69,18 +69,20 @@ Runtime consumers: explicit Learning Tasks use `docs:<id> + labId + taskId` as t
 
 `src/content/ir.ts` is the single normalized content data plane (Content IR): derived in one pass from the Fumadocs source, each IR entry carries the stable Content ID, `locale`, `url`, `slugs`, title and description, lifecycle and maintenance metadata, schema metadata, content relations, `contentRevision`, `sourcePath` (posix-relative), and the mermaid diagram sources found in the page (extracted by `src/content/mermaid-text.ts`). Fumadocs stays the only MDX compiler; the IR is 100% machine-derived at import time — never materialized to a file, never hand-maintained, so there is no cache that can go stale (decision record in `docs/adr/0004-content-ir-build-pipeline.md`).
 
-The build pipeline collapses into two commands:
+The build pipeline collapses into three commands:
 
 | Command | Stage | Behavior |
 | :--- | :--- | :--- |
 | `bun run generate:content` | Content prepare (auto-run by `predev`) | Derive IR → validate content → incrementally render mermaid assets (the only command that may launch Puppeteer, and zero launches when everything hits cache) |
 | `bun run check:content` | Production gate (auto-run by `prebuild`) | Derive IR → validate content and emit maintenance report → hash-check mermaid assets; never imports Puppeteer |
+| `bun run report:content` | Authoring DX report | Derive IR → print Metadata Coverage, Content Health, and optional Taxonomy; never touches Mermaid assets; append `-- --verbose` for complete diagnostics |
 
 How each system consumes it:
 
 - **Content Manifest** (`src/content/generated/manifest.ts`) is the consumer view over the IR, passing through taxonomy and relation fields while stripping IR-only build fields (`sourcePath`, `mermaid`); the sitemap-facing API is unchanged;
 - **Content validation** (ID uniqueness, translation pairing, reference existence, duplicates, self-references, cross-locale relation conflicts, and prerequisite cycles) runs on the IR; lifecycle relations, replacement targets, and invalid date semantics are Errors, while Freshness and translation `missing` / `outdated` results are Warnings;
 - **Translation Report** prints `missing`, `outdated`, or `up-to-date` for every locale paired by Stable Content ID; warnings do not change the successful exit code of `check:content`;
+- **Metadata Coverage / Authoring Diagnostics** consume Content IR directly and count `type`, `topics`, `tracks`, `difficulty`, `estimatedMinutes`, `prerequisites`, `related`, `status`, and `lastReviewed` per locale page variant; missing optional fields produce compact warnings only, never Required Schema or CI Errors. Run `bun run report:content -- --taxonomy` to discover legal Taxonomy IDs;
 - **Knowledge Graph** (`src/content/graph/`) compiles Stable Content ID nodes plus forward and reverse relations from the IR without re-scanning MDX;
 - **Mermaid** detection is driven by the IR instead of walking `content/docs`; assets are content-addressed by the source + renderer signature + config hash (see [Mermaid and Performance](./mermaid-performance));
 - **Product projections** (`src/content/projections/`) derive pure product data views from the unified Content IR, Manifest, Taxonomy Registry, and Content Graph: Learn organizes stable Content IDs by Track, taxonomy order, and explicit prerequisite edges; Explore groups only by explicit Topics; Reference admits only the canonical Content Type. Projections do not duplicate names, display text, or a second metadata registry, so product consumers still resolve those from the Manifest and Registry;

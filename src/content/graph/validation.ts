@@ -3,6 +3,7 @@ import { CONTENT_RELATION_FIELDS } from './types';
 
 interface RelationDeclaration {
   locale: string;
+  sourcePath?: string;
   references: readonly string[];
 }
 
@@ -29,7 +30,11 @@ function addRelationDeclaration(
   }
 
   const declarations = declarationsByField.get(field) ?? [];
-  declarations.push({ locale: entry.locale, references });
+  declarations.push({
+    locale: entry.locale,
+    ...(entry.sourcePath !== undefined ? { sourcePath: entry.sourcePath } : {}),
+    references,
+  });
   declarationsByField.set(field, declarations);
 }
 
@@ -64,6 +69,9 @@ function findLocaleRelationConflicts(
         identity: id,
         field,
         message: `同一 Content ID 的 locale 版本在 ${field} 声明不一致（${detail}）`,
+        ...(declarations[0]?.sourcePath !== undefined
+          ? { sourcePath: declarations[0].sourcePath }
+          : {}),
       });
     }
   }
@@ -75,6 +83,11 @@ function findPrerequisiteCycles(
   entries: readonly ContentRelationEntry[],
   knownIds: ReadonlySet<string>,
 ): ContentRelationViolation[] {
+  const sourcePathsById = new Map(
+    entries.flatMap((entry) =>
+      entry.sourcePath === undefined ? [] : [[entry.id, entry.sourcePath] as const],
+    ),
+  );
   const edges = new Map<string, Set<string>>(
     [...knownIds].map((id) => [id, new Set<string>()] as const),
   );
@@ -106,10 +119,12 @@ function findPrerequisiteCycles(
     if (reportedCycles.has(key)) return;
 
     reportedCycles.add(key);
+    const sourcePath = sourcePathsById.get(cycle[0]);
     violations.push({
       identity: cycle[0],
       field: 'prerequisites',
       message: `前置关系形成环：${cycle.join(' → ')}`,
+      ...(sourcePath !== undefined ? { sourcePath } : {}),
     });
   }
 
@@ -162,6 +177,7 @@ export function validateContentRelations(
             identity: `${entry.id}:${entry.locale}`,
             field,
             message: `重复引用 '${reference}'：同一关系字段内每个 Content ID 只能出现一次`,
+            ...(entry.sourcePath !== undefined ? { sourcePath: entry.sourcePath } : {}),
           });
         }
         seenReferences.add(reference);
@@ -171,6 +187,7 @@ export function validateContentRelations(
             identity: `${entry.id}:${entry.locale}`,
             field,
             message: `自引用 '${reference}'：内容不应以自身为前置或相关项`,
+            ...(entry.sourcePath !== undefined ? { sourcePath: entry.sourcePath } : {}),
           });
         }
         if (!knownIds.has(reference)) {
@@ -178,6 +195,7 @@ export function validateContentRelations(
             identity: `${entry.id}:${entry.locale}`,
             field,
             message: `引用了不存在的 Content ID '${reference}'（任意 locale 均无此内容）`,
+            ...(entry.sourcePath !== undefined ? { sourcePath: entry.sourcePath } : {}),
           });
         }
       }

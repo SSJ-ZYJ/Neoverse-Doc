@@ -1,6 +1,6 @@
 // Content pipeline: the single build-time entry that derives the Content IR,
-// validates content maintenance and relations, and manages mermaid assets.
-// Two modes:
+// validates content maintenance and relations, reports authoring health, and
+// manages mermaid assets. Three modes:
 //
 //   generate (bun run generate:content) — dev / content preparation. Derives
 //     the IR, runs all content validations, then incrementally renders only
@@ -12,9 +12,11 @@
 //     against the IR and the files on disk. Never imports puppeteer, never
 //     launches a browser; missing or stale assets fail the build with a hint
 //     to run generate. See docs/adr/0004.
+//   report (bun run report:content) — derives the IR and prints the compact
+//     coverage / health / taxonomy report without touching Mermaid assets.
 //
 // 内容管线：派生 Content IR、校验内容维护与关系并管理 Mermaid 资产的唯一
-// 构建期入口。两种模式：
+// 构建期入口。三种模式：
 //
 //   generate（bun run generate:content）—— 开发 / 内容准备阶段。派生 IR、
 //     执行全部内容校验，然后按「源码 + 渲染器 + 配置」哈希内容寻址，仅
@@ -24,12 +26,23 @@
 //     校验，然后按 IR 与磁盘文件对 Mermaid 资产清单做哈希对账。绝不导入
 //     puppeteer、绝不启动浏览器；资产缺失或过期时使构建失败并提示运行
 //     generate。见 docs/adr/0004。
+//   report（bun run report:content）—— 派生 IR 并输出紧凑的覆盖率、健康
+//     与分类注册表报告，不处理 Mermaid 资产。
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createMdxPlugin } from 'fumadocs-mdx/bun';
 import { validateContentMaintenance } from '../src/content/maintenance/check';
 import {
+  createContentCoverageReport,
+  formatContentAuthoringDiagnostics,
+  formatContentMetadataCoverage,
+  formatTaxonomyRegistry,
+  getContentAuthoringFix,
+} from '../src/content/maintenance/coverage';
+import {
+  createContentHealthSummary,
   createTranslationReport,
+  formatContentHealthSummary,
   formatTranslationReport,
   getTranslationWarnings,
 } from '../src/content/maintenance/report';
@@ -60,10 +73,14 @@ if (bunGlobal === undefined) {
 }
 
 const mode = process.argv[2];
-if (mode !== 'generate' && mode !== 'verify') {
-  console.error('Usage: bun scripts/content-pipeline.ts <generate|verify>');
+if (mode !== 'generate' && mode !== 'verify' && mode !== 'report') {
+  console.error(
+    'Usage: bun scripts/content-pipeline.ts <generate|verify|report> [--verbose] [--taxonomy]',
+  );
   process.exit(1);
 }
+const verbose = process.argv.includes('--verbose');
+const showTaxonomy = process.argv.includes('--taxonomy');
 
 // Phase timing uses the monotonic hrtime clock: on some Windows hosts both
 // wall-clock and performance.now() deltas were observed inflating wildly
@@ -118,6 +135,7 @@ interface Violation {
   identity: string;
   field: string;
   message: string;
+  sourcePath?: string;
 }
 
 const violations: Violation[] = [];
@@ -130,6 +148,7 @@ for (const entry of contentIr) {
       identity,
       field: 'id',
       message: 'Content ID 在同一 locale 下重复，请检查文件组织',
+      sourcePath: entry.sourcePath,
     });
   }
   seenIdentities.add(identity);
@@ -142,25 +161,27 @@ for (const entry of contentIr) {
 // 稳定 id 按设计与 locale 无关，但 fumadocs 目录式 i18n 配对仍从路径对称性
 // 解析翻译。把这一隐式依赖升级为显式契约：共享同一 id 的各语言版本必须
 // 位于相同 slugs，否则 page tree / alternates / 路由会静默分裂。
-const slugPathsById = new Map<string, Map<string, string[]>>();
+const slugPathsById = new Map<string, Map<string, { slugs: string[]; sourcePath: string }>>();
 for (const entry of contentIr) {
   let variants = slugPathsById.get(entry.id);
   if (variants === undefined) {
     variants = new Map();
     slugPathsById.set(entry.id, variants);
   }
-  variants.set(entry.locale, entry.slugs);
+  variants.set(entry.locale, { slugs: entry.slugs, sourcePath: entry.sourcePath });
 }
 for (const [id, variants] of slugPathsById) {
-  const distinctPaths = new Set([...variants.values()].map((slugs) => slugs.join('/')));
+  const distinctPaths = new Set([...variants.values()].map(({ slugs }) => slugs.join('/')));
   if (distinctPaths.size > 1) {
     const detail = [...variants.entries()]
-      .map(([locale, slugs]) => `${locale}=${slugs.join('/')}`)
+      .map(([locale, { slugs }]) => `${locale}=${slugs.join('/')}`)
       .join(', ');
+    const firstVariant = variants.values().next().value;
     violations.push({
       identity: id,
       field: 'id',
       message: `同一稳定 id 的各语言版本 slugs 不一致（${detail}）；翻译配对要求路径对称，请移动文件或拆分 id`,
+      ...(firstVariant !== undefined ? { sourcePath: firstVariant.sourcePath } : {}),
     });
   }
 }
@@ -176,8 +197,12 @@ const warnings = [...maintenance.warnings, ...translationWarnings];
 
 if (violations.length > 0) {
   for (const violation of violations) {
+    const location = violation.sourcePath ?? `[${violation.identity}]`;
     console.error(
-      `Content check violation: [${violation.identity}] ${violation.field}\n  ${violation.message}`,
+      `Content check violation: ${location}\n` +
+        `  field: ${violation.field}\n` +
+        `  why: ${violation.message}\n` +
+        `  fix: ${getContentAuthoringFix(violation.field)}`,
     );
   }
   console.error(
@@ -187,12 +212,31 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
-for (const warning of warnings) {
+const coverage = createContentCoverageReport(contentIr);
+console.info(formatContentMetadataCoverage(coverage));
+console.info(formatContentAuthoringDiagnostics(coverage, { verbose }));
+if (showTaxonomy) console.info(`\n${formatTaxonomyRegistry()}`);
+
+const health = createContentHealthSummary(contentIr, maintenance.warnings, translationReports);
+console.info(`\n${formatContentHealthSummary(health)}`);
+
+if (verbose) {
+  for (const warning of warnings) {
+    const location = warning.sourcePath ?? `[${warning.identity}]`;
+    console.warn(
+      `Content check warning: ${location}\n` +
+        `  field: ${warning.field}\n` +
+        `  why: ${warning.message}\n` +
+        `  fix: ${getContentAuthoringFix(warning.field)}`,
+    );
+  }
+  console.info(`\n${formatTranslationReport(translationReports)}`);
+} else if (warnings.length > 0) {
   console.warn(
-    `Content check warning: [${warning.identity}] ${warning.field}\n  ${warning.message}`,
+    `Content check warning summary: ${warnings.length} maintenance / translation warning(s); ` +
+      'use --verbose for file-level details.',
   );
 }
-console.info(formatTranslationReport(translationReports));
 
 const relations = contentIr.reduce(
   (sum, entry) => sum + (entry.prerequisites?.length ?? 0) + (entry.related?.length ?? 0),
@@ -200,9 +244,14 @@ const relations = contentIr.reduce(
 );
 const annotated = contentIr.filter((entry) => entry.type !== undefined).length;
 console.info(
-  `Content check passed: ${contentIr.length} entries, ${annotated} typed page(s), ` +
-    `${relations} relation reference(s), all relation rules satisfied, ${warnings.length} warning(s).`,
+  `${mode === 'report' ? 'Content report complete' : 'Content check passed'}: ` +
+    `${contentIr.length} entries, ${annotated} typed page(s), ` +
+    `${relations} relation reference(s), all relation rules satisfied, ` +
+    `${warnings.length} maintenance / translation warning(s), ` +
+    `${coverage.diagnostics.length} metadata diagnostic(s).`,
 );
+
+if (mode === 'report') process.exit(0);
 
 // --- Stage 3: Mermaid assets ------------------------------------------------
 const charts = dedupeCharts(contentIr.flatMap((entry) => entry.mermaid));

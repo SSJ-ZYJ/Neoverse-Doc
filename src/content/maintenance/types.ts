@@ -22,6 +22,7 @@ export interface ContentMaintenanceEntry {
   readonly id: string;
   readonly locale: Locale;
   readonly title: string;
+  readonly sourcePath?: string;
   readonly status: ContentStatus;
   readonly lastReviewed?: string;
   readonly replacement?: string;
@@ -35,6 +36,7 @@ export interface ContentMaintenanceIssue {
   readonly identity: string;
   readonly field: string;
   readonly message: string;
+  readonly sourcePath?: string;
 }
 
 export function isContentDraft(status: ContentStatus): boolean {

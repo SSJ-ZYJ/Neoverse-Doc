@@ -5,12 +5,37 @@ export {
   resolveFreshnessPolicy,
 } from '@/content/taxonomy/maintenance';
 export type { ContentMaintenanceCheckResult } from './check';
-export { parseReviewDate, validateContentMaintenance } from './check';
-export type { TranslationReport, TranslationState, TranslationVariantReport } from './report';
+export type {
+  ContentAuthoringDiagnosticsOptions,
+  ContentCoverageDiagnostic,
+  ContentCoverageReport,
+  ContentMetadataCoverage,
+  ContentMetadataEntry,
+  ContentMetadataField,
+} from './coverage';
 export {
+  CONTENT_METADATA_FIELDS,
+  createContentCoverageReport,
+  formatContentAuthoringDiagnostics,
+  formatContentMetadataCoverage,
+  formatTaxonomyRegistry,
+  getContentAuthoringFix,
+} from './coverage';
+export { parseReviewDate, validateContentMaintenance } from './check';
+export {
+  createContentHealthSummary,
   createTranslationReport,
+  formatContentHealthSummary,
   formatTranslationReport,
   getTranslationWarnings,
+  summarizeTranslationReport,
+} from './report';
+export type {
+  ContentHealthSummary,
+  TranslationReport,
+  TranslationState,
+  TranslationSummary,
+  TranslationVariantReport,
 } from './report';
 export type { ContentRevisionMetadata } from './revision';
 export { createContentRevision } from './revision';

@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { resolveFreshnessPolicy } from '@/content/taxonomy/maintenance';
 import { validateContentMaintenance } from './check';
-import { createTranslationReport, getTranslationWarnings } from './report';
+import {
+  createContentHealthSummary,
+  createTranslationReport,
+  getTranslationWarnings,
+} from './report';
 import type { ContentMaintenanceEntry } from './types';
 
 const SOURCE_REVISION = 'a'.repeat(64);
@@ -86,5 +90,34 @@ describe('translation drift report', () => {
     assert.equal(missing?.variants.find((variant) => variant.locale === 'en')?.state, 'missing');
     assert.equal(outdated?.variants.find((variant) => variant.locale === 'en')?.state, 'outdated');
     assert.equal(getTranslationWarnings(reports).length, 2);
+  });
+});
+
+describe('content health summary', () => {
+  it('combines lifecycle and freshness signals without double-counting pages', () => {
+    const reports = createTranslationReport([
+      entry({ status: 'review' }),
+      entry({ id: 'docs:outdated', locale: 'en', title: 'Outdated' }),
+    ]);
+    const summary = createContentHealthSummary(
+      [
+        entry({ status: 'review' }),
+        entry({ locale: 'en', status: 'review', title: 'Sample' }),
+        entry({ id: 'docs:deprecated', status: 'deprecated' }),
+        entry({ id: 'docs:deprecated', locale: 'en', status: 'deprecated', title: 'Deprecated' }),
+      ],
+      [
+        { identity: 'docs:sample:zh', field: 'lastReviewed', message: 'missing' },
+        { identity: 'docs:sample:en', field: 'lastReviewed', message: 'missing' },
+      ],
+      reports,
+    );
+
+    assert.deepEqual(summary, {
+      deprecated: 1,
+      needsReview: 1,
+      translationOutdated: 1,
+      translationMissing: 2,
+    });
   });
 });

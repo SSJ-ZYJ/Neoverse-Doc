@@ -75,6 +75,8 @@ Open `http://localhost:3000` in a browser to preview. Do not add, remove, upgrad
 | `bun lint` | Run Biome Lint | No |
 | `bun typecheck` | Generate route and content types; validate MDX, Frontmatter, and TypeScript | Yes |
 | `bun run generate:content` | Content prepare pipeline: validate content and incrementally generate Mermaid static SVGs and the asset mapping | Yes |
+| `bun run report:content` | Print Content IR Metadata Coverage and Content Health; append `-- --verbose` or `-- --taxonomy` as needed | No |
+| `bun run check:content` | Validate Schema, lifecycle, relations, translation drift, and Mermaid assets; low Coverage never fails | Yes |
 | `bun run build` | Run content validation and the production static build (no Mermaid rendering) | Yes |
 | `bun format` | Format the workspace with Biome | Yes |
 | `bun check` | Run Biome Check with `--write` | **Yes** |
@@ -172,16 +174,18 @@ Frontmatter must conform to the Schema in `source.config.ts`. Besides the basic 
 id: ch1/your-page-name
 title: Page Title
 description: Page Description
-author:
-  - "Main Author(https://github.com/your-name)"
-contributors:
-  - "Contributor(https://github.com/contributor-name)"
-status: stable
-todoProgress: false
+type: guide
+topics:
+  - shell
+tracks:
+  - computer-essentials
+difficulty: beginner
 ---
 ```
 
-`id` is the required stable content identity: when creating a page, take the value matching its final path (e.g. `ch1/your-page-name`); the zh and en versions must declare the same `id`. After that, never change it when moving the file or adjusting the URL. `author`, `contributor`, and `contributors` accept a single string or an array of strings; `status` defaults to `stable`, and the old `draft: true` form has been migrated to `status: draft` and must not be used again. Only record `lastReviewed` after a human technical review; add the matching `reviewedRevision` to a translation after confirming it is synchronized. Do not write custom fields that are not declared by the Schema.
+`id` is the required stable content identity: when creating a page, take the value matching its final path (e.g. `ch1/your-page-name`); the zh and en versions must declare the same `id`. After that, never change it when moving the file or adjusting the URL. The template's `type`, `topics`, `tracks`, and `difficulty` are the minimum recommended Metadata for a new page, but they remain optional and can be added incrementally. `estimatedMinutes`, `prerequisites`, `related`, `lastReviewed`, `author`, `contributor`, `contributors`, `status`, and `todoProgress` are also optional; `status` defaults to `stable`. Only record `lastReviewed` after a human technical review; add the matching `reviewedRevision` to a translation after confirming it is synchronized. Do not write custom fields that are not declared by the Schema.
+
+Run `bun run report:content` to see current Coverage and maintenance summaries. Missing Metadata produces authoring warnings only and does not block CI. Use `bun run report:content -- --verbose` for complete file-level diagnostics, or `bun run report:content -- --taxonomy` for legal Type, Topic, Track, and Difficulty IDs. These lists are generated from the Taxonomy Registry; do not maintain a second list in the documentation.
 
 ### Body Text Rules
 

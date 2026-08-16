@@ -7,6 +7,7 @@ export interface TranslationVariantReport {
   readonly locale: Locale;
   readonly state: TranslationState;
   readonly reason?: string;
+  readonly sourcePath?: string;
 }
 
 export interface TranslationReport {
@@ -20,20 +21,40 @@ function variantState(
   source: ContentMaintenanceEntry | undefined,
   variant: ContentMaintenanceEntry | undefined,
 ): TranslationVariantReport {
+  const sourcePath = variant?.sourcePath ?? source?.sourcePath;
+
   if (variant === undefined) {
-    return { locale, state: 'missing', reason: 'locale page does not exist' };
+    return {
+      locale,
+      state: 'missing',
+      reason: 'locale page does not exist',
+      ...(sourcePath !== undefined ? { sourcePath } : {}),
+    };
   }
 
   if (locale === i18n.defaultLanguage) {
-    return { locale, state: 'up-to-date' };
+    return {
+      locale,
+      state: 'up-to-date',
+      ...(sourcePath !== undefined ? { sourcePath } : {}),
+    };
   }
 
   if (source === undefined) {
-    return { locale, state: 'outdated', reason: 'source locale is missing' };
+    return {
+      locale,
+      state: 'outdated',
+      reason: 'source locale is missing',
+      ...(sourcePath !== undefined ? { sourcePath } : {}),
+    };
   }
 
   if (variant.reviewedRevision === source.contentRevision) {
-    return { locale, state: 'up-to-date' };
+    return {
+      locale,
+      state: 'up-to-date',
+      ...(sourcePath !== undefined ? { sourcePath } : {}),
+    };
   }
 
   return {
@@ -43,6 +64,7 @@ function variantState(
       variant.reviewedRevision === undefined
         ? 'reviewedRevision is missing'
         : 'reviewedRevision does not match the current source revision',
+    ...(sourcePath !== undefined ? { sourcePath } : {}),
   };
 }
 
@@ -91,6 +113,7 @@ export function getTranslationWarnings(
         identity: `${report.id}:${variant.locale}`,
         field: 'translation',
         message: `translation ${variant.state}${variant.reason ? `：${variant.reason}` : ''}`,
+        ...(variant.sourcePath !== undefined ? { sourcePath: variant.sourcePath } : {}),
       })),
   );
 }
@@ -109,4 +132,78 @@ export function formatTranslationReport(reports: readonly TranslationReport[]): 
   }
 
   return lines.join('\n');
+}
+
+export interface TranslationSummary {
+  readonly outdated: number;
+  readonly missing: number;
+}
+
+export function summarizeTranslationReport(
+  reports: readonly TranslationReport[],
+): TranslationSummary {
+  let outdated = 0;
+  let missing = 0;
+
+  for (const report of reports) {
+    for (const variant of report.variants) {
+      if (variant.state === 'outdated') outdated += 1;
+      if (variant.state === 'missing') missing += 1;
+    }
+  }
+
+  return { outdated, missing };
+}
+
+export interface ContentHealthSummary {
+  readonly deprecated: number;
+  readonly needsReview: number;
+  readonly translationOutdated: number;
+  readonly translationMissing: number;
+}
+
+export function createContentHealthSummary(
+  entries: readonly ContentMaintenanceEntry[],
+  maintenanceWarnings: readonly ContentMaintenanceIssue[],
+  translationReports: readonly TranslationReport[],
+): ContentHealthSummary {
+  const identityToId = new Map<string, string>(
+    entries.map((entry) => [`${entry.id}:${entry.locale}`, entry.id] as const),
+  );
+  const needsReview = new Set<string>(
+    entries
+      .filter((entry) => entry.status === 'review')
+      .map((entry) => entry.id),
+  );
+
+  for (const warning of maintenanceWarnings) {
+    if (warning.field === 'lastReviewed') {
+      needsReview.add(identityToId.get(warning.identity) ?? warning.identity);
+    }
+  }
+
+  const translations = summarizeTranslationReport(translationReports);
+  return {
+    deprecated: new Set(
+      entries.filter((entry) => entry.status === 'deprecated').map((entry) => entry.id),
+    ).size,
+    needsReview: needsReview.size,
+    translationOutdated: translations.outdated,
+    translationMissing: translations.missing,
+  };
+}
+
+export function formatContentHealthSummary(summary: ContentHealthSummary): string {
+  const rows = [
+    ['Deprecated', summary.deprecated],
+    ['Needs Review', summary.needsReview],
+    ['Translation Outdated', summary.translationOutdated],
+    ['Translation Missing', summary.translationMissing],
+  ] as const;
+  const labelWidth = Math.max(...rows.map(([label]) => label.length));
+
+  return [
+    'Content Health',
+    ...rows.map(([label, count]) => `${label.padEnd(labelWidth)}  ${count}`),
+  ].join('\n');
 }

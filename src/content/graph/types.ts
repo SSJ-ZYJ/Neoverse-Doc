@@ -12,6 +12,7 @@ export type ContentRelationField = (typeof CONTENT_RELATION_FIELDS)[number];
 export interface ContentRelationEntry {
   readonly id: string;
   readonly locale: Locale;
+  readonly sourcePath?: string;
   readonly prerequisites?: readonly string[];
   readonly related?: readonly string[];
 }
@@ -41,4 +42,5 @@ export interface ContentRelationViolation {
   readonly identity: string;
   readonly field: ContentRelationField;
   readonly message: string;
+  readonly sourcePath?: string;
 }

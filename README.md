@@ -74,6 +74,7 @@ bun dev         # 启动开发服务器，浏览器打开 http://localhost:3000
 
 ```bash
 bun run generate:content # 内容准备：校验内容并在本机增量生成 Mermaid 静态 SVG
+bun run report:content    # 输出 Content IR Metadata Coverage、健康摘要与可选 Taxonomy
 bun run build   # 生产构建，产物位于 out/ 目录
 bun run start   # 本地预览静态产物
 ```
@@ -86,6 +87,7 @@ bun run start   # 本地预览静态产物
 | :--- | :--- |
 | `bun dev` | 启动开发服务器（`predev` 自动执行内容准备管线） |
 | `bun run generate:content` | 内容准备管线：Content IR 派生、内容校验与 Mermaid 静态 SVG 增量生成 |
+| `bun run report:content` | 输出 Metadata Coverage 与 Content Health；追加 `-- --verbose` 查看详细诊断，追加 `-- --taxonomy` 查看 Registry |
 | `bun run check:content` | 内容校验 + Mermaid 资产哈希对账（`prebuild` 自动执行，零 Puppeteer） |
 | `bun run check:architecture` | 架构层依赖边界检查（`prebuild` 自动执行） |
 | `bun run build` | 生产构建（输出至 `out/`） |

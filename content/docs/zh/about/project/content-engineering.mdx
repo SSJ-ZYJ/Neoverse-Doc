@@ -69,18 +69,20 @@ Freshness Policy 由 `src/content/taxonomy/` 下的集中维护策略提供，�
 
 `src/content/ir.ts` 是唯一的规范化内容数据面（Content IR）：从 Fumadocs 内容源单遍派生，每条 IR 条目携带稳定 Content ID、`locale`、`url`、`slugs`、标题描述、生命周期与维护元数据、Schema 元数据、内容关系、`contentRevision`、`sourcePath`（posix 相对路径）与页面内 Mermaid 图表源码（由 `src/content/mermaid-text.ts` 提取）。IR 由 Fumadocs 负责内容编译、在导入时 100% 机器派生——不物化为文件、永不手工维护，因此不存在会陈旧的缓存（决策记录见 `docs/adr/0004-content-ir-build-pipeline.md`）。
 
-构建管线收敛为两条命令：
+构建管线收敛为三条命令：
 
 | 命令 | 阶段 | 行为 |
 | :--- | :--- | :--- |
 | `bun run generate:content` | 内容准备（`predev` 自动执行） | 派生 IR → 内容校验 → Mermaid 资产增量渲染（仅此命令会启动 Puppeteer，且全命中时零启动） |
 | `bun run check:content` | 生产门禁（`prebuild` 自动执行） | 派生 IR → 内容校验与维护报告 → Mermaid 资产哈希对账，绝不导入 Puppeteer |
+| `bun run report:content` | Authoring DX 报告 | 派生 IR → 输出 Metadata Coverage、Content Health 与可选 Taxonomy，不处理 Mermaid 资产；可追加 `-- --verbose` 查看完整诊断 |
 
 各系统的消费关系：
 
 - **Content Manifest**（`src/content/generated/manifest.ts`）是 IR 的消费视图，透传 Taxonomy 与关系字段并剥离 `sourcePath`、`mermaid` 等构建期字段，sitemap 等消费方接口不变；
 - **内容校验**（ID 唯一、翻译配对、引用存在、重复、自引用、跨 locale 关系冲突与 prerequisite 环）在 IR 上执行；生命周期关系、replacement 目标与日期语义错误是 Error，Freshness 与翻译 `missing` / `outdated` 是 Warning；
 - **Translation Report**在内容管线中按 Stable Content ID 输出每个 locale 的 `missing`、`outdated` 或 `up-to-date`，Warning 不改变 `check:content` 的成功退出码；
+- **Metadata Coverage / Authoring Diagnostics**直接消费 Content IR，按 locale 页面变体统计 `type`、`topics`、`tracks`、`difficulty`、`estimatedMinutes`、`prerequisites`、`related`、`status` 与 `lastReviewed`；缺失可选字段只输出紧凑 warning，不升级为 Required Schema 或 CI Error。合法 Taxonomy 可用 `bun run report:content -- --taxonomy` 查看；
 - **Knowledge Graph**（`src/content/graph/`）从 IR 编译 Stable Content ID 节点与前向、反向关系，不重新扫描 MDX；
 - **Mermaid** 检测由 IR 驱动，不再自行扫描 `content/docs`；资产按「源码 + 渲染器签名 + 配置」哈希内容寻址（见 [Mermaid 与性能](./mermaid-performance)）；
 - **产品投影**（`src/content/projections/`）从统一的 Content IR、Manifest、Taxonomy Registry 和 Content Graph 派生纯数据产品视图：Learn 以 Track、Taxonomy 顺序与显式 prerequisite 边组织稳定 Content ID；Explore 只按显式 Topic 分组；Reference 只按 Content Type 准入。Projection 不复制名称、显示文案或第二份 metadata，产品消费方仍通过 Manifest 与 Registry 解析它们；

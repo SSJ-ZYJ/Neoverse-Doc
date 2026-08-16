@@ -36,6 +36,14 @@ _Avoid_: 校验时重新渲染
 面向消费方的页面数据视图，由 Content IR 派生并剥离构建期专属字段：`id` 表达“是谁”，`url` / `slugs` 表达“在哪里”，`locale` 表达“哪种语言”。
 _Avoid_: 独立于 IR 的第二套清单
 
+**Content Metadata Coverage（内容元数据覆盖率）**:
+按 Content IR 页面变体统计规范化 Metadata 值的比例，用于指导渐进迁移，不把可选字段升级为构建必填项。
+_Avoid_: Coverage Gate、按文件重新扫描 Frontmatter
+
+**Authoring Diagnostic（作者诊断）**:
+针对具体内容文件和 Metadata 字段给出缺失原因与修复提示的非阻断信息；非法 Schema、Stable ID、Taxonomy 或关系仍属于校验错误。
+_Avoid_: 自动补齐元数据、把提示当作 Required Schema
+
 **Content Lifecycle（内容生命周期）**:
 内容在维护过程中的唯一状态语义：`draft`、`review`、`stable`、`deprecated`。状态描述内容当前的发布与维护阶段，不是翻译关系或访问权限。
 _Avoid_: 同时用 `draft` 布尔值和 `status` 表达状态

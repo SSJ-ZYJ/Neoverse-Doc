@@ -21,12 +21,12 @@ author:
 ---
 title: 页面标题
 description: 一句话说明页面解决什么问题
-author:
-  - "主要作者(https://github.com/your-name)"
-contributors:
-  - "贡献者(https://github.com/contributor-name)"
-status: stable
-todoProgress: false
+type: guide
+topics:
+  - shell
+tracks:
+  - computer-essentials
+difficulty: beginner
 ---
 ```
 
@@ -34,6 +34,13 @@ todoProgress: false
 | :--- | :---: | :--- |
 | `title` | 是 | 页面标题，由布局渲染，正文无需再写一级标题 |
 | `description` | 是 | 用于页面元数据与内容摘要 |
+| `type` | 否 | 内容类型；合法 ID 可用 `bun run report:content -- --taxonomy` 查看 |
+| `topics` | 否 | 主题 ID 数组；合法 ID 可用 `bun run report:content -- --taxonomy` 查看 |
+| `tracks` | 否 | 学习路径 ID 数组；合法 ID 可用 `bun run report:content -- --taxonomy` 查看 |
+| `difficulty` | 否 | 内容难度 ID；合法 ID 可用 `bun run report:content -- --taxonomy` 查看 |
+| `estimatedMinutes` | 否 | 预计学习分钟数，必须是正整数 |
+| `prerequisites` | 否 | 前置内容 Stable Content ID 数组 |
+| `related` | 否 | 相关推荐 Stable Content ID 数组 |
 | `author` | 否 | 主要作者，支持字符串或字符串数组 |
 | `contributor` / `contributors` | 否 | 贡献者，支持字符串或字符串数组 |
 | `status` | 否 | 默认为 `stable`；可用 `draft`、`review`、`stable`、`deprecated` |
@@ -43,6 +50,8 @@ todoProgress: false
 | `todoProgress` | 否 | 默认为 `false`；开启后在正文前汇总任务进度 |
 
 不要添加 Schema 未声明的字段。需要新的内容语义时，应先统一扩展 `source.config.ts`，而不是从文件名、URL 或正文中猜测。
+
+新页面推荐至少补充 `type`、`topics`、`tracks` 与 `difficulty`；`estimatedMinutes`、`prerequisites`、`related` 和 `lastReviewed` 按内容实际情况渐进补齐。运行 `bun run report:content` 查看 Coverage，运行 `bun run report:content -- --taxonomy` 查看 Registry 中的合法 ID。Coverage 不足只是 authoring warning，不会阻断 CI。
 
 ### 标题与段落
 
