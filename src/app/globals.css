@@ -13,6 +13,7 @@
 @import "../ui/tokens/tokens.css";
 @import "../ui/styles/motion.css";
 @import "../ui/surfaces/glass.css";
+@import "../ui/compositions/compositions.css";
 @import "../features/tasks/styles.css";
 @import "../features/learn/styles.css";
 @import "../features/explore/styles.css";

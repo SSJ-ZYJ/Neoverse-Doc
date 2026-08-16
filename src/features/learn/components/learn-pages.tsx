@@ -56,23 +56,25 @@ export function LearnLandingPage({
   tracks: readonly LearnTrackView[];
 }) {
   return (
-    <div className="learn-page__inner">
-      <header className="learn-page__header">
-        <p className="learn-page__eyebrow">{copy.eyebrow}</p>
+    <>
+      <header className="page-header">
+        <p className="page-header__eyebrow">{copy.eyebrow}</p>
         <h1>{copy.title}</h1>
-        <p>{copy.description}</p>
+        <p className="page-header__description">{copy.description}</p>
       </header>
 
       {tracks.length > 0 ? (
-        <section aria-labelledby="learn-available-tracks" className="learn-track-section">
-          <div className="learn-section-heading">
+        <section aria-labelledby="learn-available-tracks" className="page-section">
+          <div className="page-section__heading">
             <div>
-              <p className="learn-section-heading__eyebrow">{copy.eyebrow}</p>
+              <p className="page-section__eyebrow">{copy.eyebrow}</p>
               <h2 id="learn-available-tracks">{copy.availableTracks}</h2>
             </div>
-            <Route aria-hidden="true" className="learn-section-heading__icon" size={24} />
+            <div aria-hidden="true" className="page-section__icon">
+              <Route size={24} />
+            </div>
           </div>
-          <div className="learn-track-grid">
+          <div className="content-grid">
             {tracks.map((track) => (
               <TransitionLink
                 className="learn-track-card glass-card glass-interactive"
@@ -92,7 +94,7 @@ export function LearnLandingPage({
                   {track.description && <span>{track.description}</span>}
                 </span>
                 <span className="learn-track-card__footer">
-                  <span>
+                  <span className="metadata-chip metadata-chip--track">
                     {track.stepCount} {copy.stepsLabel}
                   </span>
                   <span>{copy.viewTrack}</span>
@@ -102,13 +104,15 @@ export function LearnLandingPage({
           </div>
         </section>
       ) : (
-        <section className="learn-empty-state glass-card" data-card="true">
-          <Route aria-hidden="true" size={24} />
+        <div className="empty-state glass-card" data-card="true">
+          <div aria-hidden="true" className="empty-state__icon">
+            <Route size={24} />
+          </div>
           <h2>{copy.noTracksTitle}</h2>
           <p>{copy.noTracksDescription}</p>
-        </section>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -122,36 +126,40 @@ export function LearnTrackPage({
   track: LearnTrackView;
 }) {
   return (
-    <div className="learn-page__inner">
-      <header className="learn-page__header learn-track-header">
-        <TransitionLink className="learn-page__back-link" href={track.backHref}>
+    <>
+      <header className="page-header page-header--detail">
+        <TransitionLink className="page-header__back-link" href={track.backHref}>
           <ArrowLeft aria-hidden="true" size={16} />
           {copy.returnToLearn}
         </TransitionLink>
-        <p className="learn-page__eyebrow">{copy.eyebrow}</p>
+        <p className="page-header__eyebrow">{copy.eyebrow}</p>
         <h1>{track.label}</h1>
-        {track.description && <p>{track.description}</p>}
-        <div className="learn-track-summary glass-card" data-card="true">
-          <span className="learn-track-summary__item">
-            <strong>{track.stepCount}</strong>
-            <span>{copy.stepsLabel}</span>
-          </span>
-          <span className="learn-track-summary__divider" aria-hidden="true" />
-          <span className="learn-track-summary__item">
-            <GitBranch aria-hidden="true" size={17} />
-            <span>{copy.orderLabel}</span>
-          </span>
+        {track.description && <p className="page-header__description">{track.description}</p>}
+        <div className="page-header__actions">
+          <div className="learn-track-summary glass-card" data-card="true">
+            <span className="learn-track-summary__item">
+              <strong>{track.stepCount}</strong>
+              <span>{copy.stepsLabel}</span>
+            </span>
+            <span className="learn-track-summary__divider" aria-hidden="true" />
+            <span className="learn-track-summary__item">
+              <GitBranch aria-hidden="true" size={17} />
+              <span>{copy.orderLabel}</span>
+            </span>
+          </div>
         </div>
       </header>
 
-      <section aria-labelledby="learn-track-order" className="learn-order-section">
-        <div className="learn-section-heading">
+      <section aria-labelledby="learn-track-order" className="page-section">
+        <div className="page-section__heading">
           <div>
-            <p className="learn-section-heading__eyebrow">{copy.eyebrow}</p>
+            <p className="page-section__eyebrow">{copy.eyebrow}</p>
             <h2 id="learn-track-order">{copy.orderLabel}</h2>
-            <p>{copy.orderDescription}</p>
+            <p className="page-section__description">{copy.orderDescription}</p>
           </div>
-          <GitBranch aria-hidden="true" className="learn-section-heading__icon" size={24} />
+          <div aria-hidden="true" className="page-section__icon">
+            <GitBranch size={24} />
+          </div>
         </div>
 
         <ol className="learn-step-list">
@@ -166,7 +174,7 @@ export function LearnTrackPage({
                     <h3>{step.title}</h3>
                   </TransitionLink>
                   {step.status === 'review' && (
-                    <span className="learn-status-badge">{copy.reviewBadge}</span>
+                    <span className="metadata-chip metadata-chip--status">{copy.reviewBadge}</span>
                   )}
                 </div>
                 {step.description && <p className="learn-step__description">{step.description}</p>}
@@ -182,7 +190,7 @@ export function LearnTrackPage({
           ))}
         </ol>
       </section>
-    </div>
+    </>
   );
 }
 
@@ -358,8 +366,8 @@ function LearnDocNavigationLink({
 
 export function LearnPageShell({ children, locale }: { children: ReactNode; locale: Locale }) {
   return (
-    <main className="learn-page" lang={LANGUAGE_TAGS[locale]}>
-      {children}
+    <main className="knowledge-page learn-page" lang={LANGUAGE_TAGS[locale]}>
+      <div className="knowledge-page__inner">{children}</div>
     </main>
   );
 }

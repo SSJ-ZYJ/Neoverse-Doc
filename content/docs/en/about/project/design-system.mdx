@@ -18,6 +18,7 @@ src/
 ├── ui/
 │   ├── tokens/tokens.css         # colors, surfaces, radii, shadows, spacing, motion
 │   ├── surfaces/glass.css        # glass surfaces and controls
+│   ├── compositions/compositions.css # page compositions and Metadata Chip
 │   └── styles/                   # Theme, Motion, Typography, and A11y
 ├── adapters/fumadocs/styles.css  # Fumadocs component overrides
 ├── features/*/styles.css         # Search, Tasks, Mermaid, Transition, Community
@@ -25,7 +26,9 @@ src/
 └── styles/                       # Loading, MDX file trees, and page-level structure
 ```
 
-Task, Mermaid, Transition, Community, Search Spotlight, and Interaction styles follow their owners; page layout and a small number of global integration rules remain in `src/styles/`. Visual tweaks prefer replacing Tokens or existing surfaces over stacking a second glass, Glow, or shadow system.
+Task, Mermaid, Transition, Community, Search Spotlight, and Interaction styles follow their owners; stable product-page compositions live in `src/ui/compositions/compositions.css`, page-specific rules remain beside their Feature, and other page layout and small global integration rules remain in `src/styles/`. Visual tweaks prefer replacing Tokens or existing surfaces over stacking a second glass, Glow, or shadow system.
+
+Page compositions unify hierarchy and rhythm without owning page data or routing. `Page Header`, `Page Section`, `Content Grid`, and `Empty State` are reused through CSS composition classes. `Metadata Chip` uses a small set of semantic variants for Track, Topic, Type, Difficulty, and lifecycle Status; its labels still come from dictionaries or the Taxonomy Registry.
 
 ## 2. Semantic Token System
 
@@ -241,6 +244,7 @@ Any non-essential Motion respects `prefers-reduced-motion`.
 | `src/ui/tokens/tokens.css` | Dual semantic Token variable sets |
 | `src/ui/styles/theme.css` | Tailwind / Fumadocs mapping |
 | `src/ui/surfaces/glass.css` | Glass trio structure and business surfaces |
+| `src/ui/compositions/compositions.css` | Page compositions and the unified Metadata Chip |
 | `src/ui/styles/motion.css` | Entrance animations and three motion tiers |
 | `src/ui/styles/a11y.css` | Three accessibility fallback layers |
 | `src/ui/styles/typography.css` | Body text, code, blockquotes, and callouts |

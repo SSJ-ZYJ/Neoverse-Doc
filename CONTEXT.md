@@ -180,3 +180,13 @@ _Avoid_: Mega Barrel、无入口的裸目录
 **Cross-feature Allowlist（跨特性许可清单）**:
 架构检查中登记的、带理由的 Feature 间直接依赖白名单；默认禁止，登记后仍只能经公共入口导入，且真实依赖边必须保持无环。
 _Avoid_: 用事件总线规避清单、为绕开边界复制代码
+
+### 页面组合与视觉语言
+
+**Page Composition（页面组合）**:
+跨产品页面稳定复用的语义布局单元，包括页面头部、区段标题、内容网格与空状态；它只负责信息层级与节奏，不拥有 Feature 数据、路由或业务状态。
+_Avoid_: 为单个页面抽象组件、把所有卡片强行合并为一个通用容器
+
+**Metadata Chip（元数据 Chip）**:
+以紧凑标签表达 Track、Topic、Type、Difficulty 或生命周期 Status 等内容元数据的统一视觉载体；语义差异通过有限变体表达，实际文案仍来自 Taxonomy Registry 或字典。
+_Avoid_: 为每个元数据类型建立独立 Badge 组件、把普通操作按钮伪装成元数据

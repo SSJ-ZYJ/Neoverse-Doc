@@ -28,6 +28,7 @@ export interface ExploreContentView {
   readonly metadata: readonly {
     readonly label: string;
     readonly value: string;
+    readonly variant: 'difficulty' | 'type';
   }[];
   readonly topics?: readonly RelatedTopicView[];
   readonly statusLabel?: string;
@@ -38,8 +39,8 @@ type ReferenceCopy = Dictionary['reference'];
 
 export function ExplorePageShell({ children, locale }: { children: ReactNode; locale: Locale }) {
   return (
-    <main className="explore-page" lang={LANGUAGE_TAGS[locale]}>
-      <div className="explore-page__inner">{children}</div>
+    <main className="knowledge-page explore-page" lang={LANGUAGE_TAGS[locale]}>
+      <div className="knowledge-page__inner">{children}</div>
     </main>
   );
 }
@@ -53,22 +54,24 @@ export function TopicsLandingPage({
 }) {
   return (
     <>
-      <header className="explore-page__header">
-        <p className="explore-page__eyebrow">{copy.eyebrow}</p>
+      <header className="page-header">
+        <p className="page-header__eyebrow">{copy.eyebrow}</p>
         <h1>{copy.title}</h1>
-        <p>{copy.description}</p>
+        <p className="page-header__description">{copy.description}</p>
       </header>
 
       {topics.length > 0 ? (
-        <section aria-labelledby="explore-topics-heading" className="explore-section">
-          <div className="explore-section__heading">
+        <section aria-labelledby="explore-topics-heading" className="page-section">
+          <div className="page-section__heading">
             <div>
-              <p className="explore-section__eyebrow">{copy.eyebrow}</p>
+              <p className="page-section__eyebrow">{copy.eyebrow}</p>
               <h2 id="explore-topics-heading">{copy.availableTopics}</h2>
             </div>
-            <Layers3 aria-hidden="true" className="explore-section__icon" size={24} />
+            <div aria-hidden="true" className="page-section__icon">
+              <Layers3 size={24} />
+            </div>
           </div>
-          <div className="explore-topic-grid">
+          <div className="content-grid">
             {topics.map((topic) => (
               <TransitionLink
                 className="explore-topic-card glass-card glass-interactive"
@@ -125,29 +128,33 @@ export function TopicPage({
 }) {
   return (
     <>
-      <header className="explore-page__header explore-page__header--detail">
-        <TransitionLink className="explore-page__back-link" href={backHref}>
+      <header className="page-header page-header--detail">
+        <TransitionLink className="page-header__back-link" href={backHref}>
           <ArrowLeft aria-hidden="true" size={16} />
           {copy.returnToTopics}
         </TransitionLink>
-        <p className="explore-page__eyebrow">{copy.eyebrow}</p>
+        <p className="page-header__eyebrow">{copy.eyebrow}</p>
         <h1>{label}</h1>
-        {description && <p>{description}</p>}
-        <SearchTaxonomyAction
-          className="explore-search-action"
-          label={copy.searchAction}
-          query={searchQuery}
-          tag={searchTag}
-        />
+        {description && <p className="page-header__description">{description}</p>}
+        <div className="page-header__actions">
+          <SearchTaxonomyAction
+            className="explore-search-action"
+            label={copy.searchAction}
+            query={searchQuery}
+            tag={searchTag}
+          />
+        </div>
       </header>
 
-      <section aria-labelledby="explore-topic-content-heading" className="explore-section">
-        <div className="explore-section__heading">
+      <section aria-labelledby="explore-topic-content-heading" className="page-section">
+        <div className="page-section__heading">
           <div>
-            <p className="explore-section__eyebrow">{copy.eyebrow}</p>
+            <p className="page-section__eyebrow">{copy.eyebrow}</p>
             <h2 id="explore-topic-content-heading">{copy.relatedContent}</h2>
           </div>
-          <BookOpen aria-hidden="true" className="explore-section__icon" size={24} />
+          <div aria-hidden="true" className="page-section__icon">
+            <BookOpen size={24} />
+          </div>
         </div>
         {entries.length > 0 ? (
           <div className="explore-content-list">
@@ -161,13 +168,18 @@ export function TopicPage({
       </section>
 
       {relatedTopics.length > 0 && (
-        <section aria-labelledby="explore-related-topics-heading" className="explore-related">
-          <div className="explore-section__heading">
+        <section
+          aria-labelledby="explore-related-topics-heading"
+          className="page-section page-section--secondary"
+        >
+          <div className="page-section__heading">
             <div>
-              <p className="explore-section__eyebrow">{copy.eyebrow}</p>
+              <p className="page-section__eyebrow">{copy.eyebrow}</p>
               <h2 id="explore-related-topics-heading">{copy.relatedTopics}</h2>
             </div>
-            <Layers3 aria-hidden="true" className="explore-section__icon" size={24} />
+            <div aria-hidden="true" className="page-section__icon">
+              <Layers3 size={24} />
+            </div>
           </div>
           <div className="explore-related__links">
             {relatedTopics.map((topic) => (
@@ -203,24 +215,28 @@ export function ReferencePage({
 }) {
   return (
     <>
-      <header className="explore-page__header">
-        <p className="explore-page__eyebrow">{copy.eyebrow}</p>
+      <header className="page-header">
+        <p className="page-header__eyebrow">{copy.eyebrow}</p>
         <h1>{referenceTitle}</h1>
-        {description && <p>{description}</p>}
-        <SearchTaxonomyAction
-          className="explore-search-action"
-          label={copy.searchAction}
-          tag={searchTag}
-        />
+        {description && <p className="page-header__description">{description}</p>}
+        <div className="page-header__actions">
+          <SearchTaxonomyAction
+            className="explore-search-action"
+            label={copy.searchAction}
+            tag={searchTag}
+          />
+        </div>
       </header>
 
-      <section aria-labelledby="reference-content-heading" className="explore-section">
-        <div className="explore-section__heading">
+      <section aria-labelledby="reference-content-heading" className="page-section">
+        <div className="page-section__heading">
           <div>
-            <p className="explore-section__eyebrow">{copy.eyebrow}</p>
+            <p className="page-section__eyebrow">{copy.eyebrow}</p>
             <h2 id="reference-content-heading">{copy.availableContent}</h2>
           </div>
-          <BookOpen aria-hidden="true" className="explore-section__icon" size={24} />
+          <div aria-hidden="true" className="page-section__icon">
+            <BookOpen size={24} />
+          </div>
         </div>
         {entries.length > 0 ? (
           <div className="explore-content-list">
@@ -249,7 +265,9 @@ function ExploreContentCard({
         <TransitionLink href={entry.href}>
           <h3>{entry.title}</h3>
         </TransitionLink>
-        {entry.statusLabel && <span className="explore-status-badge">{entry.statusLabel}</span>}
+        {entry.statusLabel && (
+          <span className="metadata-chip metadata-chip--status">{entry.statusLabel}</span>
+        )}
       </div>
       {entry.description && (
         <p className="explore-content-card__description">{entry.description}</p>
@@ -257,9 +275,12 @@ function ExploreContentCard({
       {entry.metadata.length > 0 && (
         <dl className="explore-content-card__metadata">
           {entry.metadata.map((item) => (
-            <div key={`${item.label}:${item.value}`}>
-              <dt>{item.label}</dt>
-              <dd>{item.value}</dd>
+            <div
+              className={`metadata-chip metadata-chip--${item.variant} metadata-chip--labeled`}
+              key={`${item.label}:${item.value}`}
+            >
+              <dt className="metadata-chip__label">{item.label}</dt>
+              <dd className="metadata-chip__value">{item.value}</dd>
             </div>
           ))}
         </dl>
@@ -267,7 +288,11 @@ function ExploreContentCard({
       {showTopics && entry.topics && entry.topics.length > 0 && (
         <div className="explore-content-card__topics">
           {entry.topics.map((topic) => (
-            <TransitionLink href={topic.href} key={topic.id}>
+            <TransitionLink
+              className="metadata-chip metadata-chip--topic metadata-chip--interactive"
+              href={topic.href}
+              key={topic.id}
+            >
               <Tag aria-hidden="true" size={13} />
               {topic.label}
             </TransitionLink>
@@ -284,8 +309,10 @@ function ExploreContentCard({
 
 function ExploreEmptyState({ description, title }: { description: string; title: string }) {
   return (
-    <div className="explore-empty-state glass-card" data-card="true">
-      <Layers3 aria-hidden="true" size={24} />
+    <div className="empty-state glass-card" data-card="true">
+      <div aria-hidden="true" className="empty-state__icon">
+        <Layers3 size={24} />
+      </div>
       <h2>{title}</h2>
       <p>{description}</p>
     </div>

@@ -1,0 +1,276 @@
+/* CSS-only page compositions keep stable visual structure shared without
+   turning the ui layer into a React dependency.
+   仅用 CSS 提取稳定页面组合，避免让 ui 层反向依赖 React 或业务 Feature。 */
+
+/* Knowledge page canvas / 知识页面画布 */
+.knowledge-page {
+  position: relative;
+  isolation: isolate;
+  min-block-size: 100svh;
+  margin-block-start: calc(-1 * var(--home-nav-height));
+  padding: calc(8rem + var(--home-nav-height)) var(--page-gutter) 5rem;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 8% 12%, var(--ambient-ice), transparent 30rem),
+    radial-gradient(circle at 92% 78%, var(--ambient-mint), transparent 28rem),
+    var(--background-primary);
+}
+
+.knowledge-page__inner {
+  inline-size: min(100%, var(--content-max));
+  margin-inline: auto;
+}
+
+/* Page Header / 页面头部 */
+.page-header {
+  display: flex;
+  max-inline-size: 48rem;
+  flex-direction: column;
+  align-items: center;
+  margin-inline: auto;
+  margin-block-end: clamp(3rem, 7vw, 5.5rem);
+  text-align: center;
+}
+
+.page-header--detail {
+  margin-block-end: clamp(2.5rem, 5vw, 4rem);
+}
+
+.page-header h1 {
+  max-inline-size: 19ch;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+
+.page-header__eyebrow,
+.page-section__eyebrow {
+  margin: 0 0 0.85rem;
+  color: var(--accent-primary);
+  font-family: var(--font-orbitron), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+}
+
+.page-header__description {
+  max-inline-size: 42rem;
+  margin: 1rem 0 0;
+  color: var(--text-secondary);
+  font-size: clamp(1rem, 1.5vw, 1.1rem);
+  line-height: 1.75;
+}
+
+.page-header__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-block-end: 2rem;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: color var(--motion-fast) var(--motion-ease-standard);
+}
+
+.page-header__back-link:hover {
+  color: var(--accent-primary);
+}
+
+.page-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-block-start: 1.35rem;
+}
+
+/* Page Section / 页面区段 */
+.page-section {
+  inline-size: 100%;
+}
+
+.page-section--secondary {
+  margin-block-start: clamp(3rem, 6vw, 5rem);
+}
+
+.page-section__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-block-end: 1.5rem;
+}
+
+.page-section__heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+  letter-spacing: -0.025em;
+}
+
+.page-section__description {
+  max-inline-size: 48rem;
+  margin: 0.7rem 0 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.page-section__icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  margin-block-start: 0.3rem;
+  color: var(--accent-primary);
+}
+
+.page-section__icon > svg {
+  display: block;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+}
+
+/* Card Grid / 卡片网格 */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+}
+
+/* Empty State / 空状态 */
+.empty-state {
+  display: grid;
+  max-inline-size: 36rem;
+  margin-inline: auto;
+  padding: 2.25rem;
+  place-items: center;
+  text-align: center;
+}
+
+.empty-state__icon {
+  display: grid;
+  margin-block-end: 0.7rem;
+  color: var(--accent-primary);
+  place-items: center;
+}
+
+.empty-state h2,
+.empty-state p {
+  margin: 0;
+}
+
+.empty-state h2 {
+  font-size: 1.2rem;
+}
+
+.empty-state p {
+  margin-block-start: 0.6rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+/* Metadata Chip / 元数据 Chip */
+.metadata-chip {
+  display: inline-flex;
+  min-block-size: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.6rem;
+  color: var(--text-secondary);
+  background: var(--glass-tint-soft);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.metadata-chip > svg {
+  flex: 0 0 auto;
+}
+
+.metadata-chip__label {
+  color: var(--text-muted);
+  font-size: 0.67rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.metadata-chip__value {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.metadata-chip--track {
+  border-color: color-mix(in srgb, var(--accent-primary) 28%, var(--border-subtle));
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+}
+
+.metadata-chip--topic {
+  color: var(--text-secondary);
+}
+
+.metadata-chip--type {
+  border-color: color-mix(in srgb, var(--accent-secondary) 32%, var(--border-subtle));
+}
+
+.metadata-chip--difficulty {
+  border-color: color-mix(in srgb, var(--accent-tertiary) 32%, var(--border-subtle));
+}
+
+.metadata-chip--status {
+  border-color: color-mix(in srgb, var(--accent-tertiary) 38%, var(--border-subtle));
+  color: var(--accent-tertiary);
+  background: color-mix(in srgb, var(--accent-tertiary) 8%, var(--glass-tint-soft));
+}
+
+.metadata-chip--interactive {
+  text-decoration: none;
+  transition:
+    color var(--motion-fast) var(--motion-ease-standard),
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-fast) var(--motion-ease-standard);
+}
+
+@media (hover: hover) {
+  .metadata-chip--interactive:hover {
+    border-color: var(--border-interactive);
+    color: var(--text-primary);
+    background: var(--glass-control-hover-tint);
+    box-shadow: var(--shadow-edge);
+  }
+}
+
+@media (max-width: 640px) {
+  .knowledge-page {
+    padding-block-start: calc(7rem + var(--home-nav-height));
+  }
+
+  .page-section__heading {
+    gap: 1rem;
+  }
+
+  .page-section__icon > svg {
+    inline-size: 20px;
+    block-size: 20px;
+  }
+
+  .empty-state {
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knowledge-page .glass-interactive,
+  .page-header__back-link,
+  .metadata-chip--interactive {
+    transition: none;
+  }
+}

@@ -1,123 +1,6 @@
-/* Learn surfaces keep the homepage's open canvas and the shared glass tokens,
-   while the layout makes route order and prerequisite edges easy to scan.
-   Learn 页面复用首页开放画布与现有 Glass Token，把重点留给路线顺序和前置边。 */
-
-.learn-page {
-  position: relative;
-  isolation: isolate;
-  min-block-size: 100svh;
-  margin-block-start: calc(-1 * var(--home-nav-height));
-  padding: calc(8rem + var(--home-nav-height)) var(--page-gutter) 5rem;
-  color: var(--text-primary);
-  background:
-    radial-gradient(circle at 8% 12%, var(--ambient-ice), transparent 30rem),
-    radial-gradient(circle at 92% 78%, var(--ambient-mint), transparent 28rem),
-    var(--background-primary);
-}
-
-.learn-page__inner {
-  inline-size: min(100%, var(--content-max));
-  margin-inline: auto;
-}
-
-.learn-page__header {
-  display: flex;
-  max-inline-size: 48rem;
-  flex-direction: column;
-  align-items: center;
-  margin-inline: auto;
-  margin-block-end: clamp(3rem, 7vw, 5.5rem);
-  text-align: center;
-}
-
-.learn-page__header h1,
-.learn-page__header p {
-  margin: 0;
-}
-
-.learn-page__header h1 {
-  max-inline-size: 19ch;
-  color: var(--text-primary);
-  font-size: clamp(2.1rem, 5vw, 4rem);
-  letter-spacing: -0.045em;
-  line-height: 1.05;
-}
-
-.learn-page__header > p:last-child {
-  max-inline-size: 42rem;
-  margin-block-start: 1rem;
-  color: var(--text-secondary);
-  font-size: clamp(1rem, 1.5vw, 1.1rem);
-  line-height: 1.75;
-}
-
-.learn-page__eyebrow,
-.learn-section-heading__eyebrow {
-  margin-block-end: 0.85rem;
-  color: var(--accent-primary);
-  font-family: var(--font-orbitron), sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.19em;
-  text-transform: uppercase;
-}
-
-.learn-page__back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-block-end: 2rem;
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-  text-decoration: none;
-}
-
-.learn-page__back-link:hover {
-  color: var(--accent-primary);
-}
-
-.learn-track-section,
-.learn-order-section {
-  inline-size: 100%;
-}
-
-.learn-section-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 2rem;
-  margin-block-end: 1.5rem;
-}
-
-.learn-section-heading h2,
-.learn-section-heading p {
-  margin: 0;
-}
-
-.learn-section-heading h2 {
-  color: var(--text-primary);
-  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
-  letter-spacing: -0.025em;
-}
-
-.learn-section-heading > div > p:last-child {
-  max-inline-size: 48rem;
-  margin-block-start: 0.7rem;
-  color: var(--text-secondary);
-  line-height: 1.7;
-}
-
-.learn-section-heading__icon {
-  flex: 0 0 auto;
-  margin-block-start: 0.3rem;
-  color: var(--accent-primary);
-}
-
-.learn-track-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  gap: 1rem;
-}
+/* Learn keeps its route-specific card and timeline rules beside the shared
+   knowledge-page compositions.
+   Learn 仅保留路线卡片与时间线规则，共享页面组合位于 ui/compositions。 */
 
 .learn-track-card {
   display: flex;
@@ -181,44 +64,10 @@
   font-weight: 650;
 }
 
-.learn-empty-state {
-  display: grid;
-  max-inline-size: 36rem;
-  margin-inline: auto;
-  padding: 2.25rem;
-  place-items: center;
-  text-align: center;
-}
-
-.learn-empty-state > svg {
-  margin-block-end: 0.7rem;
-  color: var(--accent-primary);
-}
-
-.learn-empty-state h2,
-.learn-empty-state p {
-  margin: 0;
-}
-
-.learn-empty-state h2 {
-  font-size: 1.2rem;
-}
-
-.learn-empty-state p {
-  margin-block-start: 0.6rem;
-  color: var(--text-secondary);
-  line-height: 1.65;
-}
-
-.learn-track-header {
-  margin-block-end: clamp(2.5rem, 5vw, 4rem);
-}
-
 .learn-track-summary {
   display: inline-flex;
   align-items: center;
   gap: 1rem;
-  margin-block-start: 1.5rem;
   padding: 0.7rem 1rem;
   color: var(--text-secondary);
 }
@@ -312,18 +161,6 @@
 .learn-step__heading h3 {
   margin: 0;
   font-size: clamp(1.05rem, 1.6vw, 1.3rem);
-}
-
-.learn-status-badge {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 1.4rem;
-  border: 1px solid color-mix(in srgb, var(--accent-tertiary) 38%, var(--border-subtle));
-  border-radius: var(--radius-pill);
-  padding-inline: 0.55rem;
-  color: var(--accent-tertiary);
-  font-size: 0.72rem;
-  font-weight: 650;
 }
 
 .learn-step__description {
@@ -520,18 +357,6 @@
 }
 
 @media (max-width: 640px) {
-  .learn-page {
-    padding-block-start: calc(7rem + var(--home-nav-height));
-  }
-
-  .learn-section-heading {
-    gap: 1rem;
-  }
-
-  .learn-section-heading__icon {
-    inline-size: 20px;
-  }
-
   .learn-step {
     grid-template-columns: 2.6rem minmax(0, 1fr);
     gap: 0.7rem;
@@ -558,7 +383,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .learn-track-card,
-  .learn-page__back-link,
   .learn-step__heading a,
   .learn-step__prerequisites a,
   .learn-doc-navigation__heading a,

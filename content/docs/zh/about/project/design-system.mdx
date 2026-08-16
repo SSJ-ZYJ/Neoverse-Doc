@@ -18,6 +18,7 @@ src/
 ├── ui/
 │   ├── tokens/tokens.css         # 颜色、表面、圆角、阴影、间距与动效
 │   ├── surfaces/glass.css        # 玻璃表面和控件
+│   ├── compositions/compositions.css # 页面头部、区段、网格、空状态与 Metadata Chip
 │   └── styles/                   # Theme、Motion、Typography 与 A11y
 ├── adapters/fumadocs/styles.css  # Fumadocs 组件覆写
 ├── features/*/styles.css         # Search、Tasks、Mermaid、Transition、Community
@@ -25,7 +26,9 @@ src/
 └── styles/                       # Loading、MDX 文件树与页面级结构
 ```
 
-Task、Mermaid、Transition、Community、Search Spotlight 与 Interaction 样式跟随其所有者；页面级布局和少量全局集成规则继续留在 `src/styles/`。视觉调整优先替换 Token 或已有表面，不继续叠加第二套玻璃、Glow 或阴影体系。
+Task、Mermaid、Transition、Community、Search Spotlight 与 Interaction 样式跟随其所有者；稳定复用的产品页面组合位于 `src/ui/compositions/compositions.css`，页面特有规则继续留在对应 Feature，其他页面级布局和少量全局集成规则继续留在 `src/styles/`。视觉调整优先替换 Token 或已有表面，不继续叠加第二套玻璃、Glow 或阴影体系。
+
+页面组合只统一信息层级与节奏，不拥有页面数据或路由。`Page Header`、`Page Section`、`Content Grid` 与 `Empty State` 通过 CSS 组合类复用；`Metadata Chip` 用有限的语义变体表达 Track、Topic、Type、Difficulty 与生命周期 Status，文案仍由字典或 Taxonomy Registry 提供。
 
 ## 二、语义 Token 体系
 
@@ -241,6 +244,7 @@ Glass、Glow、粒子、Blur 和环境 Motion 作为增强效果而不是默认�
 | `src/ui/tokens/tokens.css` | 语义 Token 双套变量 |
 | `src/ui/styles/theme.css` | Tailwind / Fumadocs 映射 |
 | `src/ui/surfaces/glass.css` | 玻璃形态三件套与业务表面 |
+| `src/ui/compositions/compositions.css` | 页面组合与统一 Metadata Chip |
 | `src/ui/styles/motion.css` | 入场动画与三档动效 |
 | `src/ui/styles/a11y.css` | 三层无障碍降级 |
 | `src/ui/styles/typography.css` | 正文、代码、引用与提示 |

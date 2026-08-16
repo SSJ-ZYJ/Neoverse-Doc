@@ -19,16 +19,28 @@ export function createExploreContentView(
   locale: Locale,
   labels: ExploreContentLabels,
 ): ExploreContentView {
-  const metadata: { label: string; value: string }[] = [];
+  const metadata: {
+    label: string;
+    value: string;
+    variant: 'difficulty' | 'type';
+  }[] = [];
   if (entry.type !== undefined) {
     const type = CONTENT_TYPE_REGISTRY.find((candidate) => candidate.id === entry.type);
-    if (type) metadata.push({ label: labels.contentType, value: type.label[locale] });
+    if (type) {
+      metadata.push({ label: labels.contentType, value: type.label[locale], variant: 'type' });
+    }
   }
   if (entry.difficulty !== undefined) {
     const difficulty = CONTENT_DIFFICULTY_REGISTRY.find(
       (candidate) => candidate.id === entry.difficulty,
     );
-    if (difficulty) metadata.push({ label: labels.difficulty, value: difficulty.label[locale] });
+    if (difficulty) {
+      metadata.push({
+        label: labels.difficulty,
+        value: difficulty.label[locale],
+        variant: 'difficulty',
+      });
+    }
   }
 
   return {
