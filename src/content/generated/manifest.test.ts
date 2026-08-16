@@ -28,14 +28,16 @@ const baseIrEntry: ContentIrEntry = {
   title: 'Sample',
   slugs: ['ir', 'sample'],
   sourcePath: 'zh/ch1/sample.mdx',
+  status: 'stable',
+  contentRevision: 'a'.repeat(64),
   mermaid: ['flowchart TD\n  A --> B'],
 };
 
 describe('content manifest', () => {
   it('is derived from the IR without IR-only build fields', () => {
-    const entry = createManifestEntry({ ...baseIrEntry, draft: true, type: 'guide' });
+    const entry = createManifestEntry({ ...baseIrEntry, status: 'draft', type: 'guide' });
     assert.equal(entry.id, 'docs:ir/sample');
-    assert.equal(entry.draft, true);
+    assert.equal(entry.status, 'draft');
     assert.equal(entry.type, 'guide');
     assert.equal('sourcePath' in entry, false, 'sourcePath must stay IR-only');
     assert.equal('mermaid' in entry, false, 'mermaid sources must stay IR-only');
@@ -76,8 +78,11 @@ describe('content manifest', () => {
       'estimatedMinutes',
       'prerequisites',
       'related',
-      'draft',
       'description',
+      'lastReviewed',
+      'replacement',
+      'reviewedRevision',
+      'contentRevision',
     ] as const) {
       assert.equal(field in plain, false, `${field} should be absent when undeclared`);
     }

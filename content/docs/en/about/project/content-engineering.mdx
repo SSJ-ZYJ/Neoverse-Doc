@@ -18,7 +18,10 @@ author:
 | `id` | required string | Stable content identity, shared across locales (see "Stable Content Identity" below) |
 | `author` | string or string array | Primary author |
 | `contributor` / `contributors` | string or string array | Contributors after the body |
-| `draft` | boolean, default `false` | Soft gating for drafts |
+| `status` | `draft` / `review` / `stable` / `deprecated`, default `stable` | The single content lifecycle; `draft` enables the soft gate |
+| `lastReviewed` | `YYYY-MM-DD`, optional | The latest date on which technical validity was confirmed; never derived from Git mtime |
+| `replacement` | `docs:<id>`, optional | A Stable Content ID for the replacement of a deprecated page |
+| `reviewedRevision` | SHA-256, optional on translations | The source revision most recently confirmed by a translation |
 | `todoProgress` | boolean, default `false` | Page Checklist or Learning Task progress display |
 
 A centralized Schema lets the Fumadocs compilation stage validate Frontmatter directly, and also avoids guessing content state from titles, file names, or the DOM.
@@ -41,7 +44,15 @@ On top of these page-state fields, Schema v2 adds a set of **entirely optional**
 
 `src/content/graph/` aggregates IR into one node per Stable Content ID and exposes `getContentNode`, `getPrerequisites`, `getRequiredBy`, `getRelated`, and `getRelatedBy`. `related` remains an author-declared directed relation; its reverse index does not mutate the target page's `related` list.
 
-`translationKey`, `status`, and `lastReviewed` are deliberately absent: the translation-key duty is explicitly carried by "the zh and en versions of the same content declare the same `id`"; publishing state already exists as `draft`; review dates treat git history as the source of truth. Existing pages are annotated incrementally — no batch migration.
+The translation-key duty is explicitly carried by "the zh and en versions of the same content declare the same `id`"; lifecycle is expressed only by `status`, so `draft` is not retained as a competing field. Existing `draft: true` pages have been migrated to `status: draft`, and the old field is rejected by the Schema. Review dates are manually confirmed and never replaced by Git history.
+
+### Content Maintenance Model
+
+The lifecycle has four states: `draft` means the page is still being written and uses the existing soft gate; `review` means the body is readable but being checked; `stable` means the content is currently considered stable; and `deprecated` means the page remains reachable but is no longer the current recommendation. A deprecated page may point to a replacement with `replacement: docs:<id>`; the build verifies that the target exists and is not self-referential.
+
+Freshness Policy comes from one centralized maintenance policy under `src/content/taxonomy/`, rather than being repeated in components. The current intervals are 90 days for `fast-moving`, 365 days for `normal`, and 730 days for `stable`; when multiple type or Topic policies match, the shortest interval wins. A published page with no `lastReviewed` date or an expired date produces a warning in `bun run check:content`, not a build failure; `draft` and `deprecated` pages do not add a duplicate freshness alarm.
+
+Translation Drift uses the default `zh` locale as the source and pairs pages by Stable Content ID. The source body and reader-facing metadata produce an automatic SHA-256 `contentRevision`; a translation stores the source revision it last confirmed in `reviewedRevision`. Equal values are `up-to-date`, an absent locale page is `missing`, and a missing or mismatched revision is `outdated`. Existing translations are not auto-filled with confirmation values when this model is introduced.
 
 ### Stable Content Identity
 
@@ -56,19 +67,20 @@ Runtime consumers: explicit Learning Tasks use `docs:<id> + labId + taskId` as t
 
 ### Content IR and Build Pipeline
 
-`src/content/ir.ts` is the single normalized content data plane (Content IR): derived in one pass from the Fumadocs source, each IR entry carries the stable Content ID, `locale`, `url`, `slugs`, title and description, schema metadata, content relations, `sourcePath` (posix-relative), and the mermaid diagram sources found in the page (extracted by `src/content/mermaid-text.ts`). Fumadocs stays the only MDX compiler; the IR is 100% machine-derived at import time — never materialized to a file, never hand-maintained, so there is no cache that can go stale (decision record in `docs/adr/0004-content-ir-build-pipeline.md`).
+`src/content/ir.ts` is the single normalized content data plane (Content IR): derived in one pass from the Fumadocs source, each IR entry carries the stable Content ID, `locale`, `url`, `slugs`, title and description, lifecycle and maintenance metadata, schema metadata, content relations, `contentRevision`, `sourcePath` (posix-relative), and the mermaid diagram sources found in the page (extracted by `src/content/mermaid-text.ts`). Fumadocs stays the only MDX compiler; the IR is 100% machine-derived at import time — never materialized to a file, never hand-maintained, so there is no cache that can go stale (decision record in `docs/adr/0004-content-ir-build-pipeline.md`).
 
 The build pipeline collapses into two commands:
 
 | Command | Stage | Behavior |
 | :--- | :--- | :--- |
 | `bun run generate:content` | Content prepare (auto-run by `predev`) | Derive IR → validate content → incrementally render mermaid assets (the only command that may launch Puppeteer, and zero launches when everything hits cache) |
-| `bun run check:content` | Production gate (auto-run by `prebuild`) | Derive IR → validate content → hash-check mermaid assets; never imports Puppeteer |
+| `bun run check:content` | Production gate (auto-run by `prebuild`) | Derive IR → validate content and emit maintenance report → hash-check mermaid assets; never imports Puppeteer |
 
 How each system consumes it:
 
 - **Content Manifest** (`src/content/generated/manifest.ts`) is the consumer view over the IR, passing through taxonomy and relation fields while stripping IR-only build fields (`sourcePath`, `mermaid`); the sitemap-facing API is unchanged;
-- **Content validation** (ID uniqueness, translation pairing, reference existence, duplicates, self-references, cross-locale relation conflicts, and prerequisite cycles) runs on the IR;
+- **Content validation** (ID uniqueness, translation pairing, reference existence, duplicates, self-references, cross-locale relation conflicts, and prerequisite cycles) runs on the IR; lifecycle relations, replacement targets, and invalid date semantics are Errors, while Freshness and translation `missing` / `outdated` results are Warnings;
+- **Translation Report** prints `missing`, `outdated`, or `up-to-date` for every locale paired by Stable Content ID; warnings do not change the successful exit code of `check:content`;
 - **Knowledge Graph** (`src/content/graph/`) compiles Stable Content ID nodes plus forward and reverse relations from the IR without re-scanning MDX;
 - **Mermaid** detection is driven by the IR instead of walking `content/docs`; assets are content-addressed by the source + renderer signature + config hash (see [Mermaid and Performance](./mermaid-performance));
 - **Product projections** (`src/content/projections/`) derive pure product data views from the unified Content IR, Manifest, Taxonomy Registry, and Content Graph: Learn organizes stable Content IDs by Track, taxonomy order, and explicit prerequisite edges; Explore groups only by explicit Topics; Reference admits only the canonical Content Type. Projections do not duplicate names, display text, or a second metadata registry, so product consumers still resolve those from the Manifest and Registry;
@@ -250,11 +262,11 @@ The legacy pathname / text-hash state remains available for GFM compatibility. v
 
 `FeatureCard`, `ResourceLink`, and `LearningPath` are direct aliases of `DocCard` / `DocGrid` (`export const FeatureCard = DocCard`), letting authors express the content intent of "feature", "resource", and "learning path" without duplicating a second set of visual components. Direct aliases are used instead of wrapper functions to avoid extra component layers in the React tree.
 
-## 9. Draft Gating
+## 9. Lifecycle States and Draft Gating
 
-`draft: true` does not remove an article from the static page tree. The page still participates in the build, but the body initially starts in an `inert` and inaccessible state, while `DocsDraftControls` shows the under-construction notice, a previous or home page entry, and an explicit preview button.
+`status: draft` does not remove an article from the static page tree. The page still participates in the build, but the body initially starts in an `inert` and inaccessible state, while `DocsDraftControls` shows the draft notice, a previous or home page entry, and an explicit preview button. `review` and `deprecated` pages remain readable and show a compact lifecycle notice beside the title; a deprecated page also links to its declared replacement when available.
 
-This soft gating is suited for signaling "content is not stable yet"; it is not a permission system. No sensitive information should ever enter the generated static files.
+Draft soft gating signals that content is not stable yet; it is not a permission system. No sensitive information should ever enter the generated static files. The old boolean `draft` form is migration history only and must not be used in new pages.
 
 ## 10. Page Authors, Contributors, and Actions
 

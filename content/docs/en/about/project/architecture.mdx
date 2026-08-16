@@ -111,11 +111,11 @@ The page tree is also responsible for:
 
 `src/app/[lang]/docs/[...slug]/page.tsx` remains a Server Component and centrally assembles:
 
-1. the title, description, authors, and contributors from the Frontmatter;
+1. the title, description, authors, contributors, and lifecycle state from the Frontmatter;
 2. Markdown source and GitHub file actions;
 3. the optional task progress card;
 4. the shared MDX component registry;
-5. draft gating;
+5. lifecycle notices and draft gating;
 6. the Fumadocs TOC and pagination;
 7. canonical, `hreflang` for real translations, share metadata, and structured data;
 8. the Giscus community module outside the article body.
@@ -142,7 +142,7 @@ flowchart TD
     L --> G
 ```
 
-`src/content/ir.ts` derives the Content IR in one pass from the compiled Source (including mermaid diagram detection) — the single normalized content data plane. `src/content/generated/manifest.ts` is its consumer view; stable IDs come from the required frontmatter `id` prefixed with `docs:`, so localized versions of one page share an identity. The Manifest retains draft flags and consumers such as sitemap perform their own filtering; there is no second hand-maintained content source. The production build also generates `robots.txt`, a published-only `sitemap.xml`, and a unified PNG social share image.
+`src/content/ir.ts` derives the Content IR in one pass from the compiled Source (including mermaid diagram detection) — the single normalized content data plane. `src/content/generated/manifest.ts` is its consumer view; stable IDs come from the required frontmatter `id` prefixed with `docs:`, so localized versions of one page share an identity. The Manifest carries lifecycle and maintenance metadata, while the page, sitemap, and content checks consume their respective contracts; there is no second hand-maintained content source. The production build also generates `robots.txt`, an indexable-only `sitemap.xml`, and a unified PNG social share image.
 
 Different commands cover different verification scopes:
 

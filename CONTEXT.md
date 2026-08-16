@@ -36,6 +36,22 @@ _Avoid_: 校验时重新渲染
 面向消费方的页面数据视图，由 Content IR 派生并剥离构建期专属字段：`id` 表达“是谁”，`url` / `slugs` 表达“在哪里”，`locale` 表达“哪种语言”。
 _Avoid_: 独立于 IR 的第二套清单
 
+**Content Lifecycle（内容生命周期）**:
+内容在维护过程中的唯一状态语义：`draft`、`review`、`stable`、`deprecated`。状态描述内容当前的发布与维护阶段，不是翻译关系或访问权限。
+_Avoid_: 同时用 `draft` 布尔值和 `status` 表达状态
+
+**Review Metadata（复核元数据）**:
+作者对技术内容仍然有效的最近一次人工确认记录；日期只表达确认事实，不等同于文件修改时间或 Git 提交时间。
+_Avoid_: 用 mtime 推断内容已复核
+
+**Freshness Policy（新鲜度策略）**:
+按内容分类决定复核周期的集中规则；它只产生维护提醒，不改变生命周期，也不把复核周期复制到每个 UI 组件。
+_Avoid_: 由组件或 URL 局部推导复核周期
+
+**Translation Drift（翻译漂移）**:
+source 内容更新后，其他语言版本尚未确认对应 source revision 的维护状态；通过 Stable Content ID 配对，并区分 `missing`、`outdated` 与 `up-to-date`。
+_Avoid_: 仅凭文件名、目录、URL 或 mtime 判断翻译同步
+
 ### 质量门禁
 
 **Quality Gate（质量门禁）**:

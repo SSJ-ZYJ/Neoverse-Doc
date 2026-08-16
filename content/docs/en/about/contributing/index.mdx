@@ -176,12 +176,12 @@ author:
   - "Main Author(https://github.com/your-name)"
 contributors:
   - "Contributor(https://github.com/contributor-name)"
-draft: false
+status: stable
 todoProgress: false
 ---
 ```
 
-`id` is the required stable content identity: when creating a page, take the value matching its final path (e.g. `ch1/your-page-name`); the zh and en versions must declare the same `id`. After that, never change it when moving the file or adjusting the URL. `author`, `contributor`, and `contributors` accept a single string or an array of strings; `draft` and `todoProgress` both default to `false`. Do not write custom fields that are not declared by the Schema.
+`id` is the required stable content identity: when creating a page, take the value matching its final path (e.g. `ch1/your-page-name`); the zh and en versions must declare the same `id`. After that, never change it when moving the file or adjusting the URL. `author`, `contributor`, and `contributors` accept a single string or an array of strings; `status` defaults to `stable`, and the old `draft: true` form has been migrated to `status: draft` and must not be used again. Only record `lastReviewed` after a human technical review; add the matching `reviewedRevision` to a translation after confirming it is synchronized. Do not write custom fields that are not declared by the Schema.
 
 ### Body Text Rules
 

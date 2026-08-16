@@ -76,6 +76,12 @@ export interface Dictionary {
   draftHome: string;
   draftReveal: string;
   draftUnlocked: string;
+  // Lifecycle notices / 生命周期状态提示
+  reviewBadge: string;
+  reviewDescription: string;
+  deprecatedBadge: string;
+  deprecatedDescription: string;
+  replacementAction: string;
   home: {
     eyebrow: string;
     heroDescription: string;

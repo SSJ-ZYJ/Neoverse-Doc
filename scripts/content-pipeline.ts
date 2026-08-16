@@ -1,5 +1,6 @@
 // Content pipeline: the single build-time entry that derives the Content IR,
-// validates content relations, and manages mermaid assets. Two modes:
+// validates content maintenance and relations, and manages mermaid assets.
+// Two modes:
 //
 //   generate (bun run generate:content) — dev / content preparation. Derives
 //     the IR, runs all content validations, then incrementally renders only
@@ -12,8 +13,8 @@
 //     launches a browser; missing or stale assets fail the build with a hint
 //     to run generate. See docs/adr/0004.
 //
-// 内容管线：派生 Content IR、校验内容关系并管理 Mermaid 资产的唯一构建期
-// 入口。两种模式：
+// 内容管线：派生 Content IR、校验内容维护与关系并管理 Mermaid 资产的唯一
+// 构建期入口。两种模式：
 //
 //   generate（bun run generate:content）—— 开发 / 内容准备阶段。派生 IR、
 //     执行全部内容校验，然后按「源码 + 渲染器 + 配置」哈希内容寻址，仅
@@ -26,6 +27,12 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createMdxPlugin } from 'fumadocs-mdx/bun';
+import { validateContentMaintenance } from '../src/content/maintenance/check';
+import {
+  createTranslationReport,
+  formatTranslationReport,
+  getTranslationWarnings,
+} from '../src/content/maintenance/report';
 import {
   ASSET_ROOT,
   assetExists,
@@ -98,6 +105,7 @@ console.info(
 //   3. prerequisites / related reference existence (locale-loose)
 //   4. duplicate and self-reference guards
 //   5. locale-variant relation consistency and prerequisite DAG cycles
+//   6. lifecycle / replacement integrity, freshness warnings, and translation drift report
 // 枚举 / 格式 / 数值约束位于 zod schema，在 frontmatter 编译处强制；
 // 以下检查需要全量内容视角：
 //   1. Content ID 唯一性（id + locale 维度）
@@ -105,6 +113,7 @@ console.info(
 //   3. prerequisites / related 引用存在性（宽松 locale 语义）
 //   4. 重复引用与自引用防护
 //   5. locale 版本关系一致性与 prerequisite DAG 环检测
+//   6. 生命周期 / replacement 完整性、freshness 警告与翻译 drift 报告
 interface Violation {
   identity: string;
   field: string;
@@ -159,6 +168,12 @@ for (const [id, variants] of slugPathsById) {
 const { validateContentRelations } = await import('../src/content/graph/validation');
 violations.push(...validateContentRelations(contentIr));
 
+const maintenance = validateContentMaintenance(contentIr);
+violations.push(...maintenance.errors);
+const translationReports = createTranslationReport(contentIr);
+const translationWarnings = getTranslationWarnings(translationReports);
+const warnings = [...maintenance.warnings, ...translationWarnings];
+
 if (violations.length > 0) {
   for (const violation of violations) {
     console.error(
@@ -167,10 +182,17 @@ if (violations.length > 0) {
   }
   console.error(
     `\nContent check failed: ${violations.length} violation(s) across ${contentIr.length} IR entries. ` +
-      'Rules: scripts/content-pipeline.ts · Schema: src/content/schema/docs.ts · Decisions: docs/adr/0002, docs/adr/0003, docs/adr/0004, docs/adr/0007',
+      'Rules: scripts/content-pipeline.ts · Schema: src/content/schema/docs.ts · Decisions: docs/adr/0002, docs/adr/0003, docs/adr/0004, docs/adr/0007, docs/adr/0011',
   );
   process.exit(1);
 }
+
+for (const warning of warnings) {
+  console.warn(
+    `Content check warning: [${warning.identity}] ${warning.field}\n  ${warning.message}`,
+  );
+}
+console.info(formatTranslationReport(translationReports));
 
 const relations = contentIr.reduce(
   (sum, entry) => sum + (entry.prerequisites?.length ?? 0) + (entry.related?.length ?? 0),
@@ -179,7 +201,7 @@ const relations = contentIr.reduce(
 const annotated = contentIr.filter((entry) => entry.type !== undefined).length;
 console.info(
   `Content check passed: ${contentIr.length} entries, ${annotated} typed page(s), ` +
-    `${relations} relation reference(s), all relation rules satisfied.`,
+    `${relations} relation reference(s), all relation rules satisfied, ${warnings.length} warning(s).`,
 );
 
 // --- Stage 3: Mermaid assets ------------------------------------------------

@@ -67,7 +67,7 @@ export const en = {
   notFoundHome: 'Back to Home',
   notFoundDocs: 'Enter Docs',
   // Draft document gate labels / 草稿文档门禁文案
-  draftBadge: 'Under construction',
+  draftBadge: 'Draft',
   draftTitle: 'This document is still being written',
   draftDescription:
     'We are still writing, testing, and smoothing out the rough edges. Head back to the previous page, or peek behind the barrier to see how far the work has come……Draft content may contain errors, and is not intended for official reference.',
@@ -75,6 +75,14 @@ export const en = {
   draftHome: 'Back to the knowledge map',
   draftReveal: 'Just one quick peek 👀',
   draftUnlocked: 'Draft content unlocked.',
+  // Lifecycle notices / 生命周期状态提示
+  reviewBadge: 'Under review',
+  reviewDescription:
+    'This document is being checked for technical accuracy. It remains readable and may still change.',
+  deprecatedBadge: 'Deprecated',
+  deprecatedDescription:
+    'This document is no longer maintained as the current recommendation. Prefer the replacement page when one is available.',
+  replacementAction: 'Open replacement page',
   // Homepage portal copy / 首页内容门户文案
   home: {
     eyebrow: 'DO SOMETHING GREAT',

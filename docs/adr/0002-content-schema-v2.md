@@ -1,6 +1,6 @@
 # Content Schema v2 采用派生 Content ID 与全可选元数据字段
 
-> 状态：本 ADR 中「Content ID 继续由 slug 派生」及拒绝显式 id / translationKey 的论证前提已被 [ADR 0003](./0003-stable-content-identity.md) 取代（现采用必填 frontmatter `id`，翻译配对由「同 id」显式承担）；开放 topics、`track` 字段与 Schema 内枚举的决定已被 [ADR 0007](./0007-taxonomy-registry-and-content-graph.md) 取代；其余字段决策继续有效。
+> 状态：本 ADR 中「Content ID 继续由 slug 派生」及拒绝显式 id / translationKey 的论证前提已被 [ADR 0003](./0003-stable-content-identity.md) 取代（现采用必填 frontmatter `id`，翻译配对由「同 id」显式承担）；开放 topics、`track` 字段与 Schema 内枚举的决定已被 [ADR 0007](./0007-taxonomy-registry-and-content-graph.md) 取代；本 ADR 对 `status` / `lastReviewed` 的否定决定已被 [ADR 0011](./0011-content-maintenance-model.md) 取代；其余字段决策继续有效。
 
 为支撑从 Chapter-based Docs 演进为泛技术知识体系（/learn、Topic 聚合、Knowledge Graph、搜索排序），项目在 Frontmatter Schema 与 Content Manifest 中引入可选知识体系元数据。核心决策：**全部字段可选、Content ID 继续由 slug 派生、不做批量迁移**，仅以少量试点页面打通 Schema → Manifest → Validation 全链路。
 
@@ -8,7 +8,7 @@
 
 - **显式 frontmatter `id`（重命名安全）**：每页手工维护一个 ID + 唯一性管理，约 50 个存量页面要么迁移要么双轨。现有文件名（数字编号 + 稳定命名）重命名频率低、v2 阶段引用密度极低，维护成本先于收益出现，故保留派生 ID。等 Knowledge Graph 落地、引用密度上来后再评估。
 - **`translationKey` 字段**：fumadocs 的目录式 locale 配对（zh/en 同 slug 自动成对）+ manifest 中 locale 无关的派生 ID 已完整承担翻译键职责，手写 key 是可漂移的重复状态，不加。
-- **`status` / `lastReviewed`**：`draft: boolean` 已存在且被草稿门控消费；`lastReviewed` 无消费方且手工日期会腐烂（git 历史已是事实来源），均不加入。
+- **`status` / `lastReviewed`（当时的决定）**：当时 `draft: boolean` 已存在且暂无维护消费方，因此未加入；该决定已由 ADR 0011 取代。
 - **type 枚举扩到 guide/concept/tutorial/reference/essay 五值**：现有内容中 guide 与 tutorial 边界模糊、essay 无真实实例，故收敛为 `concept | guide | reference` 三值起步，出现真实边界再扩展。
 
 ## 决策要点

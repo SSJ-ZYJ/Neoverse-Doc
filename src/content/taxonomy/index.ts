@@ -13,6 +13,12 @@ export {
   CONTENT_DIFFICULTY_IDS,
   CONTENT_DIFFICULTY_REGISTRY,
 } from './difficulties';
+export type { FreshnessPolicy, FreshnessPolicyId } from './maintenance';
+export {
+  FRESHNESS_POLICIES,
+  FRESHNESS_POLICY_IDS,
+  resolveFreshnessPolicy,
+} from './maintenance';
 export type { ContentTopic } from './topics';
 export {
   CONTENT_TOPIC_IDS,

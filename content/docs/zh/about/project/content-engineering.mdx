@@ -18,7 +18,10 @@ author:
 | `id` | 必填字符串 | 稳定内容身份，跨语言共享（见下文「稳定 Content Identity」） |
 | `author` | 字符串或字符串数组 | 主要作者 |
 | `contributor` / `contributors` | 字符串或字符串数组 | 正文后的贡献者 |
-| `draft` | 布尔值，默认 `false` | 显示草稿软门控 |
+| `status` | `draft` / `review` / `stable` / `deprecated`，默认 `stable` | 唯一内容生命周期；`draft` 启用草稿软门控 |
+| `lastReviewed` | `YYYY-MM-DD`，可选 | 最近一次确认技术内容仍有效的日期，不从 Git mtime 推导 |
+| `replacement` | `docs:<id>`，可选 | `deprecated` 页面指向替代内容的 Stable Content ID |
+| `reviewedRevision` | SHA-256，译文可选 | 译文最近一次确认对应的 source revision |
 | `todoProgress` | 布尔值，默认 `false` | 显示兼容 Checklist 或 Learning Task 的页面进度 |
 
 集中 Schema 让 Fumadocs 编译阶段直接校验 Frontmatter，也避免从标题、文件名或 DOM 猜测内容状态。
@@ -41,7 +44,15 @@ author:
 
 `src/content/graph/` 将 IR 按 Stable Content ID 聚合为一个节点，提供 `getContentNode`、`getPrerequisites`、`getRequiredBy`、`getRelated` 与 `getRelatedBy`。`related` 保持作者声明的有向关系；反向索引不会自动改写另一页的 `related`。
 
-`translationKey`、`status`、`lastReviewed` 刻意未加入：翻译键职责已由「同一内容的中英文页面声明相同 `id`」显式承担；发布状态已有 `draft`；评审日期以 git 历史为事实来源。存量页面渐进补标，不做批量迁移。
+翻译键职责由「同一内容的中英文页面声明相同 `id`」显式承担；生命周期统一由 `status` 表达，`draft` 不再作为第二个字段保留。存量 `draft: true` 页面已迁移为 `status: draft`，旧字段会被 Schema 拒绝。评审日期由作者手工确认，不使用 Git 历史代替。
+
+### 内容维护模型
+
+生命周期只有四种状态：`draft` 表示仍在编写并使用现有软门控；`review` 表示正文可读但正在复核；`stable` 表示当前稳定内容；`deprecated` 表示页面仍可访问但不再作为当前推荐内容。`deprecated` 页面可以通过 `replacement: docs:<id>` 指向替代页，构建期会验证目标存在且不能自引用。
+
+Freshness Policy 由 `src/content/taxonomy/` 下的集中维护策略提供，不在组件中重复声明周期。当前周期为 `fast-moving` 90 天、`normal` 365 天、`stable` 730 天；类型与 Topic 命中多个策略时取较短周期。已发布页面缺少 `lastReviewed` 或超过周期会在 `bun run check:content` 中产生 warning，不会阻止构建；`draft` 与 `deprecated` 不重复发 freshness 警告。
+
+翻译 Drift 以默认语言 `zh` 为 source，按 Stable Content ID 配对。source 的正文与读者可感知元数据自动计算 SHA-256 `contentRevision`；译文通过 `reviewedRevision` 记录最近一次人工确认的 source revision。相等为 `up-to-date`，译文不存在为 `missing`，缺少或不匹配为 `outdated`。首次接入不会自动给现有译文回填确认值。
 
 ### 稳定 Content Identity
 
@@ -56,19 +67,20 @@ author:
 
 ### Content IR 与构建管线
 
-`src/content/ir.ts` 是唯一的规范化内容数据面（Content IR）：从 Fumadocs 内容源单遍派生，每条 IR 条目携带稳定 Content ID、`locale`、`url`、`slugs`、标题描述、Schema 元数据、内容关系、`sourcePath`（posix 相对路径）与页面内 Mermaid 图表源码（由 `src/content/mermaid-text.ts` 提取）。IR 由 Fumadocs 负责内容编译、在导入时 100% 机器派生——不物化为文件、永不手工维护，因此不存在会陈旧的缓存（决策记录见 `docs/adr/0004-content-ir-build-pipeline.md`）。
+`src/content/ir.ts` 是唯一的规范化内容数据面（Content IR）：从 Fumadocs 内容源单遍派生，每条 IR 条目携带稳定 Content ID、`locale`、`url`、`slugs`、标题描述、生命周期与维护元数据、Schema 元数据、内容关系、`contentRevision`、`sourcePath`（posix 相对路径）与页面内 Mermaid 图表源码（由 `src/content/mermaid-text.ts` 提取）。IR 由 Fumadocs 负责内容编译、在导入时 100% 机器派生——不物化为文件、永不手工维护，因此不存在会陈旧的缓存（决策记录见 `docs/adr/0004-content-ir-build-pipeline.md`）。
 
 构建管线收敛为两条命令：
 
 | 命令 | 阶段 | 行为 |
 | :--- | :--- | :--- |
 | `bun run generate:content` | 内容准备（`predev` 自动执行） | 派生 IR → 内容校验 → Mermaid 资产增量渲染（仅此命令会启动 Puppeteer，且全命中时零启动） |
-| `bun run check:content` | 生产门禁（`prebuild` 自动执行） | 派生 IR → 内容校验 → Mermaid 资产哈希对账，绝不导入 Puppeteer |
+| `bun run check:content` | 生产门禁（`prebuild` 自动执行） | 派生 IR → 内容校验与维护报告 → Mermaid 资产哈希对账，绝不导入 Puppeteer |
 
 各系统的消费关系：
 
 - **Content Manifest**（`src/content/generated/manifest.ts`）是 IR 的消费视图，透传 Taxonomy 与关系字段并剥离 `sourcePath`、`mermaid` 等构建期字段，sitemap 等消费方接口不变；
-- **内容校验**（ID 唯一、翻译配对、引用存在、重复、自引用、跨 locale 关系冲突与 prerequisite 环）在 IR 上执行；
+- **内容校验**（ID 唯一、翻译配对、引用存在、重复、自引用、跨 locale 关系冲突与 prerequisite 环）在 IR 上执行；生命周期关系、replacement 目标与日期语义错误是 Error，Freshness 与翻译 `missing` / `outdated` 是 Warning；
+- **Translation Report**在内容管线中按 Stable Content ID 输出每个 locale 的 `missing`、`outdated` 或 `up-to-date`，Warning 不改变 `check:content` 的成功退出码；
 - **Knowledge Graph**（`src/content/graph/`）从 IR 编译 Stable Content ID 节点与前向、反向关系，不重新扫描 MDX；
 - **Mermaid** 检测由 IR 驱动，不再自行扫描 `content/docs`；资产按「源码 + 渲染器签名 + 配置」哈希内容寻址（见 [Mermaid 与性能](./mermaid-performance)）；
 - **产品投影**（`src/content/projections/`）从统一的 Content IR、Manifest、Taxonomy Registry 和 Content Graph 派生纯数据产品视图：Learn 以 Track、Taxonomy 顺序与显式 prerequisite 边组织稳定 Content ID；Explore 只按显式 Topic 分组；Reference 只按 Content Type 准入。Projection 不复制名称、显示文案或第二份 metadata，产品消费方仍通过 Manifest 与 Registry 解析它们；
@@ -250,11 +262,11 @@ entry       = { labId, taskId, kind: 'task', completed }
 
 `FeatureCard`、`ResourceLink` 与 `LearningPath` 是 `DocCard` / `DocGrid` 的直接别名（`export const FeatureCard = DocCard`），使作者可以表达"功能""资源""学习路径"的内容意图，而不复制第二套视觉组件。使用直接别名而非包装函数，避免在 React 树中产生多余组件层级。
 
-## 九、草稿门控
+## 九、生命周期状态与草稿门控
 
-`draft: true` 不会从静态页面树移除文章。页面仍然参与构建，但正文初始处于 `inert` 和不可访问状态，由 `DocsDraftControls` 显示施工说明、上一篇或首页入口以及主动预览按钮。
+`status: draft` 不会从静态页面树移除文章。页面仍然参与构建，但正文初始处于 `inert` 和不可访问状态，由 `DocsDraftControls` 显示草稿说明、上一篇或首页入口以及主动预览按钮。`review` 与 `deprecated` 页面正文可读，并在标题区域显示必要状态提示；deprecated 页面若声明 `replacement`，同时显示替代页面入口。
 
-这种软门控适合提示"内容尚未稳定"，不是权限系统。任何敏感信息都不应进入已经生成的静态文件。
+草稿软门控适合提示“内容尚未稳定”，不是权限系统。任何敏感信息都不应进入已经生成的静态文件。`draft` 的旧布尔写法只作为迁移历史，不再写入新页面。
 
 ## 十、页面作者、贡献者与操作
 

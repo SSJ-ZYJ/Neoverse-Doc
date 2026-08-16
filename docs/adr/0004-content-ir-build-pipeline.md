@@ -12,7 +12,7 @@ Manifest、Search、Mermaid、Content Validation 各自消费文档数据，其�
 
 ## 决策要点
 
-- **IR 条目**：稳定 Content ID、locale、url、slugs、title、description、sourcePath（posix 相对路径）、draft 与 Content Schema v2 元数据、`mermaid`（页面内规范化图表源码数组）。不含正文；`structuredData` 之类大体量数据留在各自消费方。
+- **IR 条目**：稳定 Content ID、locale、url、slugs、title、description、生命周期与维护元数据、`contentRevision`、sourcePath（posix 相对路径）、Content Schema v2 元数据与 `mermaid`（页面内规范化图表源码数组）。不含正文；`structuredData` 之类大体量数据留在各自消费方。
 - **单一规范化**：Mermaid 栅栏扫描从脚本私有能力迁入内容层（`src/content/mermaid-text.ts`），由 source 页面清单驱动（读 `info.fullPath`），不再自行递归目录；共享哈希工具移至 `src/lib/mermaid-id.ts`，构建端与浏览器端继续调用同一函数保证身份一致。
 - **管线**（`scripts/content-pipeline.ts`，`mermaid-assets.ts` 共享命名/清单逻辑、`mermaid-renderer.ts` 仅被动态导入）：generate 按内容寻址增量渲染（源码 + 渲染器签名 + 配置哈希为文件名，全命中时零浏览器启动）并清理失效资产；verify 重算期望文件名与清单、磁盘三方对账。
 - **生成物与 Git 策略**：提交仓库——Mermaid SVG（`public/mermaid/`）与资产清单（`src/features/mermaid/generated/assets.ts`），保证 clone 即可 verify 构建；构建期生成、不提交——`.source/`（fumadocs-mdx）与 `out/`；无新增缓存目录，IR 不落盘。

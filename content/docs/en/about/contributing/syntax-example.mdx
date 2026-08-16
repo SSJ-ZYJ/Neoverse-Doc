@@ -25,7 +25,7 @@ author:
   - "Main Author(https://github.com/your-name)"
 contributors:
   - "Contributor(https://github.com/contributor-name)"
-draft: false
+status: stable
 todoProgress: false
 ---
 ```
@@ -36,7 +36,10 @@ todoProgress: false
 | `description` | Yes | Used for page metadata and content summary |
 | `author` | No | Main author, accepts a string or an array of strings |
 | `contributor` / `contributors` | No | Contributors, accept a string or an array of strings |
-| `draft` | No | Defaults to `false`; shows a draft notice when enabled |
+| `status` | No | Defaults to `stable`; accepts `draft`, `review`, `stable`, or `deprecated` |
+| `lastReviewed` | No | The latest technical-validity confirmation date, in `YYYY-MM-DD` form |
+| `replacement` | No | A replacement Stable Content ID for `deprecated` pages, such as `docs:ch1/new-page` |
+| `reviewedRevision` | No | The source revision most recently confirmed by a translation (SHA-256) |
 | `todoProgress` | No | Defaults to `false`; summarizes task progress before the body when enabled |
 
 Do not add fields not declared by the Schema. When new content semantics are needed, extend `source.config.ts` uniformly first instead of guessing from file names, URLs, or the body.

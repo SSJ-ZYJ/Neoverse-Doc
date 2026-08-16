@@ -62,7 +62,7 @@ export const zh = {
   notFoundHome: '返回首页',
   notFoundDocs: '进入文档',
   // Draft document gate labels / 草稿文档门禁文案
-  draftBadge: '前方施工',
+  draftBadge: '草稿',
   draftTitle: '这篇文档还在撰写中',
   draftDescription:
     '内容正在加紧编写和反复打磨。你可以先去上一篇，也可以悄悄掀开围挡，看看现在写到哪了……草稿状态下的文章内可能含各种各样的错误内容，仅供满足好奇心，勿作为正式参考。',
@@ -70,6 +70,13 @@ export const zh = {
   draftHome: '返回知识地图',
   draftReveal: '我就偷看一眼👀',
   draftUnlocked: '草稿正文已展开。',
+  // Lifecycle notices / 生命周期状态提示
+  reviewBadge: '复核中',
+  reviewDescription: '这篇文档正在进行技术有效性复核，内容仍可阅读，但可能会继续调整。',
+  deprecatedBadge: '已弃用',
+  deprecatedDescription:
+    '这篇文档已不再作为当前推荐内容维护；如果存在替代页面，请优先阅读替代版本。',
+  replacementAction: '前往替代页面',
   // Homepage portal copy / 首页内容门户文案
   home: {
     eyebrow: 'DO SOMETHING GREAT',

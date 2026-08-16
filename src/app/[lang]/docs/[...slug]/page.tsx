@@ -10,12 +10,14 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { source } from '@/adapters/fumadocs/source';
 import { DocsBackToTop } from '@/components/docs-back-to-top';
+import { DocsContentStatus } from '@/components/docs-content-status';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
 import { DocsPageActions } from '@/components/docs-page-actions';
 import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { JsonLd } from '@/components/seo/json-ld';
 import { createContentId } from '@/content/ir';
+import { isContentIndexable } from '@/content/maintenance';
 import {
   createBreadcrumbJsonLd,
   createTechArticleJsonLd,
@@ -25,7 +27,7 @@ import { getPageDictionary } from '@/dictionaries';
 import { DocsCommunity } from '@/features/community';
 import { DeferredDocsPage } from '@/features/docs-shell';
 import { LearningRegistryProvider, TaskListProgress } from '@/features/tasks';
-import { LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, resolveLocale } from '@/lib/i18n';
+import { i18n, LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, resolveLocale } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
 import { REPO_URL, SOCIAL_IMAGE } from '@/lib/site-config';
 import { ContentIdProvider } from '@/runtime/content-id';
@@ -43,6 +45,14 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   const sourcePath = page.data.info.fullPath;
   const markdownUrl = `/${locale}/docs-source/${slugKey}.md`;
   const githubUrl = `${REPO_URL}/blob/main/${sourcePath}`;
+  const isDraft = page.data.status === 'draft';
+  const isNonIndexable = !isContentIndexable(page.data.status);
+  const replacementPage = page.data.replacement
+    ? [locale, i18n.defaultLanguage]
+        .filter((candidate, index, locales) => locales.indexOf(candidate) === index)
+        .flatMap((candidateLocale) => source.getPages(candidateLocale))
+        .find((candidate) => createContentId(candidate.data.id) === page.data.replacement)
+    : undefined;
   // Contributor frontmatter supports both singular and plural keys.
   // 贡献者 frontmatter 同时兼容单数与复数字段。
   const contributors = page.data.contributors ?? page.data.contributor;
@@ -61,6 +71,17 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
         )}
         <DocsPageActions githubUrl={githubUrl} markdownUrl={markdownUrl} />
       </div>
+      {(page.data.status === 'review' || page.data.status === 'deprecated') && (
+        <DocsContentStatus
+          badge={page.data.status === 'review' ? dict.reviewBadge : dict.deprecatedBadge}
+          description={
+            page.data.status === 'review' ? dict.reviewDescription : dict.deprecatedDescription
+          }
+          replacementAction={dict.replacementAction}
+          replacementHref={replacementPage?.url}
+          status={page.data.status}
+        />
+      )}
     </>
   );
   const content = (
@@ -70,7 +91,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       {page.data.todoProgress && <TaskListProgress />}
       {/* Stable body hook lets CSS defer only expensive off-screen MDX blocks.
           稳定的正文标记让 CSS 仅延迟绘制离屏的高成本 MDX 内容块。 */}
-      <DocsBody data-docs-body="" tabIndex={page.data.draft ? -1 : undefined}>
+      <DocsBody data-docs-body="" tabIndex={isDraft ? -1 : undefined}>
         {/* Shared registry centralizes server/client boundaries for every MDX document.
             共享注册表集中管理所有 MDX 文档的服务端与客户端边界。 */}
         <MDX components={getMdxComponents()} />
@@ -83,10 +104,10 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   const community = (
     <DocsCommunity description={dict.communityDesc} slugKey={slugKey} title={dict.communityTitle} />
   );
-  const previous = page.data.draft
+  const previous = isDraft
     ? findNeighbour(source.pageTree[locale], page.url, { separateRoot: false }).previous
     : undefined;
-  const pageContent = page.data.draft ? (
+  const pageContent = isDraft ? (
     <div className="docs-draft" data-docs-draft="" data-state="locked">
       <div className="docs-draft__content" aria-hidden="true" inert>
         {content}
@@ -110,7 +131,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   // 使用 default TOC 风格，内置沿 SVG 路径移动的滚动追踪指示点。clerk 风格没有 thumb 元素。
   return (
     <>
-      {!page.data.draft && (
+      {!isNonIndexable && (
         <>
           <JsonLd
             id="tech-article-json-ld"
@@ -133,7 +154,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
         footer={{
           component: (
             <PageFooter
-              className={page.data.draft ? 'docs-draft__footer' : undefined}
+              className={isDraft ? 'docs-draft__footer' : undefined}
               data-docs-page-footer=""
             />
           ),
@@ -168,12 +189,12 @@ export async function generateMetadata(
   const locale = resolveLocale(lang);
   const page = source.getPage(slug, locale);
   if (!page) notFound();
-  const isDraft = page.data.draft === true;
+  const isNonIndexable = !isContentIndexable(page.data.status);
   const { alternates, alternateOpenGraphLocales } = getDocumentSeoLinks(
     page.slugs,
     locale,
     page.url,
-    isDraft,
+    isNonIndexable,
   );
   const authors = page.data.author ? parseAuthor(page.data.author) : [];
 
@@ -185,7 +206,7 @@ export async function generateMetadata(
       ...(author.url ? { url: author.url } : {}),
     })),
     alternates,
-    ...(isDraft
+    ...(isNonIndexable
       ? {
           robots: {
             index: false,

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { source } from '@/adapters/fumadocs/source';
+import { isContentIndexable } from '@/content/maintenance';
 import { getPageDictionary } from '@/dictionaries';
 import { i18n, LANGUAGE_TAGS, type Locale, OPEN_GRAPH_LOCALES } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
@@ -43,18 +44,18 @@ export function getHomeAlternates(locale: Locale): Metadata['alternates'] {
 
 /**
  * A document is a language alternate only when that concrete localized page
- * exists and is published. This prevents Fumadocs routes from implying a
- * translation that is missing or still a draft.
+ * exists and is indexable. This prevents Fumadocs routes from implying a
+ * translation that is missing, still a draft, or deprecated.
  *
  * 仅当具体语言页面真实存在且已发布时，才把它视为语言对应页，
- * 避免 Fumadocs 路由暗示不存在或仍为草稿的译文。
+ * 避免 Fumadocs 路由暗示不存在、仍为草稿或已 deprecated 的译文。
  */
 export function getIndexableDocumentLanguagePaths(slugs: string[]): DocumentLanguagePaths {
   const paths: DocumentLanguagePaths = {};
 
   for (const locale of i18n.languages) {
     const page = source.getPage(slugs, locale);
-    if (page && page.data.draft !== true) paths[locale] = page.url;
+    if (page && isContentIndexable(page.data.status)) paths[locale] = page.url;
   }
 
   return paths;
@@ -78,9 +79,9 @@ export function getDocumentSeoLinks(
   slugs: string[],
   locale: Locale,
   currentUrl: string,
-  isDraft: boolean,
+  isNonIndexable: boolean,
 ): DocumentSeoLinks {
-  if (isDraft) {
+  if (isNonIndexable) {
     return {
       alternates: { canonical: currentUrl },
       alternateOpenGraphLocales: [],
@@ -187,7 +188,7 @@ export function createBreadcrumbJsonLd(slugs: string[], locale: Locale): Record<
 
   for (let depth = 1; depth <= slugs.length; depth += 1) {
     const page = source.getPage(slugs.slice(0, depth), locale);
-    if (!page || page.data.draft === true) continue;
+    if (!page || !isContentIndexable(page.data.status)) continue;
 
     itemListElement.push({
       '@type': 'ListItem',

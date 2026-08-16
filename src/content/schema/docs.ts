@@ -1,5 +1,6 @@
 import { pageSchema } from 'fumadocs-core/source/schema';
 import { z } from 'zod';
+import { CONTENT_STATUS_IDS } from '@/content/maintenance/types';
 import {
   CONTENT_DIFFICULTY_IDS,
   CONTENT_TOPIC_IDS,
@@ -48,14 +49,34 @@ const stableIdSchema = z
   .string()
   .regex(/^[A-Za-z0-9][A-Za-z0-9./-]*$/, 'stable id must be path-like ASCII without spaces');
 
+const reviewDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'lastReviewed must use YYYY-MM-DD');
+
+const reviewedRevisionSchema = z
+  .string()
+  .regex(/^[a-f0-9]{64}$/, 'reviewedRevision must be a lowercase SHA-256 hex digest');
+
 export const docsPageSchema = pageSchema.extend({
   id: stableIdSchema,
   author: personFieldSchema.optional(),
   contributor: personFieldSchema.optional(),
   contributors: personFieldSchema.optional(),
-  // Per-page publishing state for the soft draft gate.
-  // 控制单篇文档是否显示可临时解锁的草稿施工提示。
-  draft: z.boolean().default(false),
+  // Lifecycle is the single publishing-state vocabulary. Existing `draft: true`
+  // pages are migrated to `status: draft`; the old field is intentionally not
+  // accepted as a second source of truth.
+  // 生命周期是唯一发布状态词汇；现有 `draft: true` 页面迁移为 `status: draft`，
+  // 旧字段刻意不再作为第二个事实来源接受。
+  status: z.enum(CONTENT_STATUS_IDS).default('stable'),
+  // Manually recorded confirmation date; never inferred from Git timestamps.
+  // 人工记录的内容有效性确认日期；绝不从 Git 时间戳推导。
+  lastReviewed: reviewDateSchema.optional(),
+  // Optional Stable Content ID shown on deprecated pages.
+  // deprecated 页面可选的替代页 Stable Content ID。
+  replacement: contentIdSchema.optional(),
+  // A translation records which source revision it was reviewed against.
+  // 译文记录自己最近一次确认对应的 source revision。
+  reviewedRevision: reviewedRevisionSchema.optional(),
   // Per-page switch for the interactive legacy/learning progress card.
   // 控制单篇文档是否显示兼容 Checklist / Learning Task 进度卡片。
   todoProgress: z.boolean().default(false),

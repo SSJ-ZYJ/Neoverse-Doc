@@ -1008,6 +1008,56 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
   }
 }
 
+/* Lifecycle notices stay compact and server-rendered; they provide context
+   without turning the docs shell into a health dashboard.
+   生命周期提示保持紧凑并由服务端渲染，只提供必要上下文，不把文档壳层变成
+   健康度 Dashboard。 */
+.docs-content-status {
+  display: grid;
+  gap: 0.35rem;
+  margin-block: 1rem 1.35rem;
+  border: 1px solid color-mix(in srgb, var(--docs-status-accent) 28%, var(--glass-border-hairline));
+  border-inline-start-width: 3px;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  background: color-mix(in srgb, var(--docs-status-accent) 6%, var(--surface-subtle));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 38%, transparent);
+}
+
+.docs-content-status--review {
+  --docs-status-accent: var(--accent-primary);
+}
+
+.docs-content-status--deprecated {
+  --docs-status-accent: var(--accent-secondary);
+}
+
+.docs-content-status__badge {
+  color: var(--docs-status-accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.docs-content-status__description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.docs-content-status__link {
+  justify-self: start;
+  margin-block-start: 0.15rem;
+  color: var(--docs-status-accent);
+  font-weight: 680;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--docs-status-accent) 42%, transparent);
+  text-underline-offset: 0.2em;
+}
+
 /* Draft pages retain their server-rendered article beneath a temporary,
    explicitly unlockable construction gate. The gate clips the long document
    before reveal so the notice remains immediately visible without a fixed layer.

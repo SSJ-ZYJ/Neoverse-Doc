@@ -7,7 +7,7 @@ Status: accepted
 ## 决策
 
 - **拆分为两个 Workflow**：`.github/workflows/quality.yml` 针对每个 Pull Request 执行快速质量检查；`.github/workflows/build.yml` 针对 main push（及手动触发）执行完整生产构建。
-- **Quality 覆盖**：Lint（`bun run lint`）、Typecheck（`bun run typecheck`）、Architecture Check（`bun run check:architecture`）、Content Check（`bun run check:content`，已含 Taxonomy、Content Graph、Prerequisite 环、Relation 引用校验与 Mermaid 资产哈希对账）与 Tests（`bun run test`，新增脚本，等价 `bun test`）。不重复执行 `check:content` 已覆盖的子检查，也不在 CI 中运行会改写工作区文件的 `bun check`（Biome `--write`）。
+- **Quality 覆盖**：Lint（`bun run lint`）、Typecheck（`bun run typecheck`）、Architecture Check（`bun run check:architecture`）、Content Check（`bun run check:content`，已含 Taxonomy、Content Graph、Content Lifecycle、Freshness、Translation Drift、Prerequisite 环、Relation 引用校验与 Mermaid 资产哈希对账）与 Tests（`bun run test`，新增脚本，等价 `bun test`）。不重复执行 `check:content` 已覆盖的子检查，也不在 CI 中运行会改写工作区文件的 `bun check`（Biome `--write`）。
 - **避免重复执行**：`prebuild` 已串起 `check:architecture && check:content`，因此 Production Build 只运行 `bun run build`，其内部 prebuild 的架构与内容检查即为最终门禁，CI 不再单独重复运行；快速检查由 PR 门禁保证，main 上不重复执行。
 - **Mermaid 只校验不生成**：CI 与生产构建只通过 `check:content` 的 verify 分支做资产哈希对账，从不启动 Puppeteer；资产生成仅发生在本地 `bun run generate:content`（Content Prepare 阶段），产物随内容提交。CI 安装依赖时以 `PUPPETEER_SKIP_DOWNLOAD` 避免无谓下载 Chromium。
 - **缓存**：使用 GitHub 官方 `actions/cache` 缓存 Bun 安装缓存（`~/.bun/install/cache`，key 绑定 `bun.lock`）+ `bun install --frozen-lockfile`，不做自定义缓存系统。
@@ -24,5 +24,5 @@ Status: accepted
 - PR 上五个独立 job（Lint、Typecheck、Architecture、Content、Test）可分别在分支保护中设为 Required Check，阻止明显错误进入 main。
 - 生产构建只在 main push（或手动触发）执行一次，内部经 prebuild 的架构与内容校验 + `next build` + `postbuild` 产物完整性验证。
 - 新增 `test` 脚本（`bun test`），作为测试入口与 CI 命令读取 `package.json` 的原则保持一致。
-- Mermaid 资产缺失或过期会在 PR 的 Content Check 直接失败，并提示运行 `bun run generate:content`。
+- Mermaid 资产缺失或过期、以及 Schema / 生命周期关系错误会在 PR 的 Content Check 直接失败，并提示运行 `bun run generate:content`；Freshness 缺失或过期、翻译 missing / outdated 只输出 Warning，不阻断 PR。
 - 工作流本身不复制 ADR 内容，只引用本决策编号与相关 ADR；分支保护需在 GitHub 仓库设置页配置（仓库代码无法代劳）。

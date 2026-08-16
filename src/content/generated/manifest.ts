@@ -12,6 +12,7 @@
  * src/content/ir.ts 与 docs/adr/0004）—— 本模块不再接触内容源。
  */
 import { type ContentIrEntry, contentIr } from '@/content/ir';
+import type { ContentStatus } from '@/content/maintenance/types';
 import type { ContentTopic, ContentTrack, ContentType, Difficulty } from '@/content/taxonomy';
 import type { Locale } from '@/lib/i18n';
 
@@ -27,7 +28,10 @@ export interface ContentManifestEntry {
   title: string;
   description?: string;
   slugs: string[];
-  draft?: boolean;
+  status: ContentStatus;
+  lastReviewed?: string;
+  replacement?: string;
+  reviewedRevision?: string;
   // Content Schema v2 — optional knowledge-system metadata, passed through
   // from frontmatter so consumers (search, /learn, knowledge graph) never
   // re-parse disk content. See docs/adr/0002 for the field decisions.
@@ -51,7 +55,10 @@ export function createManifestEntry(entry: ContentIrEntry): ContentManifestEntry
     title: entry.title,
     ...(entry.description !== undefined ? { description: entry.description } : {}),
     slugs: [...entry.slugs],
-    ...(entry.draft === true ? { draft: true } : {}),
+    status: entry.status,
+    ...(entry.lastReviewed !== undefined ? { lastReviewed: entry.lastReviewed } : {}),
+    ...(entry.replacement !== undefined ? { replacement: entry.replacement } : {}),
+    ...(entry.reviewedRevision !== undefined ? { reviewedRevision: entry.reviewedRevision } : {}),
     ...(entry.type !== undefined ? { type: entry.type } : {}),
     ...(entry.topics !== undefined ? { topics: entry.topics } : {}),
     ...(entry.tracks !== undefined ? { tracks: entry.tracks } : {}),

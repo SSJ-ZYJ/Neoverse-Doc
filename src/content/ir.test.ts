@@ -32,6 +32,9 @@ describe('content ir', () => {
     assert.ok(zh && en, 'both locale variants should be present in the IR');
     assert.equal(zh.title, '1.12 Shell 基础');
     assert.equal(en.title, '1.12 Shell Basics');
+    assert.equal(zh.status, 'stable');
+    assert.match(zh.contentRevision, /^[a-f0-9]{64}$/);
+    assert.notEqual(zh.contentRevision, en.contentRevision);
   });
 
   it('points sourcePath at the on-disk file with posix separators', () => {

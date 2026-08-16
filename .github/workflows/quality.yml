@@ -94,7 +94,7 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: 'true'
         run: bun install --frozen-lockfile
-      - name: Content Check (schema, taxonomy, relations, prerequisite DAG, mermaid verify)
+      - name: Content Check (schema, lifecycle, freshness, translation drift, relations, mermaid verify)
         run: bun run check:content
 
   test:

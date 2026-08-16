@@ -2,7 +2,7 @@
 id: ch2
 title: What is an Algorithm
 description: Algorithms — Introduction to the Algorithms Chapter
-draft: true
+status: draft
 author:
     - "Collinor(https://github.com/Collinor)"
 ---

@@ -25,7 +25,7 @@ author:
   - "主要作者(https://github.com/your-name)"
 contributors:
   - "贡献者(https://github.com/contributor-name)"
-draft: false
+status: stable
 todoProgress: false
 ---
 ```
@@ -36,7 +36,10 @@ todoProgress: false
 | `description` | 是 | 用于页面元数据与内容摘要 |
 | `author` | 否 | 主要作者，支持字符串或字符串数组 |
 | `contributor` / `contributors` | 否 | 贡献者，支持字符串或字符串数组 |
-| `draft` | 否 | 默认为 `false`；开启后显示草稿提示 |
+| `status` | 否 | 默认为 `stable`；可用 `draft`、`review`、`stable`、`deprecated` |
+| `lastReviewed` | 否 | 最近一次确认技术内容仍有效的日期，格式为 `YYYY-MM-DD` |
+| `replacement` | 否 | `deprecated` 页面可填写替代页 Stable Content ID，如 `docs:ch1/new-page` |
+| `reviewedRevision` | 否 | 译文最近一次确认对应的 source revision（SHA-256） |
 | `todoProgress` | 否 | 默认为 `false`；开启后在正文前汇总任务进度 |
 
 不要添加 Schema 未声明的字段。需要新的内容语义时，应先统一扩展 `source.config.ts`，而不是从文件名、URL 或正文中猜测。

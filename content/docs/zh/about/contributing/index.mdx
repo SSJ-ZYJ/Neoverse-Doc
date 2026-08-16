@@ -176,12 +176,12 @@ author:
   - "主要作者(https://github.com/your-name)"
 contributors:
   - "贡献者(https://github.com/contributor-name)"
-draft: false
+status: stable
 todoProgress: false
 ---
 ```
 
-`id` 是必填的稳定内容身份：新建页面时取与最终路径一致的值（如 `ch1/your-page-name`），中英文版本必须声明相同 `id`；此后移动文件或调整 URL 都不要改它。`author`、`contributor` 和 `contributors` 支持单个字符串或字符串数组；`draft` 与 `todoProgress` 默认均为 `false`。不要写入 Schema 未声明的自定义字段。
+`id` 是必填的稳定内容身份：新建页面时取与最终路径一致的值（如 `ch1/your-page-name`），中英文版本必须声明相同 `id`；此后移动文件或调整 URL 都不要改它。`author`、`contributor` 和 `contributors` 支持单个字符串或字符串数组；`status` 默认是 `stable`，旧的 `draft: true` 已迁移为 `status: draft`，不要再写入旧字段。`lastReviewed` 只填写人工完成技术复核的日期；译文完成同步确认后再填写对应的 `reviewedRevision`。不要写入 Schema 未声明的自定义字段。
 
 ### 正文规则
 

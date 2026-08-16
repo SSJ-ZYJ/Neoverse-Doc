@@ -17,6 +17,7 @@ const manifestEntries: readonly ContentManifestEntry[] = [
     url: '/zh/docs/ch1/b',
     title: 'B',
     slugs: ['ch1', 'b'],
+    status: 'stable',
     type: 'guide',
     topics: ['terminal'],
     tracks: ['computer-essentials'],
@@ -28,6 +29,7 @@ const manifestEntries: readonly ContentManifestEntry[] = [
     url: '/zh/docs/ch1/a',
     title: 'A',
     slugs: ['ch1', 'a'],
+    status: 'stable',
     type: 'concept',
     topics: ['shell'],
     tracks: ['computer-essentials'],
@@ -39,6 +41,7 @@ const manifestEntries: readonly ContentManifestEntry[] = [
     url: '/zh/docs/ch2/shell',
     title: 'Shell reference',
     slugs: ['ch2', 'shell'],
+    status: 'stable',
     type: 'reference',
     topics: ['shell', 'terminal'],
   },
@@ -47,6 +50,7 @@ const manifestEntries: readonly ContentManifestEntry[] = [
 const irEntries: readonly ContentIrEntry[] = manifestEntries.map((entry) => ({
   ...entry,
   sourcePath: entry.url,
+  contentRevision: 'a'.repeat(64),
   mermaid: [],
 }));
 

@@ -17,6 +17,8 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { source } from '@/adapters/fumadocs/source';
+import { createContentRevision } from '@/content/maintenance/revision';
+import type { ContentStatus } from '@/content/maintenance/types';
 import type { ContentTopic, ContentTrack, ContentType, Difficulty } from '@/content/taxonomy';
 import { i18n, type Locale } from '@/lib/i18n';
 import { extractMermaidBlocks } from './mermaid-text';
@@ -46,7 +48,11 @@ export interface ContentIrEntry {
   description?: string;
   slugs: string[];
   sourcePath: string;
-  draft?: boolean;
+  status: ContentStatus;
+  lastReviewed?: string;
+  replacement?: string;
+  reviewedRevision?: string;
+  contentRevision: string;
   type?: ContentType;
   topics?: ContentTopic[];
   tracks?: ContentTrack[];
@@ -62,7 +68,11 @@ type IrPage = {
     id: string;
     title: string;
     description?: string;
-    draft?: boolean;
+    status: ContentStatus;
+    lastReviewed?: string;
+    replacement?: string;
+    reviewedRevision?: string;
+    todoProgress?: boolean;
     type?: ContentType;
     topics?: ContentTopic[];
     tracks?: ContentTrack[];
@@ -78,9 +88,8 @@ type IrPage = {
 };
 
 // Copy only the v2 fields a page actually declares, keeping entries free of
-// undefined noise (same convention as description / draft below).
-// 仅复制页面实际声明的 v2 字段，条目不携带 undefined 噪声
-// （与上方 description / draft 的处理约定一致）。
+// undefined noise.
+// 仅复制页面实际声明的 v2 字段，条目不携带 undefined 噪声。
 function pickV2Fields(data: IrPage['data']): Partial<ContentIrEntry> {
   return {
     ...(data.type !== undefined ? { type: data.type } : {}),
@@ -99,6 +108,24 @@ export function createContentIrEntry(page: IrPage, locale: Locale): ContentIrEnt
   // 同步读取使 IR 可在模块作用域派生；仅运行于构建期进程
   // （Next build、Bun 管线、测试）。
   const raw = readFileSync(page.data.info.fullPath, 'utf8');
+  const contentRevision = createContentRevision(
+    {
+      id: page.data.id,
+      title: page.data.title,
+      ...(page.data.description !== undefined ? { description: page.data.description } : {}),
+      ...(page.data.todoProgress !== undefined ? { todoProgress: page.data.todoProgress } : {}),
+      ...(page.data.type !== undefined ? { type: page.data.type } : {}),
+      ...(page.data.topics !== undefined ? { topics: page.data.topics } : {}),
+      ...(page.data.tracks !== undefined ? { tracks: page.data.tracks } : {}),
+      ...(page.data.difficulty !== undefined ? { difficulty: page.data.difficulty } : {}),
+      ...(page.data.estimatedMinutes !== undefined
+        ? { estimatedMinutes: page.data.estimatedMinutes }
+        : {}),
+      ...(page.data.prerequisites !== undefined ? { prerequisites: page.data.prerequisites } : {}),
+      ...(page.data.related !== undefined ? { related: page.data.related } : {}),
+    },
+    raw,
+  );
 
   return {
     id: createContentId(page.data.id),
@@ -108,7 +135,13 @@ export function createContentIrEntry(page: IrPage, locale: Locale): ContentIrEnt
     ...(page.data.description ? { description: page.data.description } : {}),
     slugs: [...page.slugs],
     sourcePath: path.relative(process.cwd(), page.data.info.fullPath).split(path.sep).join('/'),
-    ...(page.data.draft === true ? { draft: true } : {}),
+    status: page.data.status,
+    ...(page.data.lastReviewed !== undefined ? { lastReviewed: page.data.lastReviewed } : {}),
+    ...(page.data.replacement !== undefined ? { replacement: page.data.replacement } : {}),
+    ...(page.data.reviewedRevision !== undefined
+      ? { reviewedRevision: page.data.reviewedRevision }
+      : {}),
+    contentRevision,
     ...pickV2Fields(page.data),
     mermaid: extractMermaidBlocks(raw),
   };

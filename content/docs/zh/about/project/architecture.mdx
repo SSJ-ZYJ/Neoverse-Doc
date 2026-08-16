@@ -114,11 +114,11 @@ src/app/[lang]/
 
 `src/app/[lang]/docs/[...slug]/page.tsx` 保持为 Server Component，并集中装配：
 
-1. Frontmatter 中的标题、描述、作者和贡献者；
+1. Frontmatter 中的标题、描述、作者、贡献者与生命周期状态；
 2. Markdown 源码与 GitHub 文件操作；
 3. 可选任务进度卡片；
 4. 共享 MDX 组件注册表；
-5. 草稿门控；
+5. 生命周期状态提示与草稿门控；
 6. Fumadocs 目录和分页；
 7. canonical、真实译文的 `hreflang`、分享元数据与结构化数据；
 8. 正文外的 Giscus 社区模块。
@@ -145,7 +145,7 @@ flowchart TD
     L --> G
 ```
 
-`src/content/ir.ts` 从编译后的 Source 单遍派生 Content IR（含 Mermaid 图表检测），是唯一的规范化内容数据面；`src/content/generated/manifest.ts` 是其消费视图，稳定 ID 来自 frontmatter 必填 `id` 加 `docs:` 前缀，同 ID 多语言页面共享身份。Manifest 保留草稿标记，由 sitemap 等消费者自行过滤，不存在第二份手写内容事实来源。生产构建还会生成 `robots.txt`、只包含已发布页面的 `sitemap.xml`，以及统一的 PNG 社交分享图。
+`src/content/ir.ts` 从编译后的 Source 单遍派生 Content IR（含 Mermaid 图表检测），是唯一的规范化内容数据面；`src/content/generated/manifest.ts` 是其消费视图，稳定 ID 来自 frontmatter 必填 `id` 加 `docs:` 前缀，同 ID 多语言页面共享身份。Manifest 透传生命周期与维护元数据，由页面、sitemap 与内容检查按各自契约消费，不存在第二份手写内容事实来源。生产构建还会生成 `robots.txt`、只包含可索引页面的 `sitemap.xml`，以及统一的 PNG 社交分享图。
 
 不同命令承担不同验证范围：
 
