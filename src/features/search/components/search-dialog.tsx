@@ -26,10 +26,17 @@ import {
 } from 'fumadocs-ui/components/ui/popover';
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import type { TagItem } from 'fumadocs-ui/contexts/search';
-import { Check, ChevronDown } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Check, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { create } from 'zbsearch';
 import { getDocsPageElement } from '@/adapters/fumadocs/dom';
+import {
+  createSearchFacetTag,
+  getSearchFacetDefinitions,
+  parseSearchTag,
+  type SearchFacetKey,
+  type SearchFacetSelection,
+} from '@/content/search/facets';
 import { createMixedTokenizer } from '@/content/search/tokenizer';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
@@ -66,20 +73,51 @@ export default function DefaultSearchDialog({
   ...props
 }: DefaultSearchDialogProps) {
   const { locale } = useI18n();
-  const [tag, setTag] = useState(defaultTag);
-  const labels = getPageDictionary(resolveLocale(locale));
-  const selectedScope = tags.find((scope) => scope.value === (tag ?? '')) ?? tags[0];
+  const [chapter, setChapter] = useState(() => parseSearchTag(defaultTag).chapter);
+  const [facets, setFacets] = useState<SearchFacetSelection>(
+    () => parseSearchTag(defaultTag).facets,
+  );
+  const resolvedLocale = resolveLocale(locale);
+  const labels = getPageDictionary(resolvedLocale);
+  const facetDefinitions = useMemo(
+    () => getSearchFacetDefinitions(resolvedLocale),
+    [resolvedLocale],
+  );
+  const activeTags = useMemo(
+    () => [
+      ...(chapter ? [chapter] : []),
+      ...facetDefinitions.flatMap((facet) => {
+        const value = facets[facet.id];
+        return value ? [createSearchFacetTag(facet.id, value)] : [];
+      }),
+    ],
+    [chapter, facetDefinitions, facets],
+  );
+  const activeFacetCount = Object.keys(facets).length;
+  const selectedScope = tags.find((scope) => scope.value === (chapter ?? '')) ?? tags[0];
 
-  // Reset the selected chapter when locale-aware dialog options change.
-  // 当本地化弹窗选项变化时重置已选章节，避免语言切换后沿用无效标签。
+  const updateFacet = (facetId: SearchFacetKey, value: string | undefined) => {
+    setFacets((current) => {
+      const next = { ...current };
+      if (value === undefined) delete next[facetId];
+      else next[facetId] = value;
+      return next;
+    });
+  };
+
+  // Reset the Chapter scope and taxonomy selections when locale-aware dialog
+  // options change, avoiding stale filters after a language switch.
+  // 当本地化弹窗选项变化时重置 Chapter 范围与分类选择，避免语言切换后沿用无效筛选。
   useEffect(() => {
-    setTag(defaultTag);
+    const parsed = parseSearchTag(defaultTag);
+    setChapter(parsed.chapter);
+    setFacets(parsed.facets);
   }, [defaultTag]);
 
   const searchClient = staticClient({
     initDB,
     locale,
-    tag: tag || undefined,
+    tag: activeTags.length > 0 ? activeTags : undefined,
   });
   const { search, setSearch, query } = useDocsSearch({
     client: withEnhancedSearch(searchClient, locale === 'zh'),
@@ -97,7 +135,11 @@ export default function DefaultSearchDialog({
     const intentTag = url.searchParams.get(SEARCH_TAG_PARAM);
     if (intentQuery === null && intentTag === null) return;
 
-    if (intentTag !== null) setTag(intentTag);
+    if (intentTag !== null) {
+      const parsed = parseSearchTag(intentTag);
+      setChapter(parsed.chapter);
+      setFacets(parsed.facets);
+    }
     if (intentQuery !== null) setSearch(intentQuery);
     url.searchParams.delete(SEARCH_QUERY_PARAM);
     url.searchParams.delete(SEARCH_TAG_PARAM);
@@ -140,56 +182,116 @@ export default function DefaultSearchDialog({
           <SearchDialogClose />
         </SearchDialogHeader>
         <SearchDialogList items={query.data !== 'empty' ? query.data : null} />
-        {/* A lightweight trigger keeps chapter filtering secondary to search, while
-            the themed popover remains scrollable and follows the light/dark tokens.
-            轻量触发器让章节筛选保持次要层级，主题化 Popover 则支持滚动并跟随深浅色 Token。 */}
-        {tags.length > 0 && (
-          <SearchDialogFooter className="search-dialog__scope-footer">
-            <span className="search-dialog__scope-label">{labels.searchScopeLabel}</span>
+        {/* Chapter remains a lightweight scope control. Taxonomy facets share a
+            second popover so selecting one dimension does not hide the others.
+            Chapter 保持轻量范围控件；分类筛选使用独立 Popover，选择一个维度后仍可继续组合其他维度。 */}
+        <SearchDialogFooter className="search-dialog__scope-footer">
+          {tags.length > 0 && (
+            <div className="search-dialog__scope-control">
+              <span className="search-dialog__scope-label">{labels.searchScopeLabel}</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    aria-label={labels.searchScopeLabel}
+                    className="search-dialog__scope-trigger"
+                    data-filtered={chapter ? 'true' : 'false'}
+                    type="button"
+                  >
+                    <span aria-hidden="true" className="search-dialog__scope-indicator" />
+                    <span className="search-dialog__scope-value">{selectedScope?.name}</span>
+                    <ChevronDown aria-hidden="true" className="search-dialog__scope-chevron" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  aria-label={labels.searchScopeLabel}
+                  className="search-dialog__scope-menu"
+                  role="listbox"
+                  sideOffset={6}
+                >
+                  {tags.map((scope) => {
+                    const selected = scope.value === (chapter ?? '');
+
+                    return (
+                      <PopoverClose asChild key={scope.value}>
+                        <button
+                          aria-selected={selected}
+                          className="search-dialog__scope-option"
+                          onClick={() => setChapter(scope.value)}
+                          role="option"
+                          type="button"
+                        >
+                          <span className="search-dialog__scope-check" aria-hidden="true">
+                            {selected && <Check />}
+                          </span>
+                          <span>{scope.name}</span>
+                        </button>
+                      </PopoverClose>
+                    );
+                  })}
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+          <div className="search-dialog__facet-control">
             <Popover>
               <PopoverTrigger asChild>
                 <button
-                  aria-label={labels.searchScopeLabel}
-                  className="search-dialog__scope-trigger"
-                  data-filtered={tag ? 'true' : 'false'}
+                  aria-label={labels.searchFacets.label}
+                  className="search-dialog__facet-trigger"
+                  data-filtered={activeFacetCount > 0 ? 'true' : 'false'}
                   type="button"
                 >
-                  <span aria-hidden="true" className="search-dialog__scope-indicator" />
-                  <span className="search-dialog__scope-value">{selectedScope?.name}</span>
+                  <SlidersHorizontal aria-hidden="true" size={15} />
+                  <span>{labels.searchFacets.label}</span>
+                  {activeFacetCount > 0 && (
+                    <span aria-hidden="true" className="search-dialog__facet-count">
+                      {activeFacetCount}
+                    </span>
+                  )}
                   <ChevronDown aria-hidden="true" className="search-dialog__scope-chevron" />
                 </button>
               </PopoverTrigger>
               <PopoverContent
                 align="end"
-                aria-label={labels.searchScopeLabel}
-                className="search-dialog__scope-menu"
-                role="listbox"
+                aria-label={labels.searchFacets.label}
+                className="search-dialog__facet-menu"
                 sideOffset={6}
               >
-                {tags.map((scope) => {
-                  const selected = scope.value === (tag ?? '');
+                {facetDefinitions.map((facet) => {
+                  const selected = facets[facet.id];
 
                   return (
-                    <PopoverClose asChild key={scope.value}>
-                      <button
-                        aria-selected={selected}
-                        className="search-dialog__scope-option"
-                        onClick={() => setTag(scope.value)}
-                        role="option"
-                        type="button"
-                      >
-                        <span className="search-dialog__scope-check" aria-hidden="true">
-                          {selected && <Check />}
-                        </span>
-                        <span>{scope.name}</span>
-                      </button>
-                    </PopoverClose>
+                    <fieldset className="search-dialog__facet-group" key={facet.id}>
+                      <legend>{labels.searchFacets[facet.id]}</legend>
+                      <div className="search-dialog__facet-options">
+                        <button
+                          aria-pressed={selected === undefined}
+                          className="search-dialog__facet-option"
+                          onClick={() => updateFacet(facet.id, undefined)}
+                          type="button"
+                        >
+                          {labels.searchFacets.clear}
+                        </button>
+                        {facet.options.map((option) => (
+                          <button
+                            aria-pressed={selected === option.id}
+                            className="search-dialog__facet-option"
+                            key={option.id}
+                            onClick={() => updateFacet(facet.id, option.id)}
+                            type="button"
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
                   );
                 })}
               </PopoverContent>
             </Popover>
-          </SearchDialogFooter>
-        )}
+          </div>
+        </SearchDialogFooter>
       </SearchDialogContent>
     </SearchDialog>
   );

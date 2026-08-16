@@ -14,4 +14,4 @@ Content Schema v2、Manifest、Taxonomy Registry 与 Content Graph 已经提供�
 
 - Search Corpus 继续由 Fumadocs structured content 提供正文，并通过 docs:<stable-id>:<locale> 与 Manifest 派生的 Search Metadata Projection 连接；缺失 Join 会使构建失败。
 - Search Schema v2 以应用层 Search Document 表达 contentId、locale、标题、描述、heading、正文和 taxonomy；静态 Metadata Sidecar 不复制正文。
-- 既有 Chapter Scope 保留为原始 tag；Track、Topic、Content Type 与 Difficulty 以 namespaced tags 写入现有静态索引。当前 Search UI 不变，未来过滤和轻量排序只能消费 content/search 的数据接口。
+- 既有 Chapter Scope 保留为原始 tag；Track、Topic、Content Type 与 Difficulty 以 namespaced tags 写入现有静态索引。Search UI 通过 Taxonomy Registry 投影提供单维度筛选，并以多 tag AND 语义组合不同维度；搜索功能不重新解析 Frontmatter，也不改变 tokenizer 与 ranking。

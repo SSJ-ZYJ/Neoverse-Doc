@@ -54,6 +54,36 @@ export interface Dictionary {
   // Search scope labels / 搜索范围标签
   searchScopeLabel: string;
   searchAllChapters: string;
+  // Search taxonomy facet labels / 搜索分类筛选文案
+  searchFacets: {
+    label: string;
+    clear: string;
+    track: string;
+    topic: string;
+    type: string;
+    difficulty: string;
+  };
+  // Document knowledge context labels / 文档知识上下文文案
+  knowledgeContext: {
+    title: string;
+    type: string;
+    topics: string;
+    track: string;
+    difficulty: string;
+    estimatedReadingTime: string;
+    contentStatus: string;
+    lastReviewed: string;
+    prerequisites: string;
+    recommendedNext: string;
+    relatedContent: string;
+    minutes: string;
+    status: {
+      draft: string;
+      review: string;
+      stable: string;
+      deprecated: string;
+    };
+  };
   // Cross-document reading return labels / 跨文档阅读返回标签
   readingReturnAction: string;
   readingReturnAriaLabel: string;

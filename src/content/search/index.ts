@@ -18,8 +18,21 @@ import { getSearchPageMetadata } from './metadata';
 import { createSearchCorpus, toFumadocsSearchIndexInput } from './schema';
 import { createMixedTokenizer, markPinyinIndexContent } from './tokenizer';
 
-export type { SearchRankingContext, SearchTaxonomyFilters } from './facets';
-export { createSearchFilterTags, getSearchMetadataTags } from './facets';
+export type {
+  SearchFacetDefinition,
+  SearchFacetKey,
+  SearchFacetOption,
+  SearchFacetSelection,
+  SearchRankingContext,
+  SearchTaxonomyFilters,
+} from './facets';
+export {
+  createSearchFacetTag,
+  createSearchFilterTags,
+  getSearchFacetDefinitions,
+  getSearchMetadataTags,
+  parseSearchTag,
+} from './facets';
 export { getSearchPageMetadata, searchMetadataSidecar } from './metadata';
 export type {
   SearchDocument,

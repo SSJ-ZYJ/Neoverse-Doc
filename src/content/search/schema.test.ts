@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { createSearchFilterTags, getSearchMetadataTags } from './facets';
+import {
+  createSearchFacetTag,
+  createSearchFilterTags,
+  getSearchFacetDefinitions,
+  getSearchMetadataTags,
+  parseSearchTag,
+} from './facets';
 import { createSearchCorpus, toFumadocsSearchIndexInput } from './schema';
 
 const metadata = {
@@ -119,5 +125,51 @@ describe('Search Schema v2', () => {
       }),
       ['ch1', 'content-type:guide', 'topic:shell', 'track:computer-essentials'],
     );
+  });
+
+  it('projects facet options from the localized taxonomy registries', () => {
+    assert.deepEqual(
+      getSearchFacetDefinitions('zh').map((facet) => ({
+        id: facet.id,
+        options: facet.options,
+      })),
+      [
+        {
+          id: 'track',
+          options: [{ id: 'computer-essentials', label: '计算机基础' }],
+        },
+        {
+          id: 'topic',
+          options: [
+            { id: 'architecture', label: '架构' },
+            { id: 'operating-system', label: '操作系统' },
+            { id: 'shell', label: 'Shell' },
+            { id: 'terminal', label: '终端' },
+            { id: 'text-editing', label: '文本编辑' },
+          ],
+        },
+        {
+          id: 'type',
+          options: [
+            { id: 'concept', label: '概念' },
+            { id: 'guide', label: '指南' },
+            { id: 'reference', label: '参考' },
+          ],
+        },
+        {
+          id: 'difficulty',
+          options: [
+            { id: 'beginner', label: '入门' },
+            { id: 'intermediate', label: '进阶' },
+            { id: 'advanced', label: '高级' },
+          ],
+        },
+      ],
+    );
+    assert.equal(createSearchFacetTag('topic', 'shell'), 'topic:shell');
+    assert.deepEqual(parseSearchTag('track:computer-essentials'), {
+      facets: { track: 'computer-essentials' },
+    });
+    assert.deepEqual(parseSearchTag('ch1'), { chapter: 'ch1', facets: {} });
   });
 });

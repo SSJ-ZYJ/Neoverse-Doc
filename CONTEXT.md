@@ -124,6 +124,14 @@ _Avoid_: 将正文塞入 Content IR、由 Search Feature 重新解析 Frontmatte
 不含正文、按稳定页级搜索 ID 索引的 Search taxonomy 元数据视图，为未来的结果增强和过滤提供数据。
 _Avoid_: 第二份全文索引、前端局部 Taxonomy 映射
 
+**Document Knowledge Context（文档知识上下文）**:
+文档阅读页对 Manifest、Taxonomy 与 Content Graph 的克制消费视图，只展示帮助读者判断内容类型、学习位置和关系的高价值元数据。
+_Avoid_: 展示全部 Frontmatter、由页面手工维护关系链接
+
+**Search Facet（搜索筛选维度）**:
+由 Taxonomy Registry 派生的可组合搜索过滤维度；每个维度使用一个合法值，不改变全文 tokenizer 或结果排序。
+_Avoid_: Search UI 自建分类列表、把 Chapter 当作 Topic
+
 ### 位置与语言
 
 **Slugs**:

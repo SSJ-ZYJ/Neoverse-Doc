@@ -51,6 +51,36 @@ export const en = {
   // Search scope labels / 搜索范围标签
   searchScopeLabel: 'Search scope',
   searchAllChapters: 'All chapters',
+  // Search taxonomy facet labels / 搜索分类筛选文案
+  searchFacets: {
+    label: 'Filters',
+    clear: 'All',
+    track: 'Track',
+    topic: 'Topic',
+    type: 'Type',
+    difficulty: 'Difficulty',
+  },
+  // Document knowledge context labels / 文档知识上下文文案
+  knowledgeContext: {
+    title: 'Knowledge context',
+    type: 'Type',
+    topics: 'Topics',
+    track: 'Track',
+    difficulty: 'Difficulty',
+    estimatedReadingTime: 'Estimated reading time',
+    contentStatus: 'Content status',
+    lastReviewed: 'Last reviewed',
+    prerequisites: 'Prerequisites',
+    recommendedNext: 'Next',
+    relatedContent: 'Related content',
+    minutes: 'min',
+    status: {
+      draft: 'Draft',
+      review: 'Under review',
+      stable: 'Stable',
+      deprecated: 'Deprecated',
+    },
+  },
   // Cross-document reading return labels / 跨文档阅读返回标签
   readingReturnAction: 'Return to reading position',
   readingReturnAriaLabel: 'Return to your reading position in “{title}”',

@@ -47,6 +47,36 @@ export const zh = {
   // Search scope labels / 搜索范围标签
   searchScopeLabel: '搜索范围',
   searchAllChapters: '全部章节',
+  // Search taxonomy facet labels / 搜索分类筛选文案
+  searchFacets: {
+    label: '筛选',
+    clear: '全部',
+    track: '学习路径',
+    topic: '主题',
+    type: '类型',
+    difficulty: '难度',
+  },
+  // Document knowledge context labels / 文档知识上下文文案
+  knowledgeContext: {
+    title: '知识上下文',
+    type: '类型',
+    topics: '主题',
+    track: '学习路径',
+    difficulty: '难度',
+    estimatedReadingTime: '预计阅读时间',
+    contentStatus: '内容状态',
+    lastReviewed: '最近复核',
+    prerequisites: '前置知识',
+    recommendedNext: '接下来',
+    relatedContent: '相关内容',
+    minutes: '分钟',
+    status: {
+      draft: '草稿',
+      review: '复核中',
+      stable: '稳定',
+      deprecated: '已弃用',
+    },
+  },
   // Cross-document reading return labels / 跨文档阅读返回标签
   readingReturnAction: '返回阅读位置',
   readingReturnAriaLabel: '返回“{title}”的阅读位置',

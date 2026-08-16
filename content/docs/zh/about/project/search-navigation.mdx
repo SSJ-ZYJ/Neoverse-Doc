@@ -108,7 +108,8 @@ Fumadocs 的页级索引 ID 使用稳定的 `docs:<id>:<locale>`，导航仍走 
 
 - 中文 locale 使用 `createMixedTokenizer()`，其他使用 `english`；
 - `withEnhancedSearch(searchClient, locale === 'zh')` 包装：拼音回退、结果分组排序、章节锚点继承；
-- 章节筛选 Popover：`search-dialog__scope-trigger` 轻量触发器保持次要层级。
+- 章节筛选 Popover：`search-dialog__scope-trigger` 轻量触发器保持次要层级；
+- Taxonomy Facet Popover：每个维度单选，不同维度通过多个 tag 进行 AND 组合。
 
 范围选项从当前 locale 的页面树生成：
 
@@ -117,11 +118,13 @@ Fumadocs 的页级索引 ID 使用稳定的 `docs:<id>:<locale>`，导航仍走 
 - locale 变化时重置不再有效的范围；
 - 结果与范围文案从项目字典读取。
 
+Facet 选项由 `src/content/taxonomy/` 的 Registry 投影得到，当前提供 `Track`、`Topic`、`Type` 与 `Difficulty` 四个维度。合法 ID、双语名称和排序不会在 Search UI 中重复维护；每个维度最多选择一个值，Chapter Scope 仍可与 Facet 同时使用。Facet 只保留在当前搜索弹窗状态中，不写入 URL。
+
 搜索弹窗关闭时，组件会在捕获阶段监听 Fumadocs 的 `Ctrl + K` / `Cmd + K` 快捷键。若读者在 `#nd-page` 正文容器内保留了完整选区，弹窗打开前会把选区规范化为空格分隔的单行查询，并取前 200 个字符（`MAX_SELECTED_SEARCH_LENGTH`）；点击搜索入口、跨出正文的选区和可编辑控件中的选区都保持原有查询行为。
 
 范围菜单只是查询约束，不维护独立内容状态。新增 Chapter 并注册页面树后，它会自然进入搜索范围。
 
-Chapter 仍是作者的线性内容编排；它只用于兼容的搜索范围，不能推导 Topic，也不是 Learn、Explore 或 Reference 的分类来源。Topic、Track、Content Type 和 Difficulty 的查询数据只来自 `content/search` 的 Projection / Schema 接口，Search Feature 不重新解析 Frontmatter 或 Taxonomy。Topics / Reference 的入口按钮只把已有 taxonomy tag 与可选查询词交给全局搜索弹窗。
+Chapter 仍是作者的线性内容编排；它只用于兼容的搜索范围，不能推导 Topic，也不是 Learn、Explore 或 Reference 的分类来源。Topic、Track、Content Type 和 Difficulty 的查询数据只来自 `content/search` 的 Projection / Schema 接口，Search Feature 不重新解析 Frontmatter 或 Taxonomy。Topics / Reference 的入口按钮只把已有 taxonomy tag 与可选查询词交给全局搜索弹窗。Facet 不改变现有中英文 tokenizer、拼音回退、结果分组或 ranking。
 
 ## 五、搜索聚光灯
 
@@ -251,12 +254,12 @@ Giscus 仍然是外部增强：网络不可用或用户没有 GitHub 账号时�
 | `src/app/api/search-metadata/route.ts` | 静态 Search metadata Sidecar |
 | `src/content/search/index.ts` | 服务端索引构建与静态 GET |
 | `src/content/search/schema.ts` | Search Document v2 与 structured content Join |
-| `src/content/search/facets.ts` | Chapter 兼容与 taxonomy tag / 未来过滤接口 |
+| `src/content/search/facets.ts` | Chapter 兼容、Taxonomy Facet Registry 投影与 tag 过滤 |
 | `src/content/search/tokenizer.ts` | 中文、英文与拼音混合分词 |
 | `src/features/search/client.ts` | 搜索结果增强流水线 |
 | `src/features/search/selection.ts` | 正文选区校验与搜索查询规范化 |
 | `src/features/search/spotlight.ts` | 聚光灯参数处理 |
-| `src/features/search/components/search-dialog.tsx` | 查询与 Chapter 范围 UI |
+| `src/features/search/components/search-dialog.tsx` | 查询、Chapter 范围与 Taxonomy Facet UI |
 | `src/features/search/components/search-taxonomy-action.tsx` | Topics / Reference 的上下文搜索入口 |
 | `src/features/search/components/search-spotlight.tsx` | 搜索结果聚光灯 |
 | `src/app/[lang]/docs/layout.tsx` | locale 页面树与导航布局 |

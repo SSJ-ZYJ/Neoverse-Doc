@@ -108,7 +108,8 @@ Raw search results
 
 - The Chinese locale uses `createMixedTokenizer()`, and others use `english`;
 - Wrapped with `withEnhancedSearch(searchClient, locale === 'zh')`: pinyin fallback, grouped result sorting, chapter anchor inheritance;
-- Chapter filter Popover: the lightweight `search-dialog__scope-trigger` keeps it at a secondary level.
+- Chapter filter Popover: the lightweight `search-dialog__scope-trigger` keeps it at a secondary level;
+- Taxonomy Facet Popover: one value per dimension, with different dimensions combined through multiple tags using AND semantics.
 
 Scope options come from the current locale's page tree:
 
@@ -117,11 +118,13 @@ Scope options come from the current locale's page tree:
 - Scopes that are no longer valid are reset when the locale changes;
 - Result and scope copy is read from the project dictionaries.
 
+Facet options are projected from the registries in `src/content/taxonomy/`. The current dimensions are `Track`, `Topic`, `Type`, and `Difficulty`. Legal IDs, localized labels, and display order are not duplicated in the Search UI; each dimension allows at most one value, and Chapter Scope can still be combined with Facets. Facet state stays inside the current search dialog and is not persisted in the URL.
+
 While the search dialog is closed, the component listens for Fumadocs' `Ctrl + K` / `Cmd + K` shortcuts in the capture phase. If the reader has kept a full selection inside the `#nd-page` content container, the selection is normalized into a single-line, space-separated query before the dialog opens, taking the first 200 characters (`MAX_SELECTED_SEARCH_LENGTH`); selections triggered by clicking the search entrance, selections extending outside the content, and selections inside editable controls all keep the original query behavior.
 
 The scope menu is only a query constraint; it doesn't maintain separate content state. After a new Chapter is registered in the page tree, it naturally enters the search scopes.
 
-Chapter remains the author's linear content arrangement. It is used only for the compatible search scope; it cannot derive a Topic and is not the classification source for Learn, Explore, or Reference. Query data for Topic, Track, Content Type, and Difficulty comes only from the `content/search` Projection / Schema interface, never from Search Feature frontmatter or taxonomy parsing. The Topics / Reference actions only pass existing taxonomy tags and an optional query to the global search dialog.
+Chapter remains the author's linear content arrangement. It is used only for the compatible search scope; it cannot derive a Topic and is not the classification source for Learn, Explore, or Reference. Query data for Topic, Track, Content Type, and Difficulty comes only from the `content/search` Projection / Schema interface, never from Search Feature frontmatter or taxonomy parsing. The Topics / Reference actions only pass existing taxonomy tags and an optional query to the global search dialog. Facets do not change the existing Chinese/English tokenizers, pinyin fallback, result grouping, or ranking.
 
 ## 5. Search spotlight
 
@@ -251,12 +254,12 @@ None of this state needs an account or a database, and it doesn't sync across de
 | `src/app/api/search-metadata/route.ts` | Static Search metadata sidecar |
 | `src/content/search/index.ts` | Server index construction and static GET |
 | `src/content/search/schema.ts` | Search Document v2 and structured-content join |
-| `src/content/search/facets.ts` | Chapter compatibility plus taxonomy tags / future filters |
+| `src/content/search/facets.ts` | Chapter compatibility, Taxonomy Facet projection, and tag filters |
 | `src/content/search/tokenizer.ts` | Mixed Chinese, English, and pinyin tokenization |
 | `src/features/search/client.ts` | Search result enhancement pipeline |
 | `src/features/search/selection.ts` | Content selection validation and search query normalization |
 | `src/features/search/spotlight.ts` | Spotlight parameter handling |
-| `src/features/search/components/search-dialog.tsx` | Query and Chapter scope UI |
+| `src/features/search/components/search-dialog.tsx` | Query, Chapter scope, and Taxonomy Facet UI |
 | `src/features/search/components/search-taxonomy-action.tsx` | Contextual Topics / Reference search entry |
 | `src/features/search/components/search-spotlight.tsx` | Search result spotlight |
 | `src/app/[lang]/docs/layout.tsx` | Locale page tree and navigation layout |

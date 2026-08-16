@@ -13,11 +13,14 @@ import { DocsBackToTop } from '@/components/docs-back-to-top';
 import { DocsContentStatus } from '@/components/docs-content-status';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
 import { DocsPageActions } from '@/components/docs-page-actions';
+import { DocsKnowledgeContext, DocsKnowledgeRelations } from '@/components/docs-knowledge-context';
 import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { JsonLd } from '@/components/seo/json-ld';
+import { getContentManifestEntry } from '@/content/generated/manifest';
 import { createContentId } from '@/content/ir';
 import { isContentIndexable } from '@/content/maintenance';
+import { contentProjectionSources, createDocumentKnowledgeProjection } from '@/content/projections';
 import {
   createBreadcrumbJsonLd,
   createTechArticleJsonLd,
@@ -42,6 +45,15 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
 
   const MDX = page.data.body;
   const contentId = createContentId(page.data.id);
+  const manifestEntry = getContentManifestEntry(contentId, locale);
+  if (!manifestEntry) {
+    throw new Error(`Content manifest is missing ${contentId}:${locale}.`);
+  }
+  const knowledgeProjection = createDocumentKnowledgeProjection(
+    contentId,
+    locale,
+    contentProjectionSources,
+  );
   const slugKey = slug.join('/');
   const sourcePath = page.data.info.fullPath;
   const markdownUrl = `/${locale}/docs-source/${slugKey}.md`;
@@ -83,6 +95,12 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
           status={page.data.status}
         />
       )}
+      <DocsKnowledgeContext
+        copy={dict.knowledgeContext}
+        entry={manifestEntry}
+        locale={locale}
+        projection={knowledgeProjection}
+      />
     </>
   );
   const content = (
@@ -100,6 +118,11 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       {contributors && (
         <DocsContributors contributors={contributors} title={dict.documentContributorsTitle} />
       )}
+      <DocsKnowledgeRelations
+        copy={dict.knowledgeContext}
+        locale={locale}
+        projection={knowledgeProjection}
+      />
     </>
   );
   const community = (

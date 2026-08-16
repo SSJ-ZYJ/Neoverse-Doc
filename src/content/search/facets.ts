@@ -1,5 +1,12 @@
 import type { SearchMetadataProjectionEntry } from '@/content/projections';
-import type { ContentTopic, ContentTrack, ContentType, Difficulty } from '@/content/taxonomy';
+import {
+  CONTENT_TAXONOMY,
+  type ContentTopic,
+  type ContentTrack,
+  type ContentType,
+  type Difficulty,
+} from '@/content/taxonomy';
+import type { Locale } from '@/lib/i18n';
 
 export const SEARCH_TAG_PREFIX = {
   contentType: 'content-type:',
@@ -7,6 +14,94 @@ export const SEARCH_TAG_PREFIX = {
   topic: 'topic:',
   track: 'track:',
 } as const;
+
+const SEARCH_FACET_REGISTRIES = [
+  {
+    id: 'track',
+    tagPrefix: SEARCH_TAG_PREFIX.track,
+    registry: CONTENT_TAXONOMY.tracks,
+  },
+  {
+    id: 'topic',
+    tagPrefix: SEARCH_TAG_PREFIX.topic,
+    registry: CONTENT_TAXONOMY.topics,
+  },
+  {
+    id: 'type',
+    tagPrefix: SEARCH_TAG_PREFIX.contentType,
+    registry: CONTENT_TAXONOMY.types,
+  },
+  {
+    id: 'difficulty',
+    tagPrefix: SEARCH_TAG_PREFIX.difficulty,
+    registry: CONTENT_TAXONOMY.difficulties,
+  },
+] as const;
+
+export type SearchFacetKey = (typeof SEARCH_FACET_REGISTRIES)[number]['id'];
+
+export interface SearchFacetOption {
+  readonly id: string;
+  readonly label: string;
+}
+
+export interface SearchFacetDefinition {
+  readonly id: SearchFacetKey;
+  readonly tagPrefix: string;
+  readonly options: readonly SearchFacetOption[];
+}
+
+export type SearchFacetSelection = Partial<Record<SearchFacetKey, string>>;
+
+/**
+ * Search facet options are projected directly from the Taxonomy Registry.
+ * The UI receives IDs, localized labels, and registry order; it never owns a
+ * second list of legal taxonomy values.
+ * 搜索筛选项直接从 Taxonomy Registry 投影。UI 只接收 ID、多语言名称与注册表
+ * 顺序，不维护第二份合法分类列表。
+ */
+export function getSearchFacetDefinitions(locale: Locale): readonly SearchFacetDefinition[] {
+  return SEARCH_FACET_REGISTRIES.map((facet) => ({
+    id: facet.id,
+    tagPrefix: facet.tagPrefix,
+    options: [...facet.registry]
+      .sort((left, right) => left.order - right.order)
+      .map((entry) => ({ id: entry.id, label: entry.label[locale] })),
+  }));
+}
+
+export function createSearchFacetTag(key: SearchFacetKey, value: string): string {
+  const facet = SEARCH_FACET_REGISTRIES.find((candidate) => candidate.id === key);
+  if (!facet?.registry.some((entry) => entry.id === value)) {
+    throw new Error(`Unknown search facet value: ${key}=${value}`);
+  }
+  return facet.tagPrefix + value;
+}
+
+/**
+ * Splits the existing single-tag intent into the compatible Chapter scope or
+ * one taxonomy selection. Different dimensions are combined by the dialog.
+ * 将既有单 tag 意图解析为兼容的 Chapter 范围或一个分类选择；不同维度由弹窗
+ * 负责组合。
+ */
+export function parseSearchTag(tag: string | undefined): {
+  readonly chapter?: string;
+  readonly facets: SearchFacetSelection;
+} {
+  const facets: SearchFacetSelection = {};
+  if (tag === undefined) return { facets };
+
+  const facet = SEARCH_FACET_REGISTRIES.find((candidate) => tag.startsWith(candidate.tagPrefix));
+  if (facet) {
+    const value = tag.slice(facet.tagPrefix.length);
+    if (facet.registry.some((entry) => entry.id === value)) {
+      facets[facet.id] = value;
+      return { facets };
+    }
+  }
+
+  return { chapter: tag, facets };
+}
 
 export interface SearchTaxonomyFilters {
   readonly chapter?: string;

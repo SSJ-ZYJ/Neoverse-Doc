@@ -7,6 +7,11 @@ import { contentProjectionSources } from './sources';
 
 export type { ExploreProjection, ExploreTopicProjection } from './explore';
 export { createExploreProjection } from './explore';
+export type { DocumentKnowledgeProjection } from './knowledge';
+export {
+  createDocumentKnowledgeProjection,
+  getKnowledgeManifestEntry,
+} from './knowledge';
 export type { LearnProjection, LearnStepProjection, LearnTrackProjection } from './learn';
 export { createLearnProjection, getRecommendedNextSteps } from './learn';
 export type { ReferenceProjection } from './reference';
