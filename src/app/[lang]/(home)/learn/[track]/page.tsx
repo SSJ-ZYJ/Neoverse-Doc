@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { isContentIndexable } from '@/content/maintenance';
-import { contentProjectionSources, getLearnProjection } from '@/content/projections';
+import {
+  contentProjectionSources,
+  createContinueLearningCatalog,
+  getLearnProjection,
+} from '@/content/projections';
 import { CONTENT_TRACK_REGISTRY } from '@/content/taxonomy';
 import { getPageDictionary } from '@/dictionaries';
 import {
@@ -76,6 +80,7 @@ function createStepViews(
 
     return [
       {
+        contentId: step.contentId,
         number: index + 1,
         title: entry.title,
         description: entry.description,
@@ -165,6 +170,7 @@ export default async function LearnTrackRoute(props: PageProps<'/[lang]/learn/[t
 
   const track = createTrackView(locale, projection);
   if (!track) notFound();
+  const continueLearningCatalog = createContinueLearningCatalog(locale, contentProjectionSources);
 
   return (
     <LearnPageShell locale={locale}>
@@ -172,6 +178,7 @@ export default async function LearnTrackRoute(props: PageProps<'/[lang]/learn/[t
         copy={getPageDictionary(locale).learn}
         steps={createStepViews(locale, projection)}
         track={track}
+        validContentIds={continueLearningCatalog.validContentIds}
       />
     </LearnPageShell>
   );

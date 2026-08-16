@@ -1,12 +1,4 @@
-import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  CheckCircle2,
-  Clock3,
-  GitBranch,
-  Route,
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, GitBranch, Route } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { ContentStatus } from '@/content/maintenance';
 import { contentProjectionSources, getLearnProjection } from '@/content/projections';
@@ -15,6 +7,7 @@ import { CONTENT_TRACK_REGISTRY } from '@/content/taxonomy';
 import type { Dictionary } from '@/dictionaries';
 import { TransitionLink } from '@/features/transition';
 import { LANGUAGE_TAGS, type Locale } from '@/lib/i18n';
+import { LearnTrackStepList } from './learn-track-step-list';
 
 export type LearnCopy = Dictionary['learn'];
 
@@ -39,6 +32,7 @@ export interface LearnPrerequisiteView {
 }
 
 export interface LearnStepView {
+  readonly contentId: string;
   readonly number: number;
   readonly title: string;
   readonly description?: string;
@@ -120,10 +114,12 @@ export function LearnTrackPage({
   copy,
   steps,
   track,
+  validContentIds,
 }: {
   copy: LearnCopy;
   steps: readonly LearnStepView[];
   track: LearnTrackView;
+  validContentIds: readonly string[];
 }) {
   return (
     <>
@@ -162,88 +158,9 @@ export function LearnTrackPage({
           </div>
         </div>
 
-        <ol className="learn-step-list">
-          {steps.map((step) => (
-            <li className="learn-step" key={step.href}>
-              <span aria-hidden="true" className="learn-step__number">
-                {String(step.number).padStart(2, '0')}
-              </span>
-              <div className="learn-step__body">
-                <div className="learn-step__heading">
-                  <TransitionLink href={step.href}>
-                    <h3>{step.title}</h3>
-                  </TransitionLink>
-                  {step.status === 'review' && (
-                    <span className="metadata-chip metadata-chip--status">{copy.reviewBadge}</span>
-                  )}
-                </div>
-                {step.description && <p className="learn-step__description">{step.description}</p>}
-                {step.estimatedMinutes !== undefined && (
-                  <span className="learn-step__duration">
-                    <Clock3 aria-hidden="true" size={15} />
-                    {step.estimatedMinutes} {copy.minutes}
-                  </span>
-                )}
-                <LearnPrerequisites copy={copy} prerequisites={step.prerequisites} />
-              </div>
-            </li>
-          ))}
-        </ol>
+        <LearnTrackStepList copy={copy} steps={steps} validContentIds={validContentIds} />
       </section>
     </>
-  );
-}
-
-function LearnPrerequisites({
-  copy,
-  prerequisites,
-}: {
-  copy: LearnCopy;
-  prerequisites: readonly LearnPrerequisiteView[];
-}) {
-  if (prerequisites.length === 0) {
-    return (
-      <p className="learn-step__prerequisites learn-step__prerequisites--empty">
-        <CheckCircle2 aria-hidden="true" size={15} />
-        {copy.noPrerequisites}
-      </p>
-    );
-  }
-
-  return (
-    <div className="learn-step__prerequisites">
-      <p className="learn-step__prerequisites-label">
-        <GitBranch aria-hidden="true" size={15} />
-        {copy.prerequisitesLabel}
-      </p>
-      <ul>
-        {prerequisites.map((prerequisite) => (
-          <li key={prerequisite.id}>
-            <span className="learn-prerequisite__scope">
-              {prerequisite.isInTrack ? copy.orderLabel : copy.outsideTrackPrerequisite}
-            </span>
-            {prerequisite.href ? (
-              <TransitionLink href={prerequisite.href}>{prerequisite.title}</TransitionLink>
-            ) : (
-              <span>{prerequisite.title}</span>
-            )}
-            {prerequisite.replacement && (
-              <span className="learn-prerequisite__replacement">
-                {copy.replacedBy}{' '}
-                <TransitionLink href={prerequisite.replacement.href}>
-                  {prerequisite.replacement.title}
-                </TransitionLink>
-              </span>
-            )}
-            {!prerequisite.href && !prerequisite.replacement && (
-              <span className="learn-prerequisite__unavailable">
-                {copy.prerequisiteUnavailable}
-              </span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
 

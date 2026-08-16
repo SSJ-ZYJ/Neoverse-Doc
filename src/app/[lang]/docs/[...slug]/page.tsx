@@ -12,15 +12,20 @@ import { source } from '@/adapters/fumadocs/source';
 import { DocsBackToTop } from '@/components/docs-back-to-top';
 import { DocsContentStatus } from '@/components/docs-content-status';
 import { DocsDraftControls } from '@/components/docs-draft-controls';
-import { DocsPageActions } from '@/components/docs-page-actions';
 import { DocsKnowledgeContext, DocsKnowledgeRelations } from '@/components/docs-knowledge-context';
+import { DocsPageActions } from '@/components/docs-page-actions';
 import { getMdxComponents } from '@/components/mdx';
 import { DocsAuthor, DocsContributors } from '@/components/mdx/docs-author';
 import { JsonLd } from '@/components/seo/json-ld';
 import { getContentManifestEntry } from '@/content/generated/manifest';
 import { createContentId } from '@/content/ir';
 import { isContentIndexable } from '@/content/maintenance';
-import { contentProjectionSources, createDocumentKnowledgeProjection } from '@/content/projections';
+import {
+  contentProjectionSources,
+  createContinueLearningCatalog,
+  createDocumentKnowledgeProjection,
+  getLearnProjection,
+} from '@/content/projections';
 import {
   createBreadcrumbJsonLd,
   createTechArticleJsonLd,
@@ -30,7 +35,11 @@ import { getPageDictionary } from '@/dictionaries';
 import { DocsCommunity } from '@/features/community';
 import { DeferredDocsPage } from '@/features/docs-shell';
 import { LearnDocNavigation } from '@/features/learn';
-import { LearningRegistryProvider, TaskListProgress } from '@/features/tasks';
+import {
+  ContinueLearningTracker,
+  LearningRegistryProvider,
+  TaskListProgress,
+} from '@/features/tasks';
 import { i18n, LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, resolveLocale } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
 import { REPO_URL, SOCIAL_IMAGE } from '@/lib/site-config';
@@ -54,6 +63,30 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
     locale,
     contentProjectionSources,
   );
+  const learnProjection = getLearnProjection(locale);
+  const currentLearnTrack = learnProjection.tracks.find((track) =>
+    track.steps.some((step) => step.contentId === contentId),
+  );
+  const continueLearningCatalog = createContinueLearningCatalog(locale, contentProjectionSources);
+  const catalogEntriesById = new Map(
+    continueLearningCatalog.entries.map((entry) => [entry.contentId, entry] as const),
+  );
+  const learningRecommendation = currentLearnTrack
+    ? {
+        candidates: learnProjection.tracks.flatMap((track) =>
+          track.steps.flatMap((step) => {
+            const entry = catalogEntriesById.get(step.contentId);
+            return entry
+              ? [{ contentId: entry.contentId, title: entry.title, href: entry.href }]
+              : [];
+          }),
+        ),
+        currentContentId: contentId,
+        currentTrackId: currentLearnTrack.trackId,
+        projection: learnProjection,
+        validContentIds: continueLearningCatalog.validContentIds,
+      }
+    : undefined;
   const slugKey = slug.join('/');
   const sourcePath = page.data.info.fullPath;
   const markdownUrl = `/${locale}/docs-source/${slugKey}.md`;
@@ -120,6 +153,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
       )}
       <DocsKnowledgeRelations
         copy={dict.knowledgeContext}
+        learning={learningRecommendation}
         locale={locale}
         projection={knowledgeProjection}
       />
@@ -192,7 +226,12 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
             为客户端消费方（任务进度）提供稳定身份：由 frontmatter id 派生，
             不随文件移动或 URL 变化而失效（ADR 0003）。 */}
         <ContentIdProvider contentId={contentId}>
-          <LearningRegistryProvider contentId={contentId}>{pageContent}</LearningRegistryProvider>
+          <LearningRegistryProvider contentId={contentId}>
+            {!isNonIndexable && (
+              <ContinueLearningTracker contentId={contentId} trackId={currentLearnTrack?.trackId} />
+            )}
+            {pageContent}
+          </LearningRegistryProvider>
         </ContentIdProvider>
       </DeferredDocsPage>
       <DocsBackToTop key={slugKey} label={dict.backToTop} />

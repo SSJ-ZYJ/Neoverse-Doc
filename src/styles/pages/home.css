@@ -757,6 +757,93 @@
   gap: 1rem;
 }
 
+.home-continue-learning {
+  display: grid;
+  gap: 0.75rem;
+  margin-block: -1.5rem 2rem;
+}
+
+.home-continue-learning__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--text-secondary);
+}
+
+.home-continue-learning__heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 680;
+}
+
+.home-continue-learning__icon {
+  display: grid;
+  inline-size: 2rem;
+  block-size: 2rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, var(--border-subtle));
+  border-radius: var(--radius-xs);
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+}
+
+.home-continue-learning__card {
+  display: flex;
+  min-block-size: 5.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.home-continue-learning__content {
+  display: grid;
+  min-inline-size: 0;
+  gap: 0.2rem;
+}
+
+.home-continue-learning__content > span:first-child {
+  color: var(--accent-primary);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.home-continue-learning__content strong {
+  overflow: hidden;
+  font-size: 1.05rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-continue-learning__content > span:last-child {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-continue-learning__action {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--accent-primary);
+  font-size: 0.8rem;
+  font-weight: 680;
+}
+
+.home-continue-learning__action svg {
+  transition: transform var(--motion-fast) var(--motion-ease-standard);
+}
+
+@media (hover: hover) {
+  .home-continue-learning__card:hover .home-continue-learning__action svg {
+    transform: translateX(0.18rem);
+  }
+}
+
 .home-entry-card {
   display: flex;
   min-block-size: 18rem;
@@ -884,6 +971,16 @@
 
 .home-section__heading--compact .home-eyebrow {
   justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .home-continue-learning__card {
+    align-items: flex-start;
+  }
+
+  .home-continue-learning__action {
+    padding-block-start: 0.15rem;
+  }
 }
 
 .chapter-card {

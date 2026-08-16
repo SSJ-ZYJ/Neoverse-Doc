@@ -1,4 +1,11 @@
 import type { Locale } from '@/lib/i18n';
+
+export type {
+  ContinueLearningCatalog,
+  ContinueLearningCatalogEntry,
+} from './continue-learning';
+export { createContinueLearningCatalog } from './continue-learning';
+
 import { createExploreProjection } from './explore';
 import { createLearnProjection } from './learn';
 import { createReferenceProjection } from './reference';

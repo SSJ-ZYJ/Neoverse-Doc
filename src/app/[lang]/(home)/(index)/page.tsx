@@ -9,6 +9,8 @@ import { HomePortal } from '@/components/home/home-portal';
 import { JsonLd } from '@/components/seo/json-ld';
 import { getHomeChapters } from '@/content/home-sections';
 import {
+  contentProjectionSources,
+  createContinueLearningCatalog,
   getExploreProjection,
   getLearnProjection,
   getReferenceProjection,
@@ -67,6 +69,7 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
   const dict = getPageDictionary(locale);
   const chapters = getHomeChapters(locale);
   const entries = createHomeKnowledgeEntries(locale, dict);
+  const continueLearningCatalog = createContinueLearningCatalog(locale, contentProjectionSources);
 
   return (
     <>
@@ -78,7 +81,13 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
         <main className="home-page" lang={LANGUAGE_TAGS[locale]}>
           {/* The portal component keeps page structure semantic and effects encapsulated.
               门户组件保持页面结构语义化，并封装底层效果。 */}
-          <HomePortal chapters={chapters} dict={dict} entries={entries} locale={locale} />
+          <HomePortal
+            chapters={chapters}
+            continueLearningCatalog={continueLearningCatalog}
+            dict={dict}
+            entries={entries}
+            locale={locale}
+          />
 
           {/* Homepage footer with repository, Git commit, and author metadata.
               首页底部信息，展示仓库、Git 提交与作者元信息。 */}

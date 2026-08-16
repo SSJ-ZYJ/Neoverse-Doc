@@ -1,21 +1,22 @@
 import { ArrowRight, BookOpen, CalendarDays, Clock3, GitBranch } from 'lucide-react';
+import type { ReactNode } from 'react';
 import type { ContentManifestEntry } from '@/content/generated/manifest';
 import {
   contentProjectionSources,
-  getKnowledgeManifestEntry,
   type DocumentKnowledgeProjection,
+  getKnowledgeManifestEntry,
 } from '@/content/projections';
+import type { TaxonomyEntry } from '@/content/taxonomy';
 import {
   CONTENT_DIFFICULTY_REGISTRY,
   CONTENT_TOPIC_REGISTRY,
   CONTENT_TRACK_REGISTRY,
   CONTENT_TYPE_REGISTRY,
 } from '@/content/taxonomy';
-import type { TaxonomyEntry } from '@/content/taxonomy';
 import type { Dictionary } from '@/dictionaries';
+import { LearningRecommendedNext, type LearnRecommendationConfig } from '@/features/learn';
 import { TransitionLink } from '@/features/transition';
 import type { Locale } from '@/lib/i18n';
-import type { ReactNode } from 'react';
 
 export type DocsKnowledgeCopy = Dictionary['knowledgeContext'];
 
@@ -217,20 +218,25 @@ export function DocsKnowledgeContext({
 
 export function DocsKnowledgeRelations({
   copy,
+  learning,
   locale,
   projection,
-}: Omit<DocsKnowledgeContextProps, 'entry'>) {
+}: Omit<DocsKnowledgeContextProps, 'entry'> & {
+  learning?: LearnRecommendationConfig;
+}) {
   const recommended = resolveRelationEntry(projection.recommendedNextId, locale);
   const related = projection.relatedIds.flatMap((contentId) => {
     const entry = resolveRelationEntry(contentId, locale);
     return entry ? [entry] : [];
   });
 
-  if (!recommended && related.length === 0) return null;
+  if (!learning && !recommended && related.length === 0) return null;
 
   return (
     <>
-      {recommended && (
+      {learning ? (
+        <LearningRecommendedNext copy={copy} {...learning} />
+      ) : recommended ? (
         <section
           aria-labelledby="docs-knowledge-next-title"
           className="docs-knowledge-relations docs-knowledge-relations--next"
@@ -241,7 +247,7 @@ export function DocsKnowledgeRelations({
           </div>
           <RelationList entries={[recommended]} />
         </section>
-      )}
+      ) : null}
       {related.length > 0 && (
         <section
           aria-labelledby="docs-knowledge-related-title"

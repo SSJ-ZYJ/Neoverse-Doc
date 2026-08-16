@@ -92,6 +92,8 @@ const FEATURE_ALLOWLIST: Readonly<Record<string, Readonly<Record<string, string>
       '留言板返回导航复用转场感知的 BackLink 组件，属真实业务依赖；通用导航谓词已下沉 runtime/navigation',
   },
   'features/learn': {
+    'features/tasks':
+      'Learn 路线与推荐步骤消费 Learning Activity 和 Registry 的公开进度契约，不读取任务内部实现',
     'features/transition':
       'Learn 路线与文档轻量导航复用站内 TransitionLink，保持产品路线入口与现有导航转场行为一致',
   },

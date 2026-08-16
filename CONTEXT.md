@@ -179,6 +179,18 @@ _Avoid_: 由消费方重新扫描正文 DOM
 Learning Task 或兼容模式 Checklist 的完成状态投影；进度是身份的消费结果，不反过来定义任务身份。
 _Avoid_: 以显示文案或页面位置作为进度 key
 
+**Learning Activity（学习活动）**:
+用户最近访问某个可学习内容的最小状态；它以 Stable Content ID 为身份，可带所属 Track、最近访问时间和可靠的 Task Progress 快照，不包含标题、URL 或完整阅读轨迹。
+_Avoid_: 访问事件日志、滚动轨迹、pathname history
+
+**Continue Learning（继续学习）**:
+从最近 Learning Activity 解析当前 Manifest 位置的恢复入口；内容移动后仍通过 Stable Content ID 解析到新位置，没有有效活动时不占用首页布局。
+_Avoid_: 把最近 URL 或页面标题当作恢复身份
+
+**Recommended Next（推荐下一内容）**:
+当前页面的可靠 Task Progress 完成后，从 Learn Projection 中按确定性顺序选择、并以 Knowledge Graph 前置关系校验可开始状态的下一学习内容。
+_Avoid_: 随机推荐、AI 推荐、仅凭标题相邻或未完成前置条件的跳转
+
 ### Feature 边界
 
 **Feature（特性域）**:

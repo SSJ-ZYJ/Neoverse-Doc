@@ -6,6 +6,7 @@ import { ArrowDown, Code2, MessageSquareText } from 'lucide-react';
 import { AnimatedContent } from '@/components/react-bits/animated-content';
 import { LightRays } from '@/components/react-bits/light-rays';
 import type { HomeChapter } from '@/content/home-sections';
+import type { ContinueLearningCatalog } from '@/content/projections';
 import type { Dictionary } from '@/dictionaries';
 import { TransitionLink } from '@/features/transition';
 import type { Locale } from '@/lib/i18n';
@@ -13,18 +14,26 @@ import { REPO_URL } from '@/lib/site-config';
 import { AiComputeBackdrop } from './ai-compute-backdrop';
 import { AmbientMotionController } from './ambient-motion-controller';
 import { ChapterGrid } from './chapter-grid';
+import { ContinueLearningCard } from './continue-learning-card';
 import { HeroTitle } from './hero-title';
 import { HomeEntryGrid, type HomeKnowledgeEntry } from './home-entry-grid';
 import { PrimaryAction } from './primary-action';
 
 interface HomePortalProps {
   chapters: HomeChapter[];
+  continueLearningCatalog: ContinueLearningCatalog;
   dict: Dictionary;
   entries: readonly HomeKnowledgeEntry[];
   locale: Locale;
 }
 
-export function HomePortal({ chapters, dict, entries, locale }: HomePortalProps) {
+export function HomePortal({
+  chapters,
+  continueLearningCatalog,
+  dict,
+  entries,
+  locale,
+}: HomePortalProps) {
   return (
     <AmbientMotionController>
       <section className="home-hero" aria-labelledby="home-title">
@@ -56,6 +65,7 @@ export function HomePortal({ chapters, dict, entries, locale }: HomePortalProps)
             <h2 id="knowledge-entries-title">{dict.home.entriesTitle}</h2>
             <p>{dict.home.entriesDescription}</p>
           </div>
+          <ContinueLearningCard catalog={continueLearningCatalog} copy={dict.home} />
           <HomeEntryGrid entries={entries} />
         </AnimatedContent>
       </section>

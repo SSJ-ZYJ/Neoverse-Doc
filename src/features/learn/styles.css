@@ -178,6 +178,13 @@
   font-size: 0.78rem;
 }
 
+.learn-step__progress {
+  margin: 0.65rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .learn-step__prerequisites {
   margin: 1rem 0 0;
   padding: 0.8rem 0.9rem;

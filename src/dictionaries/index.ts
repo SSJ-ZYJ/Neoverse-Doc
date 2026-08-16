@@ -137,6 +137,10 @@ export interface Dictionary {
     trackEnd: string;
     noTracksTitle: string;
     noTracksDescription: string;
+    currentLearningPosition: string;
+    completed: string;
+    inProgress: string;
+    taskProgress: string;
     minutes: string;
   };
   topics: {
@@ -191,6 +195,9 @@ export interface Dictionary {
     communityDescription: string;
     communityPrimaryAction: string;
     communitySecondaryAction: string;
+    continueLearningTitle: string;
+    continueLearningAction: string;
+    continueLearningTaskProgress: string;
   };
   // Homepage footer labels / 首页 footer 标签
   homeFooterLabel: string;

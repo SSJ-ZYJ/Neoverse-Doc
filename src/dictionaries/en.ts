@@ -141,6 +141,10 @@ export const en = {
     trackEnd: 'This is the final step',
     noTracksTitle: 'No learning paths yet',
     noTracksDescription: 'There are no routes with publicly readable content yet.',
+    currentLearningPosition: 'Current learning position',
+    completed: 'Completed',
+    inProgress: 'In progress',
+    taskProgress: '{completed} / {total} tasks',
     minutes: 'min',
   },
   // Topics and Reference route copy / 主题与参考入口文案
@@ -200,6 +204,9 @@ export const en = {
       'Found an error, a missing path, or a clearer explanation? Start a discussion or contribute directly.',
     communityPrimaryAction: 'Contribute',
     communitySecondaryAction: 'Visit guestbook',
+    continueLearningTitle: 'Continue learning',
+    continueLearningAction: 'Continue →',
+    continueLearningTaskProgress: '{completed} / {total} tasks',
   },
   // Homepage footer labels / 首页 footer 标签
   homeFooterLabel: 'Project footer',

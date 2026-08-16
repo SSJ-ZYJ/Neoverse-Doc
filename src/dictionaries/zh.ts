@@ -134,6 +134,10 @@ export const zh = {
     trackEnd: '这是路线的最后一步',
     noTracksTitle: '暂时没有可用路线',
     noTracksDescription: '当前还没有满足公开学习条件的路线内容。',
+    currentLearningPosition: '当前学习位置',
+    completed: '已完成',
+    inProgress: '进行中',
+    taskProgress: '{completed} / {total} 个任务',
     minutes: '分钟',
   },
   // Topics and Reference route copy / 主题与参考入口文案
@@ -190,6 +194,9 @@ export const zh = {
     communityDescription: '发现错误、缺失的路径或更好的解释？欢迎从讨论开始，也欢迎直接参与共建。',
     communityPrimaryAction: '参与贡献',
     communitySecondaryAction: '前往留言板',
+    continueLearningTitle: '继续学习',
+    continueLearningAction: '继续 →',
+    continueLearningTaskProgress: '{completed} / {total} 个任务',
   },
   // Homepage footer labels / 首页 footer 标签
   homeFooterLabel: '项目页脚',
