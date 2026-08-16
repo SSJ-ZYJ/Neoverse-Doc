@@ -171,9 +171,7 @@ export function createContentHealthSummary(
     entries.map((entry) => [`${entry.id}:${entry.locale}`, entry.id] as const),
   );
   const needsReview = new Set<string>(
-    entries
-      .filter((entry) => entry.status === 'review')
-      .map((entry) => entry.id),
+    entries.filter((entry) => entry.status === 'review').map((entry) => entry.id),
   );
 
   for (const warning of maintenanceWarnings) {

@@ -4,8 +4,8 @@ import type { ContentManifestEntry } from '@/content/generated/manifest';
 import type { ContentGraph } from '@/content/graph';
 import type { ContentIrEntry } from '@/content/ir';
 import { CONTENT_TAXONOMY } from '@/content/taxonomy';
-import type { ContentProjectionSources } from './sources';
 import { createDocumentKnowledgeProjection, getKnowledgeManifestEntry } from './knowledge';
+import type { ContentProjectionSources } from './sources';
 
 const manifest: readonly ContentManifestEntry[] = [
   {

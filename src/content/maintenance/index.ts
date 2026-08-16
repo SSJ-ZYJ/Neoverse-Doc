@@ -5,6 +5,7 @@ export {
   resolveFreshnessPolicy,
 } from '@/content/taxonomy/maintenance';
 export type { ContentMaintenanceCheckResult } from './check';
+export { parseReviewDate, validateContentMaintenance } from './check';
 export type {
   ContentAuthoringDiagnosticsOptions,
   ContentCoverageDiagnostic,
@@ -21,7 +22,13 @@ export {
   formatTaxonomyRegistry,
   getContentAuthoringFix,
 } from './coverage';
-export { parseReviewDate, validateContentMaintenance } from './check';
+export type {
+  ContentHealthSummary,
+  TranslationReport,
+  TranslationState,
+  TranslationSummary,
+  TranslationVariantReport,
+} from './report';
 export {
   createContentHealthSummary,
   createTranslationReport,
@@ -29,13 +36,6 @@ export {
   formatTranslationReport,
   getTranslationWarnings,
   summarizeTranslationReport,
-} from './report';
-export type {
-  ContentHealthSummary,
-  TranslationReport,
-  TranslationState,
-  TranslationSummary,
-  TranslationVariantReport,
 } from './report';
 export type { ContentRevisionMetadata } from './revision';
 export { createContentRevision } from './revision';

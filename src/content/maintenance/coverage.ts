@@ -1,13 +1,13 @@
-import type { ContentStatus } from './types';
 import {
   CONTENT_TAXONOMY,
-  getTaxonomyLabel,
   type ContentTopic,
   type ContentTrack,
   type ContentType,
   type Difficulty,
+  getTaxonomyLabel,
 } from '@/content/taxonomy';
 import type { Locale } from '@/lib/i18n';
+import type { ContentStatus } from './types';
 
 /**
  * Metadata dimensions tracked by the authoring report. Keep this list aligned
@@ -192,7 +192,9 @@ export function formatContentMetadataCoverage(report: ContentCoverageReport): st
 
   for (const field of report.fields) {
     const label = field.field.padEnd(labelWidth);
-    lines.push(`${label}  ${String(field.percentage).padStart(3)}% (${field.covered}/${field.total})`);
+    lines.push(
+      `${label}  ${String(field.percentage).padStart(3)}% (${field.covered}/${field.total})`,
+    );
   }
 
   lines.push(
@@ -244,7 +246,9 @@ export function formatTaxonomyRegistry(): string {
   for (const [key, label] of TAXONOMY_GROUPS) {
     lines.push('', `${label}:`);
     for (const entry of CONTENT_TAXONOMY[key]) {
-      lines.push(`  ${entry.id} — ${getTaxonomyLabel(entry, 'zh')} / ${getTaxonomyLabel(entry, 'en')}`);
+      lines.push(
+        `  ${entry.id} — ${getTaxonomyLabel(entry, 'zh')} / ${getTaxonomyLabel(entry, 'en')}`,
+      );
     }
   }
 

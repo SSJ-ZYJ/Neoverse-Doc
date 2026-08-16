@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import type { ContentMetadataEntry } from './coverage';
 import {
   createContentCoverageReport,
   formatContentAuthoringDiagnostics,
   formatContentMetadataCoverage,
   formatTaxonomyRegistry,
 } from './coverage';
-import type { ContentMetadataEntry } from './coverage';
 
 function entry(overrides: Partial<ContentMetadataEntry> = {}): ContentMetadataEntry {
   return {
@@ -52,7 +52,10 @@ describe('content metadata coverage', () => {
       ],
     );
     assert.equal(report.diagnostics.length, 8);
-    assert.equal(report.diagnostics.some((diagnostic) => diagnostic.field === 'topics'), true);
+    assert.equal(
+      report.diagnostics.some((diagnostic) => diagnostic.field === 'topics'),
+      true,
+    );
   });
 
   it('keeps the default report compact and explains how to fix missing fields', () => {
