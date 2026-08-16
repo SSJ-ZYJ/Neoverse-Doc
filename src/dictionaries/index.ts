@@ -107,6 +107,8 @@ export interface Dictionary {
   taskListItem: string;
   taskListProgressTitle: string;
   taskListProgressLabel: string;
+  learningProgressTitle: string;
+  learningProgressLabel: string;
   taskListCompletedCount: string;
   taskListTotalCount: string;
   taskListJumpToList: string;

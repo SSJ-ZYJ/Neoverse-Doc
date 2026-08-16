@@ -9,6 +9,8 @@
     "Files": "./src/components/mdx/mdx-preview-shims.tsx",
     "Folder": "./src/components/mdx/mdx-preview-shims.tsx",
     "LearningPath": "./src/components/mdx/mdx-preview-shims.tsx",
-    "ResourceLink": "./src/components/mdx/mdx-preview-shims.tsx"
+    "ResourceLink": "./src/components/mdx/mdx-preview-shims.tsx",
+    "Lab": "./src/components/mdx/mdx-preview-shims.tsx",
+    "Task": "./src/components/mdx/mdx-preview-shims.tsx"
   }
 }

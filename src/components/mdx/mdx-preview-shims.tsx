@@ -8,6 +8,8 @@
  * 该扩展无法自动识别项目组件（仅内置 Docusaurus、Starlight、Nextra、Next.js 的 shim），
  * 因此通过 `.mdx-previewrc.json` 指向此文件，在预览运行时提供文档卡片与文件层级组件。
  */
+
+export { Lab, Task } from '../../features/tasks';
 export {
   DocCard,
   DocGrid,

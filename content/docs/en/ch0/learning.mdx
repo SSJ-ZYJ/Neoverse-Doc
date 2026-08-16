@@ -71,7 +71,7 @@ When facing a longer document, you can read at the following pace:
 5. **Leave questions behind**: record the environment, the operations, the output, and your questions; search or ask again when necessary.
 
 > [!NOTE] Where is the progress saved?
-> The checked state of interactive tasks is stored in the current browser's local storage, separated by page. It does not sync to your account or other devices; after clearing site data, the progress may also disappear.
+> Checked state for Checklists and Learning Tasks is stored in the current browser's local storage; Learning Tasks use stable content, Lab, and Task identities. It does not sync to your account or other devices; after clearing site data, the progress may also disappear.
 
 ## 5. AI: Your First 15-Minute Practice
 
@@ -84,3 +84,12 @@ Complete one minimal learning loop right now. Do not try to solve everything at 
 - [ ] Record the operation, the result, and the questions still unsolved, then tick this item
 
 Once done, you have walked through a complete loop of "raise a question → find information → operate hands-on → verify the result → record questions". Next, you can continue on the current page, or go back to the [Chapter 1 guide](/en/docs/ch1) to choose the next lesson.
+
+## 6. Explicit Learning Task Example
+
+The two items below are learning tasks whose state should survive visits. The other `- [ ]` items on this page remain ordinary Checklists; using a Checkbox does not automatically add them to learning progress.
+
+<Lab id="first-practice">
+  <Task id="find-related-document">Use this site's search to find a related document</Task>
+  <Task id="perform-safe-operation">Perform a small operation on your computer that will not damage data</Task>
+</Lab>

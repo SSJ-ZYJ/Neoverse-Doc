@@ -102,6 +102,8 @@ export const zh = {
   taskListItem: '任务项',
   taskListProgressTitle: 'TODO 进度',
   taskListProgressLabel: 'TODO 进度：已完成 {completed} 项，共 {total} 项',
+  learningProgressTitle: '学习进度',
+  learningProgressLabel: '学习进度：已完成 {completed} 项，共 {total} 项',
   taskListCompletedCount: '已完成',
   taskListTotalCount: '总计',
   taskListJumpToList: '查看清单',

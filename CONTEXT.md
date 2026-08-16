@@ -107,11 +107,35 @@ _Avoid_: 作为身份、作为持久化 key
 共享同一 Content ID 的各语言版本；当前契约要求它们位于相同 slugs（路径对称）。
 _Avoid_: translationKey
 
-### 用户状态
+### 学习模型与用户状态
+
+**Checklist（普通清单）**:
+标准 GFM `- [ ]` 项，用于作者表达待办或核对事项；它不会因为使用 Checkbox 就自动成为学习任务。
+_Avoid_: 把所有 Checkbox 视为 Learning Task
+
+**Learning Primitive（学习原语）**:
+作者显式声明、具有稳定身份和可持久化语义的学习内容单元；当前实现支持 `Lab` 与 `Task`。
+_Avoid_: 从 DOM、显示文本或列表顺序猜测学习内容
+
+**Learning Lab（学习实验组）**:
+页面内承载一组相关 Learning Task 的稳定容器，由作者声明 `labId`。
+_Avoid_: 用章节、标题或 URL 代替 Lab 身份
+
+**Learning Task（学习任务）**:
+位于 Learning Lab 内、由作者声明 `taskId` 的最小可完成学习单元；普通 Checklist 与它保持语义分离。
+_Avoid_: 隐式把 GFM 任务项升级为 Learning Task
+
+**Learning Identity（学习身份）**:
+由稳定 `Content ID`、`labId` 与 `taskId` 组成的三元组；显示文本、标题、DOM 顺序、pathname 和 URL 都不属于身份。
+_Avoid_: 文本 Hash、DOM 顺序、pathname 作为主要身份
+
+**Learning Registry（学习注册表）**:
+页面级的结构化学习数据视图，按 Content ID 暴露 Labs 及其 Tasks，供进度等消费方直接读取。
+_Avoid_: 由消费方重新扫描正文 DOM
 
 **Task Progress（任务进度）**:
-GFM 任务项的勾选状态；按 Content ID 分桶持久化，同一内容的各语言版本共享。
-_Avoid_: 按 pathname 存储、按标题存储
+Learning Task 或兼容模式 Checklist 的完成状态投影；进度是身份的消费结果，不反过来定义任务身份。
+_Avoid_: 以显示文案或页面位置作为进度 key
 
 ### Feature 边界
 

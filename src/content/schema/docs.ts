@@ -56,8 +56,8 @@ export const docsPageSchema = pageSchema.extend({
   // Per-page publishing state for the soft draft gate.
   // 控制单篇文档是否显示可临时解锁的草稿施工提示。
   draft: z.boolean().default(false),
-  // Per-page switch for the interactive TODO progress card.
-  // 控制单篇文档是否显示可交互 TODO 进度卡片。
+  // Per-page switch for the interactive legacy/learning progress card.
+  // 控制单篇文档是否显示兼容 Checklist / Learning Task 进度卡片。
   todoProgress: z.boolean().default(false),
   // --- Content Schema v2: optional knowledge-system metadata. ---
   // All fields stay optional; existing pages migrate incrementally.

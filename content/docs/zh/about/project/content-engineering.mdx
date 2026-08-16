@@ -19,7 +19,7 @@ author:
 | `author` | 字符串或字符串数组 | 主要作者 |
 | `contributor` / `contributors` | 字符串或字符串数组 | 正文后的贡献者 |
 | `draft` | 布尔值，默认 `false` | 显示草稿软门控 |
-| `todoProgress` | 布尔值，默认 `false` | 显示页面任务进度 |
+| `todoProgress` | 布尔值，默认 `false` | 显示兼容 Checklist 或 Learning Task 的页面进度 |
 
 集中 Schema 让 Fumadocs 编译阶段直接校验 Frontmatter，也避免从标题、文件名或 DOM 猜测内容状态。
 
@@ -52,7 +52,7 @@ author:
 - **身份不变性**：修改标题、移动文件、调整 URL 都不改变身份；只有作者显式修改 `id` 才会，且构建期校验会拦截漏改的引用；
 - **路径对称契约**：fumadocs 的目录式翻译配对（page tree、alternates、路由）仍要求同 `id` 各语言版本位于相同路径，该校验已在 `check:content` 中显式声明。
 
-运行期消费方：GFM 任务进度按 `docs:<id>` 分桶持久化（localStorage key `neoverse-mdx-task-state:v2:docs:<id>`），同一内容跨语言共享勾选状态，旧版按路径存储的数据在首次访问时自动迁移；搜索索引记录身份同样使用 `docs:<id>:<locale>`，导航仍走 `url`。
+运行期消费方：显式 Learning Task 以 `docs:<id> + labId + taskId` 作为身份，写入独立的版本化学习状态；旧版 GFM 任务仍按 `docs:<id>` 分桶（localStorage key `neoverse-mdx-task-state:v2:docs:<id>`）共享中英文勾选状态，并兼容迁移路径分桶数据。搜索索引记录身份同样使用 `docs:<id>:<locale>`，导航仍走 `url`。
 
 ### Content IR 与构建管线
 
@@ -192,28 +192,50 @@ Fumadocs 与 Shiki 负责语法高亮，项目在这条管线上增加文件路�
 
 这种边界避免了两个常见问题：为了折叠一段文字把整篇文章变成客户端组件；或者在运行时遍历 DOM，再根据引用文本猜测应该渲染成什么。
 
-## 七、任务项与进度
+## 七、Checklist、Learning Task 与进度
 
-作者继续使用标准 GFM 任务语法：
+普通 Markdown Checkbox 继续使用标准 GFM 任务语法，它表达 Checklist，不会自动成为需要持久化学习身份的任务：
 
 ```md
 - [x] 完成阅读
 - [ ] 执行实践
 ```
 
-`MdxListItem` 在服务端区分普通列表和任务项。普通 `li` 保持原生；任务项才交给 `InteractiveTaskListItem`。
+`MdxListItem` 在服务端区分普通列表和 GFM 任务项。普通 `li` 保持原生；旧版 GFM 任务项才交给 `InteractiveTaskListItem`。真正的 Learning Task 使用显式 MDX Primitive：
 
-任务状态使用下面的本地模型：
-
-```text
-storage key = 固定前缀 + 当前 pathname
-task key    = 规范化任务文字的稳定哈希
-value       = checked / unchecked
+```mdx
+<Lab id="git-basics">
+  <Task id="install-git">安装 Git</Task>
+  <Task id="first-repository">创建第一个仓库</Task>
+</Lab>
 ```
 
-进度组件不再维护一份重复任务数组。它读取正文中已经渲染的任务复选框，并监听 `neoverse:task-state-change` 自定义事件更新完成数。这样不需要引入全局状态库，也不会让非任务列表承担客户端逻辑。
+`Lab` 与 `Task` 会注册为页面级 Learning Registry。Registry 的公共数据形状是：
 
-`todoProgress: true` 只控制页面顶部是否出现统计卡片。每个任务本身即使没有统计卡片，仍可以勾选并在当前浏览器保存。
+```ts
+{
+  contentId: 'docs:git-basics',
+  labs: [
+    {
+      id: 'git-basics',
+      tasks: [{ id: 'install-git', kind: 'task', completed: false }],
+    },
+  ],
+}
+```
+
+Learning Task 的身份固定为 `contentId + labId + taskId`。显示文字、标题、DOM 顺序、pathname 和 URL 都不是身份；修改它们不会改变已有状态。
+
+显式 Learning Task 的本地存储使用独立的版本化 Schema：
+
+```text
+storage key = neoverse-learning-state:v1:<contentId>
+entry       = { labId, taskId, kind: 'task', completed }
+```
+
+`TaskListProgress` 优先读取 Learning Registry 的结构化任务和完成状态，不通过全页面 DOM 扫描猜测 Learning Task。旧页面没有 Registry 时，仍使用 GFM 任务的兼容 fallback；DOM 只承担旧模式统计和跳转定位。
+
+当前 GFM 兼容状态继续保留旧的 pathname / 文本 Hash 存储；v1 → v2 迁移只在目标写入成功且数据通过校验后删除来源，目标已有数据时合并而不是覆盖。旧 Hash 不会被猜测映射到新的稳定 Task。`todoProgress: true` 仍控制页面顶部是否出现统计卡片；显式学习任务和普通 Checklist 都保持 Local-first，不引入账号、数据库或后端。
 
 ## 八、文件层级与文档卡片
 

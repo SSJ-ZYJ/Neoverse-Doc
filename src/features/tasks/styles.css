@@ -161,7 +161,7 @@
   }
 }
 
-#nd-page ul.contains-task-list {
+#nd-page :is(ul.contains-task-list, ul.mdx-learning-lab) {
   display: grid;
   gap: 0.55rem;
   margin-block: 1.25rem;

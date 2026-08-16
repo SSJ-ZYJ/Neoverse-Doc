@@ -1,9 +1,10 @@
 /**
- * Page-level progress summary for interactive Markdown task lists. It derives
- * its totals from the rendered document so authors keep using standard GFM syntax.
+ * Page-level progress summary. Explicit Learning Tasks are counted from the
+ * Learning Registry; pages that have not opted into the new primitive keep the
+ * legacy GFM fallback for compatibility.
  *
- * 可交互 Markdown 任务清单的页面级进度概览。统计来自已渲染的文档，
- * 文档作者可以继续使用标准 GFM 语法。
+ * 页面级进度概览。显式 Learning Task 从 Learning Registry 统计；尚未迁移的页面
+ * 继续使用旧版 GFM fallback，保持兼容。
  */
 'use client';
 
@@ -14,6 +15,8 @@ import { type MouseEvent, useEffect, useRef, useState, useSyncExternalStore } fr
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
 import { prefersReducedMotion } from '@/runtime/motion/config';
+import type { LearningRegistry } from '../runtime/learning-model';
+import { useLearningRegistry } from '../runtime/learning-registry';
 import { getTaskStateRevision, subscribeTaskState } from '../runtime/store';
 import { getTaskListScrollDuration, getTaskListScrollProgress } from '../scroll';
 
@@ -32,11 +35,12 @@ interface TaskProgress {
   completed: number;
   total: number;
   targetHash: string | null;
+  source: 'learning' | 'legacy';
 }
 
-function readTaskProgress(pathname: string): TaskProgress {
+function readLegacyTaskProgress(pathname: string): TaskProgress {
   if (window.location.pathname !== pathname) {
-    return { completed: 0, total: 0, targetHash: null };
+    return { completed: 0, total: 0, targetHash: null, source: 'legacy' };
   }
 
   const checkboxes = document.querySelectorAll<HTMLInputElement>(
@@ -46,7 +50,18 @@ function readTaskProgress(pathname: string): TaskProgress {
   return {
     completed: Array.from(checkboxes).filter((checkbox) => checkbox.checked).length,
     total: checkboxes.length,
-    targetHash: findTaskListHeadingHash(),
+    targetHash: findTaskListHeadingHash('[data-docs-body] ul.contains-task-list'),
+    source: 'legacy',
+  };
+}
+
+function readLearningTaskProgress(registry: LearningRegistry): TaskProgress {
+  const tasks = registry.labs.flatMap((lab) => lab.tasks);
+  return {
+    completed: tasks.filter((task) => task.completed).length,
+    total: tasks.length,
+    targetHash: findTaskListHeadingHash('[data-docs-body] ul.mdx-learning-lab'),
+    source: 'learning',
   };
 }
 
@@ -58,11 +73,9 @@ function fillProgressLabel(template: string, progress: TaskProgress): string {
 
 // Resolve the final task-list group to the hash generated for its preceding heading by Fumadocs.
 // 将文末任务清单解析为 Fumadocs 为其前置标题生成的 Hash。
-function findTaskListHeadingHash(): string | null {
+function findTaskListHeadingHash(taskListSelector: string): string | null {
   const docsBody = document.querySelector<HTMLElement>('[data-docs-body]');
-  const taskLists = document.querySelectorAll<HTMLElement>(
-    '[data-docs-body] ul.contains-task-list',
-  );
+  const taskLists = document.querySelectorAll<HTMLElement>(taskListSelector);
   const taskList = taskLists.item(taskLists.length - 1);
   if (!docsBody || !taskList) return null;
 
@@ -184,6 +197,7 @@ export function TaskListProgress() {
   const pathname = usePathname();
   const { locale } = useI18n();
   const copy = getPageDictionary(resolveLocale(locale));
+  const learningRegistry = useLearningRegistry();
   const activeScrollRef = useRef<(() => void) | null>(null);
   const taskStateRevision = useSyncExternalStore(
     subscribeTaskState,
@@ -194,19 +208,24 @@ export function TaskListProgress() {
     completed: 0,
     total: 0,
     targetHash: null,
+    source: 'legacy',
   });
 
   useEffect(() => {
     void taskStateRevision;
     const root = document.documentElement;
 
-    setProgress(readTaskProgress(pathname));
+    setProgress(
+      learningRegistry.labs.length > 0
+        ? readLearningTaskProgress(learningRegistry)
+        : readLegacyTaskProgress(pathname),
+    );
     return () => {
       activeScrollRef.current?.();
       activeScrollRef.current = null;
       delete root.dataset.ndTaskListJump;
     };
-  }, [pathname, taskStateRevision]);
+  }, [learningRegistry, pathname, taskStateRevision]);
 
   function handleTaskListJump(event: MouseEvent<HTMLAnchorElement>) {
     const navigation = resolveTaskListNavigation(event);
@@ -226,7 +245,10 @@ export function TaskListProgress() {
 
   if (progress.total === 0) return null;
 
-  const progressLabel = fillProgressLabel(copy.taskListProgressLabel, progress);
+  const progressLabel = fillProgressLabel(
+    progress.source === 'learning' ? copy.learningProgressLabel : copy.taskListProgressLabel,
+    progress,
+  );
 
   return (
     <section
@@ -239,7 +261,9 @@ export function TaskListProgress() {
         <span className="mdx-task-progress__icon" aria-hidden="true">
           <ListChecks size={18} />
         </span>
-        <span>{copy.taskListProgressTitle}</span>
+        <span>
+          {progress.source === 'learning' ? copy.learningProgressTitle : copy.taskListProgressTitle}
+        </span>
       </div>
       <div className="mdx-task-progress__controls">
         <div className="mdx-task-progress__stats" aria-hidden="true">

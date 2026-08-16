@@ -112,7 +112,20 @@ Tables are suitable for side-by-side comparison; if a cell needs a long paragrap
 - [ ] Run content validation
 ```
 
-This site enhances standard GFM task items into interactive tasks, with state saved per page in the current browser. If you want completion progress to appear at the top of the page, set `todoProgress: true` in the Frontmatter.
+This site enhances standard GFM task items into interactive compatibility Checklists, with state saved in the current browser. To show Checklist progress—or the progress of explicit Learning Tasks—at the top of the page, set `todoProgress: true` in the Frontmatter.
+
+### Explicit Learning Tasks
+
+Ordinary GFM Checkboxes are Checklists; only content explicitly written with `Lab` and `Task` enters persisted learning progress. `Lab id` and `Task id` are stable identities, so do not use display text that may change as an id.
+
+```mdx
+<Lab id="git-basics">
+  <Task id="install-git">Install Git</Task>
+  <Task id="first-repository">Create the first repository</Task>
+</Lab>
+```
+
+`Task` must be nested inside a `Lab`. The tuple `contentId + labId + taskId` determines task identity; changing display text, the title, or the page URL does not change existing state.
 
 ## 3. Alerts and Collapsible Content
 

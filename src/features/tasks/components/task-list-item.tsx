@@ -14,6 +14,7 @@ import {
   type ReactNode,
 } from 'react';
 import { InteractiveTaskListItem } from './interactive-task-list-item';
+import { extractTaskText } from './task-label';
 
 type TaskCheckboxElement = ReactElement<ComponentProps<'input'>>;
 
@@ -23,15 +24,6 @@ function isTaskCheckbox(node: ReactNode): node is TaskCheckboxElement {
     node.type === 'input' &&
     node.props.type === 'checkbox'
   );
-}
-
-function extractTaskText(node: ReactNode): string {
-  if (typeof node === 'string' || typeof node === 'number') return String(node);
-  if (Array.isArray(node)) return node.map(extractTaskText).join('');
-  if (isValidElement<{ children?: ReactNode }>(node)) {
-    return extractTaskText(node.props.children);
-  }
-  return '';
 }
 
 export function MdxListItem({ children, className, ...props }: ComponentProps<'li'>) {

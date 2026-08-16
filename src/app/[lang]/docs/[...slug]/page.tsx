@@ -24,7 +24,7 @@ import {
 import { getPageDictionary } from '@/dictionaries';
 import { DocsCommunity } from '@/features/community';
 import { DeferredDocsPage } from '@/features/docs-shell';
-import { TaskListProgress } from '@/features/tasks';
+import { LearningRegistryProvider, TaskListProgress } from '@/features/tasks';
 import { LANGUAGE_TAGS, OPEN_GRAPH_LOCALES, resolveLocale } from '@/lib/i18n';
 import { parseAuthor } from '@/lib/parse-author';
 import { REPO_URL, SOCIAL_IMAGE } from '@/lib/site-config';
@@ -38,6 +38,7 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
   if (!page) notFound();
 
   const MDX = page.data.body;
+  const contentId = createContentId(page.data.id);
   const slugKey = slug.join('/');
   const sourcePath = page.data.info.fullPath;
   const markdownUrl = `/${locale}/docs-source/${slugKey}.md`;
@@ -144,8 +145,8 @@ export default async function Page(props: PageProps<'/[lang]/docs/[...slug]'>) {
             frontmatter id, survives file moves and URL changes (ADR 0003).
             为客户端消费方（任务进度）提供稳定身份：由 frontmatter id 派生，
             不随文件移动或 URL 变化而失效（ADR 0003）。 */}
-        <ContentIdProvider contentId={createContentId(page.data.id)}>
-          {pageContent}
+        <ContentIdProvider contentId={contentId}>
+          <LearningRegistryProvider contentId={contentId}>{pageContent}</LearningRegistryProvider>
         </ContentIdProvider>
       </DeferredDocsPage>
       <DocsBackToTop key={slugKey} label={dict.backToTop} />

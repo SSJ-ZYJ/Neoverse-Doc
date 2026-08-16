@@ -109,6 +109,8 @@ export const en = {
   taskListItem: 'Task item',
   taskListProgressTitle: 'TODO progress',
   taskListProgressLabel: 'TODO progress: {completed} of {total} completed',
+  learningProgressTitle: 'Learning progress',
+  learningProgressLabel: 'Learning progress: {completed} of {total} completed',
   taskListCompletedCount: 'Completed',
   taskListTotalCount: 'Total',
   taskListJumpToList: 'View tasks',

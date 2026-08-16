@@ -112,7 +112,20 @@ Frontmatter 已经提供页面标题，因此正文从 `##` 开始：
 - [ ] 运行内容校验
 ```
 
-本站会将标准 GFM 任务项增强为可交互任务，状态按页面保存在当前浏览器。若希望页面顶部显示完成进度，在 Frontmatter 中设置 `todoProgress: true`。
+本站会将标准 GFM 任务项增强为兼容模式的可交互 Checklist，状态保存在当前浏览器。若希望页面顶部显示 Checklist 进度，或显示页面中显式 Learning Task 的进度，在 Frontmatter 中设置 `todoProgress: true`。
+
+### 显式学习任务
+
+普通 GFM Checkbox 是 Checklist；只有明确写入 `Lab` 与 `Task` 的内容才进入可持久化学习进度。`Lab id` 与 `Task id` 是稳定身份，不要使用会随文案变化的标题作为 id。
+
+```mdx
+<Lab id="git-basics">
+  <Task id="install-git">安装 Git</Task>
+  <Task id="first-repository">创建第一个仓库</Task>
+</Lab>
+```
+
+`Task` 必须放在 `Lab` 内。`contentId + labId + taskId` 共同确定任务身份；修改显示文字、标题或页面 URL 不会改变已有状态。
 
 ## 三、提示框与折叠内容
 

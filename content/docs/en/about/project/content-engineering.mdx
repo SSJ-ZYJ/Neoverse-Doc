@@ -19,7 +19,7 @@ author:
 | `author` | string or string array | Primary author |
 | `contributor` / `contributors` | string or string array | Contributors after the body |
 | `draft` | boolean, default `false` | Soft gating for drafts |
-| `todoProgress` | boolean, default `false` | Page task progress display |
+| `todoProgress` | boolean, default `false` | Page Checklist or Learning Task progress display |
 
 A centralized Schema lets the Fumadocs compilation stage validate Frontmatter directly, and also avoids guessing content state from titles, file names, or the DOM.
 
@@ -52,7 +52,7 @@ The required frontmatter `id` of every page is the content's stable identity, fu
 - **Identity immutability**: title edits, file moves, and URL adjustments never change the identity; only an explicit `id` edit does, and build-time validation catches stale references;
 - **Path symmetry contract**: fumadocs' directory-based translation pairing (page tree, alternates, routing) still requires locale variants of one `id` to live at the same path — now an explicit check in `check:content`.
 
-Runtime consumers: GFM task progress persists under the `docs:<id>` bucket (localStorage key `neoverse-mdx-task-state:v2:docs:<id>`), sharing check state across locales of the same content, with legacy path-keyed data migrated automatically on first visit; search index record identities likewise use `docs:<id>:<locale>`, while navigation still goes through `url`.
+Runtime consumers: explicit Learning Tasks use `docs:<id> + labId + taskId` as their identity and write to a separate versioned learning-state schema. Legacy GFM tasks still share their check state across locales under the `docs:<id>` bucket (localStorage key `neoverse-mdx-task-state:v2:docs:<id>`) and migrate path-keyed data compatibly; search index record identities likewise use `docs:<id>:<locale>`, while navigation still goes through `url`.
 
 ### Content IR and Build Pipeline
 
@@ -192,28 +192,50 @@ Plain `details` are output directly by `CollapsibleDetailsRenderer`, staying ser
 
 This boundary avoids two common problems: turning an entire article into a client component just to collapse one passage, or traversing the DOM at runtime and guessing what should be rendered from the quoted text.
 
-## 7. Task Items and Progress
+## 7. Checklists, Learning Tasks, and Progress
 
-Authors keep using the standard GFM task syntax:
+Ordinary Markdown Checkboxes continue to use standard GFM task syntax. They express Checklists and do not automatically become persistable learning identities:
 
 ```md
 - [x] Finish reading
 - [ ] Run the practice
 ```
 
-`MdxListItem` distinguishes plain lists from task items on the server. Plain `li` stays native; only task items are handed to `InteractiveTaskListItem`.
+`MdxListItem` distinguishes plain lists from GFM task items on the server. Plain `li` stays native; only legacy GFM task items are handed to `InteractiveTaskListItem`. A real Learning Task uses an explicit MDX primitive:
 
-Task state uses the local model below:
-
-```text
-storage key = fixed prefix + current pathname
-task key    = stable hash of the normalized task text
-value       = checked / unchecked
+```mdx
+<Lab id="git-basics">
+  <Task id="install-git">Install Git</Task>
+  <Task id="first-repository">Create the first repository</Task>
+</Lab>
 ```
 
-The progress component no longer maintains a duplicate task array. It reads the task checkboxes already rendered in the body and listens for the `neoverse:task-state-change` custom event to update the completion count. This avoids introducing a global state library and keeps non-task lists free of client logic.
+`Lab` and `Task` register structured data in a page-scoped Learning Registry:
 
-`todoProgress: true` only controls whether the stats card appears at the top of the page. Each task itself can still be checked and saved in the current browser even without a stats card.
+```ts
+{
+  contentId: 'docs:git-basics',
+  labs: [
+    {
+      id: 'git-basics',
+      tasks: [{ id: 'install-git', kind: 'task', completed: false }],
+    },
+  ],
+}
+```
+
+The Learning Task identity is always `contentId + labId + taskId`. Display text, titles, DOM order, pathname, and URL are not identity; changing them does not change existing state.
+
+Explicit Learning Tasks use a separate versioned local storage schema:
+
+```text
+storage key = neoverse-learning-state:v1:<contentId>
+entry       = { labId, taskId, kind: 'task', completed }
+```
+
+`TaskListProgress` reads structured tasks and completion state from the Learning Registry first; it does not infer Learning Tasks by scanning the whole document DOM. Pages without a Registry keep the GFM compatibility fallback; DOM is limited to legacy counting and jump-target resolution.
+
+The legacy pathname / text-hash state remains available for GFM compatibility. v1 → v2 migration removes a source only after a validated write succeeds, and merges with an existing destination instead of overwriting it. Legacy hashes are never heuristically mapped to new stable Tasks. `todoProgress: true` still controls whether the stats card appears at the top of the page; both explicit Learning Tasks and ordinary Checklists remain Local-first with no account, database, or backend.
 
 ## 8. File Hierarchy and Doc Cards
 
