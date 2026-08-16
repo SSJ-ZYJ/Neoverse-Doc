@@ -16,6 +16,7 @@ export const en = {
   loadingMarquee: 'LOADING...',
   enterDocs: 'Enter',
   learnTitle: 'Learning paths',
+  topicsTitle: 'Topics',
   languageGatewayTitle: 'Choose your language',
   languageGatewayDescription:
     'The site chooses an entry from your browser language, or you can continue in English.',
@@ -112,6 +113,35 @@ export const en = {
     noTracksTitle: 'No learning paths yet',
     noTracksDescription: 'There are no routes with publicly readable content yet.',
     minutes: 'min',
+  },
+  // Topics and Reference route copy / 主题与参考入口文案
+  topics: {
+    eyebrow: 'TOPICS',
+    title: 'Topics',
+    description: 'Browse by explicitly declared knowledge topics instead of document chapters.',
+    availableTopics: 'Available topics',
+    viewTopic: 'Browse topic',
+    contentCount: 'items',
+    relatedContent: 'Related content',
+    contentType: 'Content type',
+    difficulty: 'Difficulty',
+    relatedTopics: 'Related topics',
+    searchAction: 'Search this topic',
+    returnToTopics: 'Back to topics',
+    noTopicsTitle: 'No topics yet',
+    noTopicsDescription: 'There is no publicly readable topic content yet.',
+    noContentTitle: 'No readable content for this topic',
+    noContentDescription: 'This topic has no stable or under-review public content yet.',
+  },
+  reference: {
+    eyebrow: 'REFERENCE',
+    availableContent: 'Reference content',
+    contentType: 'Content type',
+    difficulty: 'Difficulty',
+    openContent: 'Open content',
+    searchAction: 'Search reference content',
+    noContentTitle: 'No reference content yet',
+    noContentDescription: 'There is no publicly readable reference content yet.',
   },
   // Homepage portal copy / 首页内容门户文案
   home: {

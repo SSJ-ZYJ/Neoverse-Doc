@@ -103,6 +103,8 @@ export { i18nProvider };
 // 不再触达 components / dictionaries。
 export interface BaseOptionsInputs {
   learnTitle: string;
+  topicsTitle: string;
+  referenceTitle: string;
   navTitle: ReactNode;
   guestbookTitle: string;
 }
@@ -123,6 +125,16 @@ export function baseOptions(
       {
         text: inputs.learnTitle,
         url: `/${locale}/learn`,
+        active: 'nested-url',
+      },
+      {
+        text: inputs.topicsTitle,
+        url: `/${locale}/topics`,
+        active: 'nested-url',
+      },
+      {
+        text: inputs.referenceTitle,
+        url: `/${locale}/reference`,
         active: 'nested-url',
       },
       {

@@ -95,6 +95,12 @@ const FEATURE_ALLOWLIST: Readonly<Record<string, Readonly<Record<string, string>
     'features/transition':
       'Learn 路线与文档轻量导航复用站内 TransitionLink，保持产品路线入口与现有导航转场行为一致',
   },
+  'features/explore': {
+    'features/search':
+      'Topics 与 Reference 的查询入口复用全局 Search Context 与 Search Schema 标签，不创建独立搜索引擎',
+    'features/transition':
+      'Topics 与 Reference 的内容、主题链接复用站内 TransitionLink，保持现有导航转场行为一致',
+  },
 };
 
 // Generated infrastructure consumed via alias, not a hand-written layer.

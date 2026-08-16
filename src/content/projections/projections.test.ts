@@ -87,6 +87,8 @@ const lifecycleManifestEntries: readonly ContentManifestEntry[] = [
     title: 'Stable',
     slugs: ['lifecycle', 'stable'],
     status: 'stable',
+    type: 'reference',
+    topics: ['shell'],
     tracks: ['computer-essentials'],
   },
   {
@@ -96,6 +98,8 @@ const lifecycleManifestEntries: readonly ContentManifestEntry[] = [
     title: 'Review',
     slugs: ['lifecycle', 'review'],
     status: 'review',
+    type: 'guide',
+    topics: ['terminal'],
     tracks: ['computer-essentials'],
   },
   {
@@ -105,6 +109,8 @@ const lifecycleManifestEntries: readonly ContentManifestEntry[] = [
     title: 'Draft',
     slugs: ['lifecycle', 'draft'],
     status: 'draft',
+    type: 'reference',
+    topics: ['shell'],
     tracks: ['computer-essentials'],
   },
   {
@@ -115,6 +121,8 @@ const lifecycleManifestEntries: readonly ContentManifestEntry[] = [
     slugs: ['lifecycle', 'deprecated'],
     status: 'deprecated',
     replacement: 'docs:lifecycle/stable',
+    type: 'reference',
+    topics: ['terminal'],
     tracks: ['computer-essentials'],
   },
 ];
@@ -154,6 +162,16 @@ describe('content product projections', () => {
       learn.tracks[0]?.steps.map((step) => step.contentId),
       ['docs:lifecycle/stable', 'docs:lifecycle/review'],
     );
+  });
+
+  it('exposes only readable lifecycle states in Topics and Reference', () => {
+    assert.deepEqual(createExploreProjection('zh', lifecycleSources).topics, [
+      { topicId: 'shell', contentIds: ['docs:lifecycle/stable'] },
+      { topicId: 'terminal', contentIds: ['docs:lifecycle/review'] },
+    ]);
+    assert.deepEqual(createReferenceProjection('zh', lifecycleSources).contentIds, [
+      'docs:lifecycle/stable',
+    ]);
   });
 
   it('groups Explore data by explicit Topic instead of Chapter', () => {

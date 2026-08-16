@@ -22,6 +22,7 @@ export interface Dictionary {
   loadingMarquee: string;
   enterDocs: string;
   learnTitle: string;
+  topicsTitle: string;
   // Root language gateway fallback / 根语言分流入口兜底文案
   languageGatewayTitle: string;
   languageGatewayDescription: string;
@@ -108,6 +109,34 @@ export interface Dictionary {
     noTracksTitle: string;
     noTracksDescription: string;
     minutes: string;
+  };
+  topics: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    availableTopics: string;
+    viewTopic: string;
+    contentCount: string;
+    relatedContent: string;
+    contentType: string;
+    difficulty: string;
+    relatedTopics: string;
+    searchAction: string;
+    returnToTopics: string;
+    noTopicsTitle: string;
+    noTopicsDescription: string;
+    noContentTitle: string;
+    noContentDescription: string;
+  };
+  reference: {
+    eyebrow: string;
+    availableContent: string;
+    contentType: string;
+    difficulty: string;
+    openContent: string;
+    searchAction: string;
+    noContentTitle: string;
+    noContentDescription: string;
   };
   home: {
     eyebrow: string;

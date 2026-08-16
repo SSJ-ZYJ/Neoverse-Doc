@@ -1,3 +1,4 @@
+import { isContentIndexable } from '@/content/maintenance';
 import type { ContentTopic } from '@/content/taxonomy';
 import type { Locale } from '@/lib/i18n';
 import type { ContentProjectionSources } from './sources';
@@ -14,11 +15,11 @@ export interface ExploreProjection {
 }
 
 /**
- * Groups content by explicitly declared Topics. Chapter slugs never contribute
- * to this projection: chapter is an authoring sequence, whereas Topic is
- * product taxonomy.
+ * Groups readable content by explicitly declared Topics. Chapter slugs never
+ * contribute to this projection: chapter is an authoring sequence, whereas
+ * Topic is product taxonomy.
  *
- * 按作者显式声明的 Topic 聚合内容。Chapter slug 从不参与本投影：
+ * 按作者显式声明的 Topic 聚合可阅读内容。Chapter slug 从不参与本投影：
  * Chapter 是作者编排顺序，Topic 才是产品分类。
  */
 export function createExploreProjection(
@@ -35,7 +36,7 @@ export function createExploreProjection(
       .flatMap((topic) => {
         const contentIds = sortContentIds(
           localeEntries
-            .filter((entry) => entry.topics?.includes(topic.id))
+            .filter((entry) => isContentIndexable(entry.status) && entry.topics?.includes(topic.id))
             .map((entry) => entry.id),
           sourceOrder,
         );

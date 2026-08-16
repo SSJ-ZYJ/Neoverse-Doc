@@ -31,7 +31,7 @@ The Fumadocs page-level index ID uses stable `docs:<id>:<locale>`, while navigat
 
 Body text continues to come only from Fumadocs structured content. While building the index, `src/content/search/index.ts` joins taxonomy from the Manifest-derived Search Metadata Projection by stable `contentId + locale`; a missing match fails the build rather than silently producing a record without metadata. Body text never enters Content IR or the metadata sidecar.
 
-The existing static search engine remains unchanged. To work with its fixed schema, the raw Chapter tag is supplemented with namespaced tags such as `track:<id>`, `topic:<id>`, `content-type:<id>`, and `difficulty:<id>`. The static `/api/search-metadata` sidecar emits this metadata by stable page-level search ID for a future Search UI or result enhancer; the current Search Dialog neither fetches it nor adds filter controls.
+The existing static search engine remains unchanged. To work with its fixed schema, the raw Chapter tag is supplemented with namespaced tags such as `track:<id>`, `topic:<id>`, `content-type:<id>`, and `difficulty:<id>`. The static `/api/search-metadata` sidecar emits this metadata by stable page-level search ID; Topics and Reference pages use `createSearchFilterTags()` to seed the same Search Dialog with contextual filters, without adding a Topic-specific search engine or complex facet controls.
 
 ## 2. Mixed Chinese-English and pinyin search
 
@@ -121,7 +121,7 @@ While the search dialog is closed, the component listens for Fumadocs' `Ctrl + K
 
 The scope menu is only a query constraint; it doesn't maintain separate content state. After a new Chapter is registered in the page tree, it naturally enters the search scopes.
 
-Chapter remains the author's linear content arrangement. It is used only for the compatible search scope; it cannot derive a Topic and is not the classification source for Learn, Explore, or Reference. Query data for Topic, Track, Content Type, and Difficulty comes only from the `content/search` Projection / Schema interface, never from Search Feature frontmatter or taxonomy parsing.
+Chapter remains the author's linear content arrangement. It is used only for the compatible search scope; it cannot derive a Topic and is not the classification source for Learn, Explore, or Reference. Query data for Topic, Track, Content Type, and Difficulty comes only from the `content/search` Projection / Schema interface, never from Search Feature frontmatter or taxonomy parsing. The Topics / Reference actions only pass existing taxonomy tags and an optional query to the global search dialog.
 
 ## 5. Search spotlight
 
@@ -257,6 +257,7 @@ None of this state needs an account or a database, and it doesn't sync across de
 | `src/features/search/selection.ts` | Content selection validation and search query normalization |
 | `src/features/search/spotlight.ts` | Spotlight parameter handling |
 | `src/features/search/components/search-dialog.tsx` | Query and Chapter scope UI |
+| `src/features/search/components/search-taxonomy-action.tsx` | Contextual Topics / Reference search entry |
 | `src/features/search/components/search-spotlight.tsx` | Search result spotlight |
 | `src/app/[lang]/docs/layout.tsx` | Locale page tree and navigation layout |
 | `src/features/reading/docs-reading-return.tsx` | Cross-document context restoration |

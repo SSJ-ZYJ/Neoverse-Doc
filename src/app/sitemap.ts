@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { contentManifest, getContentLanguagePaths } from '@/content/generated/manifest';
 import { isContentIndexable } from '@/content/maintenance';
-import { getLearnProjection } from '@/content/projections';
+import { getExploreProjection, getLearnProjection } from '@/content/projections';
 import { absoluteUrl, createAbsoluteDocumentLanguageLinks } from '@/content/seo';
 import { i18n, LANGUAGE_TAGS, type Locale } from '@/lib/i18n';
 
@@ -15,6 +15,12 @@ const homeLanguages = {
 
 const learnLanguages = Object.fromEntries(
   i18n.languages.map((locale) => [LANGUAGE_TAGS[locale], absoluteUrl(`/${locale}/learn`)]),
+);
+const topicsLanguages = Object.fromEntries(
+  i18n.languages.map((locale) => [LANGUAGE_TAGS[locale], absoluteUrl(`/${locale}/topics`)]),
+);
+const referenceLanguages = Object.fromEntries(
+  i18n.languages.map((locale) => [LANGUAGE_TAGS[locale], absoluteUrl(`/${locale}/reference`)]),
 );
 
 function createLearnAlternates(paths: Partial<Record<Locale, string>>) {
@@ -44,6 +50,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: absoluteUrl(`/${locale}/learn`),
       alternates: { languages: learnLanguages },
     });
+    entries.push({
+      url: absoluteUrl(`/${locale}/topics`),
+      alternates: { languages: topicsLanguages },
+    });
+    entries.push({
+      url: absoluteUrl(`/${locale}/reference`),
+      alternates: { languages: referenceLanguages },
+    });
   }
 
   const trackPaths = new Map<string, Partial<Record<Locale, string>>>();
@@ -55,6 +69,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   }
   for (const paths of trackPaths.values()) {
+    for (const locale of i18n.languages) {
+      const path = paths[locale];
+      if (!path) continue;
+      entries.push({ url: absoluteUrl(path), alternates: createLearnAlternates(paths) });
+    }
+  }
+
+  const topicPaths = new Map<string, Partial<Record<Locale, string>>>();
+  for (const locale of i18n.languages) {
+    for (const topic of getExploreProjection(locale).topics) {
+      const paths = topicPaths.get(topic.topicId) ?? {};
+      paths[locale] = `/${locale}/topics/${topic.topicId}`;
+      topicPaths.set(topic.topicId, paths);
+    }
+  }
+  for (const paths of topicPaths.values()) {
     for (const locale of i18n.languages) {
       const path = paths[locale];
       if (!path) continue;

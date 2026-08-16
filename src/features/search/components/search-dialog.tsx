@@ -34,6 +34,7 @@ import { createMixedTokenizer } from '@/content/search/tokenizer';
 import { getPageDictionary } from '@/dictionaries';
 import { resolveLocale } from '@/lib/i18n';
 import { withEnhancedSearch } from '../client';
+import { SEARCH_QUERY_PARAM, SEARCH_TAG_PARAM } from '../search-intent';
 import { getSelectedDocsSearchText } from '../selection';
 
 interface DefaultSearchDialogProps extends SharedProps {
@@ -83,6 +84,29 @@ export default function DefaultSearchDialog({
   const { search, setSearch, query } = useDocsSearch({
     client: withEnhancedSearch(searchClient, locale === 'zh'),
   });
+
+  // Topic and Reference pages seed this existing Fumadocs search dialog with
+  // a taxonomy tag and optional query; the search engine itself remains shared.
+  // Topics 与 Reference 页面通过参数复用现有 Fumadocs 搜索弹窗的 taxonomy
+  // 标签与查询词，搜索引擎本身仍保持单一实现。
+  useEffect(() => {
+    if (!open) return;
+
+    const url = new URL(window.location.href);
+    const intentQuery = url.searchParams.get(SEARCH_QUERY_PARAM);
+    const intentTag = url.searchParams.get(SEARCH_TAG_PARAM);
+    if (intentQuery === null && intentTag === null) return;
+
+    if (intentTag !== null) setTag(intentTag);
+    if (intentQuery !== null) setSearch(intentQuery);
+    url.searchParams.delete(SEARCH_QUERY_PARAM);
+    url.searchParams.delete(SEARCH_TAG_PARAM);
+    window.history.replaceState(
+      window.history.state,
+      '',
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+  }, [open, setSearch]);
 
   // Capture the built-in shortcut before Fumadocs opens and focuses the dialog,
   // otherwise the document selection may collapse before it can seed the query.

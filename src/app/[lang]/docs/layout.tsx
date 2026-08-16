@@ -14,6 +14,7 @@ import { DocsThemeAndMotionSettings } from '@/components/docs-motion-settings';
 import { DocsSidebarSeparator } from '@/components/docs-sidebar-separator';
 import { NavTitle } from '@/components/nav-title';
 import { SidebarProvider } from '@/components/sidebar-provider';
+import { CONTENT_TYPE_REGISTRY } from '@/content/taxonomy';
 import { getPageDictionary } from '@/dictionaries';
 import { DocsReadingReturn } from '@/features/reading';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
@@ -25,12 +26,16 @@ export default async function Layout({ params, children }: LayoutProps<'/[lang]/
   const { lang } = await params;
   const locale = resolveLocale(lang);
   const dict = getPageDictionary(locale);
+  const referenceType = CONTENT_TYPE_REGISTRY.find((entry) => entry.id === 'reference');
+  if (!referenceType) throw new Error('Reference content type is missing from the taxonomy.');
 
   return (
     <DocsLayout
       tree={source.pageTree[locale]}
       {...baseOptions(locale, {
         learnTitle: dict.learnTitle,
+        topicsTitle: dict.topicsTitle,
+        referenceTitle: referenceType.label[locale],
         navTitle: <NavTitle />,
         guestbookTitle: dict.guestbookTitle,
       })}

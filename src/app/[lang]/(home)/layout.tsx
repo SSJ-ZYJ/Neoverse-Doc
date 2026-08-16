@@ -7,6 +7,7 @@
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
 import { baseOptions } from '@/adapters/fumadocs/layout';
 import { NavTitle } from '@/components/nav-title';
+import { CONTENT_TYPE_REGISTRY } from '@/content/taxonomy';
 import { getPageDictionary } from '@/dictionaries';
 import { generateLocaleStaticParams, resolveLocale } from '@/lib/i18n';
 
@@ -16,11 +17,15 @@ export default async function HomeGroupLayout({ params, children }: LayoutProps<
   const { lang } = await params;
   const locale = resolveLocale(lang);
   const dict = getPageDictionary(locale);
+  const referenceType = CONTENT_TYPE_REGISTRY.find((entry) => entry.id === 'reference');
+  if (!referenceType) throw new Error('Reference content type is missing from the taxonomy.');
 
   return (
     <HomeLayout
       {...baseOptions(locale, {
         learnTitle: dict.learnTitle,
+        topicsTitle: dict.topicsTitle,
+        referenceTitle: referenceType.label[locale],
         navTitle: <NavTitle />,
         guestbookTitle: dict.guestbookTitle,
       })}

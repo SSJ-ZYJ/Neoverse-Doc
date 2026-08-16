@@ -25,7 +25,7 @@ Neoverse-Doc/
 ├── src/
 │   ├── app/                      # Routes, data reads, and page composition
 │   ├── content/                  # Schema, MDX plugins, IR, search index, SEO, and Manifest
-│   ├── features/                 # Docs-shell, Search, Reading, Tasks, Mermaid, Transition, Community
+│   ├── features/                 # Docs-shell, Search, Reading, Tasks, Mermaid, Transition, Community, Learn, Explore
 │   ├── runtime/                  # Navigation, Motion, and Interaction external stores
 │   ├── adapters/fumadocs/        # Source, Layout config, and third-party DOM adapters
 │   ├── ui/                       # Tokens, surfaces, and global styles
@@ -65,7 +65,7 @@ The matrix is a **strict single-direction DAG**: no two layers may reference eac
 Four additional rules:
 
 - **Barrel rule**: any import crossing a feature boundary — from another layer or from another feature — must target the feature's `index.ts` public entry; importing an internal file under `features/A/` directly is rejected, while imports inside the feature itself are unrestricted. Public entries only expose capabilities genuinely needed across boundaries — no whole-directory re-exports.
-- **Feature boundary**: feature→feature dependencies are denied by default; a direct dependency that is itself the correct business relationship is kept by registering a reason in the checker's `FEATURE_ALLOWLIST` (currently a single entry: `community → transition`, where the guestbook return navigation reuses the transition-aware `BackLink`). Real dependency edges must stay acyclic — even when every edge is allowlisted. When several features need the same piece, extract it into the layer it truly belongs to (`runtime` / `content` / `lib`) instead of copying code or creating a `shared/` junk drawer.
+- **Feature boundary**: feature→feature dependencies are denied by default; a direct dependency that is itself the correct business relationship is kept by registering a reason in the checker's `FEATURE_ALLOWLIST` (currently `community → transition`, `learn → transition`, `explore → search`, and `explore → transition`). Real dependency edges must stay acyclic — even when every edge is allowlisted. When several features need the same piece, extract it into the layer it truly belongs to (`runtime` / `content` / `lib`) instead of copying code or creating a `shared/` junk drawer.
 - **Exception list**: the `EXCEPTIONS` mechanism is kept but currently empty — the four historical bridge exceptions were eliminated through proper boundaries (the `features/docs-shell` migration and `baseOptions` dependency injection). New exceptions require a strong documented reason.
 - **Adapter purity**: `adapters` only holds third-party seams (Fumadocs configuration, the source, DOM accessors); product content (nav title, dictionary copy) is injected by app-layer callers, and adapters never compose upper-layer modules in reverse.
 
@@ -78,9 +78,13 @@ src/app/[lang]/
 ├── (home)/
 │   ├── (index)/page.tsx          # Home page
 │   ├── guestbook/page.tsx        # Guestbook
-│   └── learn/
-│       ├── page.tsx              # Learning path entry
-│       └── [track]/page.tsx      # Track learning path
+│   ├── learn/
+│   │   ├── page.tsx              # Learning path entry
+│   │   └── [track]/page.tsx      # Track learning path
+│   ├── topics/
+│   │   ├── page.tsx              # Topic entry
+│   │   └── [topic]/page.tsx      # Topic content projection
+│   └── reference/page.tsx        # Reference entry
 ├── docs/
 │   ├── layout.tsx                # DocsLayout
 │   └── [...slug]/page.tsx        # Article body
@@ -92,6 +96,8 @@ Route groups let the home page and document pages share a locale while using dif
 
 - the home page uses the top navigation and content portal, without loading the document sidebar;
 - `/learn` reuses the home layout, with routes derived from the Taxonomy Registry and Learn Projection;
+- `/topics` and `/topics/[topic]` reuse the home layout, with content derived from the Topic Registry and Explore Projection;
+- `/reference` reuses the home layout and exposes only content selected by the Reference Projection;
 - document pages use the Fumadocs `DocsLayout`, including the sidebar, article body, and on-page TOC;
 - the guestbook reuses the home page layout but lives on its own page;
 - Track navigation inside an article is a lightweight product entry and does not replace Fumadocs Chapter Navigation;
@@ -235,7 +241,7 @@ The loading scene only appears in the brief window of a route transition and doe
 | `src/content/generated/manifest.ts` | Typed Content Manifest derived from Source |
 | `next.config.ts` | Production static export, image, and development response configuration |
 | `src/adapters/fumadocs/` | Fumadocs Source, Layout, TOC, and DOM adapters |
-| `src/features/` | Eight mature feature boundaries (each with a public entry + the cross-feature allowlist) |
+| `src/features/` | Nine mature feature boundaries (each with a public entry + the cross-feature allowlist) |
 | `src/runtime/` | Navigation, Motion, and Interaction coordination |
 | `src/lib/i18n.ts` | Single source for locales |
 | `src/lib/site-config.ts` | Repository, author, license, and Giscus configuration |
