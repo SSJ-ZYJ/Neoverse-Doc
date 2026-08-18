@@ -771,6 +771,13 @@ body:has(#nd-docs-layout) {
       minmax(0, calc(var(--fd-layout-width, 97rem) - var(--fd-sidebar-width) - var(--fd-toc-width)))
       1fr var(--fd-toc-width) !important;
   }
+
+  /* Keep the collapsed sidebar's desktop track reserved so the document card
+     remains centered in the viewport while the sidebar itself slides away.
+     折叠桌面侧栏时保留原侧栏轨道，让侧栏滑出但正文卡片仍以视口为中心。 */
+  #nd-docs-layout[data-sidebar-collapsed='true'] {
+    --fd-sidebar-col: var(--fd-sidebar-width) !important;
+  }
 }
 
 #nd-docs-layout #nd-nav > div,

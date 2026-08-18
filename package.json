@@ -6,7 +6,7 @@
     "generate:content": "fumadocs-mdx && bun scripts/content-pipeline.ts generate",
     "report:content": "bun scripts/content-pipeline.ts report",
     "predev": "bun run generate:content",
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "prebuild": "bun run check:architecture && bun run check:content",
     "check:architecture": "bun scripts/check-architecture.ts",
     "check:content": "fumadocs-mdx && bun scripts/content-pipeline.ts verify",

@@ -7,7 +7,7 @@ author:
 ---
 
 > [!DETAILS-AI] 本章 AI 摘要
-> 项目把搜索索引、页面树和源码端点静态生成，再在浏览器中增加 Chapter 范围筛选、搜索结果增强流水线、搜索聚光灯与跨文档阅读返回。中文搜索使用中英混合分词，并只为标题和小节标题增加拼音检索。Giscus 主题切换通过 `useLayoutEffect` 与固定 400ms 渐隐消除闪烁。路由转场独立成 [专题](./transitions) 说明。
+> 项目把搜索索引、页面树和源码端点静态生成，再在浏览器中增加 Chapter 范围筛选、搜索结果增强流水线、搜索聚光灯与跨文档阅读返回。中文搜索使用中英混合分词，并只为标题和小节标题增加拼音检索。Giscus 主题切换通过 `useLayoutEffect` 隐藏旧 iframe，并等待新主题 iframe 就绪后再显示。路由转场独立成 [专题](./transitions) 说明。
 
 ## 一、静态搜索架构
 
@@ -225,7 +225,8 @@ Giscus 运行在跨域 iframe 中，主题切换时 iframe 会重新加载主题
 
 - `useLayoutEffect`（而非 `useEffect`）在 React commit 后、paint 前同步设置 `data-switching` 属性，确保 `opacity:0` 在浏览器绘制前生效；
 - `prevThemeUrl` ref 跟踪上次主题，仅在两个有效 URL 之间切换时触发；
-- 固定 400ms 渐隐时长，不等待 `resizeHeight` 消息（该消息仅在高度变化时回发，主题切换往往不改变高度）；
+- 使用主题 URL 作为 Giscus key 重挂载 iframe，避免依赖没有完成回调的主题 `postMessage`；
+- 通过 Shadow DOM 中 iframe 的 `load` 与 `loading` class 变化判断就绪，并以有限时长兜底避免外部网络异常时永久隐藏；
 - CSS 配合：`transition: none` 立即隐藏，`opacity 240ms` 渐显回来。
 
 `useEffect` 会在浏览器 paint 后执行，留下一个绘制窗口让未样式化内容闪现；`useLayoutEffect` 把 `opacity:0` 应用提前到 paint 之前，消除了这个窗口。

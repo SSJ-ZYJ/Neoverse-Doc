@@ -1438,7 +1438,7 @@
    layers during a transition.
    视图淡入：渲染与代码切换时，新挂载的视图通过短 CSS 动画淡入。
    仅渲染激活视图（无交叉淡入淡出），避免过渡期间两个半可见层重叠导致的闪烁。 */
-.mermaid-zoom-target,
+.mermaid-zoom-target[data-rendered],
 .mermaid-code-view {
   animation: mermaid-view-fade-in var(--motion-fast) var(--motion-ease-standard);
 }

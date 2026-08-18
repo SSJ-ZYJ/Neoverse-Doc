@@ -19,6 +19,8 @@ const GISCUS_LANG_MAP: Record<Locale, string> = {
   en: 'en',
 };
 
+const GISCUS_THEME_READY_TIMEOUT_MS = 5000;
+
 interface GuestbookProps {
   slugKey: string;
 }
@@ -26,6 +28,7 @@ interface GuestbookProps {
 export function Guestbook({ slugKey }: GuestbookProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ lang?: string }>();
+  const shellRef = useRef<HTMLDivElement>(null);
   const [siteOrigin, setSiteOrigin] = useState<string>();
   const [switching, setSwitching] = useState(false);
   const prevThemeUrl = useRef<string | undefined>(undefined);
@@ -49,39 +52,13 @@ export function Guestbook({ slugKey }: GuestbookProps) {
     setSiteOrigin(window.location.origin);
   }, []);
 
-  // Theme-switch fade for giscus iframe. The cross-origin iframe swaps its
-  // theme stylesheet when the `theme` prop changes, briefly showing unstyled
-  // colors (visible on the comment input box) before the new CSS loads.
-  //
-  // Using `useLayoutEffect` (not `useEffect`) is critical: it runs **before
-  // paint** after React commits the DOM. When `themeUrl` changes, React
-  // commits the new `theme` attribute on `<giscus-widget>`, which triggers
-  // the widget's `attributeChangedCallback` → `sendMessage` (postMessage) —
-  // all synchronous during commit. `useLayoutEffect` fires right after commit
-  // but still before paint, so `opacity:0` is applied to the iframe before
-  // the browser has a chance to paint the unstyled state. `useEffect` would
-  // run post-paint and miss the flash entirely.
-  //
-  // The fade-out duration is a fixed 400ms rather than waiting for giscus's
-  // `resizeHeight` message: that message only fires when the iframe height
-  // changes, but theme swaps often keep the same height, so the signal is
-  // unreliable and caused the iframe to stay hidden until the 1.5s fallback.
-  //
-  // 主题切换时渐隐 giscus iframe。`theme` prop 变化时，跨域 iframe 会
-  // 切换主题样式表，在新 CSS 加载完成前短暂显示未样式化的颜色
-  // （在评论输入框上尤为可见）。
-  //
-  // 使用 `useLayoutEffect`（而非 `useEffect`）是关键：它在 React commit
-  // DOM 后、**paint 前**同步执行。`themeUrl` 变化时 React 先 commit
-  // `<giscus-widget>` 的新 `theme` attribute，触发其
-  // `attributeChangedCallback` → `sendMessage`（postMessage，commit 期间
-  // 同步发出）。`useLayoutEffect` 在 commit 后、paint 前立即执行，使
-  // `opacity:0` 在浏览器 paint 未样式化状态前就已生效。`useEffect`
-  // 在 paint 后执行，会完全错过这个时机。
-  //
-  // 渐隐时长固定为 400ms，不等待 giscus 的 `resizeHeight` 消息：该消息
-  // 仅在 iframe 高度变化时回发，而主题切换往往不改变高度，因此信号
-  // 不可靠，会导致 iframe 一直隐藏到 1.5s 兜底才恢复（"出现很晚"）。
+  // Hide the old iframe before replacing it, then reveal the new iframe after
+  // its own load state clears. Giscus only exposes theme updates through a
+  // postMessage with no completion event, so remounting with the theme URL as
+  // the key gives the transition a real browser-level readiness signal.
+  // 在替换 iframe 前先隐藏旧内容，并在新 iframe 完成加载后再显示。Giscus 的
+  // 主题更新只有 postMessage，没有完成事件；用主题 URL 作为 key 重挂载，
+  // 才能获得浏览器层面的真实就绪信号。
   useLayoutEffect(() => {
     const prev = prevThemeUrl.current;
     prevThemeUrl.current = themeUrl;
@@ -90,18 +67,96 @@ export function Guestbook({ slugKey }: GuestbookProps) {
     if (!prev || !themeUrl || prev === themeUrl) return;
 
     setSwitching(true);
-    const timer = setTimeout(() => setSwitching(false), 400);
-    return () => clearTimeout(timer);
   }, [themeUrl]);
+
+  useLayoutEffect(() => {
+    if (!themeUrl || !switching) return;
+
+    const shell = shellRef.current;
+    if (!shell) return;
+
+    let settled = false;
+    let timeout: number | undefined;
+    let shellObserver: MutationObserver | undefined;
+    let shadowObserver: MutationObserver | undefined;
+    let iframeObserver: MutationObserver | undefined;
+    let watchedIframe: HTMLIFrameElement | undefined;
+    let animationFrame: number | undefined;
+
+    const cleanup = () => {
+      shellObserver?.disconnect();
+      shadowObserver?.disconnect();
+      iframeObserver?.disconnect();
+      if (watchedIframe) watchedIframe.removeEventListener('load', handleIframeLoad);
+      if (animationFrame !== undefined) window.cancelAnimationFrame(animationFrame);
+      if (timeout !== undefined) window.clearTimeout(timeout);
+    };
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      setSwitching(false);
+    };
+
+    const handleIframeLoad = () => {
+      // Let the component's own load handler remove its `loading` class first.
+      // 让组件自己的 load 处理器先移除 `loading` class。
+      animationFrame = window.requestAnimationFrame(() => {
+        const iframe = watchedIframe;
+        if (iframe && !iframe.classList.contains('loading')) finish();
+      });
+    };
+
+    const watchWidget = () => {
+      const widget = shell.querySelector('giscus-widget');
+      const shadowRoot = widget?.shadowRoot;
+      if (!shadowRoot) return;
+
+      if (!shadowObserver) {
+        shadowObserver = new MutationObserver(watchWidget);
+        shadowObserver.observe(shadowRoot, { childList: true, subtree: true });
+      }
+
+      const iframe = shadowRoot.querySelector('iframe');
+      if (!iframe || iframe === watchedIframe) {
+        if (iframe && !iframe.classList.contains('loading')) finish();
+        return;
+      }
+
+      watchedIframe?.removeEventListener('load', handleIframeLoad);
+      iframeObserver?.disconnect();
+      watchedIframe = iframe;
+      iframe.addEventListener('load', handleIframeLoad);
+      iframeObserver = new MutationObserver(() => {
+        if (!iframe.classList.contains('loading')) finish();
+      });
+      iframeObserver.observe(iframe, { attributes: true, attributeFilter: ['class'] });
+      if (!iframe.classList.contains('loading')) finish();
+    };
+
+    shellObserver = new MutationObserver(watchWidget);
+    shellObserver.observe(shell, { childList: true, subtree: true });
+    watchWidget();
+
+    // External comments should never remain permanently hidden if the network
+    // cannot complete the iframe load; the fallback is only a safety valve.
+    // 外部评论网络异常时不能永久隐藏内容；此定时器仅作为安全兜底。
+    timeout = window.setTimeout(finish, GISCUS_THEME_READY_TIMEOUT_MS);
+
+    return cleanup;
+  }, [switching, themeUrl]);
 
   return (
     <div
+      ref={shellRef}
       className="giscus-shell"
       data-loading={themeUrl ? undefined : ''}
       data-switching={switching || undefined}
     >
       {themeUrl ? (
         <Giscus
+          key={themeUrl}
           repo={GISCUS_CONFIG.repo}
           repoId={GISCUS_CONFIG.repoId}
           category={GISCUS_CONFIG.category}

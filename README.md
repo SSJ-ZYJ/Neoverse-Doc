@@ -67,7 +67,7 @@ Neoverse-Docs 是一份持续更新的开源在线学习文档，面向计算机
 git clone https://github.com/SSJ-ZYJ/Neoverse-Doc.git
 cd Neoverse-Doc
 bun install     # 安装依赖
-bun dev         # 启动开发服务器，浏览器打开 http://localhost:3000
+bun dev         # 启动开发服务器，浏览器打开 http://localhost:3001
 ```
 
 ### 构建部署

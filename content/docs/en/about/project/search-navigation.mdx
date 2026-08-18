@@ -7,7 +7,7 @@ author:
 ---
 
 > [!DETAILS-AI] AI Summary of This Chapter
-> The project statically generates the search index, page tree, and source endpoints, then adds Chapter scope filtering, a search result enhancement pipeline, a search spotlight, and cross-document reading return in the browser. Chinese search uses mixed Chinese-English tokenization and adds pinyin lookup only for titles and section headings. Giscus theme switches eliminate flashing through `useLayoutEffect` and a fixed 400ms fade. Route transitions are covered separately in a [dedicated topic](./transitions).
+> The project statically generates the search index, page tree, and source endpoints, then adds Chapter scope filtering, a search result enhancement pipeline, a search spotlight, and cross-document reading return in the browser. Chinese search uses mixed Chinese-English tokenization and adds pinyin lookup only for titles and section headings. Giscus theme switches hide the old iframe in `useLayoutEffect` and reveal the replacement after it is ready. Route transitions are covered separately in a [dedicated topic](./transitions).
 
 ## 1. Static search architecture
 
@@ -225,7 +225,8 @@ Giscus runs in a cross-origin iframe. When the theme switches, the iframe reload
 
 - `useLayoutEffect` (instead of `useEffect`) synchronously sets the `data-switching` attribute after React commit and before paint, ensuring `opacity:0` takes effect before the browser draws;
 - A `prevThemeUrl` ref tracks the previous theme, triggering only when switching between two valid URLs;
-- A fixed 400ms fade duration, without waiting for the `resizeHeight` message (which is only sent back when the height changes, and theme switches usually don't change the height);
+- The theme URL is used as the Giscus key so the iframe remounts with the new theme instead of relying on a `postMessage` without a completion callback;
+- Shadow-DOM iframe `load` and `loading` class changes determine readiness, with a bounded fallback so external network failures cannot hide the widget forever;
 - CSS coordination: `transition: none` hides immediately, `opacity 240ms` fades back in.
 
 `useEffect` runs after the browser paint, leaving a paint window where unstyled content flashes; `useLayoutEffect` moves the `opacity:0` application ahead of paint, eliminating this window.

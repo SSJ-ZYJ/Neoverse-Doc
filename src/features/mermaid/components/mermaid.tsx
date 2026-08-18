@@ -885,6 +885,7 @@ export function Mermaid({ chart }: { chart: string }) {
           ) : null}
           <div
             className="mermaid-zoom-target"
+            data-rendered={includeRenderedSvg && svgContent ? '' : undefined}
             style={getZoomStyle(fitCanvasScale, logicalScale, logicalPan)}
           >
             {svgContent ? (
