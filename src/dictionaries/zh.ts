@@ -96,6 +96,8 @@ export const zh = {
   // Homepage footer license labels / 首页 footer 协议标签
   homeFooterCodeLicenseLabel: '项目源码协议',
   homeFooterDocsLicenseLabel: '文档协议',
+  // Homepage footer ICP filing label / 首页 footer 备案号标签
+  homeFooterIcpLabel: '备案号',
   // Interactive Markdown task-list labels / 可交互 Markdown 任务清单标签
   taskListComplete: '将“{title}”标记为已完成',
   taskListReopen: '将“{title}”恢复为待完成',

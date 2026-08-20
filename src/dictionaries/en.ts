@@ -103,6 +103,8 @@ export const en = {
   // Homepage footer license labels / 首页 footer 协议标签
   homeFooterCodeLicenseLabel: 'Source code license',
   homeFooterDocsLicenseLabel: 'Docs license',
+  // Homepage footer ICP filing label / 首页 footer 备案号标签
+  homeFooterIcpLabel: 'ICP filing',
   // Interactive Markdown task-list labels / 可交互 Markdown 任务清单标签
   taskListComplete: 'Mark “{title}” as completed',
   taskListReopen: 'Move “{title}” back to active',

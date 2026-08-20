@@ -101,6 +101,8 @@ export interface Dictionary {
   // Homepage footer license labels / 首页 footer 协议标签
   homeFooterCodeLicenseLabel: string;
   homeFooterDocsLicenseLabel: string;
+  // Homepage footer ICP filing label / 首页 footer 备案号标签
+  homeFooterIcpLabel: string;
   // Interactive Markdown task-list labels / 可交互 Markdown 任务清单标签
   taskListComplete: string;
   taskListReopen: string;

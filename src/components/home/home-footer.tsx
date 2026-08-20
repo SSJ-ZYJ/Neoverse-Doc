@@ -13,6 +13,8 @@ import {
   CODE_LICENSE_URL,
   DOCS_LICENSE_NAME,
   DOCS_LICENSE_URL,
+  ICP_FILING_NUMBER,
+  ICP_FILING_URL,
   PROJECT_START_YEAR,
   REPO_URL,
 } from '@/lib/site-config';
@@ -122,6 +124,15 @@ export function HomeFooter({ locale }: HomeFooterProps) {
               {DOCS_LICENSE_NAME}
             </a>
           </span>
+        </p>
+        {/* ICP filing row: legal notice required for Chinese sites, linking to
+            the official MIIT record query page.
+            备案号行：中国站点法规要求的备案信息，链接至工信部备案查询官网。 */}
+        <p className="home-footer__row home-footer__row--icp">
+          <span>{dict.homeFooterIcpLabel}: </span>
+          <a className="home-footer__link" href={ICP_FILING_URL} rel="noreferrer" target="_blank">
+            {ICP_FILING_NUMBER}
+          </a>
         </p>
       </div>
     </footer>

@@ -26,6 +26,12 @@ export const SOCIAL_IMAGE = {
 // 首页 footer 项目元信息。
 export const PROJECT_START_YEAR = 2026;
 
+// ICP filing number — required legal notice for Chinese sites; links to the
+// official MIIT record query page.
+// 工信部 ICP 备案号，按法规在站点底部展示，链接至官方备案查询页。
+export const ICP_FILING_NUMBER = '辽ICP备2025069492号-3';
+export const ICP_FILING_URL = 'https://beian.miit.gov.cn/';
+
 // Open-source license references — code uses the MIT License at /LICENSE,
 // documentation content is licensed under CC BY-NC-SA 4.0.
 // 开源协议引用：代码遵循 /LICENSE 中的 MIT 协议，
