@@ -209,7 +209,7 @@ export function LearnDocNavigation({
   return (
     <nav aria-label={copy.trackNavigationLabel} className="learn-doc-navigation">
       {items.map((item) => (
-        <div className="learn-doc-navigation__track" key={item.id}>
+        <div className="learn-doc-navigation__track glass-card" key={item.id}>
           <div className="learn-doc-navigation__heading">
             <span className="learn-doc-navigation__icon" aria-hidden="true">
               <Route size={17} />
@@ -259,18 +259,24 @@ function LearnDocNavigationLink({
 
   if (!link) {
     return (
-      <span className="learn-doc-navigation__link learn-doc-navigation__link--disabled">
-        {icon}
+      <span
+        className={`learn-doc-navigation__link learn-doc-navigation__link--${side} learn-doc-navigation__link--disabled`}
+      >
+        {side === 'previous' && icon}
         <span>
           <small>{copy}</small>
           <strong>{emptyLabel}</strong>
         </span>
+        {side === 'next' && icon}
       </span>
     );
   }
 
   return (
-    <TransitionLink className="learn-doc-navigation__link" href={link.href}>
+    <TransitionLink
+      className={`learn-doc-navigation__link learn-doc-navigation__link--${side}`}
+      href={link.href}
+    >
       {side === 'previous' && icon}
       <span>
         <small>{copy}</small>

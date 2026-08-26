@@ -98,12 +98,14 @@ export function DocsKnowledgeContext({
   return (
     <section
       aria-labelledby="docs-knowledge-context-title"
-      className="docs-knowledge-context"
+      className="docs-knowledge-context glass-card"
       data-docs-knowledge-context=""
     >
       <div className="docs-knowledge-context__heading">
         <BookOpen aria-hidden="true" size={18} />
-        <h2 id="docs-knowledge-context-title">{copy.title}</h2>
+        <h2 className="docs-knowledge-heading" id="docs-knowledge-context-title">
+          {copy.title}
+        </h2>
       </div>
       <dl className="docs-knowledge-context__metadata">
         {typeLabel && (
@@ -194,7 +196,7 @@ export function DocsKnowledgeContext({
 
       {projection.prerequisiteIds.length > 0 && (
         <div className="docs-knowledge-context__relations">
-          <h3>
+          <h3 className="docs-knowledge-heading">
             <GitBranch aria-hidden="true" size={16} />
             {copy.prerequisites}
           </h3>
@@ -243,7 +245,9 @@ export function DocsKnowledgeRelations({
         >
           <div className="docs-knowledge-relations__heading">
             <ArrowRight aria-hidden="true" size={18} />
-            <h2 id="docs-knowledge-next-title">{copy.recommendedNext}</h2>
+            <h2 className="docs-knowledge-heading" id="docs-knowledge-next-title">
+              {copy.recommendedNext}
+            </h2>
           </div>
           <RelationList entries={[recommended]} />
         </section>
@@ -255,7 +259,9 @@ export function DocsKnowledgeRelations({
         >
           <div className="docs-knowledge-relations__heading">
             <BookOpen aria-hidden="true" size={18} />
-            <h2 id="docs-knowledge-related-title">{copy.relatedContent}</h2>
+            <h2 className="docs-knowledge-heading" id="docs-knowledge-related-title">
+              {copy.relatedContent}
+            </h2>
           </div>
           <RelationList entries={related} />
         </section>

@@ -1216,13 +1216,7 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
   display: grid;
   gap: 0.9rem;
   margin-block: 1rem 1.5rem;
-  border: 1px solid var(--glass-border-hairline);
-  border-radius: var(--radius-sm);
   padding: 1rem;
-  background: color-mix(in srgb, var(--surface-subtle) 78%, transparent);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--shadow-edge);
 }
 
 .docs-knowledge-context__heading,
@@ -1845,7 +1839,7 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
   letter-spacing: -0.02em;
 }
 
-#nd-page h2:not(.docs-draft__title) {
+#nd-page h2:not(.docs-draft__title, .docs-knowledge-heading) {
   margin-block-start: 3.5rem;
 }
 
@@ -1856,7 +1850,7 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
   margin-block-start: 0;
 }
 
-#nd-page h3 {
+#nd-page h3:not(.docs-knowledge-heading) {
   margin-block-start: 2.5rem;
 }
 
