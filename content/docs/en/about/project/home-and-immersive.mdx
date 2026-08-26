@@ -20,7 +20,7 @@ HomePortal
 │   │   ├── LightRays (light-ray background)
 │   │   ├── .home-hero__network (grid background)
 │   │   ├── HeroTitle (particle text title)
-│   │   └── PrimaryAction (start learning)
+│   │   └── .home-hero__actions (start learning / browse docs)
 │   ├── Primary knowledge-entry section
 │   │   ├── AiComputeBackdrop variant="knowledge" (AI accelerator backdrop)
 │   │   ├── HomeEntryGrid (Learn / Topics / Reference)
@@ -58,9 +58,9 @@ The Hero section is the first screen of the homepage and is responsible for esta
 - `SplitText` splits the title into characters or words that enter in sequence;
 - `ParticleText` assembles the title from particles and activates when the experimental motion is available.
 
-### PrimaryAction
+### Hero actions
 
-`src/components/home/primary-action.tsx` is the primary action button, using the `.glass-cta` surface and navigating to the documentation entrance with `TransitionLink`.
+`src/components/home/primary-action.tsx` uses the `.glass-cta` surface and `TransitionLink` for the primary “Start learning” action, which opens the learning paths. The adjacent “Browse docs” action uses the standard glass control surface and links directly to the Chapter 0 documentation entrance.
 
 ### Background layers
 

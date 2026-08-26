@@ -446,6 +446,17 @@
   transition: transform var(--motion-standard) var(--motion-ease-standard);
 }
 
+/* Hero actions share one compact control height; the learning action remains
+   primary while the document entry uses the standard glass control surface.
+   Hero 操作共享统一的紧凑控件高度；学习入口保持主操作，文档入口复用标准玻璃控件。 */
+.home-docs-action {
+  min-block-size: 3rem;
+  padding-inline: 1.35rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 /* Primary CTA behaves like a refractive capsule with a slow spectral sweep.
    首页主 CTA 使用折射胶囊造型与缓慢光谱扫光。 */
 .home-cta {
@@ -1553,7 +1564,8 @@
 
   .home-hero__actions {
     inline-size: auto;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: nowrap;
   }
 
   /* Mobile homepage actions keep their labels comfortably padded without
@@ -1601,7 +1613,8 @@
   }
 
   .home-hero__actions .control-surface {
-    padding-inline: 1rem;
+    padding-inline: clamp(0.7rem, 3vw, 1rem);
+    font-size: clamp(0.875rem, 3.7vw, 0.95rem);
   }
 
   /* Community actions stay on one line down to narrow mobile viewports while

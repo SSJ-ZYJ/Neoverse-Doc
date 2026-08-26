@@ -20,7 +20,7 @@ HomePortal
 │   │   ├── LightRays（光线背景）
 │   │   ├── .home-hero__network（网格背景）
 │   │   ├── HeroTitle（粒子文字标题）
-│   │   └── PrimaryAction（开始学习）
+│   │   └── .home-hero__actions（开始学习 / 进入文档）
 │   ├── 知识主入口段
 │   │   ├── AiComputeBackdrop variant="knowledge"（AI 加速器背景）
 │   │   ├── HomeEntryGrid（Learn / Topics / Reference）
@@ -58,9 +58,9 @@ Hero 段是首页第一屏，承担项目身份建立。
 - `SplitText` 把标题拆分为字符或单词，按顺序入场；
 - `ParticleText` 让标题由粒子聚合而成，在实验性动效可用时启用。
 
-### PrimaryAction
+### Hero 操作
 
-`src/components/home/primary-action.tsx` 是主操作按钮，使用 `.glass-cta` 表面与 `TransitionLink` 导航到文档入口。
+`src/components/home/primary-action.tsx` 使用 `.glass-cta` 表面与 `TransitionLink` 提供“开始学习”主操作，并导航到学习路线；同一行的“进入文档”使用标准玻璃控件表面，直接导航到 Chapter 0 文档入口。
 
 ### 背景层
 

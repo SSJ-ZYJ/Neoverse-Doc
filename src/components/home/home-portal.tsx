@@ -2,7 +2,7 @@
 // authoring Chapter tree and contribution links as secondary destinations.
 // 多区段首页门户先呈现产品入口，再把作者编排的章节树与共建入口置于次级层。
 
-import { ArrowDown, Code2, MessageSquareText } from 'lucide-react';
+import { ArrowDown, BookOpen, Code2, MessageSquareText } from 'lucide-react';
 import { AnimatedContent } from '@/components/react-bits/animated-content';
 import { LightRays } from '@/components/react-bits/light-rays';
 import type { HomeChapter } from '@/content/home-sections';
@@ -45,6 +45,14 @@ export function HomePortal({
           <p className="home-hero__description">{dict.home.heroDescription}</p>
           <div className="home-hero__actions">
             <PrimaryAction href={`/${locale}/learn`} label={dict.home.primaryAction} />
+            <TransitionLink
+              className="control-surface home-docs-action"
+              data-nd-interaction="control"
+              href={`/${locale}/docs/ch0`}
+            >
+              {dict.home.docsAction}
+              <BookOpen aria-hidden="true" size={17} />
+            </TransitionLink>
           </div>
         </div>
         <a className="home-scroll-cue" href="#knowledge-entries" data-transition="none">

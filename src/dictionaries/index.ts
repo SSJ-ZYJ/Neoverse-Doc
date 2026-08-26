@@ -175,6 +175,7 @@ export interface Dictionary {
     eyebrow: string;
     heroDescription: string;
     primaryAction: string;
+    docsAction: string;
     scrollHint: string;
     entriesEyebrow: string;
     entriesTitle: string;

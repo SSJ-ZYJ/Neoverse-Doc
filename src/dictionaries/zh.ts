@@ -174,6 +174,7 @@ export const zh = {
     eyebrow: '技术知识入口',
     heroDescription: '面向计算机学习者的泛技术知识库，从系统学习、主题探索与快速查阅开始。',
     primaryAction: '开始学习',
+    docsAction: '进入文档',
     scrollHint: '选择知识入口',
     entriesEyebrow: '从这里开始',
     entriesTitle: '你现在想做什么？',

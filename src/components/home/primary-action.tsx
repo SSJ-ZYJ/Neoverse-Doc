@@ -18,7 +18,6 @@ export function PrimaryAction({ href, label }: PrimaryActionProps) {
         className="control-surface control-surface--primary home-cta"
         data-nd-interaction="cta"
         href={href}
-        transition="aperture"
       >
         {label}
         <ArrowUpRight aria-hidden="true" size={17} />

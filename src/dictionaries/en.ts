@@ -182,6 +182,7 @@ export const en = {
     heroDescription:
       'A broad technical knowledge base for computer learners—start with a learning path, explore by topic, or look up a reference.',
     primaryAction: 'Start learning',
+    docsAction: 'Browse docs',
     scrollHint: 'Choose an entry',
     entriesEyebrow: 'START HERE',
     entriesTitle: 'What do you want to do?',
