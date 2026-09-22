@@ -4,11 +4,6 @@
 /* prefers-reduced-transparency: all glass surfaces degrade to opaque backgrounds, removing blur and ambient light.
    用户偏好减少透明度：所有玻璃表面退化为不透明背景，去除 blur 与环境光。 */
 @media (prefers-reduced-transparency: reduce) {
-  .glass-panel,
-  .glass-card,
-  .glass-chip,
-  .glass-cta,
-  .surface-panel,
   .chapter-card,
   .mdx-doc-card,
   .guestbook-page__surface,
@@ -61,11 +56,6 @@
 /* Browser does not support backdrop-filter: also degrade to opaque backgrounds.
    浏览器不支持 backdrop-filter：同样退化为不透明背景。 */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass-panel,
-  .glass-card,
-  .glass-chip,
-  .glass-cta,
-  .surface-panel,
   .chapter-card,
   .mdx-doc-card,
   .guestbook-page__surface,

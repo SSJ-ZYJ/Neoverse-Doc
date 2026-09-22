@@ -775,7 +775,7 @@ body:has(#nd-docs-layout) {
   /* Keep the collapsed sidebar's desktop track reserved so the document card
      remains centered in the viewport while the sidebar itself slides away.
      折叠桌面侧栏时保留原侧栏轨道，让侧栏滑出但正文卡片仍以视口为中心。 */
-  #nd-docs-layout[data-sidebar-collapsed='true'] {
+  #nd-docs-layout[data-sidebar-collapsed="true"] {
     --fd-sidebar-col: var(--fd-sidebar-width) !important;
   }
 }
@@ -1760,7 +1760,7 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
     [data-docs-body]
     > :is(
       figure,
-      .prose-no-margin:has(> table),
+      .docs-table-scroll,
       .mermaid-wrapper,
       .markdown-alert,
       .markdown-details,
@@ -1797,7 +1797,7 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
     [data-docs-body]
     > :is(
       figure,
-      .prose-no-margin:has(> table),
+      .docs-table-scroll,
       .mermaid-wrapper,
       .markdown-alert,
       .markdown-details,
@@ -1816,7 +1816,7 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
     [data-docs-body]
     > :is(
       figure,
-      .prose-no-margin:has(> table),
+      .docs-table-scroll,
       .mermaid-wrapper,
       .markdown-alert,
       .markdown-details,
@@ -1840,7 +1840,7 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
 }
 
 #nd-page h2:not(.docs-draft__title, .docs-knowledge-heading) {
-  margin-block-start: 3.5rem;
+  margin-block-start: var(--neoverse-space-14);
 }
 
 /* A document that opens directly with an h2 should rely on the header divider's
@@ -1851,7 +1851,7 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
 }
 
 #nd-page h3:not(.docs-knowledge-heading) {
-  margin-block-start: 2.5rem;
+  margin-block-start: var(--neoverse-space-10);
 }
 
 #nd-page :is(p, li) {
@@ -1872,20 +1872,19 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
   box-shadow: none;
 }
 
-/* Fumadocs Markdown tables keep glass on their outer scroll wrapper so the transparent
-   inner table cannot cover the shared particle field.
-   Fumadocs Markdown 表格由外层滚动容器承载玻璃效果，避免内层透明表格覆盖共享粒子场。 */
-#nd-page :is(figure, blockquote, [role="alert"], [role="tablist"], [data-card="true"]) {
-  border-color: var(--border-subtle) !important;
-  background: var(--glass-refraction-fill), var(--surface-glass) !important;
-  box-shadow: var(--shadow-edge), var(--glass-shadow) !important;
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+/* Framework callouts and navigation cards keep quiet reading surfaces.
+   框架提示与导航卡片保持轻量阅读表面；自有正文组件自行管理表面。 */
+#nd-page :is([role="alert"], [data-card="true"]:not(.mdx-doc-card)) {
+  border-color: var(--border-subtle);
+  background: var(--docs-reading-surface);
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 /* Document controls use the compact glass tier; the larger surrounding bars
    and cards use medium/large radii, preserving a deliberate radius hierarchy.
    文档控件使用紧凑玻璃层级，外围工具条与卡片使用中 / 大圆角，形成明确层次。 */
-#nd-page button:not(.mermaid-toolbar__btn, [role="tab"], .docs-draft__action) {
+#nd-page button:not(.ui-button, .mermaid-toolbar__btn, [role="tab"], .docs-draft__action) {
   border: 1px solid var(--glass-border-hairline);
   border-radius: var(--radius-xs);
   background: var(--glass-refraction-fill), var(--glass-control-surface);
@@ -1904,7 +1903,7 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
   backdrop-filter: none !important;
 }
 
-#nd-page :is([role="tablist"], [data-card="true"], .prose-no-margin:has(> table)) {
+#nd-page :is([role="tablist"], [data-card="true"]) {
   overflow: hidden;
   border-radius: var(--radius-md);
 }
@@ -1950,10 +1949,9 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
   backdrop-filter: none !important;
 }
 
-/* The code block already samples the page backdrop; its nested copy control
-   keeps the same translucent fill without re-blurring that sampled surface.
-   代码块外层已采样页面背景；内部复制控件保留半透明填充，不再重复模糊同一表面。 */
-#nd-page .glass-codeblock button {
+/* Copy controls retain feedback without allocating another blur plane.
+   复制控件保留反馈，不创建额外模糊层。 */
+#nd-page .docs-code-copy {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -2282,66 +2280,26 @@ html[data-nd-route-transition="content"] #nd-toc {
   margin-block: 1.5rem;
 }
 
+/* Navigation remains interactive; geometry belongs to the Doc composition.
+   导航保留交互反馈，卡片内容几何由 Doc 组合层负责。 */
 .mdx-doc-card {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
   display: grid;
+  min-inline-size: 0;
   min-block-size: 7.25rem;
   grid-template-columns: auto minmax(0, 1fr);
   grid-template-rows: auto auto 1fr;
   align-content: start;
   gap: 0.35rem 0.8rem;
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1rem;
   color: var(--text-primary);
   text-decoration: none;
-  background:
-    linear-gradient(132deg, color-mix(in srgb, var(--edge-light) 10%, transparent), transparent 38%),
-    var(--surface-glass);
-  box-shadow: var(--shadow-edge), var(--glass-shadow);
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  /* Isolate layout/style recalc so hover transforms and ::before sheen
-     animations do not cascade into sibling cards. `paint` is omitted because
-     backdrop-filter samples the parent stacking context. */
-  /* 隔离 layout/style 重算，悬浮变换与 ::before 高光动画不会级联到兄弟卡片。
-     刻意不使用 `paint`，因为 backdrop-filter 需要采样父级 stacking context。 */
-  contain: layout style;
-  transition:
-    border-color var(--motion-standard) var(--motion-ease-standard),
-    background-color var(--motion-standard) var(--motion-ease-standard),
-    transform var(--motion-standard) var(--motion-ease-standard),
-    box-shadow var(--motion-standard) var(--motion-ease-standard);
-}
-
-.mdx-doc-card::before {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.42;
-  background:
-    radial-gradient(circle at 8% 0%, var(--ambient-ice), transparent 44%),
-    radial-gradient(circle at 96% 100%, var(--ambient-violet), transparent 42%);
-  content: "";
-  transition: opacity var(--motion-standard) var(--motion-ease-standard);
+  transition: border-color var(--motion-fast) var(--motion-ease-standard);
 }
 
 .mdx-doc-card:hover {
   border-color: var(--border-interactive);
-  background:
-    linear-gradient(
-      132deg,
-      color-mix(in srgb, var(--accent-primary) 12%, transparent),
-      transparent 44%
-    ),
-    var(--surface-glass);
-  box-shadow: var(--shadow-edge), var(--glass-shadow-hover);
-  transform: translateY(-2px);
-}
-
-.mdx-doc-card:hover::before {
-  opacity: 0.78;
 }
 
 .mdx-doc-card__icon {
@@ -2626,4 +2584,20 @@ html[data-nd-motion-level="high"] #nd-docs-layout > :is(header, #nd-subnav) {
 
 .dark .shiki path[fill="#424242"] {
   fill: #9ca3af;
+}
+
+
+/* Direct prose keeps one rhythm; nested controls retain their own geometry.
+   正文直属内容保持统一节奏，内嵌控件保留自身几何。 */
+#nd-page [data-docs-body] {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+#nd-page [data-docs-body] > :is(p, ul, ol) {
+  margin-block: var(--neoverse-space-5);
+}
+
+#nd-page [data-docs-body] :is(pre, table) {
+  overflow-wrap: normal;
 }

@@ -2,6 +2,7 @@
 // authoring Chapter tree and contribution links as secondary destinations.
 // 多区段首页门户先呈现产品入口，再把作者编排的章节树与共建入口置于次级层。
 
+import { UiAction } from '@neoverse-ui/react';
 import { ArrowDown, BookOpen, Code2, MessageSquareText } from 'lucide-react';
 import { AnimatedContent } from '@/components/react-bits/animated-content';
 import { LightRays } from '@/components/react-bits/light-rays';
@@ -45,14 +46,17 @@ export function HomePortal({
           <p className="home-hero__description">{dict.home.heroDescription}</p>
           <div className="home-hero__actions">
             <PrimaryAction href={`/${locale}/learn`} label={dict.home.primaryAction} />
-            <TransitionLink
-              className="control-surface home-docs-action"
+            <UiAction
+              asChild
+              variant="secondary"
+              className="home-docs-action"
               data-nd-interaction="control"
-              href={`/${locale}/docs/ch0`}
             >
-              {dict.home.docsAction}
-              <BookOpen aria-hidden="true" size={17} />
-            </TransitionLink>
+              <TransitionLink href={`/${locale}/docs/ch0`}>
+                {dict.home.docsAction}
+                <BookOpen aria-hidden="true" size={17} />
+              </TransitionLink>
+            </UiAction>
           </div>
         </div>
         <a className="home-scroll-cue" href="#knowledge-entries" data-transition="none">
@@ -102,25 +106,22 @@ export function HomePortal({
             <p>{dict.home.communityDescription}</p>
           </div>
           <div className="home-community__actions">
-            <a
-              className="control-surface control-surface--primary"
-              data-nd-interaction="control"
+            <UiAction
               href={`${REPO_URL}/blob/main/CONTRIBUTING.MD`}
+              variant="primary"
+              data-nd-interaction="control"
               rel="noreferrer"
               target="_blank"
             >
               <Code2 aria-hidden="true" size={17} />
               {dict.home.communityPrimaryAction}
-            </a>
-            <TransitionLink
-              className="control-surface"
-              data-nd-interaction="control"
-              href={`/${locale}/guestbook`}
-              transition="surface"
-            >
-              <MessageSquareText aria-hidden="true" size={17} />
-              {dict.home.communitySecondaryAction}
-            </TransitionLink>
+            </UiAction>
+            <UiAction asChild variant="secondary" data-nd-interaction="control">
+              <TransitionLink href={`/${locale}/guestbook`} transition="surface">
+                <MessageSquareText aria-hidden="true" size={17} />
+                {dict.home.communitySecondaryAction}
+              </TransitionLink>
+            </UiAction>
           </div>
         </AnimatedContent>
       </section>

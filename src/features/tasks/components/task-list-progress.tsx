@@ -8,6 +8,7 @@
  */
 'use client';
 
+import { UiAction } from '@neoverse-ui/react';
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { ArrowDown, ListChecks } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -252,7 +253,7 @@ export function TaskListProgress() {
 
   return (
     <section
-      className="glass-card mdx-task-progress"
+      className="material-glass-card mdx-task-progress"
       data-card="true"
       data-nd-interaction="control"
       aria-label={progressLabel}
@@ -277,15 +278,20 @@ export function TaskListProgress() {
           </span>
         </div>
         {progress.targetHash ? (
-          <a
-            className="mdx-task-progress__jump"
-            href={progress.targetHash}
-            onClick={handleTaskListJump}
-            title={copy.taskListJumpToList}
+          <UiAction
+            asChild
+            variant="secondary"
+            size="sm"
+            trailing={<ArrowDown aria-hidden="true" />}
           >
-            <span>{copy.taskListJumpToList}</span>
-            <ArrowDown aria-hidden="true" />
-          </a>
+            <a
+              href={progress.targetHash}
+              onClick={handleTaskListJump}
+              title={copy.taskListJumpToList}
+            >
+              {copy.taskListJumpToList}
+            </a>
+          </UiAction>
         ) : null}
       </div>
       <progress

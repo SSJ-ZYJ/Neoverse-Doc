@@ -8,6 +8,12 @@
         "@fuma-translate/react": "^1.0.2",
         "@giscus/react": "^3.1.0",
         "@mogeko/maple-mono-cn": "^7.9.0",
+        "@neoverse-ui/giscus-theme": "file:../Neoverse-UI/.release/packages/neoverse-ui-giscus-theme-0.1.0.tgz",
+        "@neoverse-ui/glass-runtime": "file:../Neoverse-UI/.release/packages/neoverse-ui-glass-runtime-0.1.0.tgz",
+        "@neoverse-ui/motion": "file:../Neoverse-UI/.release/packages/neoverse-ui-motion-0.1.0.tgz",
+        "@neoverse-ui/react": "file:../Neoverse-UI/.release/packages/neoverse-ui-react-0.1.0.tgz",
+        "@neoverse-ui/tailwind": "file:../Neoverse-UI/.release/packages/neoverse-ui-tailwind-0.1.0.tgz",
+        "@neoverse-ui/tokens": "file:../Neoverse-UI/.release/packages/neoverse-ui-tokens-0.1.0.tgz",
         "@orama/tokenizers": "^3.1.18",
         "framer-motion": "^13.0.0",
         "fumadocs-core": "^16.14.2",
@@ -45,6 +51,11 @@
     "@biomejs/biome",
     "puppeteer",
   ],
+  "overrides": {
+    "@neoverse-ui/motion": "file:../Neoverse-UI/.release/packages/neoverse-ui-motion-0.1.0.tgz",
+    "@neoverse-ui/tailwind": "file:../Neoverse-UI/.release/packages/neoverse-ui-tailwind-0.1.0.tgz",
+    "@neoverse-ui/tokens": "file:../Neoverse-UI/.release/packages/neoverse-ui-tokens-0.1.0.tgz",
+  },
   "packages": {
     "@alloc/quick-lru": ["@alloc/quick-lru@5.2.0", "https://registry.npmmirror.com/@alloc/quick-lru/-/quick-lru-5.2.0.tgz", {}, "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="],
 
@@ -217,6 +228,18 @@
     "@mermaid-js/parser": ["@mermaid-js/parser@1.2.0", "https://registry.npmmirror.com/@mermaid-js/parser/-/parser-1.2.0.tgz", { "dependencies": { "@chevrotain/types": "~11.1.2" } }, "sha512-oYPyv8A4As1yH5Bx+04iQEQxXuIQDe0GKCNSRgao6z8AM9jixXIfP0vsppRLvGf+nKIOb9/LdpWA4YuJiVvESA=="],
 
     "@mogeko/maple-mono-cn": ["@mogeko/maple-mono-cn@7.9.0", "https://registry.npmmirror.com/@mogeko/maple-mono-cn/-/maple-mono-cn-7.9.0.tgz", {}, "sha512-NZls63+8Q4+17saZqhN5sFB9UqIfyI73q+NNyXNQFmdzivzSYAKLCuo2yvheyEm95kuH8VEhwTl4YvbMoqIbFw=="],
+
+    "@neoverse-ui/giscus-theme": ["@neoverse-ui/giscus-theme@../Neoverse-UI/.release/packages/neoverse-ui-giscus-theme-0.1.0.tgz", {}, "sha512-5c4c2BbD2aKy/jvDLt4KV/T9nYZ8x3OXupr0cM/dOW4YHjQ1nXVsHmA4bIaPinnTsoPWzibSdsZbsXbiTVrdAw=="],
+
+    "@neoverse-ui/glass-runtime": ["@neoverse-ui/glass-runtime@../Neoverse-UI/.release/packages/neoverse-ui-glass-runtime-0.1.0.tgz", {}, "sha512-ix9p75JAi9fuMSFuMfgpyu4HEmMEB/+jw4QudOb4ec9eeESErL6onU5+iVMiKw05SuOs2459sM8ZGNe3Ew3K3Q=="],
+
+    "@neoverse-ui/motion": ["@neoverse-ui/motion@../Neoverse-UI/.release/packages/neoverse-ui-motion-0.1.0.tgz", { "dependencies": { "@neoverse-ui/tokens": "^0.1.0" } }, "sha512-Ls6O3Cp6APYPjw/5Fh6LO7mAFIMp0ZGR9O93qvmIvKhFXhiLDab4Mudnda34iCIXrabenlLphcgaAXzwEUaK5A=="],
+
+    "@neoverse-ui/react": ["@neoverse-ui/react@../Neoverse-UI/.release/packages/neoverse-ui-react-0.1.0.tgz", { "dependencies": { "@neoverse-ui/tailwind": "^0.1.0" }, "peerDependencies": { "react": ">=19.0.0 <20.0.0" } }, "sha512-9+Of+etM/wfo5ogwmFMQBeDIHOSk6+vz02OrE4jOD0JOxfFxS2LsfugY+7ebcGv4XtZQ+wpE8e5AL2Yhg6pMNg=="],
+
+    "@neoverse-ui/tailwind": ["@neoverse-ui/tailwind@../Neoverse-UI/.release/packages/neoverse-ui-tailwind-0.1.0.tgz", { "dependencies": { "@neoverse-ui/motion": "^0.1.0", "@neoverse-ui/tokens": "^0.1.0" } }, "sha512-BJyPx3GQaj+PM6KYkwX5F2SDx4p1eJGv8KxD030BDosiUoERKqiIicbN+X2QUvqzcNTpBWhhbfER1Q+e4v36zQ=="],
+
+    "@neoverse-ui/tokens": ["@neoverse-ui/tokens@../Neoverse-UI/.release/packages/neoverse-ui-tokens-0.1.0.tgz", {}, "sha512-2maf0NSL8PsK5Vcm15eh76LBJ+TaDl59c51MNQ+KFoTTdsfIYLvvnVCkKac9Dct46kEmpQclxRAUSs5reHaFxg=="],
 
     "@next/env": ["@next/env@16.3.0", "https://registry.npmmirror.com/@next/env/-/env-16.3.0.tgz", {}, "sha512-o9r1S0BNiNreHP9Vs+Qnqd9kviDkJh8xIACY7UFZSmiGbbQRzPBBosvHzAU4TULHOIuOj/18RSsyz2qrREmIFw=="],
 

@@ -74,7 +74,7 @@ export function TopicsLandingPage({
           <div className="content-grid">
             {topics.map((topic) => (
               <TransitionLink
-                className="explore-topic-card glass-card glass-interactive"
+                className="explore-topic-card material-glass-card ui-surface-interactive"
                 data-card="true"
                 data-nd-interaction="control"
                 href={topic.href}
@@ -184,7 +184,7 @@ export function TopicPage({
           <div className="explore-related__links">
             {relatedTopics.map((topic) => (
               <TransitionLink
-                className="explore-related__link glass-card glass-interactive"
+                className="explore-related__link material-glass-card ui-surface-interactive"
                 href={topic.href}
                 key={topic.id}
               >
@@ -260,7 +260,7 @@ function ExploreContentCard({
   showTopics?: boolean;
 }) {
   return (
-    <article className="explore-content-card glass-card" data-card="true">
+    <article className="explore-content-card material-glass-card" data-card="true">
       <div className="explore-content-card__heading">
         <TransitionLink href={entry.href}>
           <h3>{entry.title}</h3>
@@ -309,7 +309,7 @@ function ExploreContentCard({
 
 function ExploreEmptyState({ description, title }: { description: string; title: string }) {
   return (
-    <div className="empty-state glass-card" data-card="true">
+    <div className="empty-state material-glass-card" data-card="true">
       <div aria-hidden="true" className="empty-state__icon">
         <Layers3 size={24} />
       </div>

@@ -9,38 +9,15 @@ pre code {
   font-family: var(--font-mono);
 }
 
-/* Glass code block surface: lets ambient page color show through while preserving syntax colors.
-   玻璃态代码块表面：保留语法高亮颜色，同时让页面环境色透出。
-   顶部 sheen、单层折射描边与投影共同构成基础玻璃面。 */
+/* Quiet code plane preserves syntax colors without backdrop sampling.
+   轻量代码表面保留语法高亮，不额外采样背景。 */
 .glass-codeblock {
-  background:
-    linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%), var(--glass-tint-medium);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  background: var(--docs-reading-surface);
   border: 1px solid var(--glass-border-hairline);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
   transition:
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease;
-}
-
-/* Code block hover: keep the reading surface stationary while strengthening
-   its tint, rim, and ambient shadow so the state remains visible in both themes.
-   代码块悬浮：阅读表面保持静止，通过底色、边缘与环境投影共同增强反馈，
-   确保浅色和深色主题下都能清晰辨识。 */
-@media (hover: hover) {
-  .glass-codeblock:hover {
-    border-color: color-mix(in srgb, var(--accent-primary) 34%, var(--glass-border-hairline));
-    background-color: var(--glass-control-hover-tint);
-    box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      var(--glass-shadow-hover);
-  }
 }
 
 /* Transparent Shiki layers expose the glass wrapper instead of forcing pure black or white.
@@ -79,11 +56,10 @@ figure.shiki .line > span:empty::before {
   content: "\200B";
 }
 
-.glass-codeblock > div:first-child {
+.docs-codeblock__header {
   background-color: var(--glass-tint-soft);
-  /* The outer code block owns backdrop sampling; the header keeps its tint
-     without allocating another blur surface.
-     外层代码块统一采样背景；标题栏只保留色调，不再分配额外模糊表面。 */
+  /* The header uses tint only, without an extra blur plane.
+     标题栏仅保留色调，不创建额外模糊层。 */
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -107,10 +83,7 @@ figure.shiki .line > span:empty::before {
   quotes: none;
   border: 1px solid var(--docs-quote-border);
   border-radius: var(--radius-md);
-  background: var(--docs-quote-background);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  box-shadow: var(--docs-quote-shadow);
+  background: var(--docs-reading-surface);
   color: var(--text-secondary);
   transition:
     border-color var(--theme-transition-duration) ease,
@@ -189,50 +162,21 @@ figure.shiki .line > span:empty::before {
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 30%, transparent);
 }
 
-/* Hover only clarifies the border and rail; the quote remains a static
-   editorial element without lift or scale.
-   悬浮时仅强化边框与引导线，引用块仍是无抬升、无缩放的静态编辑元素。 */
-@media (hover: hover) {
-  #nd-page blockquote:hover {
-    border-color: color-mix(in srgb, var(--border-interactive) 48%, var(--docs-quote-border));
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--edge-light) 52%, transparent),
-      var(--docs-quote-shadow);
-  }
-
-  #nd-page blockquote:hover::before {
-    opacity: 1;
-  }
-}
-
 /* Filtered surfaces already receive compositor isolation from backdrop-filter;
    forcing an additional 3D layer on every block wastes GPU memory on long pages.
    带滤镜的表面已由 backdrop-filter 获得合成隔离；为每个内容块额外强制
    3D 图层会在长文章中浪费 GPU 内存。 */
 .markdown-alert {
-  --markdown-alert-accent: var(--color-alert-note);
+  --markdown-alert-accent: var(--neoverse-color-status-info);
   --markdown-alert-border: color-mix(
     in srgb,
     var(--markdown-alert-accent) 42%,
     var(--glass-border-hairline)
   );
 
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--markdown-alert-accent) 8%, transparent),
-      transparent 42%
-    ),
-    var(--glass-tint-medium);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  background: color-mix(in srgb, var(--markdown-alert-accent) 7%, var(--docs-reading-surface));
   border: 1px solid var(--markdown-alert-border);
   border-radius: var(--radius-md);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
   padding: 0.75rem 1rem 0.75rem 1.5rem;
   position: relative;
   margin: 1rem 0;
@@ -241,25 +185,6 @@ figure.shiki .line > span:empty::before {
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease;
-}
-
-/* Alert hover：展示性元素，不抬升，仅强化辉光 + 强调色光带亮度，
-   让用户在快速滚动时能感知到当前关注的提示框。 */
-@media (hover: hover) {
-  .markdown-alert:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--markdown-alert-accent) 56%,
-      var(--glass-border-hairline)
-    );
-    box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      var(--glass-shadow-hover);
-  }
-
-  .markdown-alert:hover::before {
-    filter: brightness(1.15);
-  }
 }
 
 /* Alert accent rail: separated from the rounded corner to avoid jagged subpixel clipping.
@@ -276,7 +201,6 @@ figure.shiki .line > span:empty::before {
     color-mix(in srgb, var(--markdown-alert-accent) 82%, transparent),
     color-mix(in srgb, var(--markdown-alert-accent) 54%, transparent)
   );
-  box-shadow: 0 0 10px color-mix(in srgb, var(--markdown-alert-accent) 24%, transparent);
   pointer-events: none;
 }
 
@@ -303,10 +227,10 @@ figure.shiki .line > span:empty::before {
 }
 
 .markdown-alert-note {
-  --markdown-alert-accent: var(--color-alert-note);
+  --markdown-alert-accent: var(--neoverse-color-status-info);
 }
 .markdown-alert-note .octicon {
-  fill: var(--color-alert-note);
+  fill: var(--neoverse-color-status-info);
 }
 
 /* INFO alert uses the existing hint cyan accent while preserving GitHub alert markup.
@@ -319,10 +243,10 @@ figure.shiki .line > span:empty::before {
 }
 
 .markdown-alert-tip {
-  --markdown-alert-accent: var(--color-alert-tip);
+  --markdown-alert-accent: var(--neoverse-color-status-success);
 }
 .markdown-alert-tip .octicon {
-  fill: var(--color-alert-tip);
+  fill: var(--neoverse-color-status-success);
 }
 
 .markdown-alert-important {
@@ -333,22 +257,22 @@ figure.shiki .line > span:empty::before {
 }
 
 .markdown-alert-warning {
-  --markdown-alert-accent: var(--color-alert-warning);
+  --markdown-alert-accent: var(--neoverse-color-status-warning);
 }
 .markdown-alert-warning .octicon {
-  fill: var(--color-alert-warning);
+  fill: var(--neoverse-color-status-warning);
 }
 
 .markdown-alert-caution {
-  --markdown-alert-accent: var(--color-alert-caution);
+  --markdown-alert-accent: var(--neoverse-color-status-danger);
 }
 .markdown-alert-caution .octicon {
-  fill: var(--color-alert-caution);
+  fill: var(--neoverse-color-status-danger);
 }
 
 /* Glass table surface: keeps Markdown tables visually aligned with code blocks, alerts, and details.
    玻璃态表格表面：让 Markdown 表格与代码块、提示框、折叠块保持统一视觉。 */
-:where(#nd-page) :where(.prose-no-margin):has(> table) {
+:where(#nd-page) .docs-table-scroll {
   /* Table palette keeps the header, dividers, and row hover on one theme-aware glass scale.
      表格色板让表头、分隔线与行悬浮复用同一套主题感知玻璃层级。 */
   --markdown-table-head-bg: color-mix(in srgb, var(--color-fd-muted) 82%, var(--glass-tint-soft));
@@ -361,22 +285,9 @@ figure.shiki .line > span:empty::before {
   --markdown-table-cell-border: var(--glass-border-hairline);
   --markdown-table-row-hover-bg: color-mix(in srgb, var(--glass-tint-soft) 72%, transparent);
 
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--glass-highlight) 28%, transparent),
-      transparent 38%
-    ),
-    var(--glass-tint-medium);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  background: var(--docs-reading-surface);
   border: 1px solid var(--glass-border-hairline);
   border-radius: var(--radius-md);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
   overflow: auto;
   transition:
     background-color var(--theme-transition-duration) ease,
@@ -384,17 +295,7 @@ figure.shiki .line > span:empty::before {
     box-shadow var(--theme-transition-duration) ease;
 }
 
-/* Table container hover：展示性容器，不抬升，仅切换到 hover 投影，
-   与 .markdown-alert 保持一致的悬浮层级反馈。 */
-@media (hover: hover) {
-  :where(#nd-page) :where(.prose-no-margin):has(> table):hover {
-    box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      var(--glass-shadow-hover);
-  }
-}
-
-:where(#nd-page) :where(.prose-no-margin):has(> table) > table {
+:where(#nd-page) .docs-table-scroll > table {
   width: 100%;
   margin: 0;
   overflow: visible;
@@ -406,31 +307,31 @@ figure.shiki .line > span:empty::before {
   box-shadow: none;
 }
 
-:where(#nd-page) :where(.prose-no-margin):has(> table) > table thead {
+:where(#nd-page) .docs-table-scroll > table thead {
   background: var(--markdown-table-head-bg);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   box-shadow: inset 0 -1px 0 var(--markdown-table-head-border);
 }
 
-:where(#nd-page) :where(.prose-no-margin):has(> table) > table th,
-:where(#nd-page) :where(.prose-no-margin):has(> table) > table td {
+:where(#nd-page) .docs-table-scroll > table th,
+:where(#nd-page) .docs-table-scroll > table td {
   background-color: transparent;
   border-color: var(--markdown-table-cell-border);
 }
 
-:where(#nd-page) :where(.prose-no-margin):has(> table) > table thead th {
+:where(#nd-page) .docs-table-scroll > table thead th {
   background: transparent;
   border-bottom: 1px solid var(--markdown-table-head-border);
   color: var(--markdown-table-head-color);
   font-weight: 600;
 }
 
-:where(#nd-page) :where(.prose-no-margin):has(> table) > table tbody tr {
+:where(#nd-page) .docs-table-scroll > table tbody tr {
   transition: background-color var(--theme-transition-duration) ease;
 }
 
-:where(#nd-page) :where(.prose-no-margin):has(> table) > table tbody tr:hover {
+:where(#nd-page) .docs-table-scroll > table tbody tr:hover {
   background-color: var(--markdown-table-row-hover-bg);
 }
 
@@ -438,7 +339,7 @@ figure.shiki .line > span:empty::before {
    Neutral dividers and a low-saturation hover replace the previous heavy cyan slab.
    深色表格使用石墨玻璃底与克制的紫青环境光，以中性分隔线和低饱和悬浮色
    替换原先厚重的整块青色表头。 */
-.dark :where(#nd-page) :where(.prose-no-margin):has(> table) {
+.dark :where(#nd-page) .docs-table-scroll {
   --markdown-table-head-bg:
     linear-gradient(
       112deg,
@@ -471,7 +372,7 @@ figure.shiki .line > span:empty::before {
 
 /* Dark mode header silhouette uses a quiet highlight and neutral divider.
    深色表头轮廓使用轻量顶部高光与中性底部分隔线。 */
-.dark :where(#nd-page) :where(.prose-no-margin):has(> table) > table thead {
+.dark :where(#nd-page) .docs-table-scroll > table thead {
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--edge-light) 38%, transparent),
     inset 0 -1px 0 var(--markdown-table-head-border);
@@ -481,13 +382,13 @@ figure.shiki .line > span:empty::before {
 
 :root,
 .light {
-  --inline-code-bg: rgba(0, 0, 0, 0.06);
-  --inline-code-border: rgba(0, 0, 0, 0.08);
+  --inline-code-bg: var(--neoverse-color-surface-subtle);
+  --inline-code-border: var(--neoverse-color-border-subtle);
 }
 
 .dark {
-  --inline-code-bg: rgba(255, 255, 255, 0.15);
-  --inline-code-border: rgba(255, 255, 255, 0.3);
+  --inline-code-bg: var(--neoverse-color-surface-subtle);
+  --inline-code-border: var(--neoverse-color-border-subtle);
 }
 
 :not(pre) > code {
@@ -573,16 +474,6 @@ figure.shiki .line > span:empty::before {
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-light) 28%, transparent);
 }
 
-/* Inline code hover：极轻反馈 —— 边框颜色加深 + 文字着色，
-   与 .markdown-details-summary 的"颜色提示"策略一致。
-   不抬升、不加投影，避免段落阅读时跳动。 */
-@media (hover: hover) {
-  :not(pre) > code:hover {
-    border-color: color-mix(in srgb, var(--fd-primary) 38%, var(--inline-code-border));
-    color: var(--fd-primary);
-  }
-}
-
 /* ── Collapsible Details / 可折叠块 ─────────────────────────────── */
 
 .markdown-details {
@@ -596,22 +487,9 @@ figure.shiki .line > span:empty::before {
     var(--color-fd-accent)
   );
 
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--markdown-details-accent) 8%, transparent),
-      transparent 42%
-    ),
-    var(--glass-tint-medium);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+  background: var(--docs-reading-surface);
   border: 1px solid var(--markdown-details-border);
   border-radius: var(--radius-md);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
   margin: 1rem 0;
   overflow: hidden;
   interpolate-size: allow-keywords;
@@ -619,16 +497,6 @@ figure.shiki .line > span:empty::before {
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease;
-}
-
-/* Details container hover：展示性容器，不抬升，仅切换 hover 投影。
-   summary 自身的 hover 单独处理（见下方）。 */
-@media (hover: hover) {
-  .markdown-details:hover {
-    box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      var(--glass-shadow-hover);
-  }
 }
 
 /* Smooth expand/collapse animation / 平滑展开折叠动画 */
@@ -806,20 +674,20 @@ figure.shiki > div:first-child {
 
 /* FAQ - 常见问题 */
 .markdown-details-faq {
-  --markdown-details-accent: var(--color-alert-note);
+  --markdown-details-accent: var(--neoverse-color-status-info);
   --markdown-details-border: color-mix(
     in srgb,
-    var(--color-alert-note) 42%,
+    var(--neoverse-color-status-info) 42%,
     var(--glass-border-hairline)
   );
   --markdown-details-summary-bg: color-mix(
     in srgb,
-    var(--color-alert-note) var(--alert-tint-pct),
+    var(--neoverse-color-status-info) var(--alert-tint-pct),
     var(--glass-tint-soft)
   );
   --markdown-details-summary-hover-bg: color-mix(
     in srgb,
-    var(--color-alert-note) 16%,
+    var(--neoverse-color-status-info) 16%,
     var(--glass-tint-soft)
   );
 }
@@ -828,7 +696,7 @@ figure.shiki > div:first-child {
   display: inline-block;
   width: 16px;
   height: 16px;
-  background-color: var(--color-alert-note);
+  background-color: var(--neoverse-color-status-info);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
   mask-size: contain;
   mask-repeat: no-repeat;
@@ -842,20 +710,20 @@ figure.shiki > div:first-child {
 
 /* ANSWER - 解答 */
 .markdown-details-answer {
-  --markdown-details-accent: var(--color-alert-tip);
+  --markdown-details-accent: var(--neoverse-color-status-success);
   --markdown-details-border: color-mix(
     in srgb,
-    var(--color-alert-tip) 42%,
+    var(--neoverse-color-status-success) 42%,
     var(--glass-border-hairline)
   );
   --markdown-details-summary-bg: color-mix(
     in srgb,
-    var(--color-alert-tip) var(--alert-tint-pct),
+    var(--neoverse-color-status-success) var(--alert-tint-pct),
     var(--glass-tint-soft)
   );
   --markdown-details-summary-hover-bg: color-mix(
     in srgb,
-    var(--color-alert-tip) 16%,
+    var(--neoverse-color-status-success) 16%,
     var(--glass-tint-soft)
   );
 }
@@ -864,7 +732,7 @@ figure.shiki > div:first-child {
   display: inline-block;
   width: 16px;
   height: 16px;
-  background-color: var(--color-alert-tip);
+  background-color: var(--neoverse-color-status-success);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpolyline points='22 4 12 14.01 9 11.01'/%3E%3C/svg%3E");
   mask-size: contain;
   mask-repeat: no-repeat;
@@ -1054,4 +922,26 @@ figure.shiki > div:first-child {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.06),
     0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.docs-codeblock__scroll,
+.docs-table-scroll,
+.docs-code-tabs,
+.glass-codeblock {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+
+.docs-table-scroll:focus-visible {
+  outline: var(--neoverse-focus-ring-width) solid var(--neoverse-color-focus-ring);
+  outline-offset: var(--neoverse-focus-ring-offset);
+}
+
+.docs-code-copy {
+  flex: none;
+  padding-inline: var(--neoverse-space-2);
+}
+
+.docs-code-copy[data-checked] {
+  color: var(--neoverse-color-status-success);
 }

@@ -5,6 +5,7 @@
 
 'use client';
 
+import { UiAction } from '@neoverse-ui/react';
 import { ArrowLeft, Eye } from 'lucide-react';
 import type { MouseEvent } from 'react';
 import { TransitionLink } from '@/features/transition';
@@ -60,22 +61,27 @@ export function DocsDraftControls({
           <p className="docs-draft__description">{description}</p>
         </div>
         <div className="docs-draft__actions">
-          <TransitionLink
-            className="control-surface docs-draft__action docs-draft__action--previous"
+          <UiAction
+            asChild
+            variant="secondary"
+            className="docs-draft__action docs-draft__action--previous"
             data-nd-interaction="control"
-            href={previousHref}
           >
-            <ArrowLeft aria-hidden="true" size={18} />
-            {previousLabel}
-          </TransitionLink>
-          <button
-            className="control-surface docs-draft__action docs-draft__action--reveal cursor-pointer"
-            onClick={unlockDraft}
+            <TransitionLink href={previousHref}>
+              <ArrowLeft aria-hidden="true" size={18} />
+              {previousLabel}
+            </TransitionLink>
+          </UiAction>
+          <UiAction
+            as="button"
             type="button"
+            variant="secondary"
+            className="docs-draft__action docs-draft__action--reveal"
+            onClick={unlockDraft}
           >
             <Eye aria-hidden="true" size={18} />
             {revealAction}
-          </button>
+          </UiAction>
         </div>
       </section>
       <span className="sr-only" aria-live="polite" data-docs-draft-announcement="" />

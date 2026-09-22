@@ -30,14 +30,11 @@
 }
 
 :where(
-  .control-surface,
+  .ui-action,
   .chapter-card,
   .mdx-doc-card,
   [data-card="true"],
-  .surface-panel,
-  .glass-interactive,
-  .glass-interactive--chip,
-  .glass-cta,
+  .ui-surface-interactive,
   .glass-codeblock,
   .markdown-alert,
   .markdown-details,
@@ -60,14 +57,11 @@
    会与该交互争用性能。 */
 
 :where(
-  .control-surface,
+  .ui-action,
   .chapter-card,
   .mdx-doc-card,
   [data-card="true"],
-  .surface-panel,
-  .glass-interactive,
-  .glass-interactive--chip,
-  .glass-cta,
+  .ui-surface-interactive,
   #nd-page blockquote,
   #nd-nav button,
   #nd-sidebar button,
@@ -80,10 +74,7 @@
 /* Compact controls own an intentional drag gesture; document surfaces retain
    native scrolling. 紧凑控件接管明确拖拽，正文与大卡片仍保留原生滚动。 */
 :where(
-  .control-surface,
-  .glass-interactive,
-  .glass-interactive--chip,
-  .glass-cta,
+  .ui-action,
   #nd-nav button,
   #nd-sidebar button,
   #nd-sidebar-mobile button,
@@ -243,7 +234,7 @@
 
 @media (hover: hover) {
   :where(
-    .control-surface,
+    .ui-action,
     .chapter-card,
     .mdx-doc-card,
     [data-card="true"],

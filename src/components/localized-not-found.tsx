@@ -3,6 +3,7 @@
 
 'use client';
 
+import { UiAction } from '@neoverse-ui/react';
 import { ArrowLeft, BookOpen, Home } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
 import { StatusCodeDisplay } from '@/components/status-code-display';
@@ -46,27 +47,28 @@ export function LocalizedNotFound({ variant = 'default' }: LocalizedNotFoundProp
           <p className="special-fallback__description">{dict.notFoundDesc}</p>
         </div>
         <div className="special-fallback__actions">
-          <button
+          <UiAction
+            as="button"
             type="button"
+            variant="secondary"
             onClick={handleBack}
-            className="control-surface cursor-pointer"
             data-nd-interaction="control"
           >
             <ArrowLeft size={16} />
             {dict.notFoundBack}
-          </button>
-          <TransitionLink href={homeHref} className="control-surface" data-nd-interaction="control">
-            <Home size={16} />
-            {dict.notFoundHome}
-          </TransitionLink>
-          <TransitionLink
-            href={docsHref}
-            className="control-surface control-surface--primary"
-            data-nd-interaction="control"
-          >
-            <BookOpen size={16} />
-            {dict.notFoundDocs}
-          </TransitionLink>
+          </UiAction>
+          <UiAction asChild variant="secondary" data-nd-interaction="control">
+            <TransitionLink href={homeHref}>
+              <Home size={16} />
+              {dict.notFoundHome}
+            </TransitionLink>
+          </UiAction>
+          <UiAction asChild variant="primary" data-nd-interaction="control">
+            <TransitionLink href={docsHref}>
+              <BookOpen size={16} />
+              {dict.notFoundDocs}
+            </TransitionLink>
+          </UiAction>
         </div>
       </div>
     </main>

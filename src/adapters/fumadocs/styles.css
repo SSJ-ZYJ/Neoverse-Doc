@@ -2060,36 +2060,17 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
    外层 Tabs 容器：用代码块同款玻璃面替换默认的实色 bg-fd-secondary。
    关键修复：移除 :where() 包裹（其优先级为 0，会被 fumadocs 的 Tailwind
    类覆盖），直接用 #nd-page 提高优先级。 */
-#nd-page div[data-orientation]:has(> [role="tablist"]) {
-  background:
-    linear-gradient(135deg, var(--glass-codeblock-sheen), transparent 42%), var(--glass-tint-medium);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate))
-    brightness(var(--glass-brightness)) contrast(var(--glass-contrast));
+#nd-page .docs-code-tabs {
+  background: var(--docs-reading-surface);
+  backdrop-filter: none;
   border-color: var(--glass-border-hairline);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    var(--glass-shadow);
+  box-shadow: none;
   transition:
     background-color var(--theme-transition-duration) ease,
     border-color var(--theme-transition-duration) ease,
     box-shadow var(--theme-transition-duration) ease;
   max-width: 100%;
   overflow: hidden;
-}
-
-/* Tabs container hover: the outer panel owns one unified response for the tab
-   strip and its nested code block, avoiding duplicated borders or shadows.
-   Tabs 容器悬浮：由外层面板统一响应语言栏与内部代码块，避免重复描边或投影。 */
-@media (hover: hover) {
-  #nd-page div[data-orientation]:has(> [role="tablist"]):hover {
-    border-color: color-mix(in srgb, var(--accent-primary) 34%, var(--glass-border-hairline));
-    background-color: var(--glass-control-hover-tint);
-    box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      var(--glass-shadow-hover);
-  }
 }
 
 /* TabsList: thin glass strip using the same soft tint as the file-path bar
@@ -2100,13 +2081,12 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
    底部分隔线与 typography.css 里"文件路径 / 代码体"分隔线同色，
    让"Tab / 文件路径"与"文件路径 / 代码体"两条分隔线视觉等粗，
    表头读起来像统一的三段式而不是两个堆叠容器。 */
-#nd-page div[data-orientation] > [role="tablist"] {
+#nd-page .docs-code-tabs > [role="tablist"] {
   position: relative;
   background-color: var(--glass-tint-soft);
-  -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 0 !important;
+  backdrop-filter: none;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
   padding-top: 0.25rem;
   overflow-x: auto;
   overflow-y: hidden;
@@ -2114,31 +2094,31 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
   scrollbar-color: var(--glass-scrollbar-thumb) var(--glass-scrollbar-track);
 }
 
-.dark #nd-page div[data-orientation] > [role="tablist"] {
-  border-bottom-color: rgba(255, 255, 255, 0.2);
+.dark #nd-page .docs-code-tabs > [role="tablist"] {
+  border-bottom-color: var(--border-subtle);
 }
 
 /* Tab labels stay typographic: hover changes only text color, while the shared
    underline communicates selection without adding a background chip.
    Tab 标签保持纯文字；悬浮仅改变文字颜色，选中状态由共享下划线表达。 */
-#nd-page div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]) {
+#nd-page .docs-code-tabs > [role="tablist"] > [role="tab"]:not([disabled]) {
   cursor: pointer;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   transition:
     background-color var(--theme-transition-duration) ease,
     color var(--theme-transition-duration) ease;
 }
 
 @media (hover: hover) {
-  #nd-page div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]):hover {
-    background: transparent !important;
-    box-shadow: none !important;
-    color: var(--color-fd-accent-foreground) !important;
+  #nd-page .docs-code-tabs > [role="tablist"] > [role="tab"]:not([disabled]):hover {
+    background: transparent;
+    box-shadow: none;
+    color: var(--color-fd-accent-foreground);
   }
 
-  #nd-page div[data-orientation] > [role="tablist"] > [role="tab"]:not([disabled]):active {
+  #nd-page .docs-code-tabs > [role="tablist"] > [role="tab"]:not([disabled]):active {
     transform: scale(0.97);
   }
 }
@@ -2152,7 +2132,7 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
    而不是各自切换 border-b。位置与宽度由 [components/mdx/code-tabs.tsx]
    写入的 --tab-indicator-x / --w CSS 变量驱动；cubic-bezier 给出
    "起手快、落点稳"的缓动（接近 Vercel Tabs 体感）。 */
-#nd-page div[data-orientation] > [role="tablist"]::after {
+#nd-page .docs-code-tabs > [role="tablist"]::after {
   content: "";
   position: absolute;
   bottom: -1px;
@@ -2174,7 +2154,7 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
    targeting just the active state is enough.
    屏蔽 fumadocs 默认每个 Tab 自带的品牌色 border-b，只保留共享下划线；
    未激活 Tab 本来就是透明 border，仅覆盖激活态即可。 */
-#nd-page div[data-orientation] > [role="tablist"] > [role="tab"][data-state="active"] {
+#nd-page .docs-code-tabs > [role="tablist"] > [role="tab"][data-state="active"] {
   border-bottom-color: transparent;
 }
 
@@ -2182,16 +2162,16 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
    snap to the new tab instead of the 320ms slide.
    尊重系统的"减少动效"偏好：直接瞬切到新位置，不做 320ms 滑动。 */
 @media (prefers-reduced-motion: reduce) {
-  #nd-page div[data-orientation] > [role="tablist"]::after {
+  #nd-page .docs-code-tabs > [role="tablist"]::after {
     transition: none;
   }
 }
 
 /* TabsContent: transparent so the outer glass panel shows through.
    TabsContent：透明背景，露出外层玻璃面。 */
-#nd-page div[data-orientation] > [role="tabpanel"] {
+#nd-page .docs-code-tabs > [role="tabpanel"] {
   background-color: transparent;
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 /* Tab content that contains only a glass code block: drop the code block's
@@ -2200,21 +2180,16 @@ html.nd-immersive-scrollbar-dragging .immersive-scrollbar__thumb {
    divider between header and code body.
    Tab 内仅包含一个玻璃代码块时：移除其自身玻璃面 / 阴影 / 边框 / 顶部圆角，
    让文件路径条无缝接住上方 Tab 条，其 border-b 成为表头与正文之间唯一分隔线。 */
-#nd-page div[data-orientation] > [role="tabpanel"] > figure.glass-codeblock:only-child {
-  background: transparent !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  box-shadow: none !important;
-  border: none !important;
-  border-radius: 0 !important;
+#nd-page .docs-code-tabs > [role="tabpanel"] > figure.glass-codeblock {
+  background: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
 }
 
-#nd-page
-  div[data-orientation]
-  > [role="tabpanel"]
-  > figure.glass-codeblock:only-child
-  > div:first-child {
-  border-radius: 0 !important;
+#nd-page .docs-code-tabs > [role="tabpanel"] > figure.glass-codeblock > .docs-codeblock__header {
+  border-radius: 0;
 }
 
 /* ── Unified Nav Popover / Dialog Glass / 统一导航弹窗玻璃风格 ────────── */

@@ -98,7 +98,7 @@ export function DocsKnowledgeContext({
   return (
     <section
       aria-labelledby="docs-knowledge-context-title"
-      className="docs-knowledge-context glass-card"
+      className="docs-knowledge-context material-glass-card"
       data-docs-knowledge-context=""
     >
       <div className="docs-knowledge-context__heading">

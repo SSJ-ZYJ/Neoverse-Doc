@@ -54,7 +54,7 @@ export function DocCard({ children, description, href, title }: DocCardProps) {
       // External resources use native navigation so they never enter the site's transition pipeline.
       // 外部资源使用原生导航，确保不会进入站内转场流程，并始终在新标签页打开。
       <a
-        className="mdx-doc-card"
+        className="mdx-doc-card ui-surface ui-surface-subtle"
         data-card="true"
         data-external="true"
         data-nd-interaction="control"
@@ -69,7 +69,7 @@ export function DocCard({ children, description, href, title }: DocCardProps) {
 
   return (
     <TransitionLink
-      className="mdx-doc-card"
+      className="mdx-doc-card ui-surface ui-surface-subtle"
       data-card="true"
       data-nd-interaction="control"
       href={href}

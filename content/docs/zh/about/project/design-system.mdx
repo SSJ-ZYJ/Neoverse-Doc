@@ -7,39 +7,45 @@ author:
 ---
 
 > [!DETAILS-AI] 本章 AI 摘要
-> 站点视觉由语义 Token 与模块化 CSS 驱动。`tokens.css` 提供颜色、表面、圆角、阴影、间距与动效的双套变量；`glass.css` 实现统一的玻璃形态三件套与业务表面类；`theme.css` 把 CSS 变量映射到 Tailwind v4；`a11y.css` 处理减少动效、减少透明度与不支持 backdrop-filter 三层降级。主题切换通过 `next-themes` 与根元素 class 实现，切换期间暂时关闭大范围 transition 避免长文档颜色动画。
+> 站点共享视觉基础由独立的 Neoverse-UI 提供，Docs 通过 `@neoverse-ui/tokens`、`motion`、`tailwind` 与 `glass-runtime` 消费颜色、几何、材质和动效契约。`src/ui/tokens/tokens.css` 只保留 Fumadocs、Mermaid、阅读布局等 Docs 专属语义及兼容别名；`theme.css` 负责 Tailwind v4 / Fumadocs 接入；共享 Glass Material 与 WebGL 边缘增强来自 Neoverse-UI，代码块等文档专属表面继续由 Docs 维护。主题切换仍由 `next-themes` 管理。
 
 ## 一、样式目录结构
 
-`src/app/globals.css` 是聚合入口，跨模块基础样式与 Feature 私有样式按所有权拆分：
+`src/app/globals.css` 仍是 Docs 的样式聚合入口，但共享基础不再由 Docs 自己定义，而是从 Neoverse-UI 导入：
 
 ```text
-src/
+Neoverse-UI
+├── @neoverse-ui/tokens           # 共享颜色、几何、Material、布局与 Motion Token
+├── @neoverse-ui/motion           # 共享动效与 reduced-motion 契约
+├── @neoverse-ui/tailwind         # Tailwind v4 主题与共享 Material / Component CSS
+└── @neoverse-ui/glass-runtime    # 可选 WebGL Glass 边缘增强
+
+Neoverse-Doc/src/
 ├── ui/
-│   ├── tokens/tokens.css         # 颜色、表面、圆角、阴影、间距与动效
-│   ├── surfaces/glass.css        # 玻璃表面和控件
-│   ├── compositions/compositions.css # 页面头部、区段、网格、空状态与 Metadata Chip
+│   ├── tokens/tokens.css         # 兼容别名 + Docs / Mermaid / 阅读场景专属 Token
+│   ├── surfaces/glass.css        # Docs 环境光与 React/Fumadocs 适配层
+│   ├── compositions/compositions.css # 页面组合与统一 Metadata Chip
 │   └── styles/                   # Theme、Motion、Typography 与 A11y
 ├── adapters/fumadocs/styles.css  # Fumadocs 组件覆写
 ├── features/*/styles.css         # Search、Tasks、Mermaid、Transition、Community
-├── runtime/interaction/styles.css
+├── runtime/neoverse-glass-runtime.tsx
 └── styles/                       # Loading、MDX 文件树与页面级结构
 ```
 
-Task、Mermaid、Transition、Community、Search Spotlight 与 Interaction 样式跟随其所有者；稳定复用的产品页面组合位于 `src/ui/compositions/compositions.css`，页面特有规则继续留在对应 Feature，其他页面级布局和少量全局集成规则继续留在 `src/styles/`。视觉调整优先替换 Token 或已有表面，不继续叠加第二套玻璃、Glow 或阴影体系。
+Task、Mermaid、Transition、Community、Search Spotlight 与 Interaction 样式继续跟随其所有者。共享颜色、圆角、阴影、Material 与基础 Motion 必须优先修改 Neoverse-UI；只有文档阅读、Fumadocs 桥接、Mermaid 语义等产品能力留在 Docs。
 
-页面组合只统一信息层级与节奏，不拥有页面数据或路由。`Page Header`、`Page Section`、`Content Grid` 与 `Empty State` 通过 CSS 组合类复用；`Metadata Chip` 用有限的语义变体表达 Track、Topic、Type、Difficulty 与生命周期 Status，文案仍由字典或 Taxonomy Registry 提供。
+页面组合仍由 Docs 维护，因为它们表达的是产品信息层级，而不是可跨项目复用的视觉 Primitive。`Page Header`、`Page Section`、`Content Grid` 与 `Empty State` 继续位于 `src/ui/compositions/compositions.css`；`Metadata Chip` 保留 Track、Topic、Type、Difficulty 与生命周期 Status 等语义变体，具体文案继续由字典或 Taxonomy Registry 提供。
 
 ## 二、语义 Token 体系
 
-`src/ui/tokens/tokens.css` 是所有视觉决策的单一来源，提供浅色（`:root, .light`）与深色（`.dark`）双套变量。
+Neoverse-UI 的 `@neoverse-ui/tokens/css` 是共享设计基础的单一来源。`src/ui/tokens/tokens.css` 现在是 Docs 兼容桥与领域 Token 层，旧的 `--background-primary`、`--radius-*`、`--motion-*` 等名称通过别名解析到 `--neoverse-*`，让现有业务样式可以渐进迁移。
 
 ### Token 分类
 
 | 分类 | 示例 | 用途 |
 | :--- | :--- | :--- |
 | 颜色语义 | `--background-primary`、`--text-primary`、`--accent-primary` | 背景、文本、强调 |
-| 表面 | `--surface-elevated`、`--surface-panel` | 玻璃表面层次 |
+| 表面 | `--surface-elevated`、`--surface-glass` | 页面表面层次 |
 | 边框 | `--border-subtle`、`--border-strong` | 描边强度 |
 | 环境光 | `--ambient-ice`、`--ambient-mint`、`--ambient-violet` | 多色相径向渐变 |
 | 几何 | `--radius-xs/sm/md/lg/xl/2xl/pill` | 圆角分级 |
@@ -64,32 +70,19 @@ Token 通过 `--color-fd-*` 与 `--fd-primary` 别名桥接到 Fumadocs UI 的�
 
 ## 三、玻璃形态系统
 
-`src/ui/surfaces/glass.css` 实现统一的玻璃视觉语言。
+共享 Glass Material 由 `@neoverse-ui/tailwind` 提供，核心表面使用 `material-glass-subtle`、`material-glass-elevated`、`material-glass-card` 与 `material-glass-immersive`。这些类与 `@neoverse-ui/glass-runtime` 使用同一套 `--neoverse-material-*` 契约，WebGL 不可用时仍保留 CSS 降级。
 
-### 三件套结构
+Docs 不再维护自己的通用 `.glass-card` / `.glass-chip` / `.control-surface`。通用操作使用 `@neoverse-ui/react` 的 `UiAction`，通用卡片使用 `material-glass-card`，交互表面使用 `ui-surface-interactive`。`src/ui/surfaces/glass.css` 只保留 Docs 环境光、全局排版与文档场景适配，`.glass-codeblock` 等文档语义表面仍属于 Docs。
 
-每个玻璃表面由 `border + backdrop-filter + box-shadow` 三件套构成：
+### 当前适配边界
 
-- 单层 hairline 描边（`1px` 半透明边框）；
-- 顶部 sheen 高光（`inset` box-shadow）；
-- 柔和投影（`--shadow-edge` + `--glass-shadow`）；
-- 避免多层 inset / outer ring 重影。
-
-### 业务表面类
-
-| 类名 | 用途 | contain 策略 |
-| :--- | :--- | :--- |
-| `.surface-panel` / `.surface-elevated` | 大面板、弹窗 | `contain: layout style`（刻意不用 `paint`，因为 `backdrop-filter` 需采样父级 stacking context） |
-| `.control-surface` / `.control-surface--primary` | 紧凑控件 | hover `translateY(-2px)` 反馈 |
-| `.glass-panel` / `.glass-card` / `.glass-chip` / `.glass-cta` | 大面板、弹窗、chip、CTA | 按尺寸分级 |
-| `.chapter-card` / `.mdx-doc-card` | 首页章节卡片、文档卡片 | `contain: layout style` 隔离 hover 变换与光标追踪 |
-
-### 统一悬浮系统
-
-- `.glass-interactive`：完整抬升 + 辉光 + tint 切换；
-- `.glass-interactive--chip`：不抬升（避免小元件抖动），仅 tint 与 rim glow；
-- 通过 `@media (hover: hover)` 包裹，避免触屏设备卡住悬停状态；
-- `.glass-interactive:focus-visible` 显式 outline 保证键盘焦点可见。
+| 能力 | 归属 |
+| :--- | :--- |
+| 通用 Glass Material、边缘折射、reduced-transparency | Neoverse-UI |
+| 共享颜色、圆角、阴影、基础 Motion | Neoverse-UI |
+| `.control-surface` React/Fumadocs 适配外壳 | Docs，后续 React Adapter 成熟后再替换 |
+| `.glass-codeblock`、Mermaid、引用块、阅读布局 | Docs |
+| `.chapter-card` / `.mdx-doc-card` 的业务布局 | Docs |
 
 ### 全局环境光
 
@@ -106,12 +99,14 @@ Token 通过 `--color-fd-*` 与 `--fd-primary` 别名桥接到 Fumadocs UI 的�
 
 ```text
 @import "tailwindcss"
+@import "@neoverse-ui/tokens/css"
+@import "@neoverse-ui/tailwind/theme.css"
 @import "fumadocs-ui/css/neutral.css"
 @import "fumadocs-ui/css/preset.css"
 @plugin "tailwindcss-animate"
 ```
 
-`@theme inline` 把 CSS 变量映射到 Tailwind 工具类：
+Neoverse-UI 的 Tailwind 入口提供共享 Material / Component CSS 和语义主题映射，Docs 的 `@theme inline` 只继续补充站点字体及 Fumadocs 需要的项目别名：
 
 - `--color-background` / `--color-foreground` 映射到 `bg-background` / `text-foreground`；
 - `--font-orbitron` / `--font-noto-sans` / `--font-mono` 映射到字体工具类。
@@ -241,11 +236,15 @@ Glass、Glow、粒子、Blur 和环境 Motion 作为增强效果而不是默认�
 
 | 文件 | 职责 |
 | :--- | :--- |
-| `src/ui/tokens/tokens.css` | 语义 Token 双套变量 |
-| `src/ui/styles/theme.css` | Tailwind / Fumadocs 映射 |
-| `src/ui/surfaces/glass.css` | 玻璃形态三件套与业务表面 |
-| `src/ui/compositions/compositions.css` | 页面组合与统一 Metadata Chip |
-| `src/ui/styles/motion.css` | 入场动画与三档动效 |
+| `@neoverse-ui/tokens` | 共享颜色、几何、Material、布局与基础 Motion Token |
+| `@neoverse-ui/tailwind` | Tailwind v4 语义映射与共享 Material / Component CSS |
+| `@neoverse-ui/glass-runtime` | 共享 WebGL Glass 边缘增强与 CSS 降级协作 |
+| `src/ui/tokens/tokens.css` | Docs 兼容别名、Fumadocs / Mermaid / 阅读领域 Token |
+| `src/ui/styles/theme.css` | Neoverse-UI、Tailwind 与 Fumadocs 接入入口 |
+| `src/ui/surfaces/glass.css` | Docs 环境光与过渡期 React/Fumadocs 适配层 |
+| `src/ui/compositions/compositions.css` | Docs 页面组合与统一 Metadata Chip |
+| `src/runtime/neoverse-glass-runtime.tsx` | 在 React 根布局挂载共享 Glass Runtime |
+| `src/ui/styles/motion.css` | Docs 入场动画与三档动效策略 |
 | `src/ui/styles/a11y.css` | 三层无障碍降级 |
 | `src/ui/styles/typography.css` | 正文、代码、引用与提示 |
 | `src/adapters/fumadocs/styles.css` | Fumadocs 组件覆写 |
@@ -253,3 +252,17 @@ Glass、Glow、粒子、Blur 和环境 Motion 作为增强效果而不是默认�
 | `src/runtime/motion/preferences.ts` | 动效偏好解析与 bootstrap |
 | `src/runtime/motion/config.ts` | 动效参数集中配置 |
 | `src/runtime/motion/experimental-support.ts` | 实验性动效能力检测 |
+
+
+## 正文阅读组件的适配边界
+
+正文采用阅读优先的轻量表面：代码块、表格、引用、提示与折叠容器使用共享语义 Token，不为每个内容块重复采样背景，也不在展示性容器悬停时增加发光或抬升。提示类型仍通过标题、图标与语义色区分；复制、Tabs 和折叠标题保留交互反馈。
+
+- `@neoverse-ui/react` 的 `UiButton` 提供原生按钮、ref、disabled/loading 和焦点契约；代码复制按钮使用它，复制逻辑与多语言提示仍由 Docs 维护。
+- 代码高亮、行号、空行、文件标题与长代码降级继续在服务端生成。Tabs 由外层负责表面，内部代码块不重复绘制边框、阴影和模糊。
+- Markdown 表格通过 MDX 的 `table` 映射进入自有滚动容器，保留原生表格属性和结构；宽表格与长代码只在各自容器内滚动。
+- `DocCard` 等正文导航卡片复用共享 Surface 样式，内容布局、站内转场与外链行为归 Docs 所有。既有 MDX 标签和 props 保持兼容。
+
+共享控件样式来自 `@neoverse-ui/tailwind/components.css`，无需消费端扫描 React 包内部的工具类。更新本地 UI 包后需重新安装对应压缩包并执行类型、内容和静态构建检查。
+
+功能回归可在构建后运行 `bun run check:reading`，覆盖原生按钮、复制文本、Tabs 键盘切换、折叠与窄屏滚动，不生成截图。可通过 `READING_BROWSER` 指定本机 Chromium 浏览器路径；复制测试使用隔离的剪贴板边界。

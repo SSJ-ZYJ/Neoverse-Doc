@@ -1,122 +1,91 @@
 /* Semantic design tokens for color, geometry, elevation, spacing, and motion.
    颜色、几何、层级、间距与动效的语义化设计 Token。 */
 
-:root,
-.light {
-  color-scheme: light;
-  --background-primary: #f4f9fc;
-  --background-secondary: #eaf3f8;
-  --surface-subtle: rgb(255 255 255 / 30%);
-  --surface-elevated: rgb(255 255 255 / 54%);
-  --surface-glass: rgb(244 250 255 / 34%);
-  /* Light language controls use a denser base, neutral hairline, and lifted
-     shadows to remain visibly refractive without an accent-colored outline.
-     浅色语言控件使用更有密度的底板、中性细边与抬升阴影，在保持折射感的同时避免强调色描边。 */
-  --glass-language-popover-surface: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
-  --glass-popover-high-surface: rgb(244 250 255 / 10%);
-  --glass-mobile-header-high-surface: rgb(244 250 255 / 18%);
-  --glass-language-popover-border: var(--glass-border-hairline);
-  --glass-language-popover-shadow: var(--shadow-edge), var(--shadow-popover);
-  --border-subtle: rgb(15 23 42 / 11%);
-  --border-interactive: rgb(14 165 233 / 42%);
-  --text-primary: #0f172a;
-  --text-secondary: #405467;
-  --text-muted: #6c7f90;
-  --accent-primary: #0ea5e9;
-  --accent-secondary: #34c99a;
-  --accent-tertiary: #7c6ee6;
-  --accent-soft: rgb(14 165 233 / 12%);
-  --focus-ring: rgb(14 165 233 / 52%);
-  --edge-light: rgb(255 255 255 / 94%);
-  --ambient-ice: rgb(56 189 248 / 18%);
-  --ambient-mint: rgb(52 211 153 / 10%);
-  --ambient-violet: rgb(124 110 230 / 9%);
-
-  --background: var(--background-primary);
-  --foreground: var(--text-primary);
-  --color-fd-background: var(--background-primary);
-  --color-fd-foreground: var(--text-primary);
-  --color-fd-card: var(--surface-elevated);
-  --color-fd-card-foreground: var(--text-primary);
-  --color-fd-secondary: var(--surface-subtle);
-  --color-fd-secondary-foreground: var(--text-primary);
-  --color-fd-muted: rgb(18 34 46 / 5%);
-  --color-fd-muted-foreground: var(--text-muted);
-  --color-fd-popover: var(--surface-elevated);
-  --color-fd-popover-foreground: var(--text-primary);
-  --color-fd-accent: var(--accent-soft);
-  --color-fd-accent-foreground: var(--text-primary);
-  --color-fd-border: var(--border-subtle);
-  --color-fd-ring: var(--focus-ring);
-  --color-fd-overlay: rgb(20 33 43 / 28%);
-  --fd-primary: var(--accent-primary);
-  --fd-primary-foreground: #ffffff;
-}
-
-.dark {
-  color-scheme: dark;
-  --background-primary: #060913;
-  --background-secondary: #0b1120;
-  --surface-subtle: rgb(15 23 42 / 24%);
-  --surface-elevated: rgb(17 25 45 / 46%);
-  --surface-glass: rgb(10 18 35 / 26%);
-  /* Dark language controls preserve the established graphite surface, quiet
-     hairline, and luminous ambient depth.
-     深色语言控件保留现有石墨表面、克制细边与明亮环境层次。 */
-  --glass-language-popover-surface: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
-  --glass-popover-high-surface: rgb(8 15 28 / 12%);
-  --glass-mobile-header-high-surface: rgb(8 15 28 / 20%);
-  --glass-language-popover-border: var(--glass-border-hairline);
-  --glass-language-popover-shadow: var(--shadow-edge), var(--glass-shadow);
-  --border-subtle: rgb(226 232 240 / 13%);
-  --border-interactive: rgb(56 189 248 / 44%);
-  --text-primary: #f8fafc;
-  --text-secondary: #b5c3d1;
-  --text-muted: #8294a6;
-  --accent-primary: #38bdf8;
-  --accent-secondary: #4adea6;
-  --accent-tertiary: #9b8cff;
-  --accent-soft: rgb(56 189 248 / 13%);
-  --focus-ring: rgb(56 189 248 / 58%);
-  --edge-light: rgb(248 250 252 / 22%);
-  --ambient-ice: rgb(56 189 248 / 16%);
-  --ambient-mint: rgb(74 222 166 / 8%);
-  --ambient-violet: rgb(155 140 255 / 11%);
-
-  --background: var(--background-primary);
-  --foreground: var(--text-primary);
-  --color-fd-background: var(--background-primary);
-  --color-fd-foreground: var(--text-primary);
-  --color-fd-card: var(--surface-elevated);
-  --color-fd-card-foreground: var(--text-primary);
-  --color-fd-secondary: var(--surface-subtle);
-  --color-fd-secondary-foreground: var(--text-primary);
-  --color-fd-muted: rgb(231 246 250 / 6%);
-  --color-fd-muted-foreground: var(--text-muted);
-  --color-fd-popover: var(--surface-elevated);
-  --color-fd-popover-foreground: var(--text-primary);
-  --color-fd-accent: var(--accent-soft);
-  --color-fd-accent-foreground: var(--text-primary);
-  --color-fd-border: var(--border-subtle);
-  --color-fd-ring: var(--focus-ring);
-  --color-fd-overlay: rgb(0 0 0 / 56%);
-  --fd-primary: var(--accent-primary);
-  --fd-primary-foreground: #061015;
-}
-
 :root {
-  --radius-xs: 0.5rem;
-  --radius-sm: 0.625rem;
-  --radius-md: 0.875rem;
-  --radius-lg: 1.125rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
-  --radius-pill: 999rem;
+  /* Compatibility bridge: Neoverse UI owns the shared visual foundation.
+     Docs keeps its established variable names while product-specific rules
+     migrate incrementally without duplicating palette or motion decisions.
+     兼容桥接：共享视觉基础由 Neoverse UI 统一维护；Docs 暂时保留现有变量名，
+     让文档专属样式可以渐进迁移，而不再维护第二套颜色与动效基础。 */
+  --background-primary: var(--neoverse-color-surface-canvas);
+  --background-secondary: color-mix(
+    in srgb,
+    var(--neoverse-color-surface-canvas) 86%,
+    var(--neoverse-color-surface-raised)
+  );
+  --surface-subtle: var(--neoverse-color-surface-subtle);
+  --surface-elevated: var(--neoverse-color-surface-raised);
+  --surface-glass: var(--neoverse-color-surface-glass);
+  --border-subtle: var(--neoverse-color-border-subtle);
+  --border-interactive: var(--neoverse-color-border-interactive);
+  --text-primary: var(--neoverse-color-text-primary);
+  --text-secondary: var(--neoverse-color-text-secondary);
+  --text-muted: var(--neoverse-color-text-muted);
+  --accent-primary: var(--neoverse-color-accent-primary);
+  --accent-secondary: var(--neoverse-color-accent-secondary);
+  --accent-tertiary: var(--neoverse-color-accent-tertiary);
+  --accent-soft: var(--neoverse-color-accent-soft);
+  --focus-ring: var(--neoverse-color-focus-ring);
+  --edge-light: var(--neoverse-color-edge-light);
+  --ambient-ice: var(--neoverse-color-ambient-ice);
+  --ambient-mint: var(--neoverse-color-ambient-mint);
+  --ambient-violet: var(--neoverse-color-ambient-violet);
 
-  --shadow-float: 0 18px 50px -32px rgb(14 34 44 / 38%);
-  --shadow-popover: 0 24px 64px -28px rgb(5 16 23 / 42%);
-  --shadow-edge: inset 0 1px 0 var(--edge-light);
-  --shadow-interactive: 0 16px 44px -34px var(--accent-primary);
+  --glass-language-popover-surface: color-mix(
+    in srgb,
+    var(--neoverse-color-surface-raised) 82%,
+    transparent
+  );
+  --glass-popover-high-surface: color-mix(
+    in srgb,
+    var(--neoverse-color-surface-glass) 38%,
+    transparent
+  );
+  --glass-mobile-header-high-surface: color-mix(
+    in srgb,
+    var(--neoverse-color-surface-glass) 52%,
+    transparent
+  );
+  --glass-language-popover-border: var(--neoverse-color-border-subtle);
+  --glass-language-popover-shadow: var(--neoverse-shadow-overlay);
+
+  /* Fumadocs consumes the same semantic colors instead of maintaining a
+     second theme palette. Fumadocs remains responsible for document layout. */
+  --background: var(--background-primary);
+  --foreground: var(--text-primary);
+  --color-fd-background: var(--background-primary);
+  --color-fd-foreground: var(--text-primary);
+  --color-fd-card: var(--surface-elevated);
+  --color-fd-card-foreground: var(--text-primary);
+  --color-fd-secondary: var(--surface-subtle);
+  --color-fd-secondary-foreground: var(--text-primary);
+  --color-fd-muted: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  --color-fd-muted-foreground: var(--text-muted);
+  --color-fd-popover: var(--surface-elevated);
+  --color-fd-popover-foreground: var(--text-primary);
+  --color-fd-accent: var(--accent-soft);
+  --color-fd-accent-foreground: var(--text-primary);
+  --color-fd-border: var(--border-subtle);
+  --color-fd-ring: var(--focus-ring);
+  --color-fd-overlay: var(--neoverse-color-overlay-scrim);
+  --fd-primary: var(--accent-primary);
+  --fd-primary-foreground: var(--neoverse-color-accent-primary-foreground);
+
+  /* Legacy geometry aliases now resolve through the shared Neoverse scale.
+     Product-specific reading widths stay local because they are Docs layout,
+     not reusable component geometry. */
+  --radius-xs: var(--neoverse-radius-sm);
+  --radius-sm: var(--neoverse-radius-md);
+  --radius-md: var(--neoverse-radius-card);
+  --radius-lg: var(--neoverse-radius-panel);
+  --radius-xl: var(--neoverse-radius-xl);
+  --radius-2xl: var(--neoverse-radius-2xl);
+  --radius-pill: var(--neoverse-radius-pill);
+
+  --shadow-float: var(--neoverse-shadow-card);
+  --shadow-popover: var(--neoverse-shadow-overlay);
+  --shadow-edge: var(--neoverse-shadow-inset);
+  --shadow-interactive: var(--neoverse-shadow-control);
 
   --content-max: 72rem;
   --reading-max: 47rem;
@@ -125,16 +94,16 @@
   --section-gap: clamp(5rem, 10vw, 8.5rem);
 
   --motion-instant: 0ms;
-  --motion-fast: 260ms;
-  --motion-standard: 520ms;
-  --motion-expressive: 1100ms;
+  --motion-fast: var(--neoverse-motion-duration-fast);
+  --motion-standard: var(--neoverse-motion-duration-standard);
+  --motion-expressive: var(--neoverse-motion-duration-expressive);
   --motion-scenic: 1800ms;
   --motion-loop-slow: 12s;
   --motion-loop-ambient: 32s;
   --motion-particle-field: 2800ms;
   --motion-stagger: 280ms;
-  --motion-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
-  --motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-standard: var(--neoverse-motion-easing-standard);
+  --motion-ease-emphasized: var(--neoverse-motion-easing-emphasized);
 
   /* Compatibility aliases keep the existing glass implementation on the new palette.
      兼容别名让现有玻璃体系复用新的配色。 */
@@ -582,4 +551,11 @@
   --mermaid-pie-7: color-mix(in srgb, var(--text-secondary) 46%, var(--accent-primary));
   --mermaid-pie-8: color-mix(in srgb, var(--text-secondary) 42%, var(--accent-secondary));
   --mermaid-chart-hairline: color-mix(in srgb, var(--edge-light) 36%, var(--border-subtle));
+}
+
+
+/* Quiet reading plane shared by prose containers, without extra blur layers.
+   正文容器共用的轻量阅读面，不叠加额外模糊层。 */
+:root {
+  --docs-reading-surface: color-mix(in srgb, var(--neoverse-color-surface-subtle) 88%, transparent);
 }

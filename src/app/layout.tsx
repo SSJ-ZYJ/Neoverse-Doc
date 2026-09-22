@@ -37,6 +37,7 @@ import { ImmersiveInteractionController } from '@/runtime/interaction/controller
 import ImmersiveScrollbar from '@/runtime/interaction/scrollbar';
 import { MOTION_PREFERENCES_BOOTSTRAP } from '@/runtime/motion/preferences';
 import { MotionPreferencesProvider } from '@/runtime/motion/provider';
+import { NeoverseGlassRuntime } from '@/runtime/neoverse-glass-runtime';
 import '@/app/globals.css';
 // Route loading styles are imported at the root CSS entry for Turbopack tracking.
 // 路由加载样式在根 CSS 入口导入，确保 Turbopack 稳定追踪。
@@ -116,6 +117,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Scoped light and particles provide activation feedback without page-level cursor tracking.
                 局部光感与粒子提供激活反馈，不进行页面级光标跟踪。 */}
             <ImmersiveInteractionController />
+            <NeoverseGlassRuntime />
             {/* Responsive inline-code detection distinguishes wrapped continuation fragments.
                 响应式行内代码检测用于区分发生换行的续接片段。 */}
             <InlineCodeWrapController />

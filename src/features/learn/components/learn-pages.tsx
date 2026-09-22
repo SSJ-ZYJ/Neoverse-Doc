@@ -71,7 +71,7 @@ export function LearnLandingPage({
           <div className="content-grid">
             {tracks.map((track) => (
               <TransitionLink
-                className="learn-track-card glass-card glass-interactive"
+                className="learn-track-card material-glass-card ui-surface-interactive"
                 data-card="true"
                 data-nd-interaction="control"
                 href={track.href}
@@ -98,7 +98,7 @@ export function LearnLandingPage({
           </div>
         </section>
       ) : (
-        <div className="empty-state glass-card" data-card="true">
+        <div className="empty-state material-glass-card" data-card="true">
           <div aria-hidden="true" className="empty-state__icon">
             <Route size={24} />
           </div>
@@ -132,7 +132,7 @@ export function LearnTrackPage({
         <h1>{track.label}</h1>
         {track.description && <p className="page-header__description">{track.description}</p>}
         <div className="page-header__actions">
-          <div className="learn-track-summary glass-card" data-card="true">
+          <div className="learn-track-summary material-glass-card" data-card="true">
             <span className="learn-track-summary__item">
               <strong>{track.stepCount}</strong>
               <span>{copy.stepsLabel}</span>
@@ -209,7 +209,7 @@ export function LearnDocNavigation({
   return (
     <nav aria-label={copy.trackNavigationLabel} className="learn-doc-navigation">
       {items.map((item) => (
-        <div className="learn-doc-navigation__track glass-card" key={item.id}>
+        <div className="learn-doc-navigation__track material-glass-card" key={item.id}>
           <div className="learn-doc-navigation__heading">
             <span className="learn-doc-navigation__icon" aria-hidden="true">
               <Route size={17} />

@@ -1612,7 +1612,7 @@
     inline-size: auto;
   }
 
-  .home-hero__actions .control-surface {
+  .home-hero__actions .ui-action {
     padding-inline: clamp(0.7rem, 3vw, 1rem);
     font-size: clamp(0.875rem, 3.7vw, 0.95rem);
   }
@@ -1620,7 +1620,7 @@
   /* Community actions stay on one line down to narrow mobile viewports while
      keeping both localized labels readable and comfortably tappable.
      共建操作在窄屏下仍保持单行，同时保证本地化标签可读且触控尺寸舒适。 */
-  .home-community__actions .control-surface {
+  .home-community__actions .ui-action {
     padding-inline: clamp(0.625rem, 3vw, 1rem);
     font-size: clamp(0.875rem, 3.7vw, 1rem);
     white-space: nowrap;
@@ -1844,6 +1844,6 @@ html[data-page-hidden] .ai-compute__pulse {
    intended contrast, so only the native capture branch drops that blur layer.
    HTML-in-Canvas 会把共建操作按钮的背景模糊栅格化为过大的矩形图块。
    按钮自身的玻璃填充已能保证对比度，因此仅在原生捕获分支移除该模糊层。 */
-.home-particle-scroll[data-particle-scroll-native] .home-community__actions .control-surface {
+.home-particle-scroll[data-particle-scroll-native] .home-community__actions .ui-action {
   backdrop-filter: none;
 }

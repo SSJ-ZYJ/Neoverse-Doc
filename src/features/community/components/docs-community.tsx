@@ -14,7 +14,7 @@ export function DocsCommunity({ description, slugKey, title }: DocsCommunityProp
   return (
     <section className="docs-community-module" aria-labelledby="docs-community-title">
       <div className="docs-community__header">
-        <div className="docs-community__icon glass-chip" aria-hidden="true">
+        <div className="docs-community__icon material-glass-subtle" aria-hidden="true">
           <MessageSquareText size={18} />
         </div>
         <div className="docs-community__copy">

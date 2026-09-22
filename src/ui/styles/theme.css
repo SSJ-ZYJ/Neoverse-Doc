@@ -3,6 +3,9 @@
    Tailwind 与 Fumadocs 主题入口；语义颜色、玻璃和动效值统一由 tokens.css 管理。 */
 
 @import "tailwindcss";
+@import "@neoverse-ui/tokens/css";
+@import "@neoverse-ui/tailwind/theme.css";
+@import "@neoverse-ui/tailwind/components.css";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 @plugin "tailwindcss-animate";
@@ -23,12 +26,7 @@
    主题相关表面共用同一组刻意放缓的颜色切换节奏。 */
 body,
 body::before,
-.glass-panel,
-.glass-card,
-.glass-chip,
-.glass-cta,
 .glass-codeblock,
-.surface-panel,
 .chapter-card,
 .mdx-doc-card,
 blockquote {

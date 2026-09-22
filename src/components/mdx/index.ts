@@ -18,6 +18,7 @@ import {
   LearningPath,
   ResourceLink,
 } from '@/components/mdx/doc-cards';
+import { DocsTable } from '@/components/mdx/docs-table';
 import { File, Files, Folder } from '@/components/mdx/files';
 import { Mermaid } from '@/features/mermaid';
 import { Lab, MdxListItem, Task } from '@/features/tasks';
@@ -32,6 +33,7 @@ const projectMdxComponents = {
   Task,
   Mermaid,
   pre: CustomCodeBlock,
+  table: DocsTable,
   LongCodeBlock,
   Tabs,
   Tab,

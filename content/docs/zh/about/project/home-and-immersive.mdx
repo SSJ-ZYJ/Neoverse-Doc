@@ -60,7 +60,7 @@ Hero 段是首页第一屏，承担项目身份建立。
 
 ### Hero 操作
 
-`src/components/home/primary-action.tsx` 使用 `.glass-cta` 表面与 `TransitionLink` 提供“开始学习”主操作，并导航到学习路线；同一行的“进入文档”使用标准玻璃控件表面，直接导航到 Chapter 0 文档入口。
+`src/components/home/primary-action.tsx` 使用 `.control-surface control-surface--primary`，直接消费 Neoverse-UI 的共享 Control Token，并配合 `TransitionLink` 提供“开始学习”主操作；同一行的“进入文档”继续使用标准 Control Surface，直接导航到 Chapter 0 文档入口。
 
 ### 背景层
 
@@ -270,7 +270,7 @@ TOC thumb 遵循项目约束：
 ### Containment 隔离
 
 - `.home-page::before`、`body::before` 使用 `contain: strict` 完全隔离；
-- `.surface-panel`、`.chapter-card`、`.mdx-doc-card` 使用 `contain: layout style` 隔离 hover 变换；
+- `material-glass-card` / `ui-surface-interactive` 与 `.chapter-card`、`.mdx-doc-card` 分别承担通用卡片材质和文档专属交互；
 - 粒子层使用 `contain: layout style paint`；
 - 仅在元素存活期间设置 `will-change`，移除时清理。
 

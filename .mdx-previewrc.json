@@ -2,6 +2,7 @@
   "remarkPlugins": ["remark-math"],
   "rehypePlugins": ["rehype-katex"],
   "components": {
+    "table": "./src/components/mdx/mdx-preview-shims.tsx",
     "DocCard": "./src/components/mdx/mdx-preview-shims.tsx",
     "DocGrid": "./src/components/mdx/mdx-preview-shims.tsx",
     "FeatureCard": "./src/components/mdx/mdx-preview-shims.tsx",

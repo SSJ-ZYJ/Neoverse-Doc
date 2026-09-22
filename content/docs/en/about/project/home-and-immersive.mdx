@@ -60,7 +60,7 @@ The Hero section is the first screen of the homepage and is responsible for esta
 
 ### Hero actions
 
-`src/components/home/primary-action.tsx` uses the `.glass-cta` surface and `TransitionLink` for the primary “Start learning” action, which opens the learning paths. The adjacent “Browse docs” action uses the standard glass control surface and links directly to the Chapter 0 documentation entrance.
+`src/components/home/primary-action.tsx` uses `.control-surface control-surface--primary`, backed by the shared Neoverse-UI Control tokens, together with `TransitionLink` for the primary “Start learning” action. The adjacent “Browse docs” action keeps the standard control surface and links directly to the Chapter 0 documentation entrance.
 
 ### Background layers
 
@@ -270,7 +270,7 @@ The TOC thumb follows project constraints:
 ### Containment isolation
 
 - `.home-page::before` and `body::before` are fully isolated with `contain: strict`;
-- `.surface-panel`, `.chapter-card`, and `.mdx-doc-card` use `contain: layout style` to isolate hover transforms;
+- `material-glass-card` / `ui-surface-interactive` own shared card material and interaction, while `.chapter-card` and `.mdx-doc-card` keep document-specific behavior;
 - The particle layer uses `contain: layout style paint`;
 - `will-change` is set only while the element is alive and cleaned up on removal.
 

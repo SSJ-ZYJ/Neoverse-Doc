@@ -3,6 +3,7 @@
 
 'use client';
 
+import { UiAction } from '@neoverse-ui/react';
 import { Home, RotateCw } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -60,21 +61,24 @@ export function LocalizedError({ variant = 'default', reset, retry }: LocalizedE
           </p>
         </div>
         <div className="special-fallback__actions">
-          <button
+          <UiAction
+            as="button"
             type="button"
+            variant="primary"
             onClick={handleRetry}
             disabled={isRetrying}
             aria-busy={isRetrying}
-            className="control-surface control-surface--primary pointer-events-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
             data-nd-interaction="control"
           >
             <RotateCw className={isRetrying ? 'animate-spin' : undefined} size={16} />
             {dict.errorRetry}
-          </button>
-          <TransitionLink href={homeHref} className="control-surface" data-nd-interaction="control">
-            <Home size={16} />
-            {dict.backToHome}
-          </TransitionLink>
+          </UiAction>
+          <UiAction asChild variant="secondary" data-nd-interaction="control">
+            <TransitionLink href={homeHref}>
+              <Home size={16} />
+              {dict.backToHome}
+            </TransitionLink>
+          </UiAction>
         </div>
       </div>
     </main>

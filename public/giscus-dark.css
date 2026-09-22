@@ -1,3 +1,4 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: Giscus themes intentionally override upstream Primer widget styles inside the third-party iframe. */
 /* Neoverse dark theme for the cross-origin Giscus iframe.
    Giscus iframe 使用的 Neoverse 深色主题。 */
 
@@ -133,7 +134,7 @@ body {
 /* Stable gsc-prefixed hooks restyle Giscus controls without depending on its DOM nesting.
    使用稳定的 gsc 前缀钩子调整 Giscus 控件，避免依赖其 DOM 嵌套层级。 */
 body {
-  font-family: "Noto Sans SC", "Segoe UI", sans-serif;
+  font-family: 'Noto Sans SC', 'Segoe UI', sans-serif;
 }
 
 .gsc-main {

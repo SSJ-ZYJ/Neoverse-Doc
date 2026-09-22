@@ -7,39 +7,45 @@ author:
 ---
 
 > [!DETAILS-AI] AI Summary of This Chapter
-> The site's visuals are driven by semantic tokens and modular CSS. `tokens.css` provides dual variable sets for color, surfaces, radii, shadows, spacing, and motion; `glass.css` implements the unified glassmorphism trio and business surface classes; `theme.css` maps CSS variables to Tailwind v4; `a11y.css` handles three fallback layers: reduced motion, reduced transparency, and unsupported backdrop-filter. Theme switching is done through `next-themes` and a root element class, temporarily disabling broad transitions during the switch to avoid color animations across long documents.
+> The shared visual foundation now comes from the standalone Neoverse-UI packages. Docs consumes `@neoverse-ui/tokens`, `motion`, `tailwind`, and `glass-runtime` for color, geometry, materials, and motion contracts. `src/ui/tokens/tokens.css` is now a compatibility and Docs-domain layer for Fumadocs, Mermaid, and reading semantics; shared Glass Material and optional WebGL edge enhancement come from Neoverse-UI, while document-specific surfaces such as code blocks stay in Docs. Theme switching remains managed by `next-themes`.
 
 ## 1. Styles Directory Structure
 
-`src/app/globals.css` is the aggregation entry point; shared foundations and feature-private styles are split by ownership:
+`src/app/globals.css` remains the Docs aggregation entry point, but the shared foundation is imported from Neoverse-UI instead of being redefined locally:
 
 ```text
-src/
+Neoverse-UI
+├── @neoverse-ui/tokens           # shared color, geometry, Material, layout, and Motion tokens
+├── @neoverse-ui/motion           # shared motion and reduced-motion contracts
+├── @neoverse-ui/tailwind         # Tailwind v4 theme plus shared Material / Component CSS
+└── @neoverse-ui/glass-runtime    # optional WebGL Glass edge enhancement
+
+Neoverse-Doc/src/
 ├── ui/
-│   ├── tokens/tokens.css         # colors, surfaces, radii, shadows, spacing, motion
-│   ├── surfaces/glass.css        # glass surfaces and controls
+│   ├── tokens/tokens.css         # compatibility aliases + Docs / Mermaid / reading tokens
+│   ├── surfaces/glass.css        # Docs ambience and React/Fumadocs adaptation layer
 │   ├── compositions/compositions.css # page compositions and Metadata Chip
 │   └── styles/                   # Theme, Motion, Typography, and A11y
 ├── adapters/fumadocs/styles.css  # Fumadocs component overrides
 ├── features/*/styles.css         # Search, Tasks, Mermaid, Transition, Community
-├── runtime/interaction/styles.css
+├── runtime/neoverse-glass-runtime.tsx
 └── styles/                       # Loading, MDX file trees, and page-level structure
 ```
 
-Task, Mermaid, Transition, Community, Search Spotlight, and Interaction styles follow their owners; stable product-page compositions live in `src/ui/compositions/compositions.css`, page-specific rules remain beside their Feature, and other page layout and small global integration rules remain in `src/styles/`. Visual tweaks prefer replacing Tokens or existing surfaces over stacking a second glass, Glow, or shadow system.
+Task, Mermaid, Transition, Community, Search Spotlight, and Interaction styles continue to follow their owners. Shared color, radius, shadow, Material, and foundation Motion changes belong in Neoverse-UI; Docs keeps only reading, Fumadocs bridging, Mermaid semantics, and other product-specific concerns.
 
-Page compositions unify hierarchy and rhythm without owning page data or routing. `Page Header`, `Page Section`, `Content Grid`, and `Empty State` are reused through CSS composition classes. `Metadata Chip` uses a small set of semantic variants for Track, Topic, Type, Difficulty, and lifecycle Status; its labels still come from dictionaries or the Taxonomy Registry.
+Page compositions remain Docs-owned because they express product information hierarchy rather than reusable visual primitives. `Page Header`, `Page Section`, `Content Grid`, and `Empty State` continue to live in `src/ui/compositions/compositions.css`; `Metadata Chip` keeps its semantic Track, Topic, Type, Difficulty, and lifecycle Status variants, with labels supplied by dictionaries or the Taxonomy Registry.
 
 ## 2. Semantic Token System
 
-`src/ui/tokens/tokens.css` is the single source of truth for all visual decisions, providing dual variable sets for light (`:root, .light`) and dark (`.dark`).
+`@neoverse-ui/tokens/css` is the single source of truth for the shared design foundation. `src/ui/tokens/tokens.css` is now a Docs compatibility and domain-token layer: legacy names such as `--background-primary`, `--radius-*`, and `--motion-*` resolve to `--neoverse-*` tokens so existing feature styles can migrate incrementally.
 
 ### Token Categories
 
 | Category | Examples | Purpose |
 | :--- | :--- | :--- |
 | Color semantics | `--background-primary`, `--text-primary`, `--accent-primary` | Background, text, accents |
-| Surfaces | `--surface-elevated`, `--surface-panel` | Glass surface hierarchy |
+| Surfaces | `--surface-elevated`, `--surface-glass` | Page surface hierarchy |
 | Borders | `--border-subtle`, `--border-strong` | Stroke strength |
 | Ambient light | `--ambient-ice`, `--ambient-mint`, `--ambient-violet` | Multi-hue radial gradients |
 | Geometry | `--radius-xs/sm/md/lg/xl/2xl/pill` | Radius tiers |
@@ -62,34 +68,21 @@ Beyond the general Tokens, dedicated variables are defined for specific scenario
 
 Tokens bridge to the Fumadocs UI color system through the `--color-fd-*` and `--fd-primary` aliases, letting Fumadocs components and project custom components share the same color source.
 
-## 3. Glassmorphism System
+## 3. Glass Material System
 
-`src/ui/surfaces/glass.css` implements the unified glass visual language.
+Shared Glass Material comes from `@neoverse-ui/tailwind`. Core surfaces use `material-glass-subtle`, `material-glass-elevated`, `material-glass-card`, and `material-glass-immersive`. These classes share the same `--neoverse-material-*` contract with `@neoverse-ui/glass-runtime`, while CSS remains the fallback when WebGL is unavailable.
 
-### The Trio Structure
+Docs no longer maintains its own generic `.glass-card` / `.glass-chip` / `.control-surface` layer. Shared actions use `UiAction` from `@neoverse-ui/react`, shared cards use `material-glass-card`, and interactive surfaces use `ui-surface-interactive`. `src/ui/surfaces/glass.css` is limited to Docs ambience, global typography, and document-scene adaptations such as `.glass-codeblock`.
 
-Each glass surface consists of the `border + backdrop-filter + box-shadow` trio:
+### Current Adaptation Boundary
 
-- a single hairline stroke (a `1px` semi-transparent border);
-- a top sheen highlight (`inset` box-shadow);
-- a soft shadow (`--shadow-edge` + `--glass-shadow`);
-- no stacked multi-layer inset / outer ring ghosts.
-
-### Business Surface Classes
-
-| Class | Purpose | contain strategy |
-| :--- | :--- | :--- |
-| `.surface-panel` / `.surface-elevated` | Large panels, popovers | `contain: layout style` (deliberately not `paint`, because `backdrop-filter` needs to sample the parent stacking context) |
-| `.control-surface` / `.control-surface--primary` | Compact controls | `translateY(-2px)` hover feedback |
-| `.glass-panel` / `.glass-card` / `.glass-chip` / `.glass-cta` | Large panels, popovers, chips, CTAs | Tiered by size |
-| `.chapter-card` / `.mdx-doc-card` | Home chapter cards, doc cards | `contain: layout style` isolates hover transforms and cursor tracking |
-
-### Unified Hover System
-
-- `.glass-interactive`: full lift + glow + tint switch;
-- `.glass-interactive--chip`: no lift (to avoid jitter on small elements), only tint and rim glow;
-- wrapped in `@media (hover: hover)` to avoid stuck hover states on touch devices;
-- an explicit `.glass-interactive:focus-visible` outline keeps keyboard focus visible.
+| Capability | Owner |
+| :--- | :--- |
+| Generic Glass Material, edge refraction, reduced-transparency fallback | Neoverse-UI |
+| Shared colors, radius, shadow, base Motion | Neoverse-UI |
+| `.control-surface` React/Fumadocs compatibility shell | Docs for now; replace it when the React adapter is ready |
+| `.glass-codeblock`, Mermaid, blockquotes, reading layout | Docs |
+| `.chapter-card` / `.mdx-doc-card` business layout | Docs |
 
 ### Global Ambient Light
 
@@ -106,12 +99,14 @@ Each glass surface consists of the `border + backdrop-filter + box-shadow` trio:
 
 ```text
 @import "tailwindcss"
+@import "@neoverse-ui/tokens/css"
+@import "@neoverse-ui/tailwind/theme.css"
 @import "fumadocs-ui/css/neutral.css"
 @import "fumadocs-ui/css/preset.css"
 @plugin "tailwindcss-animate"
 ```
 
-`@theme inline` maps CSS variables to Tailwind utility classes:
+The Neoverse-UI Tailwind entry provides the shared semantic theme, Material utilities, and component CSS. Docs keeps `@theme inline` only for site fonts and Fumadocs-facing aliases:
 
 - `--color-background` / `--color-foreground` map to `bg-background` / `text-foreground`;
 - `--font-orbitron` / `--font-noto-sans` / `--font-mono` map to font utility classes.
@@ -253,3 +248,17 @@ Any non-essential Motion respects `prefers-reduced-motion`.
 | `src/runtime/motion/preferences.ts` | Motion preference parsing and bootstrap |
 | `src/runtime/motion/config.ts` | Centralized motion configuration |
 | `src/runtime/motion/experimental-support.ts` | Experimental motion capability detection |
+
+
+## Ownership of reading components
+
+Article content uses quiet, reading-first surfaces. Code blocks, tables, quotations, alerts, and disclosure containers use shared semantic tokens without allocating a backdrop filter per block or adding glow and lift on container hover. Alert titles, icons, and semantic colors retain their meaning; copy controls, tabs, and disclosure summaries retain interaction feedback.
+
+- `UiButton` from `@neoverse-ui/react` owns native button attributes, refs, disabled/loading behavior, and focus styling. Docs retains clipboard logic and translated feedback.
+- Highlighting, line numbers, blank lines, file titles, and the long-code fallback remain server-rendered. The Tabs container owns the surface; nested code blocks do not duplicate borders, shadows, or blur.
+- The MDX `table` mapping supplies a project-owned scroll container while preserving native table attributes and structure. Wide tables and long code scroll within their own containers.
+- Article navigation cards such as `DocCard` reuse shared Surface styles. Content layout, internal transitions, and external-link behavior remain in Docs. Existing MDX tags and props remain compatible.
+
+Shared control styles come from `@neoverse-ui/tailwind/components.css`; consumers do not need to scan utilities inside the React package. After updating local UI archives, reinstall the affected packages and run type, content, and static-build checks.
+
+After building, run `bun run check:reading` for native buttons, copied text, keyboard tab switching, disclosures, and narrow-screen scrolling without screenshots. Set `READING_BROWSER` to a local Chromium executable when needed. Clipboard IO is isolated during the copy test.

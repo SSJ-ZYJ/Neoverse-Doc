@@ -69,7 +69,13 @@ export function Tabs(props: ComponentProps<typeof FumadocsTabs>) {
 
   // Spread props first so our ref wins if a caller ever passes one.
   // 先展开 props，再绑 ref，确保我们的 ref 不被覆盖。
-  return <FumadocsTabs {...props} ref={rootRef} />;
+  return (
+    <FumadocsTabs
+      {...props}
+      className={['docs-code-tabs', props.className].filter(Boolean).join(' ')}
+      ref={rootRef}
+    />
+  );
 }
 
 export const Tab = FumadocsTab;

@@ -18,3 +18,5 @@ export {
   ResourceLink,
 } from './doc-cards';
 export { File, Files, Folder } from './files';
+
+export { DocsTable as table } from './docs-table';

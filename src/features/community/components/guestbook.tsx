@@ -10,9 +10,9 @@
 import Giscus from '@giscus/react';
 import { useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { i18n, type Locale, resolveLocale } from '@/lib/i18n';
-import { GISCUS_CONFIG, GISCUS_THEME_PATHS, GISCUS_THEME_URLS } from '@/lib/site-config';
+import { GISCUS_CONFIG, GISCUS_THEME_URLS } from '@/lib/site-config';
 
 const GISCUS_LANG_MAP: Record<Locale, string> = {
   zh: 'zh-CN',
@@ -29,7 +29,6 @@ export function Guestbook({ slugKey }: GuestbookProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ lang?: string }>();
   const shellRef = useRef<HTMLDivElement>(null);
-  const [siteOrigin, setSiteOrigin] = useState<string>();
   const [switching, setSwitching] = useState(false);
   const prevThemeUrl = useRef<string | undefined>(undefined);
   const locale = resolveLocale(params?.lang);
@@ -37,20 +36,13 @@ export function Guestbook({ slugKey }: GuestbookProps) {
   // 回退引用 i18n.defaultLanguage，确保默认语言变更时保持一致。
   const giscusLang = GISCUS_LANG_MAP[locale] ?? GISCUS_LANG_MAP[i18n.defaultLanguage];
   const themeVariant = resolvedTheme === 'dark' ? 'dark' : 'light';
-  const themeUrl =
-    process.env.NODE_ENV === 'production'
-      ? GISCUS_THEME_URLS[themeVariant]
-      : siteOrigin
-        ? new URL(GISCUS_THEME_PATHS[themeVariant], siteOrigin).toString()
-        : undefined;
+  const themeUrl = GISCUS_THEME_URLS[themeVariant];
 
-  // Giscus requires an absolute custom-theme URL because its content is rendered
-  // in a cross-origin iframe; defer mounting until the browser origin is known.
-  // Giscus 在跨域 iframe 中渲染，故自定义主题必须使用绝对 URL；
-  // 等浏览器来源可用后再挂载，避免服务端与客户端主题不一致。
-  useEffect(() => {
-    setSiteOrigin(window.location.origin);
-  }, []);
+  // Giscus itself runs on HTTPS in a cross-origin iframe. Always use the public
+  // HTTPS theme URL, including during local development; an HTTP localhost theme
+  // is rejected by the iframe and silently falls back to Giscus's unstyled base.
+  // Giscus 位于 HTTPS 跨域 iframe 中，因此本地开发也必须使用公开的 HTTPS 主题地址；
+  // 传入 HTTP localhost 会导致主题加载失败并回退到未定制的基础样式。
 
   // Hide the old iframe before replacing it, then reveal the new iframe after
   // its own load state clears. Giscus only exposes theme updates through a

@@ -44,7 +44,7 @@ export function ContinueLearningCard({
         <h2 id="home-continue-learning-title">{copy.continueLearningTitle}</h2>
       </div>
       <TransitionLink
-        className="home-continue-learning__card surface-panel glass-interactive"
+        className="home-continue-learning__card material-glass-card ui-surface-interactive"
         data-nd-interaction="control"
         href={content.href}
         transition="surface"

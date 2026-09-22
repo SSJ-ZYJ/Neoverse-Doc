@@ -26,7 +26,7 @@ export function HomeEntryGrid({ entries }: { entries: readonly HomeKnowledgeEntr
     <div className="home-entry-grid">
       {entries.map((entry) => (
         <TransitionLink
-          className="home-entry-card surface-panel glass-interactive"
+          className="home-entry-card material-glass-card ui-surface-interactive"
           data-nd-interaction="control"
           href={entry.href}
           key={entry.id}
