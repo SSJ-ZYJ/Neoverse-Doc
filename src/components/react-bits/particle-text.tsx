@@ -1,10 +1,14 @@
 // Accessible local adaptation of React Bits Particle Text with theme-aware
-// colors, a static fallback, and bounded animation work.
+// colors, a static fallback, and bounded animation work. Under experimental
+// HTML-in-Canvas motion the particle canvas is portalled outside the capture
+// subtree because nested canvas bitmaps cannot be captured.
 // React Bits Particle Text 的无障碍本地化实现，支持主题色、静态回退与
-// 有界动画开销。
+// 有界动画开销。实验性 HTML-in-Canvas 动效下，嵌套 canvas 位图无法被捕获，
+// 粒子画布将通过 Portal 移至捕获子树之外渲染。
 'use client';
 
 import { type CSSProperties, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useMotionPreferences } from '@/runtime/motion/provider';
 
 type ParticleTextTrigger = 'mount' | 'hover' | 'click';
@@ -185,8 +189,16 @@ export function ParticleText({
   text = 'React Bits',
   trigger = 'mount',
 }: ParticleTextProps) {
-  const { effectiveLevel } = useMotionPreferences();
+  const { effectiveExperimental, effectiveLevel } = useMotionPreferences();
   const mediumMotion = effectiveLevel === 'medium';
+  // HTML-in-Canvas capture cannot rasterize nested canvas bitmaps, so an
+  // experimental-motion page (ParticleScroll) would drop the particle title
+  // entirely. In that mode the canvas is portalled outside the capture subtree
+  // while the in-tree fallback keeps a capturable static wordmark.
+  // HTML-in-Canvas 捕获无法光栅化嵌套 canvas 位图，实验性动效页面
+  // （ParticleScroll）会整体丢失粒子标题。该模式下将 canvas 通过 Portal
+  // 移出捕获子树，子树内的静态回退文字仍可被 WebGL 捕获。
+  const portalCapture = effectiveExperimental;
 
   const containerRef = useRef<HTMLSpanElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -212,9 +224,62 @@ export function ParticleText({
     let width = 0;
     let height = 0;
     let highlightCss = highlightColor;
+    // Portal mode state: the canvas lives outside the capture subtree at a
+    // fixed position, so it must not follow the (smoothed) WebGL scroll and is
+    // swapped against the capturable fallback while the hero is scrolled away.
+    // Portal 模式状态：canvas 以 fixed 定位存在于捕获子树外，不能跟随
+    // 平滑的 WebGL 滚动，hero 滚离视口期间与可捕获的静态回退互换。
+    let portalHidden = false;
+    let portalHomeTop = Number.POSITIVE_INFINITY;
     const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
     const reducedMotion = effectiveLevel === 'low';
     const intensityScale = mediumMotion ? 0.6 : 1;
+
+    // Sum the scroll offsets of every scrollable ancestor plus the document,
+    // covering both the HTML-in-Canvas viewport container and plain document
+    // flow, so the fixed canvas can always target the hero's home position.
+    // 累加所有可滚动祖先与文档本身的滚动偏移，同时覆盖 HTML-in-Canvas
+    // 视口容器与普通文档流，让 fixed canvas 始终对位 hero 的顶部基准位置。
+    const readScrollOffset = () => {
+      let node: HTMLElement | null = container.parentElement;
+      let offset = window.scrollY;
+      while (node && node !== document.body && node !== document.documentElement) {
+        offset += node.scrollTop;
+        node = node.parentElement;
+      }
+      return offset;
+    };
+
+    const syncPortalCanvas = () => {
+      if (!portalCapture) return;
+      const rect = container.getBoundingClientRect();
+      const homeTop = rect.top + readScrollOffset();
+      canvas.style.left = `${rect.left}px`;
+      canvas.style.top = `${homeTop}px`;
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+      portalHomeTop = homeTop;
+    };
+
+    const applyPortalVisibility = (visible: boolean) => {
+      canvas.style.opacity = visible ? '1' : '0';
+      if (visible) {
+        delete container.dataset.fallback;
+        ensureRenderLoop();
+      } else {
+        container.dataset.fallback = '';
+        stopRenderLoop();
+      }
+    };
+
+    const handleViewportScroll = () => {
+      if (!portalCapture) return;
+      const currentTop = container.getBoundingClientRect().top + readScrollOffset();
+      const scrolledAway = currentTop < portalHomeTop - 2;
+      if (scrolledAway === portalHidden) return;
+      portalHidden = scrolledAway;
+      applyPortalVisibility(!portalHidden);
+    };
 
     const pointer = {
       active: false,
@@ -225,6 +290,26 @@ export function ParticleText({
     };
 
     const setReady = (ready: boolean) => {
+      if (portalCapture) {
+        // The canvas sits outside the container, so data-ready CSS cannot
+        // reach it; drive both sides directly and keep the swap exclusive.
+        // canvas 不在容器内，data-ready CSS 无法作用其上；直接驱动两侧
+        // 并保持互斥切换。
+        if (ready) {
+          if (portalHidden) {
+            canvas.style.opacity = '0';
+            container.dataset.fallback = '';
+            return;
+          }
+          canvas.style.opacity = '1';
+          delete container.dataset.fallback;
+        } else {
+          canvas.style.opacity = '0';
+          container.dataset.fallback = '';
+        }
+        return;
+      }
+
       if (ready) {
         container.dataset.ready = '';
         delete container.dataset.fallback;
@@ -285,7 +370,7 @@ export function ParticleText({
 
     const render = (now: number) => {
       animationFrame = null;
-      if (!inView || reducedMotion) return;
+      if (!inView || reducedMotion || portalHidden) return;
 
       context.clearRect(0, 0, width, height);
       if (glow) {
@@ -352,7 +437,7 @@ export function ParticleText({
     };
 
     const ensureRenderLoop = () => {
-      if (animationFrame === null && inView && !reducedMotion) {
+      if (animationFrame === null && inView && !reducedMotion && !portalHidden) {
         animationFrame = window.requestAnimationFrame(render);
       }
     };
@@ -560,6 +645,11 @@ export function ParticleText({
       pointer.y = height / 2;
       pointer.smoothX = pointer.x;
       pointer.smoothY = pointer.y;
+      syncPortalCanvas();
+      // A restored scroll position (e.g. reload mid-page) must not show the
+      // fixed particle canvas while the hero is off-screen.
+      // 恢复的滚动位置（如页面中部刷新）不得在 hero 离屏时显示 fixed 粒子。
+      handleViewportScroll();
       setReady(true);
       startGather(false);
       ensureRenderLoop();
@@ -632,6 +722,20 @@ export function ParticleText({
       attributes: true,
     });
 
+    if (portalCapture) {
+      // The capturable fallback covers the WebGL output until particles are
+      // ready, so the wordmark never blanks out during font loading.
+      // 粒子就绪前由可捕获的静态回退覆盖 WebGL 输出，字体加载期间标题
+      // 不会空白。
+      container.dataset.fallback = '';
+      syncPortalCanvas();
+    }
+    // Capture-phase listening also sees scrolls inside the HTML-in-Canvas
+    // viewport container, which never bubble as window scroll events.
+    // 捕获阶段监听也能收到 HTML-in-Canvas 视口容器内部的滚动，
+    // 这类滚动不会以 window scroll 事件冒泡。
+    window.addEventListener('scroll', handleViewportScroll, true);
+
     void sampleText();
 
     return () => {
@@ -644,6 +748,7 @@ export function ParticleText({
       canvas.removeEventListener('pointermove', handlePointerMove);
       canvas.removeEventListener('pointerleave', handlePointerLeave);
       canvas.removeEventListener('click', handleClick);
+      window.removeEventListener('scroll', handleViewportScroll, true);
       stopRenderLoop();
       if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
     };
@@ -661,6 +766,7 @@ export function ParticleText({
     mediumMotion,
     particleSize,
     pointerRepel,
+    portalCapture,
     repelRadius,
     roundedCharacters,
     scatter,
@@ -669,6 +775,23 @@ export function ParticleText({
     text,
     trigger,
   ]);
+
+  // The portalled canvas renders outside the capture subtree so its bitmap
+  // stays visible above the WebGL output; positioning is driven by
+  // syncPortalCanvas from the effect above.
+  // Portal canvas 渲染在捕获子树之外，保证位图在 WebGL 输出之上可见；
+  // 定位由上方 effect 的 syncPortalCanvas 驱动。
+  const canvas = portalCapture ? (
+    createPortal(
+      <canvas
+        className="rb-particle-text__canvas rb-particle-text__canvas--portal"
+        ref={canvasRef}
+      />,
+      document.body,
+    )
+  ) : (
+    <canvas className="rb-particle-text__canvas" ref={canvasRef} />
+  );
 
   return (
     <span className={`rb-particle-text ${className}`} ref={containerRef} style={style}>
@@ -680,7 +803,7 @@ export function ParticleText({
           {text}
         </span>
       </noscript>
-      <canvas className="rb-particle-text__canvas" ref={canvasRef} />
+      {canvas}
     </span>
   );
 }

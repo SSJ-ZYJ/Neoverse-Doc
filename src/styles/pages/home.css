@@ -423,6 +423,24 @@
   opacity: 1;
 }
 
+/* The portalled canvas lives directly under <body>: HTML-in-Canvas capture
+   cannot rasterize nested canvas bitmaps, so it renders above the WebGL
+   output instead. Geometry comes from inline styles written by the component;
+   opacity is driven by JS so it can stay exclusive with the in-tree fallback.
+   Portal canvas 直接挂在 <body> 下：HTML-in-Canvas 捕获无法光栅化嵌套
+   canvas 位图，因此改为在 WebGL 输出之上渲染。几何尺寸由组件写入的
+   inline style 提供；透明度由 JS 驱动，与子树内静态回退保持互斥。 */
+.rb-particle-text__canvas--portal {
+  position: fixed;
+  inset: auto;
+  inline-size: auto;
+  block-size: auto;
+  pointer-events: auto;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+
 .home-hero__description {
   max-inline-size: 45rem;
   margin: clamp(1.6rem, 4vw, 2.5rem) 0 0;
