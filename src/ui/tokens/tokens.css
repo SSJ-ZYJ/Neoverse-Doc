@@ -553,7 +553,6 @@
   --mermaid-chart-hairline: color-mix(in srgb, var(--edge-light) 36%, var(--border-subtle));
 }
 
-
 /* Quiet reading plane shared by prose containers, without extra blur layers.
    正文容器共用的轻量阅读面，不叠加额外模糊层。 */
 :root {

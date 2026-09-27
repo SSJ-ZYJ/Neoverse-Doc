@@ -1,4 +1,5 @@
 .explore-search-action {
+  height: auto;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;

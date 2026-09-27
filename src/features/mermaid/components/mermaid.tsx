@@ -15,6 +15,7 @@
 'use client';
 
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
+import { UiIconButton } from '@neoverse-ui/react';
 import { Code2, Eye, Maximize, Minimize, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import {
   type CSSProperties,
@@ -721,91 +722,109 @@ export function Mermaid({ chart }: { chart: string }) {
           role="group"
           aria-label={labels.mermaidViewMode}
         >
-          <button
+          <UiIconButton
             type="button"
+            variant="ghost"
+            size="sm"
+            surface="none"
             onClick={() => {
               if (!interactionLockedRef.current) setViewMode('render');
             }}
             disabled={isInteractionLocked}
             aria-pressed={viewMode === 'render'}
-            aria-label={labels.mermaidViewRender}
+            label={labels.mermaidViewRender}
             title={labels.mermaidViewRender}
             className="mermaid-toolbar__btn mermaid-toolbar__view-btn"
             data-active={viewMode === 'render' || undefined}
             data-nd-interaction="control"
           >
             <Eye className="size-4" />
-          </button>
-          <button
+          </UiIconButton>
+          <UiIconButton
             type="button"
+            variant="ghost"
+            size="sm"
+            surface="none"
             onClick={() => {
               if (!interactionLockedRef.current) setViewMode('code');
             }}
             disabled={isInteractionLocked}
             aria-pressed={viewMode === 'code'}
-            aria-label={labels.mermaidViewCode}
+            label={labels.mermaidViewCode}
             title={labels.mermaidViewCode}
             className="mermaid-toolbar__btn mermaid-toolbar__view-btn"
             data-active={viewMode === 'code' || undefined}
             data-nd-interaction="control"
           >
             <Code2 className="size-4" />
-          </button>
+          </UiIconButton>
         </div>
         {/* Zoom controls share one segmented surface with the percentage readout.
            缩放按钮与比例读数共用一个分段表面。 */}
         <div className="mermaid-toolbar__group mermaid-toolbar__zoom-controls">
-          <button
+          <UiIconButton
             type="button"
+            variant="ghost"
+            size="sm"
+            surface="none"
             onClick={() => {
               if (!interactionLockedRef.current) zoomOut();
             }}
             disabled={isInteractionLocked || !canZoomOut || viewMode === 'code'}
-            aria-label={labels.mermaidZoomOut}
+            label={labels.mermaidZoomOut}
             className="mermaid-toolbar__btn"
             data-nd-interaction="control"
           >
             <ZoomOut className="size-4" />
-          </button>
+          </UiIconButton>
           <span aria-live="polite" className="mermaid-toolbar__scale tabular-nums">
             {Math.round(scale * 100)}%
           </span>
-          <button
+          <UiIconButton
             type="button"
+            variant="ghost"
+            size="sm"
+            surface="none"
             onClick={() => {
               if (!interactionLockedRef.current) zoomIn();
             }}
             disabled={isInteractionLocked || !canZoomIn || viewMode === 'code'}
-            aria-label={labels.mermaidZoomIn}
+            label={labels.mermaidZoomIn}
             className="mermaid-toolbar__btn"
             data-nd-interaction="control"
           >
             <ZoomIn className="size-4" />
-          </button>
+          </UiIconButton>
         </div>
         {/* Canvas-level actions form the final compact segment.
            画布级操作组成末尾的紧凑分段。 */}
         <div className="mermaid-toolbar__group mermaid-toolbar__canvas-actions">
-          <button
+          <UiIconButton
             type="button"
+            variant="ghost"
+            size="sm"
+            surface="none"
             onClick={handleResetZoom}
             disabled={isInteractionLocked || !canResetZoom || viewMode === 'code'}
-            aria-label={labels.mermaidReset}
+            label={labels.mermaidReset}
             className="mermaid-toolbar__btn"
             data-nd-interaction="control"
           >
             <RotateCcw className="size-4" />
-          </button>
-          <button
+          </UiIconButton>
+          <UiIconButton
             type="button"
+            variant="ghost"
+            size="sm"
+            surface="none"
             onClick={isMaximized ? handleRestore : handleMaximize}
             disabled={isInteractionLocked}
-            aria-label={isMaximized ? labels.mermaidRestore : labels.mermaidMaximize}
+            label={isMaximized ? labels.mermaidRestore : labels.mermaidMaximize}
             className="mermaid-toolbar__btn"
             data-nd-interaction="control"
           >
             {isMaximized ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
-          </button>
+          </UiIconButton>
         </div>
       </div>
     </div>

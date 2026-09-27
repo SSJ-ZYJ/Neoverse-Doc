@@ -427,6 +427,13 @@
     box-shadow var(--theme-transition-duration) ease;
 }
 
+.docs-reading-return__content {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.625rem;
+}
+
 .docs-reading-return__icon {
   display: grid;
   place-items: center;
@@ -505,7 +512,7 @@
     transform var(--motion-fast) var(--motion-ease-standard);
 }
 
-.docs-reading-return__dismiss > svg {
+.docs-reading-return__dismiss-icon {
   width: 0.875rem;
   height: 0.875rem;
 }
@@ -655,7 +662,7 @@ html[data-nd-reading-restore] {
   transition-delay: 0s;
 }
 
-.docs-back-to-top > svg {
+.docs-back-to-top__icon {
   width: 1rem;
   height: 1rem;
 }
@@ -1881,6 +1888,17 @@ html[data-nd-motion-level="high"] :is(#nd-sidebar, #nd-sidebar-mobile) {
   backdrop-filter: none;
 }
 
+#nd-page figure.glass-codeblock {
+  border: 1px solid var(--glass-border-hairline);
+  background: var(--docs-reading-surface);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+#nd-page .docs-table-scroll {
+  overflow: auto;
+}
+
 /* Document controls use the compact glass tier; the larger surrounding bars
    and cards use medium/large radii, preserving a deliberate radius hierarchy.
    文档控件使用紧凑玻璃层级，外围工具条与卡片使用中 / 大圆角，形成明确层次。 */
@@ -2585,7 +2603,6 @@ html[data-nd-motion-level="high"] #nd-docs-layout > :is(header, #nd-subnav) {
 .dark .shiki path[fill="#424242"] {
   fill: #9ca3af;
 }
-
 
 /* Direct prose keeps one rhythm; nested controls retain their own geometry.
    正文直属内容保持统一节奏，内嵌控件保留自身几何。 */

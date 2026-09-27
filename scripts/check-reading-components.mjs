@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
 import puppeteer from 'puppeteer';
@@ -75,17 +76,27 @@ createRoot(document.getElementById('root')!).render(<Fixture />);
     },
   });
   const origin = `http://127.0.0.1:${server.port}`;
+  const browserPath =
+    process.env.READING_BROWSER ??
+    [
+      `${process.env.PROGRAMFILES ?? 'C:/Program Files'}/Google/Chrome/Application/chrome.exe`,
+      `${process.env['PROGRAMFILES(X86)'] ?? 'C:/Program Files (x86)'}/Microsoft/Edge/Application/msedge.exe`,
+    ].find(existsSync);
   browser = await puppeteer.launch({
     headless: true,
-    ...(process.env.READING_BROWSER ? { executablePath: process.env.READING_BROWSER } : {}),
+    ...(browserPath ? { executablePath: browserPath } : {}),
   });
   const page = await browser.newPage();
   // Isolate clipboard IO while testing actual button events and copied text.
   // 隔离剪贴板 IO，同时测试真实按钮事件与复制文本。
   await page.evaluateOnNewDocument(() => {
-    Object.defineProperty(navigator, 'clipboard', { value: {
-      writeText: async text => { window.__readingClipboard = text; },
-    } });
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: async (text) => {
+          window.__readingClipboard = text;
+        },
+      },
+    });
   });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -123,7 +134,13 @@ createRoot(document.getElementById('root')!).render(<Fixture />);
       const table = document.querySelector('.docs-table-scroll');
       const code = document.querySelector('.docs-long-codeblock .docs-codeblock__scroll');
       return {
-        tableMetrics: { scroll: table.scrollWidth, width: table.clientWidth, overflow: getComputedStyle(table).overflowX, cellWrap: getComputedStyle(table.querySelector("td")).overflowWrap, cellBreak: getComputedStyle(table.querySelector("td")).wordBreak },
+        tableMetrics: {
+          scroll: table.scrollWidth,
+          width: table.clientWidth,
+          overflow: getComputedStyle(table).overflowX,
+          cellWrap: getComputedStyle(table.querySelector('td')).overflowWrap,
+          cellBreak: getComputedStyle(table.querySelector('td')).wordBreak,
+        },
         tableScrollable:
           table.scrollWidth > table.clientWidth && getComputedStyle(table).overflowX === 'auto',
         codeScrollable:
@@ -134,7 +151,11 @@ createRoot(document.getElementById('root')!).render(<Fixture />);
         blur: getComputedStyle(document.querySelector('.glass-codeblock')).backdropFilter,
       };
     });
-    assert.equal(metrics.tableScrollable, true, `${theme}: table scroll boundary ${JSON.stringify(metrics)}`);
+    assert.equal(
+      metrics.tableScrollable,
+      true,
+      `${theme}: table scroll boundary ${JSON.stringify(metrics)}`,
+    );
     assert.equal(metrics.codeScrollable, true, `${theme}: code scroll boundary`);
     assert.equal(metrics.bodyFits, true, `${theme}: article must not widen viewport`);
     await page.focus('.docs-table-scroll');
@@ -177,7 +198,11 @@ createRoot(document.getElementById('root')!).render(<Fixture />);
   // 正文内容必须在注水前已经包含于静态 HTML。
   assert.ok(html.includes('docs-table-scroll') && html.includes('docs-codeblock__header'));
   await page.setViewport({ width: 390, height: 844 });
-  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'production article fits narrow viewport');
+  assert.equal(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    true,
+    'production article fits narrow viewport',
+  );
   assert.deepEqual(errors, []);
   console.log(
     'Reading regression passed: native button ref/events/loading/form, code title/copy/blank lines/long code, mobile scroll in both themes, reduced motion, Tabs keyboard, disclosure, and navigation semantics.',

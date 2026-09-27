@@ -8,6 +8,7 @@
 
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
+import { DocCallout, DocCalloutContainer } from '@/components/mdx/doc-callout';
 import { Tab, Tabs } from '@/components/mdx/code-tabs';
 import { CollapsibleDetailsRenderer } from '@/components/mdx/collapsible-details-renderer';
 import { CustomCodeBlock, LongCodeBlock } from '@/components/mdx/custom-codeblock';
@@ -25,6 +26,8 @@ import { Lab, MdxListItem, Task } from '@/features/tasks';
 
 const projectMdxComponents = {
   ...defaultMdxComponents,
+  Callout: DocCallout,
+  CalloutContainer: DocCalloutContainer,
   details: CollapsibleDetailsRenderer,
   // GFM task-list items become interactive while ordinary list items stay native.
   // GFM 任务列表项获得交互能力，普通列表项仍保持原生渲染。

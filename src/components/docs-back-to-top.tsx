@@ -4,6 +4,7 @@
 'use client';
 
 import { ArrowUp } from 'lucide-react';
+import { UiIconButton } from '@neoverse-ui/react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { prefersReducedMotion } from '@/runtime/motion/preferences';
@@ -70,19 +71,22 @@ export function DocsBackToTop({ label }: DocsBackToTopProps) {
   if (!portalRoot) return null;
 
   return createPortal(
-    <button
+    <UiIconButton
       aria-hidden={!isVisible}
-      aria-label={label}
+      label={label}
       className="docs-back-to-top"
       data-visible={isVisible ? '' : undefined}
       onClick={handleClick}
       style={{ insetInlineEnd: inlineEnd }}
       tabIndex={isVisible ? 0 : -1}
       title={label}
+      size="sm"
+      variant="ghost"
+      surface="none"
       type="button"
     >
-      <ArrowUp aria-hidden="true" />
-    </button>,
+      <ArrowUp aria-hidden="true" className="docs-back-to-top__icon" />
+    </UiIconButton>,
     portalRoot,
   );
 }

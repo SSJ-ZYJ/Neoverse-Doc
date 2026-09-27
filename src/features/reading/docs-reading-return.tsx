@@ -4,6 +4,7 @@
 'use client';
 
 import { ArrowLeft, X } from 'lucide-react';
+import { UiButton, UiIconButton } from '@neoverse-ui/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -442,29 +443,37 @@ export function DocsReadingReturn({
 
   return createPortal(
     <div className="docs-reading-return" data-reading-return="">
-      <button
+      <UiButton
         aria-label={ariaLabel}
         className="docs-reading-return__back"
         onClick={handleReturn}
         title={ariaLabel}
+        size="md"
+        variant="ghost"
+        surface="none"
         type="button"
       >
-        <span aria-hidden="true" className="docs-reading-return__icon">
-          <ArrowLeft />
+        <span className="docs-reading-return__content">
+          <span aria-hidden="true" className="docs-reading-return__icon">
+            <ArrowLeft />
+          </span>
+          <span className="docs-reading-return__action">{actionLabel}</span>
+          <span aria-hidden="true" className="docs-reading-return__divider" />
+          <span className="docs-reading-return__title">{returnPoint.sourceTitle}</span>
         </span>
-        <span className="docs-reading-return__action">{actionLabel}</span>
-        <span aria-hidden="true" className="docs-reading-return__divider" />
-        <span className="docs-reading-return__title">{returnPoint.sourceTitle}</span>
-      </button>
-      <button
-        aria-label={dismissLabel}
+      </UiButton>
+      <UiIconButton
+        label={dismissLabel}
         className="docs-reading-return__dismiss"
         onClick={handleDismiss}
         title={dismissLabel}
+        size="sm"
+        variant="ghost"
+        surface="none"
         type="button"
       >
-        <X aria-hidden="true" />
-      </button>
+        <X aria-hidden="true" className="docs-reading-return__dismiss-icon" />
+      </UiIconButton>
     </div>,
     document.body,
   );

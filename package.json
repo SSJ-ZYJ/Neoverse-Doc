@@ -10,6 +10,7 @@
     "dev": "next dev -p 3001",
     "prebuild": "bun run sync:ui-assets && bun run check:architecture && bun run check:content",
     "check:reading": "bun scripts/check-reading-components.mjs",
+    "check:callouts": "bun scripts/check-doc-callout.mjs",
     "check:architecture": "bun scripts/check-architecture.ts",
     "check:content": "fumadocs-mdx && bun scripts/content-pipeline.ts verify",
     "build": "next build --webpack",

@@ -8,11 +8,11 @@
 
 'use client';
 
+import { useTranslations } from '@fuma-translate/react';
 // fumadocs-ui 16.11+ moved useTranslations to @fuma-translate/react and changed
 // its API from a keyed object to a callable translation function.
 // fumadocs-ui 16.11+ 将 useTranslations 迁移至 @fuma-translate/react，API 由对象改为可调用函数。
 import { UiButton } from '@neoverse-ui/react';
-import { useTranslations } from '@fuma-translate/react';
 import { useCopyButton } from 'fumadocs-ui/utils/use-copy-button';
 import { Check, Clipboard } from 'lucide-react';
 import { useRef } from 'react';

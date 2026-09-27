@@ -2,6 +2,7 @@
 
 import { useSearchContext } from 'fumadocs-ui/contexts/search';
 import { Search } from 'lucide-react';
+import { UiButton } from '@neoverse-ui/react';
 import { SEARCH_QUERY_PARAM, SEARCH_TAG_PARAM } from '../search-intent';
 
 export function SearchTaxonomyAction({
@@ -31,9 +32,16 @@ export function SearchTaxonomyAction({
   };
 
   return (
-    <button className={className} onClick={handleClick} type="button">
-      <Search aria-hidden="true" size={16} />
+    <UiButton
+      className={className}
+      leading={<Search aria-hidden="true" size={16} />}
+      onClick={handleClick}
+      size="md"
+      surface="none"
+      type="button"
+      variant="ghost"
+    >
       {label}
-    </button>
+    </UiButton>
   );
 }
