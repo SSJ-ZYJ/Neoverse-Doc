@@ -26,20 +26,14 @@
 
 :is(#nd-home-layout, [data-nd-transition-source-id="nd-home-layout"]) {
   --home-nav-height: 4.75rem;
-  /* Knowledge-map cards share a lighter, lower-blur glass so the underlying
-     grid remains softly recognizable across chapter and learning-path cards.
-     backdrop-filter blur set to 8px for a visible glass effect. Each card
-     creates a compositing layer, but the visual glass quality is worth the
-     cost on desktop. Mobile falls back via the media query below.
-     知识版图卡片共用更透明、低模糊的玻璃层。backdrop-filter blur 设为
-     8px 以呈现明显的玻璃质感。每张卡片创建独立合成层，但桌面端玻璃
-     视觉值得此开销。移动端通过下方媒体查询降级。 */
-  --home-map-card-surface: color-mix(in srgb, var(--surface-glass) 56%, transparent);
+  /* All homepage cards share one translucent base fill and one blur radius,
+     so the chapter map and contribution surface belong to the same material.
+     首页所有卡片共享同一套半透明底色与模糊半径，让章节版图和参与贡献
+     卡片使用同一种材质。 */
+  --home-card-surface: color-mix(in srgb, var(--surface-elevated) 58%, transparent);
+  --home-map-card-surface: var(--home-card-surface);
+  --home-community-surface: var(--home-card-surface);
   --home-map-card-blur: 8px;
-  /* The community callout uses a low-fill, low-blur surface so the
-     knowledge-network backdrop remains clearly visible behind its content.
-     共建卡片使用低填充、低模糊表面，让知识网络背景可清晰透过内容区域。 */
-  --home-community-surface: color-mix(in srgb, var(--surface-glass) 18%, transparent);
   /* Mobile chapter indices gain enough scale for scanning without competing
      with the chapter title hierarchy.
      移动端章节编号适度放大以便快速扫读，同时不抢占章节标题层级。 */
@@ -149,6 +143,17 @@
   margin-block-start: calc(-1 * var(--home-nav-height));
   flex: 0 0 auto;
   overflow: hidden;
+}
+
+.home-particle-scroll[data-particle-scroll-interactive],
+.home-particle-scroll :is(
+  .home-cta,
+  .chapter-card,
+  .home-scroll-cue,
+  .home-community__actions a,
+  .home-footer__link
+) {
+  cursor: pointer;
 }
 
 /* Animated ambient orb layer: four large blurred gradient orbs that drift
@@ -423,19 +428,14 @@
   opacity: 1;
 }
 
-/* The portalled canvas lives directly under <body>: HTML-in-Canvas capture
-   cannot rasterize nested canvas bitmaps, so it renders above the WebGL
-   output instead. Geometry comes from inline styles written by the component;
-   opacity is driven by JS so it can stay exclusive with the in-tree fallback.
-   Portal canvas 直接挂在 <body> 下：HTML-in-Canvas 捕获无法光栅化嵌套
-   canvas 位图，因此改为在 WebGL 输出之上渲染。几何尺寸由组件写入的
-   inline style 提供；透明度由 JS 驱动，与子树内静态回退保持互斥。 */
+/* The portalled bitmap stays above the captured page and remains interactive;
+   the particle viewport forwards its wheel and touch input to the scroll area.
+   Portal 位图覆盖捕获页面并保留交互；粒子视口将其滚轮和触摸输入转给滚动区域。 */
 .rb-particle-text__canvas--portal {
   position: fixed;
   inset: auto;
   inline-size: auto;
   block-size: auto;
-  pointer-events: auto;
   z-index: 1;
   opacity: 0;
   transition: opacity var(--motion-fast) var(--motion-ease-standard);
@@ -777,6 +777,8 @@
    eliminating the transparent-to-loaded flash during fast scrolling.
    卡片集合在父级归位期间保持可读，消除快速滚动时从透明到加载完成的闪现。 */
 :where(.chapter-grid) {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 1rem;
@@ -852,6 +854,7 @@
     radial-gradient(circle at var(--bento-x) var(--bento-y), var(--accent-soft), transparent 42%),
     var(--glass-refraction-fill), var(--home-map-card-surface);
   box-shadow: var(--shadow-edge), var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
   /* Isolate layout/style recalc so hover transforms and bento cursor tracking
      do not cascade into sibling cards. `paint` is omitted because backdrop-filter
@@ -970,6 +973,7 @@
 
 .home-community__layout {
   position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: clamp(2rem, 8vw, 7rem);
@@ -987,6 +991,7 @@
     radial-gradient(circle at 85% 10%, var(--ambient-mint), transparent 18rem),
     var(--glass-refraction-fill), var(--home-community-surface);
   box-shadow: var(--shadow-edge), var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--home-map-card-blur)) saturate(var(--glass-saturate));
   /* Glass edge now matches .chapter-card: border + ::after conic-gradient
      reflection + glass-refraction-fill background layer provide the same
@@ -1636,21 +1641,23 @@ html[data-page-hidden] .ai-compute__pulse {
   backdrop-filter: none;
 }
 
-/* HTML-in-Canvas splits each chapter card's backdrop-filter surface into
-   capture tiles, leaving opaque vertical blocks inside and between cards.
-   The existing refraction fill and border retain the glass hierarchy without
-   that filter in the native particle branch.
-   HTML-in-Canvas 会把章节卡片的背景模糊拆成捕获图块，在卡片内部与间隙留下
-   不透明竖块。原生粒子分支移除该滤镜后，现有折射填充与边框仍保留玻璃层级。 */
-.home-particle-scroll[data-particle-scroll-native] .chapter-card {
+
+/* HTML-in-Canvas cannot capture live backdrop-filter surfaces reliably. Keep
+   the cards translucent so the captured content remains intact; the shared
+   fill and restrained board opacity retain the same depth without introducing
+   a raster artifact.
+   HTML-in-Canvas 无法稳定捕获实时 backdrop-filter 表面。卡片继续保持半透明，
+   由统一底色与克制的线路板透明度提供纵深，同时避免产生栅格伪影。 */
+.home-particle-scroll[data-particle-scroll-native]
+  :is(.chapter-card, .home-community__layout) {
+  -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
 
-/* HTML-in-Canvas rasterizes the community controls' backdrop blur as an
-   oversized rectangular tile. Their opaque glass fills already preserve the
-   intended contrast, so only the native capture branch drops that blur layer.
-   HTML-in-Canvas 会把共建操作按钮的背景模糊栅格化为过大的矩形图块。
-   按钮自身的玻璃填充已能保证对比度，因此仅在原生捕获分支移除该模糊层。 */
+.home-particle-scroll[data-particle-scroll-native] .ai-compute--knowledge {
+  opacity: 0.18;
+}
+
 .home-particle-scroll[data-particle-scroll-native] .home-community__actions .control-surface {
   backdrop-filter: none;
 }

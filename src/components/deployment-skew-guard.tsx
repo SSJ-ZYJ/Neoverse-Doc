@@ -26,7 +26,7 @@ function recoverFromDeploymentSkew() {
 export function DeploymentSkewGuard() {
   useEffect(() => {
     const handleResourceError = (event: ErrorEvent) => {
-      const target = event.target as Element | null;
+      const target = event.target instanceof Element ? event.target : null;
       const resourceUrl = target?.getAttribute('src') ?? target?.getAttribute('href') ?? '';
       const message = `${event.message ?? ''} ${event.error?.message ?? ''}`;
       const tagName = target?.tagName;

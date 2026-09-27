@@ -744,7 +744,192 @@ export function ParticleScroll({ children, className, style, ...options }: Parti
       return;
     }
     if (native && !instanceRef.current) setFailed(true);
+    // HTML-in-Canvas paints the subtree correctly but Chromium may hit-test
+    // only the source canvas. Keep the canvas transparent to hit testing and
+    // forward pointer events to the real interactive descendants by geometry.
+    // HTML-in-Canvas 能正确绘制子树，但 Chromium 可能只命中源画布。
+    // 让画布不拦截命中，并按几何位置将指针事件转给真实交互后代。
+    const host = source.parentElement;
+    if (!host) {
+      instanceRef.current?.destroy();
+      instanceRef.current = null;
+      return;
+    }
+    const forwardedEvents = new WeakSet<Event>();
+    const interactiveSelector =
+      'a[href], button, input, textarea, select, [role="button"], [tabindex]:not([tabindex="-1"])';
+    let forwardedTarget: HTMLElement | null = null;
+    let pressedTarget: HTMLElement | null = null;
+    let activationTarget: HTMLElement | null = null;
+    let forwardingClick = false;
+    const findInteractiveTarget = (clientX: number, clientY: number): HTMLElement | null => {
+      let match: HTMLElement | null = null;
+      for (const candidate of content.querySelectorAll<HTMLElement>(interactiveSelector)) {
+        const rect = candidate.getBoundingClientRect();
+        const css = getComputedStyle(candidate);
+        if (
+          css.display === 'none' ||
+          css.visibility === 'hidden' ||
+          css.pointerEvents === 'none' ||
+          rect.width <= 0 ||
+          rect.height <= 0 ||
+          clientX < rect.left ||
+          clientX > rect.right ||
+          clientY < rect.top ||
+          clientY > rect.bottom
+        )
+          continue;
+        match = candidate;
+      }
+      return match;
+    };
+    const createPointerEvent = (type: string, event: PointerEvent) =>
+      new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        pointerId: event.pointerId,
+        pointerType: event.pointerType,
+        isPrimary: event.isPrimary,
+        buttons: event.buttons,
+        pressure: event.pressure,
+      });
+    const dispatchPointerEvent = (target: HTMLElement, type: string, event: PointerEvent) => {
+      const forwarded = createPointerEvent(type, event);
+      forwardedEvents.add(forwarded);
+      target.dispatchEvent(forwarded);
+    };
+    const onPointerMove = (event: PointerEvent) => {
+      if (forwardedEvents.has(event)) return;
+      const target = findInteractiveTarget(event.clientX, event.clientY);
+      if (target !== forwardedTarget) {
+        if (forwardedTarget) dispatchPointerEvent(forwardedTarget, 'pointerleave', event);
+        if (target) dispatchPointerEvent(target, 'pointerenter', event);
+        forwardedTarget = target;
+      }
+      if (target) {
+        host.dataset.particleScrollInteractive = '';
+        dispatchPointerEvent(target, 'pointermove', event);
+      } else {
+        delete host.dataset.particleScrollInteractive;
+      }
+    };
+    const activateTarget = (target: HTMLElement) => {
+      activationTarget = target;
+      forwardingClick = true;
+      try {
+        target.click();
+      } finally {
+        forwardingClick = false;
+      }
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (forwardedEvents.has(event)) return;
+      activationTarget = null;
+      const target = findInteractiveTarget(event.clientX, event.clientY);
+      pressedTarget = target;
+      if (target) {
+        target.focus({ preventScroll: true });
+        dispatchPointerEvent(target, 'pointerdown', event);
+      }
+    };
+    const onPointerUp = (event: PointerEvent) => {
+      if (forwardedEvents.has(event)) return;
+      const target = findInteractiveTarget(event.clientX, event.clientY);
+      if (target) dispatchPointerEvent(target, 'pointerup', event);
+      if (target && target === pressedTarget) activateTarget(target);
+      pressedTarget = null;
+    };
+    const onClick = (event: MouseEvent) => {
+      if (forwardingClick || forwardedEvents.has(event)) return;
+      const target = findInteractiveTarget(event.clientX, event.clientY);
+      if (!target) return;
+      if (activationTarget === target) {
+        event.preventDefault();
+        activationTarget = null;
+        return;
+      }
+      event.preventDefault();
+      activateTarget(target);
+    };
+    const onPointerLeave = (event: PointerEvent) => {
+      if (forwardedEvents.has(event) || !forwardedTarget) return;
+      dispatchPointerEvent(forwardedTarget, 'pointerleave', event);
+      forwardedTarget = null;
+      pressedTarget = null;
+      activationTarget = null;
+      delete host.dataset.particleScrollInteractive;
+    };
+    const isCapturedSurface = (target: EventTarget | null) =>
+      target instanceof Node &&
+      (host.contains(target) ||
+        (target instanceof Element && target.matches('[data-particle-scroll-portal]')));
+    const notifyScroll = () => {
+      content.dispatchEvent(new Event('scroll'));
+    };
+    host.addEventListener('pointermove', onPointerMove);
+    host.addEventListener('pointerdown', onPointerDown);
+    host.addEventListener('pointerup', onPointerUp);
+    host.addEventListener('pointerleave', onPointerLeave);
+    host.addEventListener('click', onClick);
+    const onWheel = (event: WheelEvent) => {
+      if (!isCapturedSurface(event.target)) return;
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? content.clientHeight : 1;
+      content.scrollTop += event.deltaY * unit;
+      notifyScroll();
+    };
+    let touchY = 0;
+    const onTouchStart = (event: TouchEvent) => {
+      if (isCapturedSurface(event.target) && event.touches.length === 1)
+        touchY = event.touches[0].clientY;
+    };
+    const onTouchMove = (event: TouchEvent) => {
+      if (!isCapturedSurface(event.target) || event.touches.length !== 1) return;
+      event.preventDefault();
+      const nextY = event.touches[0].clientY;
+      content.scrollTop += touchY - nextY;
+      notifyScroll();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        target.closest('input, textarea, select, button, [contenteditable], [role="dialog"]')
+      )
+        return;
+      const step = content.clientHeight * 0.85;
+      const delta =
+        event.key === 'ArrowDown' ? 40
+        : event.key === 'ArrowUp' ? -40
+        : event.key === 'PageDown' || (event.key === ' ' && !event.shiftKey) ? step
+        : event.key === 'PageUp' || (event.key === ' ' && event.shiftKey) ? -step
+        : event.key === 'End' ? content.scrollHeight
+        : event.key === 'Home' ? -content.scrollHeight
+        : 0;
+      if (!delta) return;
+      event.preventDefault();
+      content.scrollTop += delta;
+      notifyScroll();
+    };
+    window.addEventListener('wheel', onWheel, { capture: true, passive: false });
+    window.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
+    window.addEventListener('touchmove', onTouchMove, { capture: true, passive: false });
+    window.addEventListener('keydown', onKeyDown);
     return () => {
+      host.removeEventListener('pointermove', onPointerMove);
+      host.removeEventListener('pointerdown', onPointerDown);
+      host.removeEventListener('pointerup', onPointerUp);
+      host.removeEventListener('pointerleave', onPointerLeave);
+      host.removeEventListener('click', onClick);
+      delete host.dataset.particleScrollInteractive;
+      window.removeEventListener('wheel', onWheel, true);
+      window.removeEventListener('touchstart', onTouchStart, true);
+      window.removeEventListener('touchmove', onTouchMove, true);
+      window.removeEventListener('keydown', onKeyDown);
       instanceRef.current?.destroy();
       instanceRef.current = null;
     };
@@ -767,22 +952,23 @@ export function ParticleScroll({ children, className, style, ...options }: Parti
         suppressHydrationWarning
         style={
           native
-            ? { position: 'absolute', inset: 0, width: '100%', height: '100%' }
+            ? { position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }
             : { display: 'none' }
         }
       >
         {native ? (
           <div
             ref={contentRef}
+            data-particle-scroll-content={native ? '' : undefined}
+            // @ts-expect-error experimental html-in-canvas attribute
+            drawable=""
             style={{
               position: 'relative',
               width: '100%',
               height: '100%',
-              // The particle viewport is vertically scrollable only; transformed
-              // decorative layers must not make the homepage horizontally draggable.
-              // 粒子视口只允许垂直滚动；装饰层变换不能让主页产生横向拖动区域。
               overflowX: 'clip',
               overflowY: 'auto',
+              pointerEvents: 'auto',
             }}
           >
             {children}

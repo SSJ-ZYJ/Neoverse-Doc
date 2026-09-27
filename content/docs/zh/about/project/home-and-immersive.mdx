@@ -98,6 +98,10 @@ Hero 段是首页第一屏，承担项目身份建立。
 
 `src/styles/pages/home.css` 包含几项关键约束，避免视觉增强破坏布局。
 
+### HTML-in-Canvas 首页动效
+
+支持 HTML-in-Canvas 与 WebGL2 的 Chromium 浏览器会启用首页粒子滚动。画布内部保留真实 HTML 子树，因此标题、按钮与卡片仍可访问；当浏览器将指针命中落到画布本身时，首页会把滚轮、触摸和指针事件转给对应的 DOM 元素。能力不满足时，首页回退到原生文档流与普通粒子文字。
+
 ### .home-page 不加 overflow
 
 `.home-page` 刻意不添加 `overflow-x: clip/hidden`。任何非 `visible` 的 overflow 值都会为 `position: fixed` 后代创建包含块，使环境光球层相对此元素而非视口定位，产生 footer 下方空白。

@@ -224,41 +224,21 @@ export function ParticleText({
     let width = 0;
     let height = 0;
     let highlightCss = highlightColor;
-    // Portal mode state: the canvas lives outside the capture subtree at a
-    // fixed position, so it must not follow the (smoothed) WebGL scroll and is
-    // swapped against the capturable fallback while the hero is scrolled away.
-    // Portal 模式状态：canvas 以 fixed 定位存在于捕获子树外，不能跟随
-    // 平滑的 WebGL 滚动，hero 滚离视口期间与可捕获的静态回退互换。
+    // Keep the portal bitmap aligned with its in-tree heading; the particle
+    // viewport routes wheel input from this interactive canvas to content.
+    // Portal 位图跟随子树中的标题；粒子视口将画布上的滚轮输入转给内容。
     let portalHidden = false;
-    let portalHomeTop = Number.POSITIVE_INFINITY;
     const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
     const reducedMotion = effectiveLevel === 'low';
     const intensityScale = mediumMotion ? 0.6 : 1;
 
-    // Sum the scroll offsets of every scrollable ancestor plus the document,
-    // covering both the HTML-in-Canvas viewport container and plain document
-    // flow, so the fixed canvas can always target the hero's home position.
-    // 累加所有可滚动祖先与文档本身的滚动偏移，同时覆盖 HTML-in-Canvas
-    // 视口容器与普通文档流，让 fixed canvas 始终对位 hero 的顶部基准位置。
-    const readScrollOffset = () => {
-      let node: HTMLElement | null = container.parentElement;
-      let offset = window.scrollY;
-      while (node && node !== document.body && node !== document.documentElement) {
-        offset += node.scrollTop;
-        node = node.parentElement;
-      }
-      return offset;
-    };
-
     const syncPortalCanvas = () => {
       if (!portalCapture) return;
       const rect = container.getBoundingClientRect();
-      const homeTop = rect.top + readScrollOffset();
       canvas.style.left = `${rect.left}px`;
-      canvas.style.top = `${homeTop}px`;
+      canvas.style.top = `${rect.top}px`;
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
-      portalHomeTop = homeTop;
     };
 
     const applyPortalVisibility = (visible: boolean) => {
@@ -274,8 +254,9 @@ export function ParticleText({
 
     const handleViewportScroll = () => {
       if (!portalCapture) return;
-      const currentTop = container.getBoundingClientRect().top + readScrollOffset();
-      const scrolledAway = currentTop < portalHomeTop - 2;
+      syncPortalCanvas();
+      const rect = container.getBoundingClientRect();
+      const scrolledAway = rect.bottom <= 0 || rect.top >= window.innerHeight;
       if (scrolledAway === portalHidden) return;
       portalHidden = scrolledAway;
       applyPortalVisibility(!portalHidden);
@@ -701,7 +682,6 @@ export function ParticleText({
         pointer.active = false;
       }
     };
-
     hoverQuery.addEventListener('change', handleHoverChange);
     canvas.addEventListener('click', handleClick);
     handleHoverChange();
@@ -722,6 +702,11 @@ export function ParticleText({
       attributes: true,
     });
 
+    const scrollTarget = portalCapture
+      ? container
+          .closest<HTMLElement>('[data-particle-scroll-native]')
+          ?.querySelector<HTMLElement>('[data-particle-scroll-content]') ?? null
+      : null;
     if (portalCapture) {
       // The capturable fallback covers the WebGL output until particles are
       // ready, so the wordmark never blanks out during font loading.
@@ -730,10 +715,12 @@ export function ParticleText({
       container.dataset.fallback = '';
       syncPortalCanvas();
     }
-    // Capture-phase listening also sees scrolls inside the HTML-in-Canvas
-    // viewport container, which never bubble as window scroll events.
-    // 捕获阶段监听也能收到 HTML-in-Canvas 视口容器内部的滚动，
-    // 这类滚动不会以 window scroll 事件冒泡。
+    // The native viewport's scroll event does not reliably cross the
+    // experimental canvas boundary, so subscribe to the explicit scroll node
+    // as well as document-level scrolling.
+    // 原生视口的 scroll 事件不一定能穿过实验性画布边界，因此同时监听显式
+    // 滚动节点与文档级滚动。
+    scrollTarget?.addEventListener('scroll', handleViewportScroll, { passive: true });
     window.addEventListener('scroll', handleViewportScroll, true);
 
     void sampleText();
@@ -748,6 +735,7 @@ export function ParticleText({
       canvas.removeEventListener('pointermove', handlePointerMove);
       canvas.removeEventListener('pointerleave', handlePointerLeave);
       canvas.removeEventListener('click', handleClick);
+      scrollTarget?.removeEventListener('scroll', handleViewportScroll);
       window.removeEventListener('scroll', handleViewportScroll, true);
       stopRenderLoop();
       if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
@@ -784,8 +772,10 @@ export function ParticleText({
   const canvas = portalCapture ? (
     createPortal(
       <canvas
+        data-particle-scroll-portal=""
         className="rb-particle-text__canvas rb-particle-text__canvas--portal"
         ref={canvasRef}
+        style={{ pointerEvents: 'auto' }}
       />,
       document.body,
     )
