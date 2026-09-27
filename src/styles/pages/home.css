@@ -146,13 +146,8 @@
 }
 
 .home-particle-scroll[data-particle-scroll-interactive],
-.home-particle-scroll :is(
-  .home-cta,
-  .chapter-card,
-  .home-scroll-cue,
-  .home-community__actions a,
-  .home-footer__link
-) {
+.home-particle-scroll
+  :is(.home-cta, .chapter-card, .home-scroll-cue, .home-community__actions a, .home-footer__link) {
   cursor: pointer;
 }
 
@@ -1641,15 +1636,13 @@ html[data-page-hidden] .ai-compute__pulse {
   backdrop-filter: none;
 }
 
-
 /* HTML-in-Canvas cannot capture live backdrop-filter surfaces reliably. Keep
    the cards translucent so the captured content remains intact; the shared
    fill and restrained board opacity retain the same depth without introducing
    a raster artifact.
    HTML-in-Canvas 无法稳定捕获实时 backdrop-filter 表面。卡片继续保持半透明，
    由统一底色与克制的线路板透明度提供纵深，同时避免产生栅格伪影。 */
-.home-particle-scroll[data-particle-scroll-native]
-  :is(.chapter-card, .home-community__layout) {
+.home-particle-scroll[data-particle-scroll-native] :is(.chapter-card, .home-community__layout) {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }

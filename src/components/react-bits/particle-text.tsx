@@ -703,9 +703,9 @@ export function ParticleText({
     });
 
     const scrollTarget = portalCapture
-      ? container
+      ? (container
           .closest<HTMLElement>('[data-particle-scroll-native]')
-          ?.querySelector<HTMLElement>('[data-particle-scroll-content]') ?? null
+          ?.querySelector<HTMLElement>('[data-particle-scroll-content]') ?? null)
       : null;
     if (portalCapture) {
       // The capturable fallback covers the WebGL output until particles are

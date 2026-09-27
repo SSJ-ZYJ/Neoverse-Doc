@@ -40,6 +40,20 @@ blockquote {
     transform var(--theme-transition-duration) var(--motion-ease-emphasized);
 }
 
+/* Fumadocs wraps theme changes in the View Transitions API. Disable its
+   root cross-fade: the captured old/new surfaces briefly blend into a gray
+   frame before the next theme has painted.
+   Fumadocs 会用 View Transitions API 包裹主题切换。禁用根节点交叉淡化，
+   避免新主题绘制前旧新表面混合成灰色闪帧。 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none !important;
+}
+
+::view-transition-new(root) {
+  mix-blend-mode: normal !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --theme-transition-duration: 0ms;

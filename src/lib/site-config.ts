@@ -62,19 +62,33 @@ export const GISCUS_CONFIG = {
   categoryId: 'DIC_kwDOSl2-Es4C9t6O',
 } as const;
 
-// Public custom-theme assets are resolved against the active site origin before
-// being sent to the cross-origin Giscus iframe.
-// 公共自定义主题资源会先基于当前站点来源解析，再传入跨域的 Giscus iframe。
+// Both themes share one stylesheet. The Giscus iframe receives the host
+// color-scheme, so its `prefers-color-scheme` media query switches colors
+// without downloading another CSS asset.
+// 浅深主题共用一个样式表。Giscus iframe 会接收宿主的 color-scheme，
+// 因此通过 prefers-color-scheme 媒体查询切换颜色，无需重新下载 CSS。
 export const GISCUS_THEME_PATHS = {
-  light: '/giscus-light.css',
-  dark: '/giscus-dark.css',
+  light: '/giscus.css',
+  dark: '/giscus.css',
 } as const;
 
-// Production themes use the repository's jsDelivr mirror so Giscus receives
-// CSS with cross-origin headers on every static hosting provider.
-// 生产主题使用仓库的 jsDelivr 镜像，确保 Giscus 在任意静态托管平台都能获得跨域 CSS 响应头。
+// Production HTTPS uses the repository's jsDelivr mirror. HTTPS development
+// can use the same-origin CORS-enabled asset directly; HTTP development uses a
+// short bridge over the existing CDN themes because its iframe cannot load
+// local HTTP CSS.
+// HTTPS 生产环境使用仓库 jsDelivr 镜像，HTTPS 开发环境可直接使用同源
+// CORS 资源；HTTP 开发环境使用已有 CDN 主题的短桥接地址，因为 iframe
+// 无法加载本地 HTTP CSS。
 const GISCUS_THEME_CDN_BASE_URL = `https://cdn.jsdelivr.net/gh/${GISCUS_CONFIG.repo}@main/public`;
 export const GISCUS_THEME_URLS = {
   light: `${GISCUS_THEME_CDN_BASE_URL}${GISCUS_THEME_PATHS.light}`,
   dark: `${GISCUS_THEME_CDN_BASE_URL}${GISCUS_THEME_PATHS.dark}`,
 } as const;
+// HTTP fallback keeps one short data stylesheet URL and lets the iframe select
+// the existing CDN light/dark files through prefers-color-scheme. The stable
+// URL avoids reloading the Giscus iframe during a theme switch.
+// HTTP 回退使用一个短 data 样式地址，由 iframe 通过 prefers-color-scheme
+// 选择已有 CDN 浅色/深色文件，稳定地址可避免主题切换时重载 Giscus iframe。
+export const GISCUS_LEGACY_THEME_URL = `data:text/css;charset=utf-8,${encodeURIComponent(
+  `@import url("${GISCUS_THEME_CDN_BASE_URL}/giscus-light.css");\n@import url("${GISCUS_THEME_CDN_BASE_URL}/giscus-dark.css") (prefers-color-scheme: dark);`,
+)}`;

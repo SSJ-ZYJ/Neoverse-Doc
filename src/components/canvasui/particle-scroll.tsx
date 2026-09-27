@@ -903,13 +903,19 @@ export function ParticleScroll({ children, className, style, ...options }: Parti
         return;
       const step = content.clientHeight * 0.85;
       const delta =
-        event.key === 'ArrowDown' ? 40
-        : event.key === 'ArrowUp' ? -40
-        : event.key === 'PageDown' || (event.key === ' ' && !event.shiftKey) ? step
-        : event.key === 'PageUp' || (event.key === ' ' && event.shiftKey) ? -step
-        : event.key === 'End' ? content.scrollHeight
-        : event.key === 'Home' ? -content.scrollHeight
-        : 0;
+        event.key === 'ArrowDown'
+          ? 40
+          : event.key === 'ArrowUp'
+            ? -40
+            : event.key === 'PageDown' || (event.key === ' ' && !event.shiftKey)
+              ? step
+              : event.key === 'PageUp' || (event.key === ' ' && event.shiftKey)
+                ? -step
+                : event.key === 'End'
+                  ? content.scrollHeight
+                  : event.key === 'Home'
+                    ? -content.scrollHeight
+                    : 0;
       if (!delta) return;
       event.preventDefault();
       content.scrollTop += delta;
@@ -952,7 +958,13 @@ export function ParticleScroll({ children, className, style, ...options }: Parti
         suppressHydrationWarning
         style={
           native
-            ? { position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }
+            ? {
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+              }
             : { display: 'none' }
         }
       >

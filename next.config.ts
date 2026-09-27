@@ -7,7 +7,7 @@ const withMDX = createMDX();
 // from its cross-origin iframe. Production uses the repository CDN mirror.
 // 本地 Giscus 主题资源需要 CORS 响应头，因为组件会从跨域 iframe 请求它们；
 // 生产环境则使用仓库 CDN 镜像。
-const GISCUS_THEME_ASSET_PATHS = ['/giscus-light.css', '/giscus-dark.css'] as const;
+const GISCUS_THEME_ASSET_PATHS = ['/giscus.css', '/giscus-light.css', '/giscus-dark.css'] as const;
 
 // Enable `output: 'export'` only for production builds. In dev, static-export
 // disables Next's default not-found fallback for unknown paths and instead
