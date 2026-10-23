@@ -70,6 +70,14 @@ bun install     # 安装依赖
 bun dev         # 启动开发服务器，浏览器打开 http://localhost:3000
 ```
 
+### HTML in Canvas 配置
+
+将根目录的 `.env.example` 复制为 `.env`，填写 `HTML_IN_CANVAS_ORIGIN_TRIAL_TOKEN`。Next.js 会读取根目录的环境变量文件，根布局将 token 写入 `origin-trial` meta 标签；留空时不输出该标签，沿用现有能力检测和动效回退逻辑。实际 `.env` 不提交，示例文件可以提交。
+
+生产环境为静态导出：需要在托管平台的**构建环境**中设置同名变量，修改 token 后重新构建并部署，仅修改静态托管的运行时变量不会更新已有 HTML。本次 token 对应 `https://shenshijun.space`，包含子域名，可用于 `docs.shenshijun.space`；其他域名需申请匹配的 token。token 会公开在 HTML 中，不是私密凭据。
+
+环境变量加载规则见 [Next.js 官方文档](https://nextjs.org/docs/app/guides/environment-variables)，token 的域名匹配规则见 [Chrome Origin Trial 指南](https://developer.chrome.com/docs/web-platform/origin-trials)。
+
 ### 构建部署
 
 ```bash

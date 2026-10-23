@@ -76,10 +76,9 @@ export const metadata: Metadata = {
   category: 'education',
 };
 
-// Enables the HTML-in-Canvas origin trial for docs.shenshijun.space and its subdomains.
-// 为 docs.shenshijun.space 及其子域启用 HTML-in-Canvas Origin Trial。
-const HTML_IN_CANVAS_ORIGIN_TRIAL_TOKEN =
-  'Asl9H+KNGlrs0W5DtRf1ouCSdLl/pRmy4Xg6/AuxWRMADMfj8sKhuMAnubYnjc0TWGS25b/CIvMhOBnhwJX4tgEAAABueyJvcmlnaW4iOiJodHRwczovL2RvY3Muc2hlbnNoaWp1bi5zcGFjZTo0NDMiLCJmZWF0dXJlIjoiSFRNTEluQ2FudmFzIiwiZXhwaXJ5IjoxNzkyNDU0NDAwLCJpc1N1YmRvbWFpbiI6dHJ1ZX0=';
+// Static export reads the origin-trial token at build time.
+// 静态导出在构建时读取 Origin Trial token。
+const htmlInCanvasOriginTrialToken = process.env.HTML_IN_CANVAS_ORIGIN_TRIAL_TOKEN?.trim();
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -92,7 +91,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <head>
-        <meta httpEquiv="origin-trial" content={HTML_IN_CANVAS_ORIGIN_TRIAL_TOKEN} />
+        {htmlInCanvasOriginTrialToken && (
+          <meta httpEquiv="origin-trial" content={htmlInCanvasOriginTrialToken} />
+        )}
         <Script id="docs-refresh-restore" strategy="beforeInteractive">
           {DOCS_REFRESH_RESTORE_BOOTSTRAP}
         </Script>
