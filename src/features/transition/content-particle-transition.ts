@@ -471,6 +471,11 @@ function createUncachedContentParticleTransition(
   const source = document.createElement('canvas') as PaintableCanvas;
   source.className = 'nd-content-particle-source';
   source.setAttribute('aria-hidden', 'true');
+  /* Chrome 157 renamed the HTML-in-Canvas opt-in to content="drawable" and
+     requires the drawn element to carry drawable. Without both, drawElementImage
+     throws InvalidStateError and the capture uploads an empty texture. Chromium
+     147-156 only reads layoutsubtree, so both spellings are set here. */
+  source.setAttribute('content', 'drawable');
   source.setAttribute('layoutsubtree', 'true');
   const sourceContext = source.getContext('2d') as ElementImageContext | null;
   if (!sourceContext?.drawElementImage || !source.requestPaint) {
@@ -480,6 +485,7 @@ function createUncachedContentParticleTransition(
   const clone = page.cloneNode(true) as HTMLElement;
   const contentOpacity = captureOpacity ?? getComputedStyle(page.firstElementChild ?? page).opacity;
   clone.dataset.particleCapture = '';
+  clone.setAttribute('drawable', '');
   clone.inert = true;
   clone.setAttribute('aria-hidden', 'true');
   clone.style.animation = 'none';

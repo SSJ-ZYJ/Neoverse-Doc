@@ -40,7 +40,7 @@ export interface ParticleScrollOptions {
 }
 
 export interface ParticleScrollElements {
-  /** Canvas with layoutsubtree that hosts the HTML content. */
+  /** Canvas with content="drawable" that hosts the HTML content. */
   source: HTMLCanvasElement;
   /** The scrollable element inside the source canvas that gets captured. */
   content: HTMLElement;
@@ -953,6 +953,11 @@ export function ParticleScroll({ children, className, style, ...options }: Parti
     >
       <canvas
         ref={sourceRef}
+        /* Chrome 157 renamed the HTML-in-Canvas opt-in to content="drawable";
+           Chromium 147–156 only reads layoutsubtree. Both are set so each build
+           ignores the attribute it does not know, and the captured child keeps
+           its drawable marker below. */
+        content="drawable"
         // @ts-expect-error experimental html-in-canvas attribute
         layoutsubtree="true"
         suppressHydrationWarning
